@@ -1,0 +1,9 @@
+Package: EOLsounding
+Title: Read and Visualize EOL sounding data
+Version: 0.5
+Author: Liangying Zhang
+Maintainer: Liangying Zhang <lzhang@ucar.edu>
+Description: This package reads in EOL sounding data and visualize
+        them for quick view purpose.
+License: GPL version 3 or newer
+Date: 2009-09-01
