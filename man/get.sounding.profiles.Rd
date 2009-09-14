@@ -6,7 +6,8 @@
 }
 \usage{
  get.sounding.profiles(raw.plot=TRUE,raw.dir,qc.plot=FALSE,
-   qc.dir,Tprof=TRUE,RHprof=TRUE,WSPDprof=TRUE,YTYPE="pressure")
+   qc.dir,Tprof=TRUE,RHprof=TRUE,WSPDprof=TRUE,dZprof=TRUE,
+   YTYPE="pressure")
 }
 \arguments{
  \item{raw.plot}{A logic value, whether or not to plot profiles from raw data. Default is TRUE.}
@@ -16,6 +17,7 @@
  \item{Tprof}{A logic value, whether or not to plot temperature profiles. Default is TRUE.}
  \item{RHprof}{A logic value, whether or not to plot relative humidity profiles. Default is TRUE.}
  \item{WSPDprof}{A logic value, whether or not to plot wind speed profiles. Default is TRUE.}
+ \item{dZprof}{A logic value, whether or not to plot profiles of sounding falling(rising) rate. Default is TRUE.}
  \item{YTYPE}{Default is "pressure", sounding profiles will plot against pressures. If assign as "height", sounding profiles will plot against GPS altitude.}
 }
 \value{
