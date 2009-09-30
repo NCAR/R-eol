@@ -1,7 +1,6 @@
 read.raw.Dfile <-
 function (file=NULL) 
 {
-  #file = "/scr/sci2/kbeierle/TPARC/dropsondes/AF-C130/D-files/D20080816_000546_P.1"
   if (is.null(file))
     stop("PLEASE SPECIFY THE DATA FILE YOU WANT TO READ FROM !!!")
   if (length(system(paste("ls", file), TRUE)) < 1)

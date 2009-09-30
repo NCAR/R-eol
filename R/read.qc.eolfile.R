@@ -1,10 +1,9 @@
 read.qc.eolfile <-
-function(file, nskip = 14)
+function(file=NULL, nskip = 14)
 {
   #---------------------------------------------------------
   # Read in the data, skip the header, and name the variable
   #---------------------------------------------------------
-  #file = "/scr/sci2/kbeierle/TPARC/dropsondes/AF-C130/qc.eol/D20080816_000546_PQC.eol"
   if (is.null(file))
     stop("PLEASE SPECIFY THE DATA FILE YOU WANT TO READ FROM !!!")
   if (length(system(paste("ls", file), TRUE)) < 1)
