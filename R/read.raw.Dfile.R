@@ -1,8 +1,6 @@
 read.raw.Dfile <-
-function (file=NULL) 
+function (file=stop("'file' must be specified")) 
 {
-  if (is.null(file))
-    stop("PLEASE SPECIFY THE DATA FILE YOU WANT TO READ FROM !!!")
   if (length(system(paste("ls", file), TRUE)) < 1)
     stop(paste("THE FILE", file, "DOES NOT EXIST"))
 

@@ -1,11 +1,9 @@
 read.qc.eolfile <-
-function(file=NULL, nskip = 14)
+function(file=stop("'file' must be specified"), nskip = 14)
 {
   #---------------------------------------------------------
   # Read in the data, skip the header, and name the variable
   #---------------------------------------------------------
-  if (is.null(file))
-    stop("PLEASE SPECIFY THE DATA FILE YOU WANT TO READ FROM !!!")
   if (length(system(paste("ls", file), TRUE)) < 1)
     stop(paste("THE FILE", file, "DOES NOT EXIST"))
 

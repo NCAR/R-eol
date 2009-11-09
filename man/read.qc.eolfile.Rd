@@ -5,7 +5,7 @@
  Reads in QCed EOL sounding data, including radiosonde(upsonde), dropsonde and driftsonde, in eol file format.
 }
 \usage{
- read.qc.eolfile(file = NULL, nskip = 14)
+ read.qc.eolfile(file = stop("'file' must be specified"), nskip = 14)
 }
 \arguments{
  \item{file}{A string indicating where and what file to read from.}
@@ -26,9 +26,7 @@
  \code{\link[EOLsounding]{read.raw.Dfile}}.
 }
 \examples{
-dir <- "/scr/sci2/lzhang/TPARC/AF-C130/qc.eol"
-f   <- "D20080815_230339_PQC.eol"
-file <- paste(dir, f, sep = "/")
+file <- system.file("DropsondeData","qc.eol","D20080815_172011_PQC.eol",package="EOLsounding")
 read.qc.eolfile(file = file)
 }
 \keyword{IO}

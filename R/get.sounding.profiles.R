@@ -27,7 +27,7 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
   flagcol = 5
   if (raw.plot & qc.plot) {
     if(nrawf < nqcf)
-      stop("The number of raw files MUST be lager or equal to QCed files!")
+      print("The number of raw files SHOULD be lager or equal to QCed files!")
     offcex = 0.7
     flagcol = 0
   }
@@ -39,7 +39,8 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
   min  = substring(fs,13,14)
   lautime = paste("D", yyyy, mm, dd, hh, min, sep = "")
 
-  postscript(file="profiles.ps", paper="letter")
+  system("rm -f profiles.ps")
+  postscript(file="profiles.ps", paper="letter", horizontal=TRUE)
   mycolors = c("black","red","green","blue","purple","cyan","orange","yellow","gray","pink")
   par(mfrow = c(2,4), mar = c(3,4,3,1), pty="m")
 
@@ -123,8 +124,10 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
   nf = length(fs)
   for(i in 1:nf)
   {
-    pflight = NA
+    print(paste(i, lautime[i]))
     if (raw.plot) {
+      pflight = NA
+      hflight = NA
       if (qc.plot) {
         if (!any(substring(qcfs,6,16)==substring(rawfs[i],6,16))) {
           print(paste(lautime[i], "ONLY RAW DATA, NO QC DATA!!!"))
@@ -150,7 +153,7 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
       id  = (raw.sounding[, 2] == "S00" | raw.sounding[, 2] == "S01")
       raw.sounding = raw.sounding[id, ]
       if (nrow(raw.sounding) <= 1) {
-        print(paste(lautime[i], "has NO valid data!"))
+        print(paste(lautime[i], "has NO valid data!!"))
         next
       }
       raw.ps  = raw.sounding$p
@@ -249,8 +252,6 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
       qcX.dz = qc.dz[qind.dz]
       qcX.rh = qc.rh[qind.rh]
     }
-
-    print(paste(i, lautime[i]))
 
     ##########-- Plot sounding profiles --##########
     plot(0,0, type="n", ylim=yrange, xlim=c(-30,105), ylab=ystr, xlab="", axes=TRUE, ask=TRUE)

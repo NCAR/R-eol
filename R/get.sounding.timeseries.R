@@ -9,36 +9,21 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
   if (YTYPE != "pressure" & YTYPE != "height")
     stop("YTYPE CAN ONLY BE pressure OR height !!!!")
 
-  msg = "sonderange IS A INTEGRAL VECTOR OF LENGTH 2, INDICATING THE START/END NUMBER OF SOUNDINGS TO BE INTERPOLATED RESPECTIVELY !!! ALL SOUNDING DATA WILL BE PLOTTED AT THIS POINT !!!"
-  fs = system(paste("cd ", fdir, ";ls D*", sep=""), TRUE)
-  if (length(sonderange) == 1) {
-    if (!is.na(sonderange)) {
-      print(msg)
-      sonderange = NA
-    }
-  }
-  if (length(sonderange) > 2) {
-    print(msg)
-    sonderange = NA
-  }
-  if (length(sonderange) == 2) 
-    fs = fs[min(sonderange):max(sonderange)]
-  yyyy = substring(fs, 2, 5)
-  mm   = substring(fs, 6, 7)
-  dd   = substring(fs, 8, 9)
-  hh   = substring(fs,11,12)
-  min  = substring(fs,13,14)
-  lautime = paste("D", yyyy, mm, dd, hh, min, sep = "")
+  print(paste("Please make sure ONLY",toupper(ftype),"data under", fdir, "!!!"))
+  data = sounding.verticalinterp(ftype,fdir,varname,YTYPE,sonderange)
+  nf   = nrow(data)
+  lautime = rownames(data)
+  ydat = as.numeric(colnames(data))
 
   if (length(flightlines)== 1) {
     if (is.na(flightlines)) 
       flightnames = NULL 
-    else if (flightlines > length(fs)) 
-      print(paste("flightlines", flightlines, "SHOULD NOT BE LARGER THAN TOTAL # OF SOUNDINGS", length(fs)))
+    else if (flightlines > nf) 
+      print(paste("flightlines", flightlines, "SHOULD NOT BE LARGER THAN TOTAL # OF SOUNDINGS", nf))
   }
   else {
-    if (any(flightlines > length(fs)))
-      print(paste("flightlines", max(flightlines), "SHOULD NOT BE LARGER THAN TOTAL # OF SOUNDINGS", length(fs)))
+    if (any(flightlines > nf))
+      print(paste("flightlines", max(flightlines), "SHOULD NOT BE LARGER THAN TOTAL # OF SOUNDINGS", nf))
   }
   if (!is.null(flightnames)) {
     if (length(flightlines) != length(flightnames)-1)
@@ -47,10 +32,6 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
   }
   else	xfn = 0
 
-  print(paste("Please make sure ONLY",toupper(ftype),"data under", fdir, "!!!"))
-  tmp  = sounding.verticalinterp(ftype,fdir,varname,YTYPE,sonderange)
-  ydat = tmp[1, ]
-  data = tmp[2:nrow(tmp), ]
   if (YTYPE == "pressure") {
     yrange = rev(range(ydat))
     ylab = "Pressure (hpa)"
@@ -100,7 +81,8 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
   nlvl = length(levels)
 
   print(paste("min=",min(data,na.rm=TRUE),"max=",max(data,na.rm=TRUE)))
-  postscript(file="timeseries.ps",paper="letter")
+  system("rm -f timeseries.ps")
+  postscript(file="timeseries.ps", paper="letter", horizontal=TRUE)
   ##-------- Plot sounding timeseris -------###
   ## nrow(data) equals to nf (# of soundings)
   x = seq(0,nrow(data),length.out=nrow(data)) 
@@ -137,12 +119,12 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
           col=rainbow((nlvl-1),start=colst))
   }
   else {
+    require(lattice)
     offset = (x[2]-x[1])/2
     print(levelplot(data,row.values=x,column.values=y,ylim=yrange,
                scales=list(tck=1,tick.number=c(8,20),x=xlist),
-               xlab=NULL,ylab=ylab,main=paste(projsonde,mtitle),
+               xlab=NULL,ylab=ylab,main=mtitle,aspect="fill",
                at=levels,col.regions=rainbow((nlvl-1),start=colst),
-               aspect="fill",
                panel=function(...) {
                               panel.levelplot(...)
                               panel.abline(v=x[flightlines]-offset,lwd=3)

@@ -5,7 +5,7 @@
  Reads in raw EOL sounding data, including radiosonde(upsonde), dropsonde and driftsonde, in Dfile format.
 }
 \usage{
- read.raw.Dfile(file = NULL)
+ read.raw.Dfile(file = stop("'file' must be specified"))
 }
 \arguments{
  \item{file}{A string indicating where and what file to read from.}
@@ -27,9 +27,7 @@
  \code{\link[EOLsounding]{read.qc.eolfile}}.
 }
 \examples{
-dir <- "/scr/sci2/lzhang/TPARC/AF-C130/D-files"
-f   <- "D20080815_230339_P.1"
-file <- paste(dir, f, sep = "/")
+file <- system.file("DropsondeData","D-file","D20080815_172011_P.1",package="EOLsounding")
 read.raw.Dfile(file = file)
 }
 \keyword{IO}

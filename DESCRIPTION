@@ -1,6 +1,6 @@
 Package: EOLsounding
 Title: Read and Visualize EOL sounding data
-Version: 1.0.5
+Version: 2.1
 Author: Liangying Zhang
 Maintainer: Liangying Zhang <lzhang@ucar.edu>
 Description: This package reads in EOL sounding data and visualize
@@ -10,7 +10,6 @@ Description: This package reads in EOL sounding data and visualize
         qced files should be named as DYYYYMMDD_hhmmss*eol. Raw data
         file has 6 lines in header, 19 lines for tail. QCed data 
         file has 14 lines in header and no tails.
-Depends: lattice
-OS_type: Linux
+Depends: lattice,maps
 License: GPL version 3 or newer
-Date: 2009-09-21
+Date: 2009-11-09

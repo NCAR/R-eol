@@ -4,6 +4,10 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
   varname = tolower(varname)
   ftype = tolower(ftype)
   YTYPE = tolower(YTYPE)
+  if (YTYPE!="pressure" & YTYPE!="height")
+    stop("Y-axis CAN ONLY BE pressure OR height !!!")
+  if ((varname=="ht" | varname=="height") & YTYPE!="pressure")
+    stop("Y-axis HAS TO BE pressure TO INTERPOLATE height !!!")
 
   if (is.null(fdir))
     stop(paste("PLEASE SPECIFY THE LOCATION OF", ftype, "SOUNDING DATA !!!"))
@@ -19,6 +23,12 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
       stop("sonderange IS A INTEGRAL VECTOR OF LENGTH 2, INDICATING THE START/END NUMBER OF SOUNDINGS TO BE INTERPOLATED RESPECTIVELY !!!")
     fs = fs[sonderange[1]:sonderange[2]]
   }
+  yyyy = substring(fs, 2, 5)
+  mm   = substring(fs, 6, 7)
+  dd   = substring(fs, 8, 9)
+  hh   = substring(fs,11,12)
+  min  = substring(fs,13,14)
+  lautime = paste("D", yyyy, mm, dd, hh, min, sep = "")
   nf = length(fs)
 
   if (YTYPE == "pressure")	yout = seq(0,1200,5)
@@ -26,6 +36,7 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
   ny = length(yout)
   ## return value each row is a sounding record
   ## first row would be pressure or height range
+  ## first column would be sounding time information
   xout = matrix(NA, nrow=nf, ncol=ny)
  
   for(i in 1:nf)
@@ -42,22 +53,35 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
       sounding = read.qc.eolfile(f, nskip=14)
     if (varname=="t" | varname=="temp" | varname=="temperature")
       data = sounding$temp
+    if (varname=="dpt" | varname=="dewpt" | varname=="dewpointtemperature")
+      data = sounding$dewpt
     if (varname=="rh" | varname=="rhum" | varname=="relativehumidity")
       data = sounding$rh
     if (varname=="w" | varname=="wspd" | varname=="windspeed") {
       varname = "wspd"
       data = sounding$wspd
     }
+    if (varname=="wdir" | varname=="winddirection") {
+      varname = "wdir"
+      data = sounding$wdir
+    }
     if (varname=="dz" | varname=="dz/dt" | varname=="vvel" | varname=="verticalvelocity") {
       varname = "dz/dt"
       if (ftype == "qc")	data = sounding$dz
       if (ftype == "raw")	data = sounding$vvel
     }
-    if (YTYPE == "pressure")
+    if (varname=="lat" | varname=="latitude")
+      data = sounding$lat
+    if (varname=="lon" | varname=="longitude")
+      data = sounding$lon
+    if (YTYPE == "pressure") {
       y = sounding$p
+      if (varname=="ht" | varname=="height")
+        data = sounding$gp.alt
+    }
     if (YTYPE == "height")
       y = sounding$gp.alt
-    if ((varname=="wspd" | varname=="dz/dt") & ftype == "raw")
+    if ((varname=="wspd" | varname=="wdir" | varname=="dz/dt") & ftype == "raw")
       ind = (!is.na(y) & !is.na(data) & sounding[,2] != "S01")
     else
       ind = (!is.na(y) & !is.na(data))
@@ -122,13 +146,14 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
     for (ik in 1:length(xpoints))
       xout[i,iy1+ik-1] = xpoints[ik]
   }
-  out = rbind(yout, xout)
   ## not missing
-  ind = (!is.na(out[2:nf,]))
+  ind = (!is.na(xout))
   ## not whole level missing
   indx = FALSE
   for (k in 1:ny)	indx[k] = any(ind[ ,k])
-  out = out[ ,indx]
+  out = xout[ ,indx]
+  colnames(out) = yout[indx]
+  rownames(out) = lautime
   return(out)
 }
 

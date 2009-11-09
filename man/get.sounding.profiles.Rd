@@ -12,9 +12,9 @@
 }
 \arguments{
  \item{raw.plot}{Logical:if true to plot profiles from raw data. Default is TRUE.}
- \item{raw.dir}{A character string giving where raw sounding data files are.}
+ \item{raw.dir}{Raw sounding data files location.}
  \item{qc.plot}{Logical:if true to plot profiles from QCed data. Default is FALSE.}
- \item{qc.dir}{A character string showing where QCed sounding data files are.}
+ \item{qc.dir}{QCed sounding data files location.}
  \item{Tprof}{Logical:if true to plot temperature profiles. Default is TRUE.}
  \item{RHprof}{Logical:if true to plot relative humidity profiles. Default is TRUE.}
  \item{WSPDprof}{Logical:if true to plot wind speed profiles. Default is TRUE.}
@@ -34,14 +34,13 @@
 }
 \author{Liangying Zhang \email{lzhang@ucar.edu}}
 \seealso{
- \code{\link[EOLsounding]{read.raw.Dfile}}.
+ \code{\link[EOLsounding]{read.raw.Dfile}},
  \code{\link[EOLsounding]{read.qc.eolfile}}.
 }
 \examples{
-raw.dir <- "/scr/sci2/lzhang/TPARC/AF-C130/D-files"
-qc.plot <- TRUE
-qc.dir <- "/scr/sci2/lzhang/TPARC/AF-C130/qc.eol"
-## will print to file "profile.ps"
+raw.dir <- system.file("DropsondeData", "D-file", package="EOLsounding")
+qc.dir <- system.file("DropsondeData", "qc.eol", package="EOLsounding")
+## will print to file "profiles.ps"
 get.sounding.profiles(raw.plot=TRUE,raw.dir=raw.dir,
                       qc.plot=TRUE,qc.dir=qc.dir)
 }

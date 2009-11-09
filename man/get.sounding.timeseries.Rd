@@ -12,10 +12,10 @@
 }
 \arguments{
  \item{ftype}{A character string giving files type, currently only takes "qc"(QCed sounding data files) and "raw"(raw sounding data files). Default is "qc".}
- \item{fdir}{A character string showing where sounding data files are. Please make sure only wanted files in the directory.}
+ \item{fdir}{Sounding data files location. Please make sure only wanted D* files in the directory.}
  \item{varname}{A variable name which will be plotted as timeseries. Currently takes "temperature"("t","temp"), "relativehumidity"("rh","rhum"), "windspeed"("w","wspd"), or "dz/dt"("dz","verticalvelocity","vvel"). Defaultly temperature will be plotted.}
  \item{YTYPE}{The only allowed values are "height" and "pressure". Default is "height", sounding timeseries will be plotted vs pressure. If assigned as "pressure", sounding timeseries will be plotted vs geopotential altitude.}
- \item{sonderange}{A numeric vector of length 2, indicating the beginning and ending number of soundings respectively. Only soundings in the range will be processed/plotted if sonderange is assigned.}
+ \item{sonderange}{A numeric vector of length 2, indicating the beginning and ending number of soundings respectively. Only soundings in the range will be processed/plotted if sonderange is assigned. It will be ignored if inputs are not valid.}
  \item{projsonde}{A character string of project name and/or sounding type to be added to plot title.}
  \item{flightlines}{A numeric vector of sounding numbers when lines wanted to identify soundings from different flights. Should be the numbers of soundings starting a new flight. Default is missing.}
  \item{flightnames}{A vector of character strings showing flight names. Valid only when flightlines is not missing. The vector's length should be one more longer than that of flightlines. Data will be repeatedly used if short of length. The remained values will be cutoff if data assigned more than needed.}
@@ -25,7 +25,7 @@
  A timeseries plot of selected variable will be printed to file "timeseries.ps" in working directory.
 }
 \details{
- This function plots sounding timeseries. Users may choose which variable to be plotted. Y axis can be chosen as height(geopotential altitude) or pressure. Lines and names can also be added to the plot to identify soundings from different flights. 
+ This function plots sounding timeseries. Users may choose which variable to be plotted. Y axis can be chosen as height(geopotential altitude) or pressure. Lines and names can also be added to the plot to identify soundings from different flights. A range of soundings may be picked for processing.
 
  Level plot (default,color filling) and contour plot are available to choose. The plot will be automatically printed to a file in working directory named "timeseries.ps".
 
@@ -35,13 +35,13 @@
 }
 \author{Liangying Zhang \email{lzhang@ucar.edu}}
 \seealso{
- \code{\link[EOLsounding]{sounding.verticalinterp}}.
+ \code{\link[EOLsounding]{sounding.verticalinterp}},
  \code{\link[EOLsounding]{get.sounding.profiles}}.
 }
 \examples{
-qc.dir <- "/scr/sci2/lzhang/TPARC/AF-C130/qc.eol"
+qc.dir <- system.file("DropsondeData", "qc.eol", package="EOLsounding")
 ## print to file "timeseries.ps"
 get.sounding.timeseries(fdir=qc.dir,
-                        flightlines=13,flightnames=c("F01","F02"))
+                   flightlines=c(5,9),flightnames=c("F01","F02","F03"))
 }
 \keyword{aplot}
