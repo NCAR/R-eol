@@ -1,27 +1,27 @@
 get.sounding.profiles <-
-function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RHprof=TRUE, WSPDprof=TRUE, dZprof=TRUE, YTYPE="pressure", projsonde=NULL)
+function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RHprof=TRUE, WSPDprof=TRUE, dZprof=TRUE, YTYPE="pressure", projsonde=NULL, sonderange=NA)
 {
   YTYPE = tolower(YTYPE)
   if (YTYPE != "pressure" & YTYPE != "height")
     stop("YTYPE CAN ONLY BE pressure OR height !!!!")
 
   if (raw.plot) {
-    if (is.null(raw.dir))
-      stop("PLEASE SPECIFY THE LOCATION OF RAW SOUNDING FILES!!!")
-    rawfs = system(paste("cd ", raw.dir, "; ls D*", sep="/"), TRUE)
+    rawfs = check.files(raw.dir)
+    check.sonderange(sonderange, length(rawfs))
+    if (length(sonderange) == 2)
+      rawfs = rawfs[sonderange[1]:sonderange[2]]
     nrawf = length(rawfs)
-    if(nrawf == 0)
-      stop(paste("There is NO raw sounding files under directory", raw.dir))
     fs = rawfs
   }
   if (qc.plot) {
-    if (is.null(qc.dir))
-      stop("PLEASE SPECIFY THE LOCATION OF QCED SOUNDING FILES!!!")
-    qcfs = system(paste("cd ", qc.dir, "; ls D*eol", sep = "/"), TRUE)
+    qcfs = check.files(qc.dir)
+    if (!raw.plot) {
+      check.sonderange(sonderange, length(qcfs))
+      if (length(sonderange) == 2)
+        qcfs = qcfs[sonderange[1]:sonderange[2]]
+      fs = qcfs
+    }
     nqcf = length(qcfs)
-    if(nqcf == 0)
-      stop(paste("There is NO QCed eol-files under directory", qc.dir))
-    if (!raw.plot)	fs = qcfs
   }
   offcex = 0
   flagcol = 5
@@ -116,8 +116,8 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
   plot(0,0, type="n", ylim=yrge, xlim=c(-30,105), ylab=ystr, xlab="", axes=TRUE, ask=TRUE)
   #grid(col=1)
   if (!is.null(projsonde))
-    legend(-30,yrge[2], projsonde, bty = "n", cex = 1.5)
-  legend(-5,ly, leg, col=col, lty=rep(1,nline), lwd = 2.5, cex = 1.2)
+    legend(-30,yrge[2], projsonde, bty = "n", cex = 1.7)
+  legend(-5,ly, leg, col=col, lty=rep(1,nline), lwd = 2.5, cex = 1.5)
   box()
  ################
 
@@ -137,11 +137,9 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
         aqcf = paste(qc.dir, aqcf, sep = "/")
       }
       arawf =  paste(raw.dir, rawfs[i], sep="/")
-      raw.sounding = read.raw.Dfile(arawf)
-      if (nrow(raw.sounding) <= 1) {
-        print(paste(lautime[i], "has NO valid data!"))
+      raw.sounding = readin.file("raw",arawf)
+      if (nrow(raw.sounding) <= 1)
         next
-      }
       #-- get flight level --#
       pflight = raw.sounding[raw.sounding[, 2] == "A11", 6]
       if (length(pflight)<1)
@@ -157,28 +155,28 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
         next
       }
       raw.ps  = raw.sounding$p
-      raw.gph = raw.sounding$gps.alt/1000
+      raw.ght = raw.sounding$gps.alt/1000
       raw.t   = raw.sounding$temp
       raw.w   = raw.sounding$wspd
       raw.rh  = raw.sounding$rh
-      raw.dz  = raw.sounding$vvel
+      raw.dz  = raw.sounding$dz
 
       if (YTYPE == "height") {
-        if (length(raw.gph[!is.na(raw.gph)]) < 1) {
+        if (length(raw.ght[!is.na(raw.ght)]) < 1) {
           print(paste(lautime[i], "has NO height information!"))
           next
         }
-        rind.t  = (!is.na(raw.gph) & !is.na(raw.t))
-        rind.w  = (!is.na(raw.gph) & !is.na(raw.w) & raw.sounding[, 2] != "S01")
-        rind.rh = (!is.na(raw.gph) & !is.na(raw.rh))
-        rind.dz = (!is.na(raw.gph) & !is.na(raw.dz) & raw.sounding[, ] != "S01")
-        ###-- Y axis as geopotential height --###
-        rawY.t  = raw.gph[rind.t]
-        rawY.w  = raw.gph[rind.w]
-        rawY.rh = raw.gph[rind.rh]
-        rawY.dz = raw.gph[rind.dz]
+        rind.t  = (!is.na(raw.ght) & !is.na(raw.t))
+        rind.w  = (!is.na(raw.ght) & !is.na(raw.w) & raw.sounding[, 2] != "S01")
+        rind.rh = (!is.na(raw.ght) & !is.na(raw.rh))
+        rind.dz = (!is.na(raw.ght) & !is.na(raw.dz) & raw.sounding[, ] != "S01")
+        ###-- Y axis as gps height --###
+        rawY.t  = raw.ght[rind.t]
+        rawY.w  = raw.ght[rind.w]
+        rawY.rh = raw.ght[rind.rh]
+        rawY.dz = raw.ght[rind.dz]
         ystr    = "GPS Altitude (km)"
-        yrange  = range(raw.gph, na.rm=TRUE)
+        yrange  = range(raw.ght, na.rm=TRUE)
       }
       if (YTYPE == "pressure") {
         if (length(raw.ps[!is.na(raw.ps)]) < 1) {
@@ -205,30 +203,30 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
 
     if (qc.plot) {
       if (!raw.plot) aqcf =  paste(qc.dir, qcfs[i], sep="/")
-      qc.sounding = read.qc.eolfile(aqcf, nskip=14)
+      qc.sounding = readin.file("qc",aqcf)
       qc.ps  = qc.sounding$p
-      qc.gph = qc.sounding$gps.alt/1000
+      qc.ght = qc.sounding$gps.alt/1000
       qc.t   = qc.sounding$temp
       qc.w   = qc.sounding$wspd
       qc.rh  = qc.sounding$rh
       qc.dz  = qc.sounding$dz
 
       if (YTYPE == "height") {
-        if (length(qc.gph[!is.na(qc.gph)]) < 1) {
+        if (length(qc.ght[!is.na(qc.ght)]) < 1) {
           print(paste(lautime[i], "has NO height information!"))
           next
         }
-        qind.t  = (!is.na(qc.gph) & !is.na(qc.t))
-        qind.w  = (!is.na(qc.gph) & !is.na(qc.w))
-        qind.rh = (!is.na(qc.gph) & !is.na(qc.rh))
-        qind.dz = (!is.na(qc.gph) & !is.na(qc.dz))
-        ###-- Y axis as geopotential height --###
-        qcY.t  = qc.gph[qind.t]
-        qcY.w  = qc.gph[qind.w]
-        qcY.rh = qc.gph[qind.rh]
-        qcY.dz = qc.gph[qind.dz]
-        ystr   = "Height (km)"
-        if(!raw.plot)   yrange  = range(qc.gph, na.rm=TRUE)
+        qind.t  = (!is.na(qc.ght) & !is.na(qc.t))
+        qind.w  = (!is.na(qc.ght) & !is.na(qc.w))
+        qind.rh = (!is.na(qc.ght) & !is.na(qc.rh))
+        qind.dz = (!is.na(qc.ght) & !is.na(qc.dz))
+        ###-- Y axis as gps height --###
+        qcY.t  = qc.ght[qind.t]
+        qcY.w  = qc.ght[qind.w]
+        qcY.rh = qc.ght[qind.rh]
+        qcY.dz = qc.ght[qind.dz]
+        ystr   = "GPS Altitude (km)"
+        if(!raw.plot)   yrange  = range(qc.ght, na.rm=TRUE)
       }
       if (YTYPE == "pressure") {
         if (length(qc.ps[!is.na(qc.ps)]) < 1) {

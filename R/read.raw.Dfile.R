@@ -32,7 +32,7 @@ function (file=stop("'file' must be specified"))
   rhum     = d$V8
   wdir     = d$V9
   wspd     = d$V10
-  vvel     = d$V11 ## vertical velocity
+  dz       = d$V11 ## vertical velocity
   lon      = d$V12
   lat      = d$V13
   gp.alt   = d$V14
@@ -43,7 +43,7 @@ function (file=stop("'file' must be specified"))
   werr     = d$V19 ## wind error
   gps.alt  = d$V20
 
-  newdata = data.frame(ava, sta, sid, utc.date, utc.time, p=press, temp, rh=rhum, wdir, wspd, vvel, lon, lat, gp.alt, wsat, rh1, rh2, ssat, werr, gps.alt)
+  newdata = data.frame(ava, sta, sid, utc.date, utc.time, p=press, temp, rh=rhum, wdir, wspd, dz, lon, lat, gp.alt, wsat, rh1, rh2, ssat, werr, gps.alt)
   return(newdata)
 }
 

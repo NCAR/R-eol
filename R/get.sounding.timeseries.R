@@ -1,13 +1,11 @@
 get.sounding.timeseries <-
 function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderange=NA, projsonde=NULL, flightlines=NA, flightnames=NULL, plotcontour=FALSE)
 {
-  varname = tolower(varname)
+  var = readin.varname(varname)
+  varname = var$name
+  unit = var$unit
   ftype = tolower(ftype)
-  YTYPE = tolower(YTYPE)
-  if (is.null(fdir))
-    stop(paste("PLEASE SPECIFY THE LOCATION OF", ftype, "SOUNDING DATA !!!"))
-  if (YTYPE != "pressure" & YTYPE != "height")
-    stop("YTYPE CAN ONLY BE pressure OR height !!!!")
+  YTYPE = check.YTYPE(YTYPE)
 
   print(paste("Please make sure ONLY",toupper(ftype),"data under", fdir, "!!!"))
   data = sounding.verticalinterp(ftype,fdir,varname,YTYPE,sonderange)
@@ -40,44 +38,32 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
   }
   if (YTYPE == "height") {
     yrange = range(ydat)/1000
-    ylab = "Geopotential Altitude (km)"
+    ylab = "Geopotential Height (km)"
     ###--- y axis for flight names
     yfn = yrange[2] - 1
   }
-  mtitle = projsonde
 
   colst = 0.1
-  if (varname=="t" | varname=="temp" | varname=="temperature") {
-    mtitle = paste(mtitle, "TEMPERATURE","C",sep="    ")
-    ###-- temperature level range --###
+  if (varname=="Relative Humidity")
+    levels = seq(0,105,5)
+  else {
+    ###-- level range --###
     st = round(min(data,na.rm=TRUE)/10-0.5, 0)*10
     if (min(data,na.rm=TRUE)-st > 5)	st = st + 5
     ed = round(max(data,na.rm=TRUE)/10+0.5, 0)*10
     if (ed-max(data,na.rm=TRUE) > 5)	ed = ed - 5
     levels = seq(st,ed,5)
-    colst = 0
-  }
-  else if (varname=="rh" | varname=="rhum" | varname=="relativehumidity") {
-    mtitle = paste(mtitle, "RELATIVE HUMIDITY","%",sep = "    ")
-    levels = seq(0,105,5)
-  }
-  else if (varname=="w" | varname=="wspd" | varname=="windspeed") {
-    mtitle = paste(mtitle, "WIND SPEED","m/s",sep = "    ")
-    levels =  seq(0,20,1)
-  }
-  else if (varname=="dz" | varname=="dz/dt" | varname=="vvel" | varname=="verticalvelocity") {
-    kunit = "m/s"
-    levels = seq(0,20,1)
-    ## for upsonde
-    if (min(data) < 0) {
-      data = data*(-1)
-      kunit = "-m/s"
+
+    if (varname=="Temperature")
+      colst = 0
+    if (varname=="dZ/dt") {
+      if (max(data,na.rm=TRUE) < 0) {
+        data = data*(-1)
+        unit = "-m/s"
+      }
     }
-    mtitle = paste(mtitle, "dZ/dt",kunit,sep="    ")
   }
-  else {
-    stop(paste("THERE IS NO OPTION OF",varname,"FOR timeseries PLOT. CURRENTLY ONLY temperature, rh, windspeed and dz/dt are available"))
-  }
+  mtitle = paste(projsonde, varname, unit, sep = "    ")
   nlvl = length(levels)
 
   print(paste("min=",min(data,na.rm=TRUE),"max=",max(data,na.rm=TRUE)))
@@ -106,7 +92,6 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
     xlist = list(at=a,labels=alabels)
     alas = 1
   }
-  print("PLOT HAS BEEN PRINTED TO file 'timeseries.ps' IN THE WORKING DIRECTORY !")
   if (plotcontour) {
     par(mar=c(6.3,4,4,2))
     filled.contour(x=x,y=y,data,ylim=yrange,levels=levels,
@@ -132,5 +117,5 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
                      }))
   }
   dev.off()
+  print("PLOT HAS BEEN PRINTED TO file 'timeseries.ps' IN THE WORKING DIRECTORY !")
 }
-

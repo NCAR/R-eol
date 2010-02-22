@@ -14,7 +14,7 @@
  \item{ftype}{A character string giving files type, currently only takes "qc"(QCed sounding data files) and "raw"(raw sounding data files). Default is "qc".}
  \item{fdir}{Sounding data files location. Please make sure only wanted D* files in the directory.}
  \item{varname}{A variable name which will be plotted as timeseries. Currently takes "temperature"("t","temp"), "relativehumidity"("rh","rhum"), "windspeed"("w","wspd"), or "dz/dt"("dz","verticalvelocity","vvel"). Defaultly temperature will be plotted.}
- \item{YTYPE}{The only allowed values are "height" and "pressure". Default is "height", sounding timeseries will be plotted vs pressure. If assigned as "pressure", sounding timeseries will be plotted vs geopotential altitude.}
+ \item{YTYPE}{The only allowed values are "height" and "pressure". Default is "height", sounding timeseries will be plotted vs geopotential height. If assigned as "pressure", sounding timeseries will be plotted vs pressure.}
  \item{sonderange}{A numeric vector of length 2, indicating the beginning and ending number of soundings respectively. Only soundings in the range will be processed/plotted if sonderange is assigned. It will be ignored if inputs are not valid.}
  \item{projsonde}{A character string of project name and/or sounding type to be added to plot title.}
  \item{flightlines}{A numeric vector of sounding numbers when lines wanted to identify soundings from different flights. Should be the numbers of soundings starting a new flight. Default is missing.}

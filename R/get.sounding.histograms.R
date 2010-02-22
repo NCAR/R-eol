@@ -1,17 +1,14 @@
 get.sounding.histograms <-
 function (fdir=NULL,projsonde=NULL,Thist=TRUE,RHhist=TRUE,Phist=TRUE,WSPDhist=TRUE,WDIRhist=TRUE) 
 {
-  if (is.null(fdir))
-    stop(paste("PLEASE SPECIFY QCed SOUNDING DATA LOCATION !!!"))
-
+  flist = check.files(fdir)
   print(paste("PLEASE MAKE SURE ONLY QCed SOUNDING DATA UNDER", fdir, "!!!"))
-  flist = system(paste("cd ",fdir, ";ls D*"), TRUE)
   M = length(flist)
   pres = temp = rhum = wspd = wdir = NA
   for (i in 1:M) {
     print(flist[i])
     f = paste(fdir, flist[i], sep = "/")
-    qc.sounding = read.qc.eolfile(f)
+    qc.sounding = readin.file("qc",f)
     time = qc.sounding$time
     ps = qc.sounding$p
     t  = qc.sounding$temp

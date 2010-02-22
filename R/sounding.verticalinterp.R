@@ -1,28 +1,19 @@
 sounding.verticalinterp <-
 function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderange=NA)
 {
-  varname = tolower(varname)
+  var = readin.varname(varname)
+  varname = var$name
   ftype = tolower(ftype)
   YTYPE = tolower(YTYPE)
   if (YTYPE!="pressure" & YTYPE!="height")
     stop("Y-axis CAN ONLY BE pressure OR height !!!")
-  if ((varname=="ht" | varname=="height") & YTYPE!="pressure")
+  if ((varname=="Geopotential Height") & YTYPE!="pressure")
     stop("Y-axis HAS TO BE pressure TO INTERPOLATE height !!!")
 
-  if (is.null(fdir))
-    stop(paste("PLEASE SPECIFY THE LOCATION OF", ftype, "SOUNDING DATA !!!"))
-  fs = system(paste("cd ", fdir, ";ls D*", sep=""), TRUE)
-  if (length(sonderange) == 1) {
-    if (!is.na(sonderange))
-      stop("sonderange IS A INTEGRAL VECTOR OF LENGTH 2, INDICATING THE START/END NUMBER OF SOUNDINGS TO BE INTERPOLATED RESPECTIVELY !!!")
-  }
-  if (length(sonderange) > 2) 
-    stop("sonderange IS A INTEGRAL VECTOR OF LENGTH 2, INDICATING THE START/END NUMBER OF SOUNDINGS TO BE INTERPOLATED RESPECTIVELY !!!")
-  if (length(sonderange) == 2) {
-    if (sonderange[1] > sonderange[2])
-      stop("sonderange IS A INTEGRAL VECTOR OF LENGTH 2, INDICATING THE START/END NUMBER OF SOUNDINGS TO BE INTERPOLATED RESPECTIVELY !!!")
+  fs = check.files(fdir)
+  check.sonderange(sonderange, length(fs))
+  if (length(sonderange) == 2)
     fs = fs[sonderange[1]:sonderange[2]]
-  }
   yyyy = substring(fs, 2, 5)
   mm   = substring(fs, 6, 7)
   dd   = substring(fs, 8, 9)
@@ -43,45 +34,19 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
   {
     print(paste(i, fs[i]))
     f = paste(fdir, fs[i], sep="/")
+    sounding = readin.file(ftype, f)
     if (ftype == "raw") {
-      sounding = read.raw.Dfile(f)
       #-- get only valid data --#
       id  = (sounding[, 2] == "S00" | sounding[, 2] == "S01")
       sounding = sounding[id, ]
     }
-    if (ftype == "qc")
-      sounding = read.qc.eolfile(f, nskip=14)
-    if (varname=="t" | varname=="temp" | varname=="temperature")
-      data = sounding$temp
-    if (varname=="dpt" | varname=="dewpt" | varname=="dewpointtemperature")
-      data = sounding$dewpt
-    if (varname=="rh" | varname=="rhum" | varname=="relativehumidity")
-      data = sounding$rh
-    if (varname=="w" | varname=="wspd" | varname=="windspeed") {
-      varname = "wspd"
-      data = sounding$wspd
-    }
-    if (varname=="wdir" | varname=="winddirection") {
-      varname = "wdir"
-      data = sounding$wdir
-    }
-    if (varname=="dz" | varname=="dz/dt" | varname=="vvel" | varname=="verticalvelocity") {
-      varname = "dz/dt"
-      if (ftype == "qc")	data = sounding$dz
-      if (ftype == "raw")	data = sounding$vvel
-    }
-    if (varname=="lat" | varname=="latitude")
-      data = sounding$lat
-    if (varname=="lon" | varname=="longitude")
-      data = sounding$lon
-    if (YTYPE == "pressure") {
+    data = readin.data(sounding=sounding, varname=varname)
+
+    if (YTYPE == "pressure")
       y = sounding$p
-      if (varname=="ht" | varname=="height")
-        data = sounding$gp.alt
-    }
     if (YTYPE == "height")
       y = sounding$gp.alt
-    if ((varname=="wspd" | varname=="wdir" | varname=="dz/dt") & ftype == "raw")
+    if ((varname=="Wind Speed" | varname=="Wind Direction" | varname=="dZ/dt") & ftype == "raw")
       ind = (!is.na(y) & !is.na(data) & sounding[,2] != "S01")
     else
       ind = (!is.na(y) & !is.na(data))
@@ -156,4 +121,3 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
   rownames(out) = lautime
   return(out)
 }
-

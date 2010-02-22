@@ -1,8 +1,6 @@
 get.sounding.weathersymbols <-
 function(fdir=NULL, pslevel=500, projsonde=NULL, sonderange=NA, addmap=FALSE, tsize=1)
 {
-  if (is.null(fdir))
-    stop(paste("PLEASE SPECIFY THE LOCATION OF QCed SOUNDING DATA !!"))
   print(paste("Please make sure ONLY QCed data under", fdir, "!!!"))
 
   tmp = sounding.verticalinterp("qc",fdir,"temp","pressure",sonderange)
