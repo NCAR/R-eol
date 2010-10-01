@@ -1,5 +1,5 @@
 get.sounding.timeseries <-
-function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderange=NA, projsonde=NULL, flightlines=NA, flightnames=NULL, plotcontour=FALSE)
+function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderange=NA, projsonde=NULL, flightlines=NA, flightnames=NULL, plotcontour=FALSE, levelInterval=5)
 {
   var = readin.varname(varname)
   varname = var$name
@@ -43,25 +43,30 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
     yfn = yrange[2] - 1
   }
 
-  colst = 0.1
-  if (varname=="Relative Humidity")
-    levels = seq(0,105,5)
+  if (varname=="Relative Humidity") {
+    levels = seq(0,105,levelInterval)
+    tempcolors = colorRampPalette(rev(c("blue","cyan","green","yellow","red")))
+  }
   else {
-    ###-- level range --###
-    st = round(min(data,na.rm=TRUE)/10-0.5, 0)*10
-    if (min(data,na.rm=TRUE)-st > 5)	st = st + 5
-    ed = round(max(data,na.rm=TRUE)/10+0.5, 0)*10
-    if (ed-max(data,na.rm=TRUE) > 5)	ed = ed - 5
-    levels = seq(st,ed,5)
-
-    if (varname=="Temperature")
-      colst = 0
+    tempcolors = colorRampPalette(rev(c("red","yellow","green","cyan","blue")))
     if (varname=="dZ/dt") {
       if (max(data,na.rm=TRUE) < 0) {
         data = data*(-1)
         unit = "-m/s"
       }
     }
+
+    ###-- level range --###
+    st = round(min(data,na.rm=TRUE)/10-0.5, 0)*10
+    if (min(data,na.rm=TRUE)-st > 5)	st = st + 5
+    ed = round(max(data,na.rm=TRUE)/10+0.5, 0)*10
+    if (ed-max(data,na.rm=TRUE) > 5)	ed = ed - 5
+
+     if (levelInterval < 5) {
+      if (min(data,na.rm=TRUE)-st > levelInterval)  st = st + levelInterval
+      if (ed-max(data,na.rm=TRUE) > levelInterval)  ed = ed - levelInterval
+    }
+    levels = seq(st,ed,levelInterval)
   }
   mtitle = paste(projsonde, varname, unit, sep = "    ")
   nlvl = length(levels)
@@ -101,7 +106,7 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
                              text(xfn,yfn,flightnames,cex=1.5)),
           plot.axes = {axis(1,at=a,labels=alabels,las=alas,cex.axis=0.8)
                        axis(2)},
-          col=rainbow((nlvl-1),start=colst))
+          col=tempcolors(nlvl-1))
   }
   else {
     require(lattice)
@@ -109,7 +114,7 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
     print(levelplot(data,row.values=x,column.values=y,ylim=yrange,
                scales=list(tck=1,tick.number=c(8,20),x=xlist),
                xlab=NULL,ylab=ylab,main=mtitle,aspect="fill",
-               at=levels,col.regions=rainbow((nlvl-1),start=colst),
+               at=levels,col.regions=tempcolors((nlvl-1)),
                panel=function(...) {
                               panel.levelplot(...)
                               panel.abline(v=x[flightlines]-offset,lwd=3)

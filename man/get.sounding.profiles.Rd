@@ -8,7 +8,7 @@
 \usage{
  get.sounding.profiles(raw.plot=TRUE,raw.dir=NULL,qc.plot=FALSE,
    qc.dir=NULL,Tprof=TRUE,RHprof=TRUE,WSPDprof=TRUE,dZprof=TRUE,
-   YTYPE="pressure",projsonde=NULL,sonderange=NA)
+   YTYPE="pressure",projsonde=NULL,sonderange=NA,YAXISrange=NULL)
 }
 \arguments{
  \item{raw.plot}{Logical:if true to plot profiles from raw data. Default is TRUE.}
@@ -22,6 +22,7 @@
  \item{YTYPE}{Default is "pressure", sounding profiles will be plotted against pressures. If assign as "height", sounding profiles will be plotted against GPS altitude.}
  \item{projsonde}{A character string to input project name and/or sounding type, which will be plotted as legends in first plot served as an information panel.}
  \item{sonderange}{A numeric vector of length 2, indicating the beginning and ending number of soundings respectively. Only soundings in the range will be processed/plotted if sonderange is assigned. It will be ignored if inputs are not valid.}
+ \item{YAXISrange}{A numeric vector of length 2, indicating the range for Y-axis. Default is NULL, and Y-axis range will be set automatically according to the range of sonde's pressure or height.}
 }
 \value{
  The profiles will be plotted on 2x4 panels and printed to file "profiles.ps" in working directory.

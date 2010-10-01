@@ -30,7 +30,7 @@ function(fdir=NULL, pslevel=500, projsonde=NULL, sonderange=NA, addmap=FALSE, ts
   y2 = max(lat,na.rm=TRUE) + 1
   if(addmap) {
     database = "world2"
-    if (any(lon < 0))	database = "world"
+    if (any(lon[!is.na(lon)] < 0))	database = "world"
     map(database, xlim=c(x1,x2), ylim=c(y1,y2), col="grey")
     map.axes()
   }

@@ -1,5 +1,5 @@
 get.sounding.profiles <-
-function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RHprof=TRUE, WSPDprof=TRUE, dZprof=TRUE, YTYPE="pressure", projsonde=NULL, sonderange=NA)
+function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RHprof=TRUE, WSPDprof=TRUE, dZprof=TRUE, YTYPE="pressure", projsonde=NULL, sonderange=NA, YAXISrange=NULL)
 {
   YTYPE = tolower(YTYPE)
   if (YTYPE != "pressure" & YTYPE != "height")
@@ -37,7 +37,8 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
   dd   = substring(fs, 8, 9)
   hh   = substring(fs,11,12)
   min  = substring(fs,13,14)
-  lautime = paste("D", yyyy, mm, dd, hh, min, sep = "")
+  sec  = substring(fs,15,16)
+  lautime = paste("D", yyyy, mm, dd, hh, min, sec, sep = "")
 
   system("rm -f profiles.ps")
   postscript(file="profiles.ps", paper="letter", horizontal=TRUE)
@@ -61,7 +62,7 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
       rcol = c(rcol, 4)
     }
     if (dZprof) {
-      rleg = c(rleg, "raw-dz/dt")
+      rleg = c(rleg, "raw-dZ/dt")
       rcol = c(rcol, mycolors[5])
     }
   }
@@ -250,6 +251,9 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
       qcX.dz = qc.dz[qind.dz]
       qcX.rh = qc.rh[qind.rh]
     }
+
+    ##allow user to customize the range of y-axis, instead of using range to set it automatically.
+    if (!is.null(YAXISrange))  yrange = YAXISrange
 
     ##########-- Plot sounding profiles --##########
     plot(0,0, type="n", ylim=yrange, xlim=c(-30,105), ylab=ystr, xlab="", axes=TRUE, ask=TRUE)

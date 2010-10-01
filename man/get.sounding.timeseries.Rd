@@ -8,7 +8,8 @@
  get.sounding.timeseries(ftype="qc",fdir=NULL,
    varname="temperature",YTYPE="height",
    sonderange=NA,projsonde=NULL,
-   flightlines=NA,flightnames=NULL,plotcontour=FALSE)
+   flightlines=NA,flightnames=NULL,
+   plotcontour=FALSE,levelInterval=5)
 }
 \arguments{
  \item{ftype}{A character string giving files type, currently only takes "qc"(QCed sounding data files) and "raw"(raw sounding data files). Default is "qc".}
@@ -20,6 +21,7 @@
  \item{flightlines}{A numeric vector of sounding numbers when lines wanted to identify soundings from different flights. Should be the numbers of soundings starting a new flight. Default is missing.}
  \item{flightnames}{A vector of character strings showing flight names. Valid only when flightlines is not missing. The vector's length should be one more longer than that of flightlines. Data will be repeatedly used if short of length. The remained values will be cutoff if data assigned more than needed.}
  \item{plotcontour}{Logical:contour plot is preferred when set to TRUE. Otherwise, a level plot (color filling) will be drawn.}
+ \item{levelInterval}{Integer:Level interval for color keys. Default is 5.}
 }
 \value{
  A timeseries plot of selected variable will be printed to file "timeseries.ps" in working directory.
