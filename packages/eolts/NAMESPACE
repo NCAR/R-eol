@@ -1,0 +1,22 @@
+import(methods)
+
+import(splusTimeDate)
+
+importFrom("splusTimeDate",timeDate)
+
+useDynLib(eolts)
+
+export(netcdf,is.open,variables,close,readnc,utime)
+
+exportClasses(netcdf,netcdfVariable,utime)
+
+exportMethods(
+        "Compare",
+        "Math",
+        "Math2",
+        "Ops",
+        "Summary",
+        "coerce",
+        "format",
+        "monthly"
+)

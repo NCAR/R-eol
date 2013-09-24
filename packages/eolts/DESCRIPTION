@@ -1,0 +1,15 @@
+Package: eolts
+Version: 0.0-1
+Date: 2013-09-13
+Title: Support for reading and manipulation of time series, developed at the NCAR EOL.
+Authors@R: person("Gordon","Maclean",role=c("aut","cre"),
+            email="maclean@ucar.edu")
+Author: Gordon Maclean
+Maintainer: Gordon Maclean <maclean@ucar.edu>
+Depends: R (>= 1.8.0), methods
+Imports: splusTimeDate
+Description: This package provides R functions to read time-series data
+  from NetCDF files containing data acquired by the Integrated Surface
+  Flux System (ISFS) of the NCAR Earth Observing Laboratory (EOL).
+License: GPL (>= 2)
+URL: http://www.eol.ucar.edu/

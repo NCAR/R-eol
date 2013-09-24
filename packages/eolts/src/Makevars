@@ -1,0 +1,3 @@
+# default CPPFLAGS in R has -I/usr/local/include
+PKG_CPPFLAGS=-DTHROW_NCEXCEPTION
+PKG_LIBS=-lnetcdf

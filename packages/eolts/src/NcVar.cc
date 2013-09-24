@@ -1,0 +1,236 @@
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
+// vim: set shiftwidth=4 softtabstop=4 expandtab:
+/*
+ *               Copyright (C) by UCAR
+ * 
+ *  $Revision: 1.4 $
+ *  $Date: 2008/09/09 23:42:36 $
+ * 
+ *  Description:
+ *    A NetCDF variable.
+ * 
+ */
+
+#include <R.h>
+
+#include "NcFile.h"
+#include "NcVar.h"
+#include "NcDim.h"
+#include "NcAttrT.h"
+
+using std::string;
+using std::vector;
+using std::map;
+using std::pair;
+
+NcVar::NcVar(NcFile *nch,int varid) NCEXCEPTION_CLAUSE:
+_nch(nch),_varid(varid),_type(NC_NAT),
+    _edges(0),_length(0),_readAttr(false)
+#ifndef THROW_NCEXCEPTION
+    ,_valid(false)
+#endif
+{
+    char name[NC_MAX_NAME];
+    int status = nc_inq_varname(getNcid(),_varid,name);
+
+    if (status != NC_NOERR) {
+#ifdef THROW_NCEXCEPTION
+        throw NcException("nc_inq_varname", _nch->getName(),status);
+#else
+        Rprintf("Error %s: %d: nc_inq_varname: %s\n",
+                _nch->getName().c_str(),varid,::nc_strerror(status));
+        return;
+#endif
+    }
+    _name = string(name);
+    readNcType();
+    readDimensions();
+#ifndef THROW_NCEXCEPTION
+    _valid = true;
+#endif
+}
+
+NcVar::NcVar(NcFile *nch,const std::string& name) NCEXCEPTION_CLAUSE:
+_nch(nch),_name(name),_type(NC_NAT),
+    _edges(0),_length(0),_readAttr(false)
+#ifndef THROW_NCEXCEPTION
+,_valid(false)
+#endif
+{
+    int status = nc_inq_varid(getNcid(),name.c_str(),&_varid);
+    if (status != NC_NOERR) {
+#ifdef THROW_NCEXCEPTION
+        throw NcException("nc_inq_varid", _nch->getName(),name,status);
+#else
+        return;		// don't report this error
+#endif
+    }
+    readNcType();
+    readDimensions();
+#ifndef THROW_NCEXCEPTION
+    _valid = true;
+#endif
+}
+
+NcVar::~NcVar() {
+    delete [] _edges;
+    for (unsigned int i = 0; i < _attrVec.size(); i++) delete _attrVec[i];
+}
+
+void NcVar::readDimensions() NCEXCEPTION_CLAUSE
+{
+    int ndims;
+    int status = nc_inq_varndims(getNcid(),_varid,&ndims);
+    if (status != NC_NOERR) {
+#ifdef THROW_NCEXCEPTION
+        throw NcException("nc_inq_varndims",getFileName(),
+                getName(),status);
+#else
+        Rprintf("Error %s: %s: nc_inq_varndims: %s\n",
+                getFileName().c_str(),getName().c_str(),::nc_strerror(status));
+        _valid = false;
+        return;
+#endif
+    }
+
+    int *dimids = new int[ndims];
+    delete [] _edges;
+    _edges  = new size_t[ndims];
+
+    status = nc_inq_vardimid(getNcid(),_varid,dimids);
+    if (status != NC_NOERR) {
+        delete [] dimids;
+#ifdef THROW_NCEXCEPTION
+        throw NcException("nc_inq_vardimid",getFileName(),getName(),status);
+#else
+        Rprintf("Error %s: %s: nc_inq_vardimid: %s\n",
+                getFileName().c_str(),getName().c_str(),::nc_strerror(status));
+        _valid = false;
+        return;
+#endif
+    }
+
+    _dims.clear();
+    _length = 1;
+    for (int i = 0; i < ndims; i++) {
+        const NcDim *dim = _nch->getDimension(dimids[i]);
+        _dims.push_back(dim);
+        _length *= (_edges[i] = dim->getLength());
+    }
+    delete [] dimids;
+}
+
+int NcVar::getNumAttrs() NCEXCEPTION_CLAUSE
+{
+    if (!_readAttr) readAttrs();
+    return _attrVec.size();
+}
+
+const std::vector<const NcAttr*> NcVar::getAttributes() NCEXCEPTION_CLAUSE
+{
+    if (!_readAttr) readAttrs();
+    return std::vector<const NcAttr*>(_attrVec.begin(),_attrVec.end());
+}
+
+const NcAttr *NcVar::getAttribute(const string& name) NCEXCEPTION_CLAUSE
+{
+    if (!_readAttr) readAttrs();
+#ifndef THROW_NCEXCEPTION
+    if (!isValid()) return 0;
+#endif
+    string sname(name);
+    map<string,NcAttr *>::iterator itr = _attrMap.find(sname);
+    if (itr != _attrMap.end()) return itr->second;
+    else return 0;
+}
+
+const string& NcVar::getCharAttribute(const string& name) NCEXCEPTION_CLAUSE
+{
+    const NcAttr *attr = getAttribute(name);
+    if (attr && attr->getNcType() == NC_CHAR) {
+        const NcAttrT<string>* sattr = (const NcAttrT<string>*) attr;
+        const vector<string>& val = sattr->getValue();
+        if (val.size() > 0) return val[0];
+    }
+    static string res;
+    return res;
+}
+
+void NcVar::readAttrs() NCEXCEPTION_CLAUSE
+{
+    int natts;
+    int status = nc_inq_varnatts(getNcid(),_varid,&natts);
+    if (status != NC_NOERR) {
+#ifdef THROW_NCEXCEPTION
+        throw NcException("nc_inq_varnatts", getFileName(),getName(),status);
+#else
+        Rprintf("Error %s: %s: nc_inq_varnatts: %s\n",
+                getFileName().c_str(),getName().c_str(),::nc_strerror(status));
+        _valid = false;
+        return;
+#endif
+    }
+
+    for (int i = 0; i < natts; i++) {
+        NcAttr *attr = NcAttr::createNcAttr(this,i);
+        pair<string,NcAttr *> p(attr->getName(),attr);
+        _attrMap.insert(p);
+        _attrVec.push_back(attr);
+    }
+    _readAttr = true;
+}
+
+const string& NcVar::getUnits() NCEXCEPTION_CLAUSE
+{
+    return getCharAttribute("units");
+}
+
+void NcVar::readNcType() NCEXCEPTION_CLAUSE
+{
+    int status = nc_inq_vartype(_nch->getNcid(),_varid,&_type);
+    if (status != NC_NOERR) {
+#ifdef THROW_NCEXCEPTION
+        throw NcException("nc_inq_vartype", getFileName(),getName(),status);
+#else
+        Rprintf("Error %s: %s: nc_inq_vartype: %s\n",
+                getFileName().c_str(),getName().c_str(),::nc_strerror(status));
+        _valid = false;
+#endif
+    }
+}
+
+const NcDim* NcVar::getDimension(const string& name) const {
+    for (unsigned int i = 0; i < _dims.size(); i++)
+        if (_dims[i]->getName() == name) return _dims[i];
+    return 0;
+}
+
+int NcVar::whichDimension(const string& name) const {
+    for (unsigned int i = 0; i < _dims.size(); i++)
+        if (_dims[i]->getName() == name) return i;
+    return -1;
+}
+
+bool NcVar::matchDimension(const NcDim *dim, unsigned int idim) {
+    const NcDim* vdim;
+    return getNumDimensions() > idim && (vdim = getDimension(idim)) &&
+        vdim->getId() == dim->getId();
+}
+
+string NcVar::getNcTypeString() const {
+    return typeToString(getNcType());
+}
+
+string NcVar::typeToString(nc_type type) {
+    switch (type) {
+    case NC_BYTE: return "NC_BYTE";
+    case NC_SHORT: return "NC_SHORT";
+    case NC_INT: return "NC_LONG";
+    case NC_FLOAT: return "NC_FLOAT";
+    case NC_DOUBLE: return "NC_DOUBLE";
+    case NC_CHAR: return "NC_CHAR";
+    case NC_NAT:
+    default:
+                  return "NC_NAT";
+    }
+}
