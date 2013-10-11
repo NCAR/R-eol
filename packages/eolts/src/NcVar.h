@@ -40,15 +40,12 @@ protected:
     std::vector<NcAttr*> _attrVec;
     std::map<std::string,NcAttr*> _attrMap;
     bool _readAttr;
-    bool _valid;
 
 public:
 
     NcVar(NcFile* nch,int varid) NCEXCEPTION_CLAUSE;
     NcVar(NcFile* nch,const std::string& name) NCEXCEPTION_CLAUSE;
     ~NcVar();
-
-    bool isValid() const { return _valid; }
 
     int getNcid() const { return _nch->getNcid(); }
     int getId() const { return _varid; }

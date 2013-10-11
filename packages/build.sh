@@ -8,10 +8,17 @@ echo "rlib=$rlib"
 
 [ -d $rlib ] | mkdir -p $rlib
 
+rm -rf /home/maclean/R/x86_64-redhat-linux-gnu-library/3.0/eolts
+rm -rf /home/maclean/R/x86_64-redhat-linux-gnu-library/3.0/isfs
+
+
 # build package tar ball
 # R CMD build eolts
 
 # build package tar ball and install it into $rlib
 # -l library
-R CMD INSTALL --preclean --build eolts
+R CMD INSTALL --preclean --build eolts || exit $?
 # R CMD INSTALL --clean eolts
+
+echo "building isfs"
+R CMD INSTALL --preclean --build isfs || exit $?

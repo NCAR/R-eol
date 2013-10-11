@@ -1,0 +1,40 @@
+import(methods,eolts)
+
+# exported functions
+export(
+    dat,
+    smooth.avg.dat,
+    derived,
+    other.dat.func,
+    lookup,
+    components,
+    words,
+    nwords,
+    plot.dat,
+    fun.logo.stamp
+)
+
+exportClasses(dat)
+
+exportMethods(
+    "select",
+    "clip",
+    "heights",
+    "sites",
+    "seriesMerge",
+    "dimnames<-",
+    "crack",
+    "seriesConcat",
+    "Rbind",
+    "Cbind",
+    "average",
+    "approx",
+    "Compare",
+    "Math",
+    "Math2",
+    "Ops",
+    "Summary",
+    "coerce",
+    "format","show",
+    "plot"
+)

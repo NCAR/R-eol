@@ -20,6 +20,7 @@
 #include "NetcdfReader.h"
 #include "R_NamedVector.h"
 #include "NcAttrT.h"
+#include "util.h"
 
 using std::vector;
 using std::string;
@@ -49,7 +50,7 @@ R_NetcdfVariable::R_NetcdfVariable(R_NetcdfConnection *con,NcVar *var):
             var->typeToString() <<" for variable " << var->getName();
         error(ost.str().c_str());
     }
-    setMode(NetcdfReader::rModeToString(rmode));
+    setMode(rModeToString(rmode));
     setNcType(var->typeToString());
 
     vector<const NcDim *> dims = var->getDimensions();
@@ -203,6 +204,6 @@ void R_NetcdfVariable::setAttributes(const vector<const NcAttr*>& attrs)
             break;
         }
     }
-    setAttrib(_obj,R_NetcdfVariable::attributeSlotName,dobj);
+    setAttrib(_obj,attributeSlotName,dobj);
     UNPROTECT(1);   // dobj
 }

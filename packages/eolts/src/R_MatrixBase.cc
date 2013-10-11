@@ -71,8 +71,8 @@ R_MatrixBase::R_MatrixBase(int type, SEXP obj) :
 
 R_MatrixBase::~R_MatrixBase() {
 #ifdef DEBUG
-#endif
     Rprintf("~R_MatrixBase\n");
+#endif
     if (_pindx >= 0)
         UNPROTECT(1);
 }

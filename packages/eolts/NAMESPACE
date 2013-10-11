@@ -1,22 +1,62 @@
 import(methods)
 
-import(splusTimeDate)
+import(splusTimeDate,splusTimeSeries)
 
-importFrom("splusTimeDate",timeDate)
+# importFrom("splusTimeDate","[")
 
 useDynLib(eolts)
 
-export(netcdf,is.open,variables,close,readnc,utime)
+# exported functions
+export(
+    netcdf,
+    utime,
+    nts,
+    plot.nts,
+    time.axis,
+    match.nts,
+    match.delta,
+    dpar,
+    cache.name,
+    clear.cache,
+    cache.object,
+    get.cache.object,
+    check.cache,
+    tlocator
+)
 
-exportClasses(netcdf,netcdfVariable,utime)
+exportClasses(netcdf,netcdfVariable,utime,nts)
 
+# "abline",
 exportMethods(
-        "Compare",
-        "Math",
-        "Math2",
-        "Ops",
-        "Summary",
-        "coerce",
-        "format",
-        "monthly"
+    "Compare",
+    "Math",
+    "Math2",
+    "Ops",
+    "Summary",
+    "coerce",
+    "format","show",
+    "monthly",
+    "is.nts",
+    "is.na",
+    "not.is.na",
+    "start","start<-",
+    "end","end<-",
+    "units","units<-",
+    "tspar",
+    "positions","positions<-",
+    "dim","dim<-",
+    "dimnames","dimnames<-",
+    "stations","stations<-",
+    "deltat","deltat<-",
+    "[","[<-",
+    "c",
+    "seriesMerge","is.finite",
+    "seriesConcat","Rbind","Cbind","average","approx","align",
+    "suffixes","replace.nas","window","trend","detrend","lag",
+    "is.open","close","stations","readnc","readts",
+    "variables",
+    "plot",
+    "points",
+    "lines",
+    "write"
 )

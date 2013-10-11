@@ -20,8 +20,9 @@
 #include <netcdf.h>
 #endif
 
-#include <vector>
 #include <string>
+#include <vector>
+#include <set>
 #include <map>
 
 #ifdef THROW_NCEXCEPTION
@@ -33,7 +34,6 @@
 #define NCEXCEPTION_CLAUSE
 #endif
 
-
 class NcVar;
 class NcDim;
 class NcAttr;
@@ -44,31 +44,6 @@ class NcAttr;
  * If ncid >=0, then the file is open
  */
 class NcFile {
-protected:
-    std::string _name;
-    std::string _shortname;
-    int _ncid;
-
-    int _nvars;
-    int _ndims;
-    int _nattrs;
-
-    std::vector<NcVar*> _varvec;
-    std::map<std::string,NcVar*> _vars;
-
-    std::vector<NcDim*> _dimVec;
-    std::map<std::string,NcDim*> _dims;
-    NcDim* _unlimitedDim;
-
-    std::map<std::string,NcAttr*> _attrs;		// global attributes
-    // std::map<std::string,NcVar*> _shortNameVars;
-    // std::map<std::string,int> _shortNameVarids;
-    // int _varidsScanned;
-    // int _hasNonStationTSVariables;
-
-#ifndef THROW_NCEXCEPTION
-    bool _valid;
-#endif
 public:
 
     NcFile(const std::string& n);
@@ -89,33 +64,113 @@ public:
     int getNcid() const { return _ncid; }
 
     int getNumVariables() NCEXCEPTION_CLAUSE;
+
     std::string getVariableName(int i) NCEXCEPTION_CLAUSE;
+
     std::vector<std::string> getVariableNames() NCEXCEPTION_CLAUSE;
+
+    /**
+     * Could throw exception if file is corrupt.
+     */
     NcVar* getVariable(int i) NCEXCEPTION_CLAUSE;
-    NcVar* getVariable(const std::string & name) NCEXCEPTION_CLAUSE;
+
+    /** 
+     * Return NULL if variable not found.
+     */
+    NcVar* getVariable(const std::string & name) throw();
+
     std::vector<NcVar*> getVariables() NCEXCEPTION_CLAUSE;
 
     int getNumDimensions() NCEXCEPTION_CLAUSE;
+
     const NcDim* getDimension(int i) NCEXCEPTION_CLAUSE;
+
     const NcDim* getDimension(const std::string & name) NCEXCEPTION_CLAUSE;
+
     std::vector<const NcDim*> getDimensions() NCEXCEPTION_CLAUSE;
+
     const NcDim* getUnlimitedDimension() NCEXCEPTION_CLAUSE;
 
     // NcAttr* getAttribute(const std::string & name);
     // std::vector<NcAttr*> getAttributes();
 
+    const NcDim* getTimeDimension(const std::set<std::string>& possibleNames)
+        NCEXCEPTION_CLAUSE;
+
+    NcVar* getTimeSeriesVariable(const std::string& name,
+            const NcDim* tdim) NCEXCEPTION_CLAUSE;
+
+    NcVar* getTimeSeriesCountsVariable(const std::string& name,
+            const NcDim* tdim) NCEXCEPTION_CLAUSE;
+
+    std::vector<NcVar*> getTimeSeriesVariables(const NcDim* dim)
+        NCEXCEPTION_CLAUSE;
+
+    /**
+     * retrieve mapping of station number to name.
+     */
+    std::map<int,std::string> getStations(const NcDim* tdim)
+        NCEXCEPTION_CLAUSE;
+
 protected:
+
     void readDimensions() NCEXCEPTION_CLAUSE;
+
     int getUnlimitedDimid() NCEXCEPTION_CLAUSE;
+
     void clearVarMap(void);
+
     void clearDimMap(void);
+
     void clearAttrMap(void);
+
     void clearMaps(void);
 
+    void addTimeSeriesVariable(const std::string& name,NcVar* var);
+
+    void scanForTSVarWithoutStationDim(const NcDim* tdim)
+        NCEXCEPTION_CLAUSE;
+
     typedef std::map<std::string,NcVar*>::iterator NcVarMapIterator;
+
     typedef std::map<std::string,NcDim*>::iterator NcDimMapIterator;
+
     typedef std::map<std::string,NcAttr*>::iterator NcAttrMapIterator;
 
-};
+    std::string _name;
 
+    std::string _shortname;
+
+    int _ncid;
+
+    int _nvars;
+
+    int _ndims;
+
+    int _nattrs;
+
+    std::vector<NcVar*> _varvec;
+
+    std::map<std::string,NcVar*> _vars;
+
+    std::vector<NcDim*> _dimVec;
+
+    std::map<std::string,NcDim*> _dims;
+
+    NcDim* _unlimitedDim;
+
+    std::map<std::string,NcAttr*> _attrs;		// global attributes
+    // std::map<std::string,NcVar*> _shortNameVars;
+    // std::map<std::string,int> _shortNameVarids;
+    // int _varidsScanned;
+    // int _hasNonStationTSVariables;
+
+    std::map<std::string,NcVar*> _tsVars;
+
+    const NcDim* _timeDim;
+
+    bool _hasTSVariableWithoutStationDimension;
+
+    size_t _nscannedVars;
+};
 #endif

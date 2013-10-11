@@ -1,70 +1,81 @@
+#
+#               Copyright (C) by UCAR
+# 
 
-.onLoad = function(libname,pkgname)
-{
-    options(time.in.format="%Y %m %d %H:%M:%S",
-            time.out.format="%Y %02m %02d %02H:%02M:%02S %Z",
-            time.zone=Sys.timezone())
-    cat(paste(pkgname,"::.onLoad\n",
-        "  options(\"time.in.format\")=\"",options("time.in.format")[[1]],"\"\n",
-        "  options(\"time.out.format\")=\"",options("time.out.format")[[1]],"\"\n",
-        "  options(\"time.zone\")=\"",options("time.zone")[[1]],"\"\n",sep=""))
-}
+# POSIX time class, with basic representation of numeric seconds
+# since Jan 1, 1970 00:00 UTC
 setClass("utime",
-    contains="numeric",
-    slots=c(format="character",time.zone="character")
+    contains=c("positionsCalendar", "numeric"),
+    prototype=prototype(0)
 )
 
 setMethod("initialize",
     "utime",
-    function(.Object,format=options("time.out.format")[[1]],time.zone=options("time.zone")[[1]])
+    function(.Object,val=99)
     {
-        .Object@.Data = 0
-        .Object@format = format
-        .Object@time.zone = time.zone
+        .Object@.Data = val
         .Object
     }
 )
 
-utime = function(val=0,in.format=options("time.in.format")[[1]],format=options("time.out.format")[[1]],time.zone=options("time.zone")[[1]])
+# constructor for utime, from character, POSIXct, timeDate or numeric
+utime = function(val=0,in.format=options("time.in.format")[[1]],time.zone=options("time.zone")[[1]])
 {
-    if (is(val,"POSIXct")) {
+    # cat(paste("in utime(), class(val)=",class(val),", length(val)=",length(val),"\n"))
+
+    res = NULL
+
+    if (is(val,"numeric")) {
+        if (is.null(time.zone)) time.zone = ""
+
+        res = new("utime",val)
+    }
+    else if (is(val,"utime")) {
+        res = val
+    }
+    else if (is(val,"POSIXct")) {
         res = as(val,"utime")
-        if (is.null(time.zone)) time.zone = attr(val,"tzone")
     }
     else if (is(val,"timeDate")) {  # splusTimeDate::timeDate
         res = as(val,"utime")
-        if (is.null(time.zone)) time.zone = val@time.zone
     }
-    else {
-        if (is.null(time.zone)) time.zone = ""
-        if (is.character(val)) {
-            if (length(val) == 1 && val == "now") res = as(Sys.time(),"utime")
-            else res = as(as.POSIXct(val,format=in.format,tz=time.zone),"utime")
-            if (any(is.na(res@.Data))) {
-              if (length(val) == 1) warning(paste(val,"not parsable with in.format=",
-                      in.format))
-              else warning(paste("some dates not parsable with in.format=",in.format))
-            }
+    else if (is.character(val)) {
+        if (length(val) == 1 && val == "now") res = as(Sys.time(),"utime")
+        else res = as(as.POSIXct(val,format=in.format,tz=time.zone),"utime")
+        if (any(is.na(res@.Data))) {
+            res = as(timeDate(val,
+                in.format=splusTimeDate::timeDateOptions("time.in.format")[[1]],
+                zone=splusTimeDate::timeDateOptions("time.zone")[[1]]),"utime")
         }
-        else res = as(val,"utime")
+        if (any(is.na(res@.Data))) {
+            if (length(val) == 1) warning(paste(val,"not parsable with in.format=",
+                    in.format))
+            else warning(paste("some dates not parsable with in.format=",in.format))
+        }
     }
-    res@format = format
-    res@time.zone = time.zone
+    else if (is.null(val)) {
+        cat("null val\n")
+        res = new("utime",0)
+    }
     res
 }
 
-#
-setAs("utime","numeric",function(from) from@.Data)
+if (FALSE) {
+    # this is createed automatically
+    setAs("utime","numeric",function(from) from@.Data)
+}
 
 # coerce from numeric to utime
 setAs("numeric","utime",
     function(from)
     {
-        ret = new("utime");
-        ret@.Data = from
-        ret@format = options("time.out.format")[[1]]
-        ret@time.zone = Sys.timezone()
-        ret
+        format = options("time.out.format")[[1]]
+        if (is.null(format)) format = ""
+
+        res = new("utime",val=from,format=format,time.zone=Sys.timezone());
+        # res@.Data = from
+
+        res
     }
 )
 
@@ -76,14 +87,17 @@ setAs("utime","timeDate",
         if (any(bad <- is.na(from@.Data)))
             splusTimeDate::timeDate(julian=floor(from@.Data/86400) + 3653,
                 ms=ifelse(bad,0,round((from@.Data %% 86400) * 1000,digits=3)),
-                format=from@format,zone=from@time.zone)
+                format=options("time.out.format")[[1]],
+                zone=options("time.zone")[[1]])
+
         else {
             # cat("utime=",from@.Data[2],"\n")
             # cat("julian=",floor(from@.Data[2]/86400) + 3653,"\n")
             # cat("ms=",round((from@.Data[2] %% 86400.0) * 1000,digits=3),"\n")
             splusTimeDate::timeDate(julian=floor(from@.Data/86400) + 3653,
-                  ms=round((from@.Data %% 86400.0) * 1000,digits=3),
-                  format=from@format,zone=from@time.zone)
+                ms=round((from@.Data %% 86400.0) * 1000,digits=3),
+                format=options("time.out.format")[[1]],
+                zone=options("time.zone")[[1]])
         }
     }
 )
@@ -100,24 +114,17 @@ setAs("utime","POSIXct",
 setAs("POSIXct","utime",
     function(from)
     {
-        to = utime(as.numeric(from))
-        to@time.zone = attr(from,"tzone")
-        to
+        # cat("in setAs POSIXct utime\n")
+        utime(as.numeric(from))
     }
 )
 
-if (FALSE) {
-as.utime.POSIXct = function(from)
-{
-    to = utime(as.numeric(from))
-    to@time.zone = attr(from,"tzone")
-}
-}
-
-# coerce from timeDate to utime
+# coerce from splusTimeDate::timeDate to utime
 setAs("timeDate","utime",
-    function(from)
-      utime((from@columns[[1]] - 3653) * 86400 + from@columns[[2]] / 1000,format=from@format,zone=from@time.zone))
+    function(from) {
+        utime((from@columns[[1]] - 3653) * 86400 + from@columns[[2]] / 1000)
+    }
+)
 
 # coerce from utime to POSIXct to character
 setAs("utime","character",
@@ -130,15 +137,15 @@ setAs("character","utime",
 setAs("utime","list",
     function(from)
     {
-        to = as(as(from,"POSIXct"),"POSIXlt")
-        list(year=to$year,
-            mon=to$mon,
+        to = as.POSIXlt(as(from,"POSIXct"),"POSIXlt")
+        list(year=to$year + 1900,
+            mon=to$mon + 1,
             day=to$mday,
             hour=to$hour,
             min=to$min,
             sec=to$sec,
             yday=to$yday + 1,
-            TZ=from@time.zone
+            TZ=options("time.zone")[[1]]
             )
     }
 )
@@ -151,12 +158,12 @@ setAs("list","utime",
         # It does have a %D to output the day of year...
         if (!is.null(from$yday) && is.null(from$mon) && is.null(from$day)) {
             utime(paste(from$year,from$yday-1,from$hour,from$min,from$sec),
-                in.format="%Y%j[%H[%M[%S[.%N]]]]",zone=as.character(from$TZ))
+                in.format="%Y%j[%H[%M[%S[.%N]]]]",time.zone=as.character(from$TZ))
         }
         else {
             utime(paste(from$year,from$mon,from$day,
                 from$hour,from$min,from$sec),
-                in.format="%Y%m%d[%H[%M[%S[.%N]]]]",zone=as.character(from$TZ))
+                in.format="%Y%m%d[%H[%M[%S[.%N]]]]",time.zone=as.character(from$TZ))
         }
     }
 )
@@ -165,19 +172,28 @@ setMethod("format","utime",
     function(x,...)
     {
         if (hasArg(format)) format = list(...)$format
-        else format = x@format
+        else format = options("time.out.format")[[1]]
+
         if (hasArg(time.zone)) time.zone = list(...)$time.zone
         else if (hasArg(TZ)) time.zone = list(...)$TZ
-        else time.zone = x@time.zone
+        else time.zone = options("time.zone")[[1]]
+
         if (is.list(time.zone)) time.zone = unlist(time.zone)
-        x = as(x,"timeDate")
-        x@format = format
-        x@time.zone = time.zone
-        format(x)
+
+        if (FALSE) {
+            x = as(x,"timeDate")
+
+            x@format = format
+            x@time.zone = time.zone
+            format(x)
+        }
+        else {
+            x = as(x,"POSIXct")
+            format(x,format=format,tz=time.zone)
+        }
     }
 )
 
-if (isGeneric("monthly",where=1)) removeGeneric("monthly",where=1)
 
 setGeneric("monthly",function(from,to) standardGeneric("monthly"))
 
@@ -198,16 +214,47 @@ setMethod("monthly",signature(from="utime",to="utime"),
     }
 )
 
-setMethod("show","utime",function(object) show(as(object,"timeDate")))
+setMethod("show",signature(object="utime"),
+    function(object)
+    {
+        # cat("in show utime\n")
+        print.default(format(object,format=options("time.out.format")[[1]],
+               time.zone=options("time.zone")[[1]]),quote=FALSE)
+    }
+)
 
 setMethod("diff","utime",function(x,...) diff(x@.Data))
 
-if (FALSE) {
-setMethod("[","utime",
-    function(x,...,drop=F) utime(x@.Data[...])
+setMethod( "c", signature(x="utime"),
+    function(x, ...)
+    {
+        arglist <- list(...)
+        if(length(arglist)==0) return(x)
+        lens <- sapply(arglist, length)
+        if(!any(lens > 0)) {
+            return(x)
+        }
+        arglist <- arglist[lens > 0]
+        if(length(arglist) > 1)
+            c(c(x, arglist[[1]]), do.call("c", arglist[-1]))
+        else {
+            y = arglist[[1]]
+            if (class(y) != class(x)) y = as(y,class(x))
+            x@.Data = c(x@.Data,y@.Data)
+            x
+        }
+    }
 )
 
-setMethod("[<-",signature(x="utime",i="ANY",j="missing",value="utime"),
+setMethod("[",signature(x="utime"),
+    function(x,i) 
+    {
+        # cat(paste("in utime [, nargs=",nargs(),"\n"))
+        utime(x@.Data[i])
+    }
+)
+
+setReplaceMethod("[",signature(x="utime",i="ANY",j="missing",value="utime"),
     function(x,i,value)
     {
         # i <- list(...)[[1]]
@@ -216,7 +263,7 @@ setMethod("[<-",signature(x="utime",i="ANY",j="missing",value="utime"),
     }
 )
 
-setMethod("[<-",signature(x="utime",i="ANY",j="missing",value="numeric"),
+setReplaceMethod("[",signature(x="utime",i="ANY",j="missing",value="numeric"),
     function(x,i,value)
     {
         # i <- list(...)[[1]]
@@ -224,7 +271,7 @@ setMethod("[<-",signature(x="utime",i="ANY",j="missing",value="numeric"),
         x
     }
 )
-setMethod("[<-",signature(x="utime",i="ANY",j="missing",value="ANY"),
+setReplaceMethod("[",signature(x="utime",i="ANY",j="missing",value="ANY"),
     function(x,i,value)
     {
         # i <- list(...)[[1]]
@@ -233,48 +280,73 @@ setMethod("[<-",signature(x="utime",i="ANY",j="missing",value="ANY"),
     }
 )
 
-}
+setMethod("Ops",signature(e1="utime",e2="utime"),
+    function(e1,e2)
+    {
+        callGeneric(e1@.Data,e2@.Data)
+    }
+)
 
 setMethod("Ops",signature(e1="utime",e2="numeric"),
     function(e1,e2)
     {
-        e1@.Data = callGeneric(e1@.Data,e2)
-        e1
+        callGeneric(e1@.Data,e2)
     }
 )
 
 setMethod("Ops",signature(e1="numeric",e2="utime"),
     function(e1,e2)
     {
-      e2@.Data = callGeneric(e1,e2@.Data)
-      e2
+        callGeneric(e1,e2@.Data)
     }
 )
+
+setMethod("Math",signature(x="utime"),
+    function(x)
+    {
+        x@.Data <- callGeneric(x@.Data)
+        x
+    }
+)
+
+setMethod("Summary",signature(x="utime"),
+    function(x,...,na.rm=FALSE)
+    {
+        x@.Data <- callGeneric(x@.Data)
+        x
+    }
+)
+
+setMethod("prod",signature(x="utime"),
+    function(x,...,na.rm=FALSE)
+    {
+        callGeneric(x@.Data)
+    }
+)
+
+setMethod("sum",signature(x="utime"),
+    function(x,...,na.rm=FALSE)
+    {
+        callGeneric(x@.Data)
+    }
+)
+
+setMethod("any",signature(x="utime"),
+    function(x,...,na.rm=FALSE)
+    {
+        callGeneric(x@.Data)
+    }
+)
+
+setMethod("all",signature(x="utime"),
+    function(x,...,na.rm=FALSE)
+    {
+        callGeneric(x@.Data)
+    }
+)
+
+
 utime.now <- function() {
     utime(.C("utime_now",sec=integer(1))$sec)
-}
-
-# if (isGeneric("abline",where=1)) removeGeneric("abline",where=1)
-# setGeneric("abline",function(a,...) standardGeneric("abline"))
-setMethod("abline",signature(a="utime"),
-    function(a,...)
-    {
-        sc <- plot.ats.scale
-        v <- (as.numeric(a) - sc$off) / sc$scale
-        abline.default(v=v,...)
-        a
-    }
-)
-
-tlocator <- function(n=1,type="n",...)
-{
-    if (n == 1) 
-        cat("Use mouse to select a time on the plot ... ")
-    else
-        cat("Use mouse to select times on the plot.\nClick middle button, or both buttons on two button mouse to terminate ... ")
-
-    times <- utime(locator(n,type=type,...)$x * plot.ats.scale$scale + plot.ats.scale$off)
-    cat("done\n")
-    times
 }
 

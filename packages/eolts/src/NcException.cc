@@ -14,8 +14,13 @@
 #include "NcException.h"
 #include "NcVar.h"
 
+NcException::NcException() :
+    _what(""),_status(NC_NOERR)
+{
+}
+
 NcException::NcException(const std::string& op, const std::string& fname, int status) :
-    _what(std::string(op) + " " + fname + ": ")
+    _what(std::string(op) + " " + fname + ": "),_status(status)
 {
     if (::nc_strerror(status)) _what += std::string(::nc_strerror(status));
     else _what += std::string("unknown error");
@@ -24,12 +29,12 @@ NcException::NcException(const std::string& op, const std::string& fname, int st
 NcException::NcException(const std::string&  op, const std::string& fname,
         const std::string& vname, int status) :
     _what(std::string(op) + " " + fname + ", variable " +
-            vname)
+            vname),_status(status)
 {
     if (::nc_strerror(status)) _what += std::string(::nc_strerror(status));
     else _what += std::string("unknown error");
 }
 
 NcException::NcException(const std::string& fname,const std::string& what) :
-    _what(fname + ":" + what) {}
+    _what(fname + ":" + what),_status(NC_NOERR) {}
 

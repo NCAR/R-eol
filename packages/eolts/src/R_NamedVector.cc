@@ -14,7 +14,7 @@
 #include "R_NamedVector.h"
 
 template class R_NamedVector<double>;
-template class R_NamedVector<long>;
+template class R_NamedVector<int>;
 // template class R_NamedVector<char*>;
 
 template<>
@@ -57,7 +57,7 @@ R_NamedVector<int>::R_NamedVector(int type, size_t length) :
 }
 
 template<>
-R_NamedVector<long>::R_NamedVector(int type, SEXP obj) :
+R_NamedVector<int>::R_NamedVector(int type, SEXP obj) :
 	R_NamedVectorBase(type,obj)
 {
 }

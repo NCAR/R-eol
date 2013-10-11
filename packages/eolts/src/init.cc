@@ -17,6 +17,8 @@
 
 #include "R_NetcdfConnection.h"
 #include "R_NetcdfVariable.h"
+#include "R_utime.h"
+#include "R_nts.h"
 
 // #include "R_ArrayBase.h"
 // #include "R_MatrixBase.h"
@@ -39,6 +41,19 @@ extern "C" {
         R_NetcdfVariable::nctypeSlotName = install("nctype");
         R_NetcdfVariable::dimensionSlotName = install("dimension");
         R_NetcdfVariable::attributeSlotName = install("attributes");
+
+        R_nts::dataSlotName = install("data");
+        R_nts::posSlotName = install("positions");
+        R_nts::unitsSlotName = install("units");
+        R_nts::weightsSlotName = install("weights");
+        R_nts::weightMapSlotName = install("weightmap");
+        R_nts::stationsSlotName = install("stations");
+        R_nts::startposSlotName = install("start");
+        R_nts::endposSlotName = install("end");
+        R_nts::timeFormatSlotName = install("time.format");
+        R_nts::timeZoneSlotName = install("time.zone");
+
+        R_utime::dotDataSlotName = install(".Data");
 
     }
 

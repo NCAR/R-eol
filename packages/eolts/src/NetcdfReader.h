@@ -23,28 +23,39 @@
 #include "R_Array.h"
 
 class NetcdfReader {
+
 public:
+
+    enum timeTests {LT,LE,GT,GE};
+
+    NetcdfReader(R_NetcdfConnection*);
+
+    ~NetcdfReader();
+
+    SEXP read(const std::vector<std::string>& vnames, 
+            const std::vector<size_t>& start,
+            const std::vector<size_t>& count) NCEXCEPTION_CLAUSE;
+    
+    SEXP read(const std::vector<std::string> &vnames,
+        double start, double end,
+        const std::vector<int> &stations,
+        const std::vector<std::string> &timeVarNames,
+        const std::string & baseTimeName,const std::string& timezone,
+        bool readCounts = false) NCEXCEPTION_CLAUSE;
+
+    size_t searchTime(NcVar* var,double stime,timeTests test)
+        NCEXCEPTION_CLAUSE;
+
     static int rMode(nc_type type);
-    static std::string rModeToString(int smode);
 
-    static int sizeOfRMode(int mode);
-    // static void setToNA(char* dp,size_t c0,size_t c1,ptrdiff_t m0, int smode);
-    // static void setTo0(char* dp,size_t c0,size_t c1,ptrdiff_t m0, int smode);
-
-    static int checkVarTypeCompatibility(int smode1, int smode2);
+    static int checkVarTypeCompatibility(int rmode1, int rmode2);
 
 protected:
 
     R_NetcdfConnection* _connection;
 
-public:
+private:
 
-    NetcdfReader(R_NetcdfConnection*);
-    ~NetcdfReader();
-
-    SEXPREC* read(const std::vector<std::string>& vnames, 
-            const std::vector<size_t>& start,
-            const std::vector<size_t>& count) NCEXCEPTION_CLAUSE;
 };
 
 #endif

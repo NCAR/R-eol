@@ -26,50 +26,28 @@ using std::pair;
 NcVar::NcVar(NcFile *nch,int varid) NCEXCEPTION_CLAUSE:
 _nch(nch),_varid(varid),_type(NC_NAT),
     _edges(0),_length(0),_readAttr(false)
-#ifndef THROW_NCEXCEPTION
-    ,_valid(false)
-#endif
 {
     char name[NC_MAX_NAME];
     int status = nc_inq_varname(getNcid(),_varid,name);
 
     if (status != NC_NOERR) {
-#ifdef THROW_NCEXCEPTION
         throw NcException("nc_inq_varname", _nch->getName(),status);
-#else
-        Rprintf("Error %s: %d: nc_inq_varname: %s\n",
-                _nch->getName().c_str(),varid,::nc_strerror(status));
-        return;
-#endif
     }
     _name = string(name);
     readNcType();
     readDimensions();
-#ifndef THROW_NCEXCEPTION
-    _valid = true;
-#endif
 }
 
 NcVar::NcVar(NcFile *nch,const std::string& name) NCEXCEPTION_CLAUSE:
 _nch(nch),_name(name),_type(NC_NAT),
     _edges(0),_length(0),_readAttr(false)
-#ifndef THROW_NCEXCEPTION
-,_valid(false)
-#endif
 {
     int status = nc_inq_varid(getNcid(),name.c_str(),&_varid);
     if (status != NC_NOERR) {
-#ifdef THROW_NCEXCEPTION
         throw NcException("nc_inq_varid", _nch->getName(),name,status);
-#else
-        return;		// don't report this error
-#endif
     }
     readNcType();
     readDimensions();
-#ifndef THROW_NCEXCEPTION
-    _valid = true;
-#endif
 }
 
 NcVar::~NcVar() {
@@ -82,15 +60,8 @@ void NcVar::readDimensions() NCEXCEPTION_CLAUSE
     int ndims;
     int status = nc_inq_varndims(getNcid(),_varid,&ndims);
     if (status != NC_NOERR) {
-#ifdef THROW_NCEXCEPTION
         throw NcException("nc_inq_varndims",getFileName(),
                 getName(),status);
-#else
-        Rprintf("Error %s: %s: nc_inq_varndims: %s\n",
-                getFileName().c_str(),getName().c_str(),::nc_strerror(status));
-        _valid = false;
-        return;
-#endif
     }
 
     int *dimids = new int[ndims];
@@ -100,14 +71,7 @@ void NcVar::readDimensions() NCEXCEPTION_CLAUSE
     status = nc_inq_vardimid(getNcid(),_varid,dimids);
     if (status != NC_NOERR) {
         delete [] dimids;
-#ifdef THROW_NCEXCEPTION
         throw NcException("nc_inq_vardimid",getFileName(),getName(),status);
-#else
-        Rprintf("Error %s: %s: nc_inq_vardimid: %s\n",
-                getFileName().c_str(),getName().c_str(),::nc_strerror(status));
-        _valid = false;
-        return;
-#endif
     }
 
     _dims.clear();
@@ -135,9 +99,6 @@ const std::vector<const NcAttr*> NcVar::getAttributes() NCEXCEPTION_CLAUSE
 const NcAttr *NcVar::getAttribute(const string& name) NCEXCEPTION_CLAUSE
 {
     if (!_readAttr) readAttrs();
-#ifndef THROW_NCEXCEPTION
-    if (!isValid()) return 0;
-#endif
     string sname(name);
     map<string,NcAttr *>::iterator itr = _attrMap.find(sname);
     if (itr != _attrMap.end()) return itr->second;
@@ -161,14 +122,7 @@ void NcVar::readAttrs() NCEXCEPTION_CLAUSE
     int natts;
     int status = nc_inq_varnatts(getNcid(),_varid,&natts);
     if (status != NC_NOERR) {
-#ifdef THROW_NCEXCEPTION
         throw NcException("nc_inq_varnatts", getFileName(),getName(),status);
-#else
-        Rprintf("Error %s: %s: nc_inq_varnatts: %s\n",
-                getFileName().c_str(),getName().c_str(),::nc_strerror(status));
-        _valid = false;
-        return;
-#endif
     }
 
     for (int i = 0; i < natts; i++) {
@@ -189,13 +143,7 @@ void NcVar::readNcType() NCEXCEPTION_CLAUSE
 {
     int status = nc_inq_vartype(_nch->getNcid(),_varid,&_type);
     if (status != NC_NOERR) {
-#ifdef THROW_NCEXCEPTION
         throw NcException("nc_inq_vartype", getFileName(),getName(),status);
-#else
-        Rprintf("Error %s: %s: nc_inq_vartype: %s\n",
-                getFileName().c_str(),getName().c_str(),::nc_strerror(status));
-        _valid = false;
-#endif
     }
 }
 

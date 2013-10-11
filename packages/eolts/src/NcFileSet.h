@@ -14,13 +14,13 @@
 #define NCFILESET_H
 
 #include <vector>
+#include <set>
+#include <map>
 #include <string>
 
 #include "NcFile.h"
 #include "NcVar.h"
 #include "NcDim.h"
-
-class NcFileSetFactory;
 
 /*
  * An ordered sequence of files, not all of which are open.
@@ -28,19 +28,9 @@ class NcFileSetFactory;
  * in how they are managed.
  */
 class NcFileSet {
-protected:
-    const int MAX_FILES_OPEN;
-    NcFile **_files;
-    int _nfiles;
-    int _nopen;
-    int _nextToOpen;
-    int _nextToClose;
-
-    // int _hasNonStationTSVariables;
-
 public:
 
-    NcFileSet(const std::vector<std::string>& fnames,NcFileSetFactory* factory);
+    NcFileSet(const std::vector<std::string>& fnames);
     virtual ~NcFileSet();
 
     int getNFiles() const { return _nfiles; }
@@ -48,9 +38,45 @@ public:
     const std::string& getFileName(int ifile);
 
     std::vector<std::string> getVariableNames() NCEXCEPTION_CLAUSE;
+
     // std::vector<std::string> getStationNames();
     // int hasNonStationTSVariables();
+
     const std::vector<const NcDim*>& getVariableDimensions(std::string vname) NCEXCEPTION_CLAUSE;
+
+    void addTimeDimensionName(const std::string& name);
+
+
+    const std::set<std::string>& getTimeDimensionNames() const
+    {
+        return _possibleTimeDimensionNames;
+    }
+
+    NcVar* getTimeVariable(NcFile* ncf) NCEXCEPTION_CLAUSE;
+
+    /**
+     * Retrieve mapping of station number to name, read from
+     * first file with a station dimension and variable.
+     */
+    std::map<int,std::string> getStations() NCEXCEPTION_CLAUSE;
+
+protected:
+    const int MAX_FILES_OPEN;
+
+    NcFile **_files;
+
+    int _nfiles;
+
+    int _nopen;
+
+    int _nextToOpen;
+
+    int _nextToClose;
+
+    // int _hasNonStationTSVariables;
+    //
+
+    std::set<std::string> _possibleTimeDimensionNames;
 
 };
 

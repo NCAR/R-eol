@@ -1,0 +1,13 @@
+Package: isfs
+Version: 0.0-1
+Date: 2013-09-13
+Title: Support for NCAR EOL ISFS, Integrated Surface Flux System
+Authors@R: person("Gordon","Maclean",role=c("aut","cre"),
+            email="maclean@ucar.edu")
+Author: Gordon Maclean
+Maintainer: Gordon Maclean <maclean@ucar.edu>
+Depends: R (>= 1.8.0), methods, eolts
+Description: This package provides R functions to access and manipulate
+    Integrated Surface Flux System time series.
+License: GPL (>= 2)
+URL: http://www.eol.ucar.edu/

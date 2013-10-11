@@ -17,25 +17,27 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <map>
 
 using std::vector;
 using std::string;
 using std::set;
-using std::pair;
+using std::map;
 
 #include "NcFileSet.h"
-#include "NcFileSetFactory.h"
 #include "NcFile.h"
 #include "NcVar.h"
 
-NcFileSet::NcFileSet(const vector<string>& fnames,NcFileSetFactory *factory):
+NcFileSet::NcFileSet(const vector<string>& fnames):
     MAX_FILES_OPEN(40),_files(0),_nfiles(fnames.size()),
     _nopen(0),_nextToOpen(0),_nextToClose(0)
 {
     _files = new NcFile*[_nfiles];
 
     for (int i = 0; i < _nfiles; i++) 
-        _files[i] = factory->createNcFile(fnames[i]);
+        _files[i] = new NcFile(fnames[i]);
+
+    addTimeDimensionName(string("time"));
 }
 
 NcFileSet::~NcFileSet() {
@@ -50,14 +52,19 @@ NcFileSet::~NcFileSet() {
 #endif
 }
 
-NcFile* NcFileSet::getNcFile(int ifile) {
+void NcFileSet::addTimeDimensionName(const string& name)
+{
+    _possibleTimeDimensionNames.insert(name);
+}
+
+NcFile* NcFileSet::getNcFile(int ifile)
+{
     if (ifile < 0 || ifile >= _nfiles) return 0;
 
     NcFile*ncf = _files[ifile];
     if (!ncf) return 0;
 
     if (!ncf->isOpen()) {
-#ifdef THROW_NCEXCEPTION
         try {
             ncf->open();
         }
@@ -65,24 +72,16 @@ NcFile* NcFileSet::getNcFile(int ifile) {
             Rprintf("Notice: %s\n",nce.what());
             return ncf;	// not a fatal error
         }
-#else
-        ncf->open();
-        if (!ncf->isValid()) return ncf;
-#endif
         _nopen++;
 
         while (_nopen >= MAX_FILES_OPEN) {
             NcFile* fst = _files[_nextToClose++];
             if (fst != ncf && fst->isOpen()) {
-#ifdef THROW_NCEXCEPTION
                 try {
                     fst->close();
                 }
                 catch (const NcException &nce) {
                 }
-#else
-                fst->close();
-#endif
                 _nopen--;
             }
             if (_nextToClose == _nfiles) _nextToClose = 0;
@@ -112,14 +111,7 @@ vector<string> NcFileSet::getVariableNames() NCEXCEPTION_CLAUSE
         vset.insert(vnames.begin(),vnames.end());
     }
 
-#ifdef sun
-    vector<string> vvect;
-    set<string>::iterator si;
-    for (si = vset.begin(); si != vset.end(); si++) vvect.push_back(*si);
-    return vvect;
-#else
     return vector<string>(vset.begin(), vset.end());
-#endif
 }
 
 const vector<const NcDim*>& NcFileSet::getVariableDimensions(string vname)
@@ -137,5 +129,34 @@ const vector<const NcDim*>& NcFileSet::getVariableDimensions(string vname)
     }
     static vector<const NcDim*> res;
     return res;
+}
+
+map<int,string> NcFileSet::getStations() NCEXCEPTION_CLAUSE
+{
+
+    size_t nstations = 0;
+    map<int,string> stations;
+    for (int ifile = 0; ifile < getNFiles(); ifile++) {
+        NcFile* ncf = getNcFile(ifile);
+        if (ncf == 0 || !ncf->isOpen()) continue;
+
+        const NcDim* stnDim = ncf->getDimension("station");
+        if (stnDim && stnDim->getLength() > nstations)
+                nstations = stnDim->getLength();
+
+        const NcDim* tdim = ncf->getTimeDimension(_possibleTimeDimensionNames);
+        stations = ncf->getStations(tdim);
+        // stations may have an extra member for station 0
+        if (stations.size() > 0) return stations;
+    }
+
+    char cname[6];
+    for (unsigned int i = 0; i < nstations; i++) {
+        if (stations.find(i+1) == stations.end()) {
+            sprintf(cname,"%d",i+1);
+            stations[i+1] = string(cname);
+        }
+    }
+    return stations;
 }
 

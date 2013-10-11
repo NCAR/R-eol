@@ -22,6 +22,7 @@ class NcVar;
 class NcException : public std::exception {
 
 public:
+    NcException();
     NcException(const std::string& filename, const std::string& msg);
     NcException(const std::string& op,const std::string& fname, int status);
     NcException(const std::string& op,const std::string& fname,
@@ -33,8 +34,11 @@ public:
 
     const char* what() const throw() { return _what.c_str(); }
 
+    int getStatus() const { return _status; }
+
 protected:
     std::string _what;
+    int _status;
 
 };
 

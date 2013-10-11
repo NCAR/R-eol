@@ -19,27 +19,42 @@
 #include <Rinternals.h>
 
 #include "NcFileSet.h"
-#include "NcFileSetFactory.h"
 
 
 extern "C" {
-    SEXP open_netcdf(SEXP obj);
+    SEXP open_netcdf(SEXP con,SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod);
+
     SEXP read_netcdf(SEXP obj,SEXP variables, SEXP start, SEXP count);
-    SEXP get_variables(SEXP obj);
+
+    SEXP read_netcdf_ts(SEXP args);
+
+    SEXP write_netcdf_ts(SEXP args);
+
+    SEXP write_history(SEXP obj,SEXP history);
+
+    SEXP get_variables(SEXP obj, SEXP all);
+
+    SEXP get_ts_variables(SEXP obj);
+
+    SEXP get_stations(SEXP obj);
+
     SEXP close_netcdf(SEXP obj);
+
     SEXP get_cxxPointer(SEXP obj);
+
     SEXP is_netcdf_open(SEXP obj);
 }
 
 class R_NetcdfConnection {
 public:
 
-    R_NetcdfConnection(SEXP);
+    R_NetcdfConnection(SEXP obj, SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod);
     virtual ~R_NetcdfConnection();
 
     static std::vector<std::string> makeFileNameList(
             const std::vector<std::string>& fnames, 
             const std::vector<std::string>& dnames);
+
     NcFileSet* getFileSet()
     {
         return _fileset;
@@ -49,14 +64,38 @@ public:
             const std::vector<size_t> &start,
             const std::vector<size_t> &count) NCEXCEPTION_CLAUSE;
 
+    SEXP read(const std::vector<std::string>& vnames,
+            double start, double end,
+            const std::vector<int>& stations,
+            const std::vector<std::string>& tnames,
+            const std::string& btname,
+            const std::string& timezone) NCEXCEPTION_CLAUSE;
+
+#ifdef SUPPORT_WRITE
+    int write(R_nts& nts, const std::vector<NSVarDim>& ntdv,
+            double dt, double fillValue) NCEXCEPTION_CLAUSE;
+
+    int write(datarec_float *rec) RPCEXCEPTION_CLAUSE;
+
+    int nonBatchWrite(datarec_float *rec) RPCEXCEPTION_CLAUSE;
+#endif
+
     SEXP getVariables() NCEXCEPTION_CLAUSE;
 
+    SEXP getTimeSeriesVariables() NCEXCEPTION_CLAUSE;
+
+    SEXP getStations() NCEXCEPTION_CLAUSE;
+
     static bool addConnection(R_NetcdfConnection *);
+
     static bool removeConnection(R_NetcdfConnection *);
+
     static bool findConnection(R_NetcdfConnection *);
+
     static R_NetcdfConnection *getR_NetcdfConnection(SEXP  obj);
 
     static SEXP fileSlotName;
+
     static SEXP dirSlotName;
 
     /**
@@ -70,11 +109,8 @@ protected:
     static std::set<R_NetcdfConnection*> _openSet;
 
     NcFileSet* _fileset;
-    NcFileSetFactory* _factory;
 
     void openFileSet(SEXP obj);
-
-    virtual NcFileSetFactory* getNcFileSetFactory();
 
 private:
     // declared private to prevent copying and assignment
