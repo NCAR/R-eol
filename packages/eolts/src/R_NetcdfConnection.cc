@@ -1,17 +1,11 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
 // vim: set shiftwidth=4 softtabstop=4 expandtab:
+
 /*
  *               Copyright (C) by UCAR
- * 
- *  $Revision: 1.25 $
- *  $Date: 2009/04/01 01:35:53 $
- * 
- *  Description:
- *    A connection from Splus to one or more NetCDF files.
- * 
  */
 
-#include <string.h>
+// #include <string.h>
 
 #include <set>
 #include <sstream>
@@ -26,7 +20,8 @@
 using std::vector;
 using std::string;
 using std::set;
-using std::pair;
+
+using namespace eolts;
 
 /*
  * Collection of R_NetcdfConnection instances
@@ -150,7 +145,6 @@ SEXP read_netcdf(SEXP obj,SEXP variables, SEXP startreq, SEXP countreq)
     vector<size_t> count;
     for (i = 0; i < length(countreq); i++) count.push_back((size_t)INTEGER(countreq)[i]);
 
-#ifdef THROW_NCEXCEPTION
     try {
         return con->read(vnames,start,count);
     }
@@ -158,9 +152,6 @@ SEXP read_netcdf(SEXP obj,SEXP variables, SEXP startreq, SEXP countreq)
         error(nce.toString().c_str());
     }
     return 0;
-#else
-    return con->read(vnames,start,count);
-#endif
 }
 
 SEXP read_netcdf_ts(SEXP args)
@@ -173,7 +164,10 @@ SEXP read_netcdf_ts(SEXP args)
     std::string timezone;
     SEXP con=0;
 
+#ifdef DEBUG
     int iarg = 1;
+#endif
+
     args = CDR(args);
     if (args != R_NilValue) {
 #ifdef DEBUG
@@ -265,15 +259,18 @@ R_NetcdfConnection::R_NetcdfConnection(SEXP con, SEXP cdlfile,
     Rprintf("R_NetcdfConnection ctor, this = %p\n",this);
 #endif
 
-    SEXP cslot = getAttrib(con,R_NetcdfConnection::cppSlotName);
+    SEXP cslot = getAttrib(con,cppSlotName);
 
 #ifdef DEBUG
     Rprintf("cpp slot length=%d, type=%d\n",length(cslot),TYPEOF(cslot));
 #endif
-    if (length(cslot) == 8 && TYPEOF(cslot) == RAWSXP) {
-        *((R_NetcdfConnection **)RAW(cslot)) = this;
-    }
-    else error("slot cppPtr invalid");
+
+    // store a pointer to the C++ object into the cppPtr slot of the
+    // con argument.
+    if (TYPEOF(cslot) != RAWSXP || length(cslot) != 8)
+        error("slot cppPtr of object is not of type \"raw\", length 8");
+
+    *((R_NetcdfConnection **)RAW(cslot)) = this;
 
     addConnection(this);
 
@@ -321,7 +318,7 @@ R_NetcdfConnection *R_NetcdfConnection::getR_NetcdfConnection(SEXP obj)
 #ifdef DEBUG
     Rprintf("looking for cppPtr slot\n");
 #endif
-    SEXP cslot = getAttrib(obj,R_NetcdfConnection::cppSlotName);
+    SEXP cslot = getAttrib(obj,cppSlotName);
 #ifdef DEBUG
     Rprintf("cpp slot: %p, length=%d, type=%d\n",cslot,
             (cslot ? length(cslot):0),(cslot ? TYPEOF(cslot): NILSXP));
@@ -334,7 +331,7 @@ R_NetcdfConnection *R_NetcdfConnection::getR_NetcdfConnection(SEXP obj)
 
 void R_NetcdfConnection::openFileSet(SEXP obj)
 {
-    SEXP fslot = getAttrib(obj,R_NetcdfConnection::fileSlotName);
+    SEXP fslot = getAttrib(obj,fileSlotName);
 #ifdef DEBUG
     Rprintf("file slot length=%d, type=%d\n",length(fslot),TYPEOF(fslot));
 #endif
@@ -345,7 +342,7 @@ void R_NetcdfConnection::openFileSet(SEXP obj)
         fnames.push_back(CHAR(dn));
     }
 
-    SEXP dslot = getAttrib(obj,R_NetcdfConnection::dirSlotName);
+    SEXP dslot = getAttrib(obj,dirSlotName);
 #ifdef DEBUG
     Rprintf("dir slot length=%d, type=%d\n",length(dslot),TYPEOF(dslot));
 #endif
@@ -378,7 +375,7 @@ vector<string> R_NetcdfConnection::makeFileNameList(const vector<string>& fnames
     return res;
 }
 
-SEXP R_NetcdfConnection::getVariables() NCEXCEPTION_CLAUSE
+SEXP R_NetcdfConnection::getVariables() throw(NcException)
 {
 #ifdef DEBUG
         Rprintf("getVariables\n");
@@ -441,7 +438,7 @@ SEXP R_NetcdfConnection::getVariables() NCEXCEPTION_CLAUSE
     return result;
 }
 
-SEXP R_NetcdfConnection::getTimeSeriesVariables() NCEXCEPTION_CLAUSE
+SEXP R_NetcdfConnection::getTimeSeriesVariables() throw(NcException)
 {
 
     int nfiles = _fileset->getNFiles();
@@ -490,7 +487,7 @@ SEXP R_NetcdfConnection::getTimeSeriesVariables() NCEXCEPTION_CLAUSE
     return result;
 }
 
-SEXP R_NetcdfConnection::getStations() NCEXCEPTION_CLAUSE
+SEXP R_NetcdfConnection::getStations() throw(NcException)
 {
     getFileSet();
     std::map<int,string> stations = _fileset->getStations();
@@ -517,7 +514,7 @@ SEXP R_NetcdfConnection::getStations() NCEXCEPTION_CLAUSE
 
 SEXP R_NetcdfConnection::read(const vector<string> &vnames,
         const vector<size_t> &start, const vector<size_t> &count)
-    NCEXCEPTION_CLAUSE
+    throw(NcException)
 {
 
     NetcdfReader reader(this);
@@ -531,7 +528,7 @@ SEXP R_NetcdfConnection::read(const vector<string> &vnames,
         const vector<string> &tnames,
         const string &btname,
         const string& timezone)
-    NCEXCEPTION_CLAUSE
+    throw(NcException)
 {
     NetcdfReader reader(this);
     return reader.read(vnames,start,end,stations,tnames,btname,timezone);

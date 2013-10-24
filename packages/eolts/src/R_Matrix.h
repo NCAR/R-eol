@@ -15,6 +15,8 @@
 
 #include "R_MatrixBase.h"
 
+namespace eolts {
+
 /*
 */
 template<class T> class R_Matrix: public R_MatrixBase {
@@ -185,5 +187,7 @@ void transpose(T1 *m1,int nr, int nc, T2 *m2) {
         for (int j = 0; j < nr; j++)
             *m2++ = (T2)m1[j * nc + i];
 }
+
+}   // namespace eolts
 
 #endif

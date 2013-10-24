@@ -15,6 +15,8 @@
 
 #include "R_NamedVectorBase.h"
 
+namespace eolts {
+
 /*
 */
 template<class T> class R_NamedVector: public R_NamedVectorBase {
@@ -30,4 +32,7 @@ private:
     R_NamedVector(const R_NamedVector &);
     R_NamedVector &operator=(const R_NamedVector &);
 };
+
+}   // namespace eolts
+
 #endif

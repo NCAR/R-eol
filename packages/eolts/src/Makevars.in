@@ -1,0 +1,2 @@
+PKG_CPPFLAGS = @CPPFLAGS@ -Weffc++
+PKG_LIBS = @LIBS@

@@ -14,47 +14,30 @@
 
 using std::string;
 
-NcDim::NcDim(NcFile *ncf,int dimid) NCEXCEPTION_CLAUSE:
-_dimid(dimid),_length(0),_valid(false)
+using namespace eolts;
+
+NcDim::NcDim(NcFile *ncf,int dimid) throw(NcException):
+    _dimid(dimid),_name(),_length(0)
+    //,_valid(false)
 {
     char name[NC_MAX_NAME];
     int status = nc_inq_dimname(ncf->getNcid(),_dimid,name);
     if (status != NC_NOERR)
-#ifdef THROW_NCEXCEPTION
         throw NcException("nc_inq_dimname",
                 ncf->getName(),status);
-#else
-    {
-        Rprintf("Error %s: %d: nc_inq_dimname: %s\n",
-                ncf->getName().c_str(),dimid,::nc_strerror(status));
-        return;
-    }
-#endif
     _name = string(name);
 
     status = nc_inq_dimlen(ncf->getNcid(),_dimid,&_length);
     if (status != NC_NOERR)
-#ifdef THROW_NCEXCEPTION
         throw NcException("nc_inq_dimlen",ncf->getName(),
                 status);
-#else
-    Rprintf("Error %s: %s: nc_inq_dimlen: %s\n",
-            ncf->getName().c_str(),_name.c_str(),::nc_strerror(status));
-#endif
-    _valid = true;
+    // _valid = true;
 }
-void NcDim::readLength(NcFile *ncf) NCEXCEPTION_CLAUSE
+void NcDim::readLength(NcFile *ncf) throw(NcException)
 {
     int status = nc_inq_dimlen(ncf->getNcid(),_dimid,&_length);
-    if (status != NC_NOERR) {
-#ifdef THROW_NCEXCEPTION
+    if (status != NC_NOERR)
         throw NcException("nc_inq_dimlen",ncf->getName(),
                 status);
-#else
-        Rprintf("Error %s: %s: nc_inq_dimlen: %s\n",
-                ncf->getName().c_str(),_name.c_str(),::nc_strerror(status));
-        _valid = false;
-#endif
-    }
 }
 

@@ -14,6 +14,8 @@
 #include "NcException.h"
 #include "NcVar.h"
 
+using namespace eolts;
+
 NcException::NcException() :
     _what(""),_status(NC_NOERR)
 {

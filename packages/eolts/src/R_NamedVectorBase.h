@@ -19,6 +19,8 @@
 #include <vector>
 #include <string>
 
+namespace eolts {
+
 class R_NamedVectorBase {
 protected:
     SEXP _obj;
@@ -59,5 +61,7 @@ private:
 
 
 };
+
+}   // namespace eolts
 
 #endif

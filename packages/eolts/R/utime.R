@@ -11,7 +11,7 @@ setClass("utime",
 
 setMethod("initialize",
     "utime",
-    function(.Object,val=99)
+    function(.Object,val=as.numeric(Sys.time()))
     {
         .Object@.Data = val
         .Object
@@ -19,15 +19,14 @@ setMethod("initialize",
 )
 
 # constructor for utime, from character, POSIXct, timeDate or numeric
-utime = function(val=0,in.format=options("time.in.format")[[1]],time.zone=options("time.zone")[[1]])
+utime = function(val=as.numeric(Sys.time()),
+    in.format=options("time.in.format")[[1]],
+    time.zone=options("time.zone")[[1]])
 {
     # cat(paste("in utime(), class(val)=",class(val),", length(val)=",length(val),"\n"))
 
     res = NULL
-
     if (is(val,"numeric")) {
-        if (is.null(time.zone)) time.zone = ""
-
         res = new("utime",val)
     }
     else if (is(val,"utime")) {
@@ -41,27 +40,28 @@ utime = function(val=0,in.format=options("time.in.format")[[1]],time.zone=option
     }
     else if (is.character(val)) {
         if (length(val) == 1 && val == "now") res = as(Sys.time(),"utime")
-        else res = as(as.POSIXct(val,format=in.format,tz=time.zone),"utime")
-        if (any(is.na(res@.Data))) {
-            res = as(timeDate(val,
-                in.format=splusTimeDate::timeDateOptions("time.in.format")[[1]],
-                zone=splusTimeDate::timeDateOptions("time.zone")[[1]]),"utime")
+        else for (i in 1:length(in.format)) {
+            # cat("trying format",in.format[[i]],"\n")
+            res = as.POSIXct(val,format=in.format[[i]],tz=time.zone)
+            if (!any(is.na(res))) {
+                res = as(res,"utime")
+                break
+            }
         }
-        if (any(is.na(res@.Data))) {
-            if (length(val) == 1) warning(paste(val,"not parsable with in.format=",
-                    in.format))
+        if (any(is.na(res))) {
+            if (length(val) == 1) warning(paste(val,"not parsable with any in.format=",
+                    unlist(in.format)))
             else warning(paste("some dates not parsable with in.format=",in.format))
         }
     }
     else if (is.null(val)) {
-        cat("null val\n")
-        res = new("utime",0)
+        res = new("utime")
     }
     res
 }
 
 if (FALSE) {
-    # this is createed automatically
+    # this is created automatically
     setAs("utime","numeric",function(from) from@.Data)
 }
 
@@ -69,12 +69,7 @@ if (FALSE) {
 setAs("numeric","utime",
     function(from)
     {
-        format = options("time.out.format")[[1]]
-        if (is.null(format)) format = ""
-
-        res = new("utime",val=from,format=format,time.zone=Sys.timezone());
-        # res@.Data = from
-
+        res = new("utime",val=from)
         res
     }
 )
@@ -106,7 +101,10 @@ setAs("utime","timeDate",
 setAs("utime","POSIXct",
     function(from)
     {
-        as.POSIXct(from@.Data,origin=structure(0,class="POSIXct"))
+        time.zone = options("time.zone")[[1]]
+        if (time.zone == "") time.zone = "UTC"
+
+        as.POSIXct(from@.Data,tz=time.zone,origin=structure(0,class="POSIXct"))
     }
 )
 
@@ -128,16 +126,29 @@ setAs("timeDate","utime",
 
 # coerce from utime to POSIXct to character
 setAs("utime","character",
-    function(from) as(as(from,"POSIXct"),"character"))
+    function(from) 
+    {
+        time.zone = options("time.zone")[[1]]
+        from = as(from,"POSIXct")
+        attr(from,"tzone") = time.zone
+        as(from,"character")
+    }
+)
 
 # coerce from character to POSIXct to utime
 setAs("character","utime",
-    function(from) as(as(from,"POSIXct"),"utime"))
+    function(from)
+    {
+        time.zone = options("time.zone")[[1]]
+        as(as(from,"POSIXct",tz=time.zone),"utime")
+    }
+)
 
 setAs("utime","list",
     function(from)
     {
-        to = as.POSIXlt(as(from,"POSIXct"),"POSIXlt")
+        time.zone = options("time.zone")[[1]]
+        to = as.POSIXlt(as(from,"POSIXct",tz=time.zone),tz=time.zone)
         list(year=to$year + 1900,
             mon=to$mon + 1,
             day=to$mday,
@@ -175,7 +186,6 @@ setMethod("format","utime",
         else format = options("time.out.format")[[1]]
 
         if (hasArg(time.zone)) time.zone = list(...)$time.zone
-        else if (hasArg(TZ)) time.zone = list(...)$TZ
         else time.zone = options("time.zone")[[1]]
 
         if (is.list(time.zone)) time.zone = unlist(time.zone)
@@ -189,6 +199,7 @@ setMethod("format","utime",
         }
         else {
             x = as(x,"POSIXct")
+            attr(x,"tzone") = time.zone
             format(x,format=format,tz=time.zone)
         }
     }
@@ -345,8 +356,26 @@ setMethod("all",signature(x="utime"),
     }
 )
 
+setMethod("summary",signature(object="utime"),
+    function(object,format=options("time.out.format")[[1]],time.zone=options("time.zone")[[1]],...)
+    {
+        nas <- is.na( object )
+        tmp <- as( object[!nas], "numeric")
+        ret <- as( quantile( tmp, c( 0, .25, .5, .75, 1 )), "utime" )
+        ret <- c( ret, as( tmp, "utime" ))
+        ret = format( ret, format=format,time.zone=time.zone)
+        ret <- ret[c(1,2,3,6,4,5)]
+        names( ret ) <- c( "Min", "1st Qu.", "Median", "Mean", "3rd Qu.", "Max" )
+        if( any( nas ))
+          ret[ "NAs" ] <- sum( nas )
 
-utime.now <- function() {
-    utime(.C("utime_now",sec=integer(1))$sec)
-}
+        ret <- matrix( ret, nrow = 1, dimnames = list( "", names( ret )))
+        oldClass( ret ) <- "table"
+        ret
+
+    }
+)
+
+
+
 

@@ -12,8 +12,9 @@ cache.name <- function(what)
 clear.cache <- function()
 {
     cached = objects(pattern="^\\..*\\.cache$",envir=.eoltsEnv,all.names=TRUE)
+    # browser()
     if (length(cached) > 0)
-        remove(cached,envir=.eoltsEnv)
+        remove(list=cached,envir=.eoltsEnv)
 }
 
 cache.object <- function(what,val)
@@ -29,11 +30,14 @@ get.cache.object <- function(what)
     else NULL
 }
 
+rm.cache.object <- function(what)
+{
+    if (check.cache(what))
+        remove(list=cache.name(what),envir=.eoltsEnv)
+}
+
 check.cache <- function(what)
 {
     nm = cache.name(what)
     exists(nm,envir=.eoltsEnv)
 }
-
-
-

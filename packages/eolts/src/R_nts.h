@@ -4,6 +4,8 @@
 #include "R_Matrix.h"
 #include "R_utime.h"
 
+namespace eolts {
+
 class R_nts {
 
 protected:
@@ -17,12 +19,10 @@ public:
      */
     R_nts();
 
-#ifdef NEEDED
     /**
-     * for creating an R_nts object from an nts S object.
+     * for creating an R_nts object from an nts R object.
      */
     R_nts(SEXP obj);
-#endif
 
     /**
      * Does not free up any allocated R memory of the object.
@@ -58,7 +58,6 @@ public:
     void setTimeZone(const std::string& val);
     std::string getTimeZone() const;
 
-
     static SEXP classDef;
 
     static SEXP dataSlotName;
@@ -77,6 +76,10 @@ private:
     R_nts(const R_nts &);
     R_nts &operator=(const R_nts &);
 
+    int _pindx;
+
 };
+
+}   // namespace eolts
 
 #endif

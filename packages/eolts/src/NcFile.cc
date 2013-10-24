@@ -11,23 +11,27 @@
  */
 #include <sstream>
 
-#include <R.h>
-
 #include "NcFile.h"
 #include "NcVar.h"
 #include "NcDim.h"
 #include "NcAttr.h"
+
+// include <R.h> after <sstream>, otherwise you'll get a compile error on Mac OS X:
+// /usr/include/c++/4.2.1/bits/codecvt.h: error: macro "length" passed 4 arguments, but takes just 1
+#include <R.h>  // warning()
 
 using std::vector;
 using std::string;
 using std::map;
 using std::set;
 
-NcFile::NcFile(const string& n): _name(n),_ncid(-1),_nvars(0),_ndims(0),
-    _unlimitedDim(0),_timeDim(0),
-    _hasTSVariableWithoutStationDimension(false),_nscannedVars(0)
+using namespace eolts;
+
+NcFile::NcFile(const string& n): _name(n),_shortname(),_ncid(-1),_nvars(0),_ndims(0),
+    _nattrs(0),_varvec(),_vars(),_dimVec(),_dims(),_unlimitedDim(0),_timeDim(0),
+    _attrs(),_tsVars(),_hasTSVariableWithoutStationDimension(false),_nscannedVars(0)
 {
-    unsigned int i = _name.rfind('/');
+    size_t i = _name.rfind('/');
     if (i < string::npos)_shortname = _name.substr(i+1);
     else _shortname = _name;
 }
@@ -45,11 +49,10 @@ NcFile::~NcFile()
 /**
  * open a NetCDF file, if it isn't open already.
  */
-void NcFile::open() NCEXCEPTION_CLAUSE
+void NcFile::open() throw(NcException)
 {
-    int status = NC_NOERR;
     if (_ncid < 0) {
-        status = nc_open(_name.c_str(),NC_SHARE,&_ncid);
+        int status = nc_open(_name.c_str(),NC_SHARE,&_ncid);
         if (status != NC_NOERR) 
             throw NcException("opening",_name,status);
         readDimensions();
@@ -78,7 +81,7 @@ void NcFile::open() NCEXCEPTION_CLAUSE
  * any other way.
  *
  */
-void NcFile::close() NCEXCEPTION_CLAUSE {
+void NcFile::close() throw(NcException) {
     if (_ncid >= 0) {
         int status = nc_close(_ncid);
         _ncid = -1;
@@ -133,14 +136,14 @@ void NcFile::clearMaps(void)
  *   int nv = getNumVariables();
  *   for (i = 0; i < nv; i++)
  */
-int NcFile::getNumVariables() NCEXCEPTION_CLAUSE {
+int NcFile::getNumVariables() throw(NcException) {
     int status = nc_inq_nvars(_ncid,&_nvars);
     if (status != NC_NOERR)
         throw NcException("nc_inq_nvars",getName(),status);
     return _nvars;
 }
 
-string NcFile::getVariableName(int varid) NCEXCEPTION_CLAUSE
+string NcFile::getVariableName(int varid) throw(NcException)
 {
     // should only throw exception if file is corrupt
     char name[NC_MAX_NAME];
@@ -150,7 +153,7 @@ string NcFile::getVariableName(int varid) NCEXCEPTION_CLAUSE
     return string(name);
 }
 
-vector<string> NcFile::getVariableNames() NCEXCEPTION_CLAUSE
+vector<string> NcFile::getVariableNames() throw(NcException)
 {
     vector<string> names;
     unsigned int i;
@@ -163,7 +166,7 @@ vector<string> NcFile::getVariableNames() NCEXCEPTION_CLAUSE
     return names;
 }
 
-NcVar* NcFile::getVariable(int varid) NCEXCEPTION_CLAUSE
+NcVar* NcFile::getVariable(int varid) throw(NcException)
 {
     // should only throw exception if file is corrupt
     if (varid >= _nvars) return 0;
@@ -197,7 +200,7 @@ NcVar* NcFile::getVariable(const string &name) throw()
     return var;
 }
 
-vector<NcVar *> NcFile::getVariables() NCEXCEPTION_CLAUSE
+vector<NcVar *> NcFile::getVariables() throw(NcException)
 {
     // should only throw exception if file is corrupt
     getNumVariables();
@@ -207,14 +210,14 @@ vector<NcVar *> NcFile::getVariables() NCEXCEPTION_CLAUSE
     return _varvec;
 }
 
-int NcFile::getNumDimensions() NCEXCEPTION_CLAUSE {
+int NcFile::getNumDimensions() throw(NcException) {
     int status = nc_inq_ndims(getNcid(),&_ndims);
     if (status != NC_NOERR)
         throw NcException("nc_inq_ndims",getName(),status);
     return _ndims;
 }
 
-const NcDim* NcFile::getDimension(int dimid) NCEXCEPTION_CLAUSE
+const NcDim* NcFile::getDimension(int dimid) throw(NcException)
 {
     // should only throw exception if file is corrupt
     if (dimid >= _ndims) readDimensions();
@@ -226,20 +229,20 @@ const NcDim* NcFile::getDimension(int dimid) NCEXCEPTION_CLAUSE
     return _dimVec[dimid];
 }
 
-const NcDim* NcFile::getUnlimitedDimension() NCEXCEPTION_CLAUSE
+const NcDim* NcFile::getUnlimitedDimension() throw(NcException)
 {
     if (!_unlimitedDim) readDimensions();
     return _unlimitedDim;
 }
 
-vector<const NcDim*> NcFile::getDimensions() NCEXCEPTION_CLAUSE
+vector<const NcDim*> NcFile::getDimensions() throw(NcException)
 {
 
     if (getNumDimensions() != (signed)_dimVec.size()) readDimensions();
     return vector<const NcDim*>(_dimVec.begin(),_dimVec.end());
 }
 
-const NcDim* NcFile::getDimension(const string& name) NCEXCEPTION_CLAUSE
+const NcDim* NcFile::getDimension(const string& name) throw(NcException)
 {
     if (_dims.size() == 0) readDimensions();
     NcDimMapIterator i = _dims.find(name);
@@ -247,7 +250,7 @@ const NcDim* NcFile::getDimension(const string& name) NCEXCEPTION_CLAUSE
     return i->second;
 }
 
-void NcFile::readDimensions() NCEXCEPTION_CLAUSE
+void NcFile::readDimensions() throw(NcException)
 {
     getNumDimensions();
     int unlimdimid = getUnlimitedDimid();
@@ -260,7 +263,7 @@ void NcFile::readDimensions() NCEXCEPTION_CLAUSE
     }
 }
 
-int NcFile::getUnlimitedDimid() NCEXCEPTION_CLAUSE {
+int NcFile::getUnlimitedDimid() throw(NcException) {
     int unlimdim;
     // unlimdim is -1 if no unlimited dimension
     int status = nc_inq_unlimdim(getNcid(),&unlimdim);
@@ -285,7 +288,7 @@ void NcFile::addTimeSeriesVariable(const string& name,NcVar* var)
 
 
 NcVar* NcFile::getTimeSeriesVariable(const string& name,const NcDim* tdim)
-    NCEXCEPTION_CLAUSE
+    throw(NcException)
 {
 
     // first try already mapped names
@@ -315,7 +318,7 @@ NcVar* NcFile::getTimeSeriesVariable(const string& name,const NcDim* tdim)
 }
 
 NcVar* NcFile::getTimeSeriesCountsVariable(const string& name,const NcDim* tdim)
-    NCEXCEPTION_CLAUSE
+    throw(NcException)
 {
     NcVar* var = getTimeSeriesVariable(name,tdim);
     if (!var) return var;
@@ -325,7 +328,7 @@ NcVar* NcFile::getTimeSeriesCountsVariable(const string& name,const NcDim* tdim)
 }
 
 vector<NcVar*> NcFile::getTimeSeriesVariables(const NcDim* tdim)
-    NCEXCEPTION_CLAUSE
+    throw(NcException)
 {
 
     vector <NcVar*> result;
@@ -354,7 +357,7 @@ vector<NcVar*> NcFile::getTimeSeriesVariables(const NcDim* tdim)
 }
 
 void NcFile::scanForTSVarWithoutStationDim(const NcDim* tdim)
-    NCEXCEPTION_CLAUSE
+    throw(NcException)
 {
     unsigned int nvars = getNumVariables();
     for (; _nscannedVars < nvars; _nscannedVars++) {
@@ -370,7 +373,7 @@ void NcFile::scanForTSVarWithoutStationDim(const NcDim* tdim)
 }
 
 const NcDim* NcFile::getTimeDimension(const set<string>& possibleNames)
-    NCEXCEPTION_CLAUSE
+    throw(NcException)
 {
     if (_timeDim) return _timeDim;			// already found
 
@@ -387,7 +390,7 @@ const NcDim* NcFile::getTimeDimension(const set<string>& possibleNames)
     return _timeDim;
 }
 
-map<int,string> NcFile::getStations(const NcDim *tdim) NCEXCEPTION_CLAUSE
+map<int,string> NcFile::getStations(const NcDim *tdim) throw(NcException)
 {
     map<int,string> stations;
 

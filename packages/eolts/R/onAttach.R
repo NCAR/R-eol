@@ -1,0 +1,28 @@
+#
+#               Copyright (C) by UCAR
+# 
+
+.onAttach = function(libname,pkgname)
+{
+    # cat(paste("hello from libname=",libname,", pkgname=",pkgname," .onAttach\n"))
+    time.zone = Sys.timezone()
+    options(time.in.format=c(
+            "%Y%m%d%H:%M:%OS",      # numeric month
+            "%Y%m%d%H:%M",
+            "%Y%m%d%H%M%OS",
+
+            "%Y %b%d%H:%M:%OS",    # alpha month
+            "%Y %b%d%H:%M",
+            "%Y %b%d%H%M%OS"),
+            time.out.format="%Y %m %d %H:%M:%OS3 %Z",
+            time.zone=time.zone
+    )
+
+    packageStartupMessage(paste(pkgname,"::.onAttach, setting options():\n",
+        "  time.in.format=\"",
+        paste(paste("\"",options("time.in.format")[[1]],"\"",sep=""),collapse=", "),"\"\n",
+        "  time.out.format=\"",options("time.out.format")[[1]],"\"\n",
+        "  time.zone=\"",options("time.zone")[[1]],"\"\n"))
+    packageStartupMessage("For help on time formats, do ?strptime\n")
+
+}

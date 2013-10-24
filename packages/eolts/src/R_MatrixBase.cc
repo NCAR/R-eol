@@ -10,8 +10,8 @@
  *    A class that allows creating an Splus matrix from c++.
  * 
  */
-#include <string.h>
-#include <assert.h>
+// #include <string.h>
+// #include <assert.h>
 
 #include "R_MatrixBase.h"
 #include "R_Matrix.h"
@@ -19,6 +19,8 @@
 
 using std::vector;
 using std::string;
+
+using namespace eolts;
 
 /*
  * The lifetime of a R_Matrix  is just during the duration of a .Call,
@@ -28,7 +30,7 @@ using std::string;
  */
 
 R_MatrixBase::R_MatrixBase(int type,size_t nrow,size_t ncol) : 
-    _type(type),_dims(),_length(nrow*ncol),_pindx(-1),_dnobj(0)
+    _obj(0),_type(type),_dims(),_length(nrow*ncol),_pindx(-1),_dnobj(0)
 {
     _dims[0] = nrow;
     _dims[1] = ncol;
@@ -44,6 +46,8 @@ R_MatrixBase::R_MatrixBase(int type, SEXP obj) :
     _obj(obj),_type(type),_dims(),_length(0),_pindx(-1),_dnobj(0)
 {
     if (TYPEOF(obj) != type) {
+        Rprintf("coercing R_MatrixBase, TYPEOF(obj)=%d,type=%d\n",
+                TYPEOF(obj),type);
         _obj = coerceVector(_obj,type);
         PROTECT_WITH_INDEX(_obj,&_pindx);
     }
@@ -54,12 +58,8 @@ R_MatrixBase::R_MatrixBase(int type, SEXP obj) :
         dim = PROTECT(allocVector(INTSXP,2));
         INTEGER(dim)[0] = _dims[0];
         INTEGER(dim)[1] = _dims[1];
-        _obj = setAttrib(_obj,R_DimSymbol,dim);
+        setAttrib(_obj,R_DimSymbol,dim);
         UNPROTECT(1);
-        if (_pindx >= 0)
-            REPROTECT(_obj,_pindx);
-        else
-            PROTECT_WITH_INDEX(_obj,&_pindx);
     }
     else {
         _dims[0] = INTEGER(dim)[0];
@@ -71,10 +71,9 @@ R_MatrixBase::R_MatrixBase(int type, SEXP obj) :
 
 R_MatrixBase::~R_MatrixBase() {
 #ifdef DEBUG
-    Rprintf("~R_MatrixBase\n");
+    Rprintf("~R_MatrixBase, _pindx=%d\n",_pindx);
 #endif
-    if (_pindx >= 0)
-        UNPROTECT(1);
+    if (_pindx >= 0) UNPROTECT(1);
 }
 
 vector<string> R_MatrixBase::getDimNames(unsigned int idim)

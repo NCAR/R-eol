@@ -15,6 +15,8 @@
 
 #include "R_ArrayBase.h"
 
+namespace eolts {
+
 /*
 */
 template<class T> class R_Array: public R_ArrayBase {
@@ -76,4 +78,7 @@ void R_Array<T>::setDims(const std::vector<size_t>& dims)
         setDimNames(i,dnames);
     }
 }
+
+}   // namespace eolts
+
 #endif

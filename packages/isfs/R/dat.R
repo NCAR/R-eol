@@ -124,8 +124,10 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
         # Look for a dat function  dat.what
         fcn <- paste("dat",what,sep=".")
         if (existsFunction(fcn,generic=FALSE)) {
-            f = getFunction(fcn,generic=FALSE,mustFind = TRUE)
-            x <- f(what=what,derived=derived,cache=cache,...)
+            # For some reason getFunction(...,generic=FALSE,mustFind = TRUE)
+            # doesn't find functions on an attached file.
+            f = get(fcn,mode="function")
+            x = f(what=what,derived=derived,cache=cache,...)
             if (smooth || avg)
               x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
             return(x)
@@ -141,7 +143,7 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
             while (iw > 0) {
                 fcn <- paste("dat",words(what,1,iw),sep=".")
                 if (existsFunction(fcn,generic=FALSE)) {
-                    f = getFunction(fcn,generic=FALSE,mustFind = TRUE)
+                    f = get(fcn,mode="function")
                     x <- f(what=what,derived=derived,cache=cache,...)
 
                     if (inherits(x,"nts")) {
@@ -249,22 +251,23 @@ derived <- function()
     dname <- "derivedISFSFunctions"
     if (check.cache(dname)) return(get.cache.object(dname))
 
-    lf <- match("package:isfs",search(),nomatch=0)
+    attchd = search()
+    # look through attached packages and objects for "package.isfs" and
+    # one containing "file:" and "projects".
+    mtch = (grepl("file:",attchd,fixed=TRUE) & grepl("projects",attchd,fixed=TRUE)) |
+            grepl("package:isfs",attchd,fixed=TRUE)
 
     x <- NULL
-
-    for (i in 1:(lf-1)) {
-        derived.func <- objects(pattern="^dat\\.",pos=i)
-        for (f in derived.func)
+    for (pos in seq(along=mtch)[mtch]) {
+        dfunc <- objects(pattern="^dat\\.",pos=pos)
+        for (f in dfunc)
             if (existsFunction(f)) x <- c(x,words(f,sep=".",2))
-      }
-    x <- unique(x)
-    browser()
-    ignore <- c("default","dat","variables","derived","Matrix","ats","chksumOK")
-    lf <- match(ignore,x,nomatch=0)
-    lf <- lf[lf != 0]
-    x <- x[-lf]
+    }
 
+    x <- unique(x)
+    ignore <- c("default","dat","variables","derived","chksumOK")
+    lf <- match(x,ignore,nomatch=0) == 0
+    x <- x[lf]
     cache.object(dname,x)
     x
 }
@@ -378,6 +381,34 @@ setMethod("select",signature(x="dat"),
         x
     }
 )
+
+setGeneric("suffixes",function(x,...) standardGeneric("suffixes"))
+
+setMethod("suffixes",signature="dat",
+    function(x,first=2,leadch=".")
+    {
+        # function to strip words from front of dimnames(x)[[2]]
+        # first is first word to save, e.g. for a dimname of "T.hygt.1.5m", 
+        # suffixes returns ".hygt.1.5m" (first=2)
+        # leadch is the character prepended to result
+        x <- dimnames(x)[[2]]
+        suffixes(x,first=first,leadch=leadch)
+    }
+)
+setMethod("suffixes",signature="character",
+    function(x,first=2,leadch=".")
+    {
+        if (length(first) == 1) first = rep(first,length(x))
+        x <- words(x,first, nwords(x,sep="."),sep=".")
+        x[x!=""] <- paste(leadch, x[x!=""], sep="")
+        x
+    }
+)
+
+expand <- function(x,y,first=2)
+{
+    paste(x,suffixes(y,first=first),sep="")
+}
 
 setGeneric("clip", function(x1,...) standardGeneric("clip"))
 
@@ -906,7 +937,7 @@ setMethod("Cbind",signature(x1="dat",x2="ANY"),
 setMethod("average", signature="dat",
     function(x,...,simple=T)
     {
-        cat("average x=",dimnames(x)[[2]]," args=",list(...),"simple=",simple,"\n")
+        cat("average x=",dimnames(x)[[2]]," args=",unlist(list(...)),"simple=",simple,"\n")
 
         # simple <- list(...)$simple
         # if (is.null(simple)) simple <- T
@@ -1107,7 +1138,7 @@ other.dat.func <- function(what,whine=T)
     while (name != "dat") {
         for (i in 1:nd)
           if (exists(name,where=i))
-            for (j in (i+1):nd) if (exists(name,where=j)) return(get(name,where=j))
+            for (j in (i+1):nd) if (exists(name,where=j)) return(get(name,pos=j))
 
         nw = nwords(name,sep=".")
         if (nw == 1) break

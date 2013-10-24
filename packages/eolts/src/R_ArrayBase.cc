@@ -10,7 +10,7 @@
  *    A class that allows creating an R array from c++.
  * 
  */
-#include <string.h>
+// #include <string.h>
 
 #include "R_ArrayBase.h"
 #include "R_Array.h"
@@ -18,6 +18,8 @@
 
 using std::vector;
 using std::string;
+
+using namespace eolts;
 
 /*
  * The lifetime of a R_Array  is just during the duration of a .Call,
@@ -27,7 +29,7 @@ using std::string;
  */
 
 R_ArrayBase::R_ArrayBase(int type,const vector<size_t>& dims):
-    _type(type),_dims(dims),_length(0),_pindx(-1),_dnobj(0)
+    _obj(0),_type(type),_dims(dims),_length(0),_pindx(-1),_dnobj(0)
 {
     SEXP dimobj = allocVector(INTSXP,_dims.size());
     _length = 1;

@@ -26,9 +26,6 @@ dpar <- function(...,save.cache=F)
 
     temp <- list(...)
 
-    utime.fields <- c("year","mon","day","yday","hour","min","sec")
-    utime.names <- c(utime.fields,"TZ")
-
     # Other members returned from or as.list.utime, which we'll ignore
     ignore.names <- c("msec","dow","cmonth","isdst","zonediff")
 
@@ -82,7 +79,7 @@ dpar <- function(...,save.cache=F)
          "sfrac.min"         # minimum fraction of sonic samples, for editing fluxes
          )
 
-    set.names <- c(utime.names,time.len.names,data.selection.names,data.opt.names,
+    set.names <- c(time.len.names,data.selection.names,data.opt.names,
                    deriv.opt.names,time.names)
     ok.names <- c(set.names,ignore.names,query.names)
     get.names <- c(set.names,query.names)
@@ -149,19 +146,8 @@ dpar <- function(...,save.cache=F)
         dpar.list$day <- NULL
     }
 
-    # set timezone
-    if (any(inames == "TZ")) options(time.zone=dpar.list$TZ)
-    else dpar.list$TZ <- unlist(options("time.zone"))
-
-    # If user has passed any utime fields (year, day, etc)
-    # set time from them, include TZ when setting
-    if (any(match(utime.fields,inames,nomatch=0)) != 0)
-        dpar.list$start <- utime(dpar.list[utime.names])
-
     if (is.null(dpar.list$start)) dpar.list$start <- utime("now")
     else dpar.list$start <- utime(dpar.list$start)	# make sure it is a utime
-
-    dpar.list[utime.names] <- as.list(utime(dpar.list$start))[utime.names]
 
     # If any length parameter is specified,
     # zero out lengths not specified
@@ -247,34 +233,20 @@ dpar <- function(...,save.cache=F)
 }
 dpar.next <- function()
 {
-    t1 <- dpar("start") + dpar("length")
-
-    l1 <- as.list(t1)
-    if (l1$year < 200) l1$year <- l1$year + 1900
-    utime.names <- c("year","mon","day","yday","hour","min","sec","TZ")
-    n <- utime.names[unique(match(names(l1),utime.names,nomatch=0))]
-    l1 <- l1[n]
-    invisible(dpar(l1))
+    t1 = dpar("start") + dpar("length")
+    invisible(dpar(start=t1))
 }
 dpar.prev <- function()
 {
-    t1 <- dpar("start") - dpar("length")
-
-    l1 <- as.list(t1)
-    if (l1$year < 200) l1$year <- l1$year + 1900
-    utime.names <- c("year","mon","day","yday","hour","min","sec","TZ")
-    n <- utime.names[unique(match(names(l1),utime.names,nomatch=0))]
-    l1 <- l1[n]
-    invisible(dpar(l1))
+    t1 = dpar("start") - dpar("length")
+    invisible(dpar(start=t1))
 }
 dpar.now <- function()
 {
-    dexists <- exists(".dpar",envir=.eoltsEnv)
 
-    len <- NULL
-    if (!dexists) assign(".dpar",list(),envir=.eoltsEnv)
-    else len <- dpar("length")
-    if (is.null(len)) len <- 86400
+    if (is.null(dpar("length"))) dpar(lenday=1)
+
+    len = dpar("length")
 
     res <- 60
     if (len > 3600) res <- 300
@@ -284,11 +256,6 @@ dpar.now <- function()
 
     t1 <- t1 - len
 
-    l1 <- as.list(t1)
-    if (l1$year < 200) l1$year <- l1$year + 1900
-    utime.names <- c("year","mon","day","yday","hour","min","sec","TZ")
-    n <- utime.names[unique(match(names(l1),utime.names,nomatch=0))]
-    l1 <- l1[n]
-    invisible(dpar(l1))
+    invisible(dpar(start=t1))
 }
 

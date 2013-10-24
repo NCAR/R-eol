@@ -11,18 +11,15 @@
  *	This is called by R when this library is loaded.
  */
 
-#include <R.h>
-#include <Rinternals.h>
-#include <R_ext/Rdynload.h>   // DllInfo
-
 #include "R_NetcdfConnection.h"
 #include "R_NetcdfVariable.h"
 #include "R_utime.h"
 #include "R_nts.h"
 
-// #include "R_ArrayBase.h"
-// #include "R_MatrixBase.h"
-// #include "R_NamedVectorBase.h"
+#include <R.h>  // install
+#include <R_ext/Rdynload.h>   // DllInfo
+
+using namespace eolts;
 
 extern "C" {
 

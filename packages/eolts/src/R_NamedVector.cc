@@ -13,6 +13,8 @@
 
 #include "R_NamedVector.h"
 
+namespace eolts {
+
 template class R_NamedVector<double>;
 template class R_NamedVector<int>;
 // template class R_NamedVector<char*>;
@@ -61,4 +63,6 @@ R_NamedVector<int>::R_NamedVector(int type, SEXP obj) :
 	R_NamedVectorBase(type,obj)
 {
 }
+
+}   // namespace eolts
 

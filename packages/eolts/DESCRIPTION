@@ -8,7 +8,7 @@ Author: Gordon Maclean
 Maintainer: Gordon Maclean <maclean@ucar.edu>
 Depends: R (>= 1.8.0), methods
 Imports: splusTimeDate,splusTimeSeries
-Collate: onLoad.R cache.R utime.R nts.R netcdf.R dpar.R plot.R
+Collate: onAttach.R cache.R utime.R nts.R netcdf.R dpar.R plot.R
 Description: This package provides R functions to read time-series data
   from NetCDF files containing data acquired by the Integrated Surface
   Flux System (ISFS) of the NCAR Earth Observing Laboratory (EOL).

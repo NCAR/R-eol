@@ -11,16 +11,15 @@
  * 
  */
 
-#include <R.h>
-#include <Rinternals.h>
-
+// include <R.h> after <sstream>, otherwise you'll get a compile error on Mac OS X:
+// /usr/include/c++/4.2.1/bits/codecvt.h: error: macro "length" passed 4 arguments, but takes just 1
 #include <sstream>
 #include <memory>   // auto_ptr
 
-#include <string.h>
+#include "NetcdfReader.h"
+
 #include <assert.h>
 
-#include "NetcdfReader.h"
 #include "NcFileSetSummary.h"
 #include "NcVar.h"
 #include "NcFile.h"
@@ -34,6 +33,8 @@ using std::string;
 using std::vector;
 using std::map;
 using std::set;
+
+using namespace eolts;
 
 // #define DEBUG
 
@@ -167,7 +168,7 @@ int NetcdfReader::checkVarTypeCompatibility(int rmode1, int rmode2) {
  */
 SEXP NetcdfReader::read(const vector<string> & vnames,
         const vector<size_t>& startarg, const vector<size_t>&countarg)
-    NCEXCEPTION_CLAUSE
+    throw(NcException)
 {
     NcFileSet *fileset = _connection->getFileSet();
 
@@ -462,16 +463,8 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                 status = nc_get_vara_double(ncid,varid,&start.front(),&count.front(),
                         (double*)workPtr);
                 if (status != NC_NOERR) {
-#ifdef THROW_NCEXCEPTION
                     throw NcException("nc_get_vara_double",
                             var->getFileName(),var->getName(),status);
-#else
-                    std::ostringstream ost;
-                    ost<<  "Error in file " << var->getFileName() <<
-                        " variable " << var->getName() << ": nc_get_vara_double: " <<
-                            ::nc_strerror(status);
-                    error(ost.str().c_str());
-#endif
                 }
                 if (hasFillValue) {
                     double *fp = (double*)workPtr;
@@ -483,16 +476,8 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                 status = nc_get_vara_int(ncid,varid,&start.front(),&count.front(),
                         (int*)workPtr);
                 if (status != NC_NOERR) {
-#ifdef THROW_NCEXCEPTION
                     throw NcException("nc_get_vara_int",
                             var->getFileName(),var->getName(),status);
-#else
-                    std::ostringstream ost;
-                    ost<<  "Error in file " << var->getFileName() <<
-                        " variable " << var->getName() << ": nc_get_vara_int: " <<
-                            ::nc_strerror(status);
-                    error(ost.str().c_str());
-#endif
                 }
                 if (hasFillValue) {
                     int *fp = (int*)workPtr;
@@ -525,16 +510,8 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                         status = nc_get_vara_text(ncid,varid,&tstart.front(),
                                 &tcount.front(),tmpstr);
                         if (status != NC_NOERR) {
-#ifdef THROW_NCEXCEPTION
                             throw NcException("nc_get_vara_text",
                                     var->getFileName(),var->getName(),status);
-#else
-                            std::ostringstream ost;
-                            ost<<  "Error in file " << var->getFileName() <<
-                                " variable " << var->getName() << ": nc_get_vara_text: " <<
-                                    ::nc_strerror(status);
-                            error(ost.str().c_str());
-#endif
                         }
                         SET_STRING_ELT(array->getRObject(),lenRead + iread,mkCharLen(tmpstr,slen));
 
@@ -564,7 +541,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
 }
 
 size_t NetcdfReader::searchTime(NcVar* var,double stime,NetcdfReader::timeTests test)
-    NCEXCEPTION_CLAUSE
+    throw(NcException)
 {
     /*
      * Test:      GE:  find first record >= search time
@@ -687,7 +664,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
         const vector<int> &stations,
         const vector<string> &timeVarNames,
         const string &baseTimeName,
-        const string& timezone,bool readCounts) NCEXCEPTION_CLAUSE
+        const string& timezone,bool readCounts) throw(NcException)
 {
 
     int ifile,ivar;
@@ -899,7 +876,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
             if (n > (nrecAlloc + 100 * nrec)) n = nrecAlloc + 100 * nrec;
 
             if (nrecAlloc > 0)
-                Rprintf("Reallocating: %z records, previous=%z\n", n,nrecAlloc);
+                Rprintf("Reallocating: %zd records, previous=%zd\n", n,nrecAlloc);
 
 
 #ifdef DEBUG
@@ -907,32 +884,31 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                     n,ncols,nrecAlloc,n * ncols);
 #endif
             size_t nalloc = n * ncols * maxSampleDim;
-            size_t dsize;
 
             switch (rmode) {
             case INTSXP:
                 {
-                    dsize = idata.size();
+                    ptrdiff_t di = idataPtr - idataPtr0;
                     idata.resize(nalloc);
                     idataPtr0 = &idata.front();
-                    idataPtr = idataPtr0 + dsize;
+                    idataPtr = idataPtr0 + di;
                 }
                 break;
             case REALSXP:
                 {
-                    dsize = ddata.size();
+                    ptrdiff_t di = ddataPtr - ddataPtr0;
                     ddata.resize(nalloc);
                     ddataPtr0 = &ddata.front();
-                    ddataPtr = ddataPtr0 + dsize;
+                    ddataPtr = ddataPtr0 + di;
                 }
                 break;
             }
 
             if (!readCounts) {
-                dsize = times.size();
+                ptrdiff_t di = timesPtr - &times.front();
                 size_t nalloc = n * maxSampleDim;
                 times.resize(nalloc);
-                timesPtr = &times.front() + dsize;
+                timesPtr = &times.front() + di;
             }
             nrecAlloc = n;
         }
@@ -1184,6 +1160,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                 if (countsMap[colNum] == 0) {
                     string cname = var->getCharAttribute("counts");
 
+#undef length
                     if (cname.length() > 0) {
                         string groupName;
                         map<string,string>::iterator vi =

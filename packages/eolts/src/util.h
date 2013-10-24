@@ -13,7 +13,9 @@
 #include <vector>
 #include <string>
 
-#include <R/Rinternals.h>
+#include <stdlib.h>
+
+namespace eolts {
 
 std::string dimToString(const size_t* d, size_t nd);
 std::string dimToString(const ssize_t* d, size_t nd);
@@ -24,4 +26,6 @@ std::string dimToString(const std::vector<ssize_t>&d);
 std::string rModeToString(int rmode);
 
 int sizeOfRMode(int mode);
+
+}   // namespace eolts
 

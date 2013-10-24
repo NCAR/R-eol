@@ -16,6 +16,8 @@
 
 #include <string>
 
+namespace eolts {
+
 class NcFile;
 class NcVar;
 
@@ -41,6 +43,8 @@ protected:
     int _status;
 
 };
+
+}   // namespace eolts
 
 #endif
 

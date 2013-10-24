@@ -1,45 +1,46 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
 // vim: set shiftwidth=4 softtabstop=4 expandtab:
 
-#include <R.h>
-#include <Rinternals.h>
-
-#include "NcFileSetSummary.h"
-#include "NcFile.h"
-#include "util.h"
-
 #include <sstream>
 
 #include <vector>
 #include <set>
 #include <string>
 
+#include "NcFileSetSummary.h"
+#include "NcFile.h"
+#include "util.h"
+
+// include <R.h> after <sstream>, otherwise you'll get a compile error on Mac OS X:
+// /usr/include/c++/4.2.1/bits/codecvt.h: error: macro "length" passed 4 arguments, but takes just 1
+#include <R.h>  // warning
+
 // #define DEBUG
 
 using std::vector;
 using std::set;
 using std::string;
-/**
-*/
+
+using namespace eolts;
+
 NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
         const vector<string> &varnames,const vector<int> &stations,
-        bool getCounts) NCEXCEPTION_CLAUSE :
+        bool getCounts) throw(NcException) :
     _fileset(fs), _vnames(varnames),_nvars(varnames.size()),
+    _firstFile(-1),
+    _outType(NC_NAT),   // not a type
     _dims(vector<vector<size_t> >(_nvars)),
     _unitsNames(vector<string>(_nvars)),
+    _firstDims(),
     _sampleDims(vector<size_t>(_nvars)),
     _stationDims(vector<size_t>(_nvars)),
     _stationVar(vector<bool>(_nvars)),
-    _nfoundvars(0),_ncolOut(0)
+    _nfoundvars(0),_firstVar(-1),_maxSampleDim(1),
+    _ncolOut(0),_stationStart(0),_stationCount(0)
 {
     int nfiles = _fileset->getNFiles();
 
-    _outType = NC_NAT;		// not a type
-
     int ifile;
-
-    _firstFile = -1;
-    _firstVar = -1;
 
     /* determine start and count for station dimension */
     /* the stations arg is not empty */
@@ -59,8 +60,6 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
     _stationStart = minStation;
     if (maxStation >= minStation) _stationCount = maxStation - minStation + 1;
     else _stationCount = 0;
-
-    _maxSampleDim = 1;
 
     /*
      * scan over dimensions of all requested variables.

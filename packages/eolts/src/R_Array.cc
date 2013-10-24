@@ -10,14 +10,14 @@
  *    R_Array constructors for the supported types
  * 
  */
-#include <string.h>
+// #include <string.h>
+
 #include "R_Array.h"
 
 using std::vector;
 using std::string;
 
-// template class R_Array<double>;
-// template class R_Array<int>;
+namespace eolts {
 
 template<>
 double *R_Array<double>::getDataPtr()
@@ -185,3 +185,4 @@ SEXP set_adimnames(SEXP x, SEXP names)
 }
 }
 
+}   // namespace eolts

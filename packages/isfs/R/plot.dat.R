@@ -194,10 +194,10 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
             plot.nts(datacol,xlim=xlim,type="n",col=1,
               xaxt=xaxt.tmp,yaxt="n",ylim=ylim1,axes=T,ylab="",xlab=xlab,
                       err=-1,cex=cex,log=log,...)
-            if (!bottom.row && xaxt != "n") time.axis(1,labels=F,tick=T,time.zone=x@time.zone)
+            if (!bottom.row && xaxt != "n") timeaxis(1,labels=F,tick=T,time.zone=x@time.zone)
 
             # put GMT across top of first row
-            if (xaxt != "n") time.axis(3,labels=first.row,tick=T,time.zone="GMT")
+            if (xaxt != "n") timeaxis(3,labels=first.row,tick=T,time.zone="GMT")
             xaxes.done <- T
         }
 
@@ -500,8 +500,13 @@ plot.dat.limits <- function(data,ylim,one.scale=F)
 
     if (one.scale) {
         ylim <- range(unlist(sapply(unique(dnames),
-            function(x,d,dn){l<-list();l[[x]] <- range(clip(d[,dn==x]),na.rm=T);l},
-              data,dnames)),na.rm=T)
+            function(x,d,dn)
+            {
+                l<-list()
+                l[[x]] <- range(clip(d[,dn==x]),na.rm=T)
+                l
+            },
+            data,dnames)),na.rm=T)
         return(list(nscales=1,ylim=ylim,yscales=yscales))
     }
 
@@ -590,7 +595,12 @@ plot.dat.limits <- function(data,ylim,one.scale=F)
         if (any(ylmtch == 0)) {
             # No values in ylim for these variables
             ylims.for.units <- range(unlist(sapply(dnames.u[ylmtch==0],
-              function(x,d,dn){l<-list();l[[x]] <- range(clip(d[,dn==x]),na.rm=T);l},
+                function(x,d,dn)
+                {
+                    l<-list()
+                    l[[x]] <- range(clip(d[,dn==x]),na.rm=T)
+                    l
+                },
                 data,dnames)),na.rm=T)
             ylim.res[dnameunits.u[ylmtch==0]] <- list(ylims.for.units)
             iscale <- iscale + 1
@@ -613,7 +623,11 @@ horiz.legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,cex=par("cex"),
     # this makes a more compact legend than legend()
     uxy <- par("usr")
     parcex <- par("cex")
-    cxy <- par("cxy") * cex / parcex
+    # cxy <- par("cxy") * cex / parcex
+    cxy <- c(strwidth("X"),strheight("X")) * cex / parcex
+
+    # cat("cex=",cex,",parcex=",parcex,"\n")
+    # cat("cxy=",cxy,",dy=",(uxy[4]-uxy[3]),",nrows=",(uxy[4]-uxy[3])/cxy[2],"\n")
 
     nl <- length(legend)
 
@@ -689,4 +703,70 @@ fun.logo.stamp <- function(print.motto=T)
 
     mtext(string,side=1,line=oma[1]-lineoff,outer=T,adj=0)
 
+}
+std.par <- function(nyscales=1,prows=NULL,pcols=NULL,rscale=1,lscale=1)
+{
+    # This function sets the par options: par,mar and mfrow based on input.
+    #
+    # nyscales:  number of scales desired on y axis
+    #	room for these scales will be set aside using the mar
+    #	parameter to par, in an alternating fashion, first on
+    #	on the left, then right,left etc.
+    # prows,pcols:	number of rows and columns of plots,
+    #	used in par(mfrow=c(prows,pcols))
+    #	This function does the par(mfrow=xxx), because it
+    #	then adjusts cex and mex afterwards
+    # rscale:	minimum number of scales to provide on the right
+    # lscale:	minimum number of scales to provide on the left
+    #	Use rscale,lscale if you want to set aside space in a plot
+    #	so that the axes line up with another plot.
+    #
+    # We reduce wasted space in stacked plots (prows > 1) by reducing
+    # the margin lines above and below each plot, and use the outer
+    # margin lines for the top and bottom axis labels. This works
+    # well when all plots have the same time axis, and the
+    # time labels do not need to be repeated for each plot.
+
+    mfrows <- par("mfrow")
+
+    # if prows or pcols is NULL, then don't change
+    if (is.null(prows)) prows <- mfrows[1]
+    if (is.null(pcols)) pcols <- mfrows[2]
+
+    cex <- par("cex")		# get cex before calling mfrow
+                                  # par(mfrow=...) changes cex
+
+    if (any(mfrows != c(prows,pcols)))
+      par(mfrow=c(prows,pcols))
+
+    # lines of margin on each side of plot
+    # default values
+    mar <- c(5,4,4,2)+.1	
+
+    # outer margin lines
+    oma <- rep(0,4)
+
+    mar[1] <- 0.5
+    mar[3] <- 0.5
+
+    oma[1] <- 4.1 - mar[1]
+    oma[3] <- 4.1 - mar[3]
+
+    oma[2] <- oma[4] <- 1.1
+    mgp <- c(1.2,0.2,0)		# line of axis title, labels, axis
+
+    # separate Y scales, reserve margin space
+    lscales <- (nyscales-1) %/% 2 + 1
+    rscales <- nyscales %/% 2
+
+    if (lscales < lscale) lscales <- lscale
+    if (rscales < rscale) rscales <- rscale
+
+    mar[2] <- (mgp[1] + 1.0) * lscales + 0.1
+    mar[4] <- (mgp[1] + 1.0) * rscales + 0.1
+
+    # warning:  put cex and mex before mar and oma in this par call.
+    # Set cex to original value, and mex to cex, so margin lines are
+    # measured in cex units
+    c(par(cex=cex,mex=cex,oma=oma,mar=mar,mgp=mgp),list(mfrow=mfrows))
 }

@@ -2,6 +2,7 @@
 #               Copyright (C) by UCAR
 # 
 
+setGeneric("plot")
 setMethod("plot",signature(x="nts",y="missing"),
     function(x,...)
     {
@@ -15,9 +16,9 @@ setMethod("plot",signature(x="nts",y="nts"),
     {
         dots <- list(...)
         if (hasArg(xlab)) xlab <- dots$xlab
-        else xlab <- deparseText(substitute(x))
+        else xlab <- deparse(substitute(x))
         if (hasArg(ylab)) ylab <- dots$ylab
-        else ylab <- deparseText(substitute(y))
+        else ylab <- deparse(substitute(y))
         invisible(plot(x@data, y@data,xlab=xlab,ylab=ylab, ...))
     }
 )
@@ -27,9 +28,9 @@ setMethod("plot",signature(x="nts",y="numeric"),
     {
         dots <- list(...)
         if (hasArg(xlab)) xlab <- dots$xlab
-        else xlab <- deparseText(substitute(x))
+        else xlab <- deparse(substitute(x))
         if (hasArg(ylab)) ylab <- dots$ylab
-        else ylab <- deparseText(substitute(y))
+        else ylab <- deparse(substitute(y))
         invisible(plot(x@data, y,xlab=xlab,ylab=ylab, ...))
     }
 )
@@ -148,7 +149,7 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
     if (xaxs == "d") {
         tmp.xaxs <- "d"
         if (! exists(".plot.nts.scale",envir=.eoltsEnv)) {
-            stop("plot.nts.scale does not exist. Cannot plot with xaxs='d'");
+            stop("plot.nts.scale does not exist. Cannot plot with xaxs='d'")
         }
         plot.nts.scale <- get(".plot.nts.scale",envir=.eoltsEnv)
         scalef <- plot.nts.scale$scale
@@ -314,7 +315,7 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
     plot.nts.scale <- list(scale=scalef,off=x0,tlab=tlab,cex=cex)
     assign(".plot.nts.scale",plot.nts.scale,envir=.eoltsEnv)
 
-    if (plotaxes && xlab != "") time.label(xlab=xlab,cex=cex)
+    if (plotaxes && xlab != "") timelabel(xlab=xlab,cex=cex)
 
     if (nc > 1) {
         ncolor <- length(col)
@@ -327,11 +328,11 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
    
     invisible(plot.nts.scale)
 }
-time.axis <- function(side,labels=T,tick=T,time.zone,
+timeaxis <- function(side,labels=T,tick=T,time.zone,
 	cex=NULL,date.too=F,line=0,outer=F,...)
 {
     if (! exists(".plot.nts.scale",envir=.eoltsEnv)) {
-        stop("plot.nts.scale does not exist. Cannot add time.axis to ordinary plot")
+        stop("plot.nts.scale does not exist. Cannot add time axis to ordinary plot")
     }
  
     plot.nts.scale = get(".plot.nts.scale",envir=.eoltsEnv)
@@ -392,10 +393,10 @@ time.axis <- function(side,labels=T,tick=T,time.zone,
         axis(side,at=(xmtics-x0)/scalef,labels=F,tick=tick,tck=tck,xaxt="s",...)
     }
 }
-time.label <- function(side=1,outer=F,line=par("mgp")[1],cex=NULL,xlab=NULL)
+timelabel <- function(side=1,outer=F,line=par("mgp")[1],cex=NULL,xlab=NULL)
 {
     if (! exists(".plot.nts.scale",envir=.eoltsEnv)) {
-        stop("plot.nts.scale does not exist. Cannot add time.axis to ordinary plot")
+        stop("plot.nts.scale does not exist. Cannot add time label to ordinary plot")
     }
  
     plot.nts.scale = get(".plot.nts.scale",envir=.eoltsEnv)
@@ -421,6 +422,7 @@ time.label <- function(side=1,outer=F,line=par("mgp")[1],cex=NULL,xlab=NULL)
     mtext(xlab,side=side,line=line,outer=outer,cex=cex)
 }
 
+setGeneric("lines")
 setMethod("lines",signature(x="nts"),
     function(x,...)
     {
@@ -441,6 +443,7 @@ lines.nts <- function(x,...)
     lines(tx,x@data,...)
 }
 
+setGeneric("points")
 setMethod("points",signature(x="nts"),
     function(x,...)
     {
@@ -469,7 +472,7 @@ xlabel.nts <- function(deltat)
     # deltat:  Minimum width in seconds of a time label.
     #	   For example, if a plot is 6 inches wide, representing	
     #	   360 seconds, and a character is 1/6 inch wide, then
-    #	   each character is 10 seconds wide.  A time lable is
+    #	   each character is 10 seconds wide.  A time label is
     #	   about 8 character, so deltat should be 80.
     # Time label deltas, each about .5 of preceding.
     tdel <- c(
@@ -519,16 +522,16 @@ xlabel.nts <- function(deltat)
    
     tformats <- c(
        "%Y",		#  1 YYYY
-       "%Y %b %2d",	#  2 YYYY MON DAY
-       "%b %2d",		#  3    MON DAY
-       "%b %2d %02H%02M",	#  4    MON DAY HRMM
-       "%02H%02M",		#  5        HHMM
-       "%02H%02M%02S",		#  6        HHMMSS
-       "%02H%02M%02S",		#  7        HHMMSS
-       "%02H%02M%02S.%01N",	#  8        HHMMSS.M
-       "%02H%02M%02S.%02N",	#  9        HHMMSS.MM
-       "%02H%02M%02S.%03N",	#  10       HHMMSS.MMM
-       "%02H%02M%02S.%04N")	#  11       HHMMSS.MMMM
+       "%Y %b %d",      #  2 YYYY MON DAY
+       "%b %d",		#  3    MON DAY
+       "%b %d %H%M",    #  4    MON DAY HRMM
+       "%H%M",		#  5        HHMM
+       "%H%M%S",	#  6        HHMMSS
+       "%H%M%S",	#  7        HHMMSS
+       "%H%M%S.%OS1",	#  8        HHMMSS.M
+       "%H%M%S.%OS2",	#  9        HHMMSS.MM
+       "%H%M%S.%OS2",	#  10       HHMMSS.MMM
+       "%H%M%S.%OS2")	#  11       HHMMSS.MMMM
 
     # Format of extra label on first major tic mark, plotted below regular label
     extraformats <- c(
@@ -536,13 +539,13 @@ xlabel.nts <- function(deltat)
        "%Z",		#  2 YYYY MON DAY
        "%Y %Z",		#  3      MON DAY
        "%Y %Z",		#  4      MON DAY HHMM
-       "%Y %b %2d %Z",	#  5              HHMM
-       "%Y %b %2d %Z",	#  6              HHMMSS
-       "%Y %b %2d %Z",	#  7              HHMMSS
-       "%Y %b %2d %Z",	#  8              HHMMSS.M
-       "%Y %b %2d %Z",	#  9              HHMMSS.MM
-       "%Y %b %2d %Z",	#  10             HHMMSS.MMM
-       "%Y %b %2d %Z")	#  11             HHMMSS.MMMM
+       "%Y %b %d %Z",	#  5              HHMM
+       "%Y %b %d %Z",	#  6              HHMMSS
+       "%Y %b %d %Z",	#  7              HHMMSS
+       "%Y %b %d %Z",	#  8              HHMMSS.M
+       "%Y %b %d %Z",	#  9              HHMMSS.MM
+       "%Y %b %d %Z",	#  10             HHMMSS.MMM
+       "%Y %b %d %Z")	#  11             HHMMSS.MMMM
 
     #  Mapping of delta index to format
     tltype <- c(
@@ -643,7 +646,7 @@ setMethod("abline",signature(a="missing",b="missing",h="missing",v="utime"),
 setMethod("abline",signature(a="missing",b="missing",h="numeric",v="missing"),
     function(h,...)
     {
-        abline.default(h=h,...)
+        abline(h=h,...)
     }
 )
 
@@ -654,7 +657,12 @@ tlocator <- function(n=1,type="n",...)
     else
         cat("Use mouse to select times on the plot.\nClick middle button, or both buttons on two button mouse to terminate ... ")
 
-    times <- utime(locator(n,type=type,...)$x * plot.ats.scale$scale + plot.ats.scale$off)
+    if (! exists(".plot.nts.scale",envir=.eoltsEnv)) {
+        stop("plot.nts.scale does not exist.")
+    }
+    plot.nts.scale <- get(".plot.nts.scale",envir=.eoltsEnv)
+
+    times <- utime(locator(n,type=type,...)$x * plot.nts.scale$scale + plot.nts.scale$off)
     cat("done\n")
     times
 }

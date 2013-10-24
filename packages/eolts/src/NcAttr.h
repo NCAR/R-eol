@@ -17,6 +17,10 @@
 
 #include "NcVar.h"
 // #include "NcException.h"
+//
+
+
+namespace eolts {
 
 /**
  * Class providing necessary information about a NetCDF variable.
@@ -29,7 +33,7 @@ protected:
 public:
 
     static NcAttr *createNcAttr(NcVar *var,
-            int attnum) NCEXCEPTION_CLAUSE;
+            int attnum) throw(NcException);
 
     NcAttr(std::string name,nc_type type) : _name(name),_nctype(type) {}
     virtual ~NcAttr();
@@ -43,5 +47,7 @@ public:
     virtual double getNumericValue(int i) const = 0;
 
 };
+
+}   // namespace eolts
 
 #endif

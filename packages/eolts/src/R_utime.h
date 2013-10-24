@@ -1,10 +1,12 @@
 #ifndef R_UTIME_H
 #define R_UTIME_H
 
+#include <string>
+
 #include <R.h>
 #include <Rinternals.h>
 
-#include <string>
+namespace eolts {
 
 class R_utime {
 protected:
@@ -25,6 +27,8 @@ public:
     void setTime(size_t index,double t);
     double getTime(size_t index);
 
+    double* getTimePtr();
+
     void setLength(size_t nr);
     size_t getLength();
 
@@ -36,5 +40,7 @@ private:
     R_utime(const R_utime &);
     R_utime &operator=(const R_utime &);
 };
+
+}   // namespace eolts
 
 #endif

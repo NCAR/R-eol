@@ -15,8 +15,8 @@ setClass("netcdf",
         cppPtr="raw"
         ),
     prototype=list(
-        file=Sys.getenv("SURF_NETCDF_FILE"),
-        dir=Sys.getenv("SURF_NETCDF_DIR"),
+        file=Sys.getenv("R_NETCDF_FILE"),
+        dir=Sys.getenv("R_NETCDF_DIR"),
         start=utime(0),
         end=utime(0),
         lenfile=as.integer(86400),
@@ -27,8 +27,8 @@ setClass("netcdf",
 )
 
 netcdf = function(
-        file=Sys.getenv("SURF_NETCDF_FILE"),
-        dir=Sys.getenv("SURF_NETCDF_DIR"),
+        file=Sys.getenv("R_NETCDF_FILE"),
+        dir=Sys.getenv("R_NETCDF_DIR"),
         start=dpar("start"),
         end=dpar("end"),
         lenfile=dpar("lenfile"),
@@ -43,31 +43,10 @@ netcdf = function(
         lenfile=as.integer(lenfile),
         server=server,interval=interval,cdlfile=cdlfile)
 
-    if (FALSE) {
-    sfile = file
-    substring(sfile,"%y") <- "%02y"
-    substring(sfile,"%m") <- "%02m"
-    substring(sfile,"%d") <- "%02d"
-    substring(sfile,"%j") <- "%03D"
-    substring(sfile,"%H") <- "%02H"
-    substring(sfile,"%M") <- "%02M"
-    substring(sfile,"%S") <- "%02S"
-
-    obj@filenamefmt = file
-    obj@lenfile = as(lenfile,"integer")
-
-    obj@interval = as(interval,"numeric")
-
-    obj@server = as.character(server)
-
-    obj@start = as(start,"utime")
-    obj@end = as(end,"utime")
-    }
-
-    if (lenfile == 31 * 86400) times = monthly(from=utime(start,zone="GMT"),to=end-1)
+    if (lenfile == 31 * 86400) times = monthly(from=utime(start,time.zone="GMT"),to=end-1)
     else times = utime(seq(from=floor(start/lenfile)*lenfile,to=end-1,by=lenfile))
 
-    obj@file = unique(format(times,format=as(file,"character"),TZ="GMT"))
+    obj@file = unique(format(times,format=as(file,"character"),time.zone="GMT"))
 
     .Call("open_netcdf",obj,cdlfile,300,300,PACKAGE="eolts")
 }

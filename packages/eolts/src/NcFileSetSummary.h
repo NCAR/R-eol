@@ -18,58 +18,14 @@
 
 #include "NcFileSet.h"
 
+namespace eolts {
+
 class NcFileSetSummary {
-protected:
-    void checkType(NcVar* );
-    void resolveOutType();
-
-    NcFileSet *_fileset;
-
-    std::vector <std::string> _vnames;
-    int _nvars;
-
-    int _firstFile;	/* first file with a requested variable */
-
-    nc_type _outType;
-
-    /* dimensions of each chosen variable */
-    std::vector <std::vector<size_t> > _dims;
-
-    /** units of each variable */
-    std::vector <std::string> _unitsNames;
-
-    /* size of first dimension of requested variables in each file */
-    std::vector <size_t> _firstDims;
-
-    /** value of "sample" dimension of each variable */
-    std::vector <size_t> _sampleDims;
-
-    /** value of "station" dimension of each variable. 1 if no station dim */
-    std::vector <size_t> _stationDims;
-
-    /** logical for each variable, if it has a "station" dimension */
-    std::vector <bool> _stationVar;
-
-    int _nfoundvars;
-    int _firstVar;
-
-    /** maximum value of the sample dimension of requested variables */
-    size_t _maxSampleDim;
-
-    /** number of columns in output matrix of requested variables */
-    size_t _ncolOut;
-
-    /** starting value of station dimension */
-    size_t _stationStart;
-
-    /** how many stations requested */
-    size_t _stationCount;
-
 public:
 
     NcFileSetSummary(NcFileSet *fileset,
             const std::vector<std::string>& varnames,
-            const std::vector<int>&stations,bool getCounts) NCEXCEPTION_CLAUSE;
+            const std::vector<int>&stations,bool getCounts) throw(NcException);
     ~NcFileSetSummary();
 
     /** index from 0 to _fileset->getNFiles()-1 of first existing file */
@@ -114,6 +70,61 @@ public:
 
     /** does variable i have a station dimension */
     int isStationVariable(int i) const { return _stationVar[i]; }
+
+private:
+
+    void checkType(NcVar* );
+
+    void resolveOutType();
+
+    NcFileSet *_fileset;
+
+    std::vector <std::string> _vnames;
+    int _nvars;
+
+    int _firstFile;	/* first file with a requested variable */
+
+    nc_type _outType;
+
+    /* dimensions of each chosen variable */
+    std::vector <std::vector<size_t> > _dims;
+
+    /** units of each variable */
+    std::vector <std::string> _unitsNames;
+
+    /* size of first dimension of requested variables in each file */
+    std::vector <size_t> _firstDims;
+
+    /** value of "sample" dimension of each variable */
+    std::vector <size_t> _sampleDims;
+
+    /** value of "station" dimension of each variable. 1 if no station dim */
+    std::vector <size_t> _stationDims;
+
+    /** logical for each variable, if it has a "station" dimension */
+    std::vector <bool> _stationVar;
+
+    int _nfoundvars;
+
+    int _firstVar;
+
+    /** maximum value of the sample dimension of requested variables */
+    size_t _maxSampleDim;
+
+    /** number of columns in output matrix of requested variables */
+    size_t _ncolOut;
+
+    /** starting value of station dimension */
+    size_t _stationStart;
+
+    /** how many stations requested */
+    size_t _stationCount;
+
+    // no copying, assignment
+    NcFileSetSummary(const NcFileSetSummary&);
+    NcFileSetSummary& operator=(const NcFileSetSummary&) const;
 };
+
+}   // namespace eolts
 
 #endif

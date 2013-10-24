@@ -11,10 +11,11 @@
  *    object.
  * 
  */
-#include <string.h>
-#include <assert.h>
+
+// #include <string.h>
 
 #include <sstream>
+#include <cassert>
 
 #include "R_NetcdfVariable.h"
 #include "NetcdfReader.h"
@@ -24,6 +25,8 @@
 
 using std::vector;
 using std::string;
+
+using namespace eolts;
 
 SEXP R_NetcdfVariable::classDef;
 SEXP R_NetcdfVariable::nameSlotName;

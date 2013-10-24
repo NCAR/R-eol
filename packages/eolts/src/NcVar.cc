@@ -11,8 +11,6 @@
  * 
  */
 
-#include <R.h>
-
 #include "NcFile.h"
 #include "NcVar.h"
 #include "NcDim.h"
@@ -23,9 +21,12 @@ using std::vector;
 using std::map;
 using std::pair;
 
-NcVar::NcVar(NcFile *nch,int varid) NCEXCEPTION_CLAUSE:
-_nch(nch),_varid(varid),_type(NC_NAT),
-    _edges(0),_length(0),_readAttr(false)
+using namespace eolts;
+
+
+NcVar::NcVar(NcFile *nch,int varid) throw(NcException):
+    _nch(nch),_varid(varid),_name(),_type(NC_NAT),
+    _edges(0),_length(0),_dims(),_attrVec(),_attrMap(),_readAttr(false)
 {
     char name[NC_MAX_NAME];
     int status = nc_inq_varname(getNcid(),_varid,name);
@@ -38,9 +39,9 @@ _nch(nch),_varid(varid),_type(NC_NAT),
     readDimensions();
 }
 
-NcVar::NcVar(NcFile *nch,const std::string& name) NCEXCEPTION_CLAUSE:
-_nch(nch),_name(name),_type(NC_NAT),
-    _edges(0),_length(0),_readAttr(false)
+NcVar::NcVar(NcFile *nch,const std::string& name) throw(NcException):
+    _nch(nch),_varid(-1),_name(name),_type(NC_NAT),
+    _edges(0),_length(0),_dims(),_attrVec(),_attrMap(),_readAttr(false)
 {
     int status = nc_inq_varid(getNcid(),name.c_str(),&_varid);
     if (status != NC_NOERR) {
@@ -55,7 +56,7 @@ NcVar::~NcVar() {
     for (unsigned int i = 0; i < _attrVec.size(); i++) delete _attrVec[i];
 }
 
-void NcVar::readDimensions() NCEXCEPTION_CLAUSE
+void NcVar::readDimensions() throw(NcException)
 {
     int ndims;
     int status = nc_inq_varndims(getNcid(),_varid,&ndims);
@@ -84,19 +85,19 @@ void NcVar::readDimensions() NCEXCEPTION_CLAUSE
     delete [] dimids;
 }
 
-int NcVar::getNumAttrs() NCEXCEPTION_CLAUSE
+int NcVar::getNumAttrs() throw(NcException)
 {
     if (!_readAttr) readAttrs();
     return _attrVec.size();
 }
 
-const std::vector<const NcAttr*> NcVar::getAttributes() NCEXCEPTION_CLAUSE
+const std::vector<const NcAttr*> NcVar::getAttributes() throw(NcException)
 {
     if (!_readAttr) readAttrs();
     return std::vector<const NcAttr*>(_attrVec.begin(),_attrVec.end());
 }
 
-const NcAttr *NcVar::getAttribute(const string& name) NCEXCEPTION_CLAUSE
+const NcAttr *NcVar::getAttribute(const string& name) throw(NcException)
 {
     if (!_readAttr) readAttrs();
     string sname(name);
@@ -105,7 +106,7 @@ const NcAttr *NcVar::getAttribute(const string& name) NCEXCEPTION_CLAUSE
     else return 0;
 }
 
-const string& NcVar::getCharAttribute(const string& name) NCEXCEPTION_CLAUSE
+const string& NcVar::getCharAttribute(const string& name) throw(NcException)
 {
     const NcAttr *attr = getAttribute(name);
     if (attr && attr->getNcType() == NC_CHAR) {
@@ -117,7 +118,7 @@ const string& NcVar::getCharAttribute(const string& name) NCEXCEPTION_CLAUSE
     return res;
 }
 
-void NcVar::readAttrs() NCEXCEPTION_CLAUSE
+void NcVar::readAttrs() throw(NcException)
 {
     int natts;
     int status = nc_inq_varnatts(getNcid(),_varid,&natts);
@@ -134,12 +135,12 @@ void NcVar::readAttrs() NCEXCEPTION_CLAUSE
     _readAttr = true;
 }
 
-const string& NcVar::getUnits() NCEXCEPTION_CLAUSE
+const string& NcVar::getUnits() throw(NcException)
 {
     return getCharAttribute("units");
 }
 
-void NcVar::readNcType() NCEXCEPTION_CLAUSE
+void NcVar::readNcType() throw(NcException)
 {
     int status = nc_inq_vartype(_nch->getNcid(),_varid,&_type);
     if (status != NC_NOERR) {

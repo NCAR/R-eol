@@ -20,6 +20,8 @@
 
 #include "NcFile.h"
 
+namespace eolts {
+
 class NcFile;
 class NcDim;
 class NcAttr;
@@ -28,23 +30,10 @@ class NcAttr;
  * Class providing necessary information about a NetCDF variable.
  */
 class NcVar {
-protected:
-    NcFile* _nch;
-    int _varid;
-    std::string _name;
-    nc_type _type;
-    size_t* _edges;
-    size_t _length;
-
-    std::vector<const NcDim*> _dims;
-    std::vector<NcAttr*> _attrVec;
-    std::map<std::string,NcAttr*> _attrMap;
-    bool _readAttr;
-
 public:
 
-    NcVar(NcFile* nch,int varid) NCEXCEPTION_CLAUSE;
-    NcVar(NcFile* nch,const std::string& name) NCEXCEPTION_CLAUSE;
+    NcVar(NcFile* nch,int varid) throw(NcException);
+    NcVar(NcFile* nch,const std::string& name) throw(NcException);
     ~NcVar();
 
     int getNcid() const { return _nch->getNcid(); }
@@ -67,25 +56,52 @@ public:
     size_t getEdge(int i) const { return _edges[i]; }
     size_t getLength() const { return _length; }
 
-    int getNumAttrs() NCEXCEPTION_CLAUSE;
-    const NcAttr* getAttribute(const std::string& name) NCEXCEPTION_CLAUSE;
-    const std::string& getCharAttribute(const std::string& name) NCEXCEPTION_CLAUSE;
-    const std::vector<const NcAttr*> getAttributes() NCEXCEPTION_CLAUSE;
+    int getNumAttrs() throw(NcException);
+    const NcAttr* getAttribute(const std::string& name) throw(NcException);
+    const std::string& getCharAttribute(const std::string& name) throw(NcException);
+    const std::vector<const NcAttr*> getAttributes() throw(NcException);
 
-    const std::string& getUnits() NCEXCEPTION_CLAUSE;
+    const std::string& getUnits() throw(NcException);
 
-    std::string typeToString() const NCEXCEPTION_CLAUSE
+    std::string typeToString() const throw(NcException)
     { return typeToString(getNcType()); }
 
     static std::string typeToString(nc_type type);
 
     bool matchDimension(const NcDim* dim, unsigned int idim);
 
-    void readDimensions(void) NCEXCEPTION_CLAUSE;
+    void readDimensions(void) throw(NcException);
 
 protected:
-    void readAttrs(void) NCEXCEPTION_CLAUSE;
-    void readNcType() NCEXCEPTION_CLAUSE;
+    void readAttrs(void) throw(NcException);
+    void readNcType() throw(NcException);
+
+private:
+    NcFile* _nch;
+
+    int _varid;
+
+    std::string _name;
+
+    nc_type _type;
+
+    size_t* _edges;
+
+    size_t _length;
+
+    std::vector<const NcDim*> _dims;
+
+    std::vector<NcAttr*> _attrVec;
+
+    std::map<std::string,NcAttr*> _attrMap;
+
+    bool _readAttr;
+
+    // no copying, assignment
+    NcVar(const NcVar&);
+    NcVar& operator=(const NcVar&) const;
 };
+
+}   // namespace eolts
 
 #endif

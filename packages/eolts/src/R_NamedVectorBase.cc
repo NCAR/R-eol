@@ -13,10 +13,12 @@
 #include "R_NamedVectorBase.h"
 #include "util.h"
 
-#include <string.h>
+// #include <string.h>
 
 using std::vector;
 using std::string;
+
+using namespace eolts;
 
 /*
  * R "named" class

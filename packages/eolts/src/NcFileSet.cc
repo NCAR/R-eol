@@ -10,27 +10,31 @@
  *    A collection of NetCDF files
  * 
  */
-#include <R.h>
 
-#include <string.h>
+// #include <string.h>
 
 #include <vector>
 #include <string>
 #include <set>
 #include <map>
 
+#include "NcFileSet.h"
+#include "NcFile.h"
+#include "NcVar.h"
+
+#include <R.h>  // Rprintf()
+
 using std::vector;
 using std::string;
 using std::set;
 using std::map;
 
-#include "NcFileSet.h"
-#include "NcFile.h"
-#include "NcVar.h"
+using namespace eolts;
 
 NcFileSet::NcFileSet(const vector<string>& fnames):
     MAX_FILES_OPEN(40),_files(0),_nfiles(fnames.size()),
-    _nopen(0),_nextToOpen(0),_nextToClose(0)
+    _nopen(0),_nextToOpen(0),_nextToClose(0),
+    _possibleTimeDimensionNames()
 {
     _files = new NcFile*[_nfiles];
 
@@ -99,7 +103,7 @@ const string& NcFileSet::getFileName(int ifile) {
 /**
  * Return an vector of names of all variables.
  */
-vector<string> NcFileSet::getVariableNames() NCEXCEPTION_CLAUSE
+vector<string> NcFileSet::getVariableNames() throw(NcException)
 {
 
     set<string> vset;
@@ -115,7 +119,7 @@ vector<string> NcFileSet::getVariableNames() NCEXCEPTION_CLAUSE
 }
 
 const vector<const NcDim*>& NcFileSet::getVariableDimensions(string vname)
-    NCEXCEPTION_CLAUSE
+    throw(NcException)
 {
 
     vector<NcDim*> dims;
@@ -131,7 +135,7 @@ const vector<const NcDim*>& NcFileSet::getVariableDimensions(string vname)
     return res;
 }
 
-map<int,string> NcFileSet::getStations() NCEXCEPTION_CLAUSE
+map<int,string> NcFileSet::getStations() throw(NcException)
 {
 
     size_t nstations = 0;

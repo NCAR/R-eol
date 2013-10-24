@@ -18,6 +18,8 @@
 
 #include "R_NetcdfConnection.h"
 
+namespace eolts {
+
 class R_NetcdfVariable {
 
 public:
@@ -63,5 +65,7 @@ private:
     R_NetcdfVariable &operator=(const R_NetcdfVariable &);
 
 };
+
+}   // namespace eolts
 
 #endif

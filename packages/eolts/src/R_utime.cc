@@ -7,6 +7,8 @@
 
 using std::string;
 
+using namespace eolts;
+
 SEXP R_utime::classDef;
 SEXP R_utime::dotDataSlotName;
 
@@ -42,6 +44,9 @@ R_utime::R_utime(SEXP obj) : _obj(obj),_length(0),_pindx(-1)
 
 R_utime::~R_utime()
 {
+#ifdef DEBUG
+    Rprintf("~R_utime, _pindx=%d\n",_pindx);
+#endif
     if (_pindx >= 0) UNPROTECT(1);
 }
 
@@ -70,5 +75,10 @@ double R_utime::getTime(size_t index)
 #endif
     if (index >= _length) return NA_REAL;
     return REAL(_obj)[index];
+}
+
+double* R_utime::getTimePtr()
+{
+    return REAL(_obj);
 }
 

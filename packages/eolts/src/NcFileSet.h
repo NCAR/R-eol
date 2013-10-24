@@ -22,6 +22,8 @@
 #include "NcVar.h"
 #include "NcDim.h"
 
+namespace eolts {
+
 /*
  * An ordered sequence of files, not all of which are open.
  * They are accessed in sequence, which allows some simplification
@@ -37,12 +39,12 @@ public:
     NcFile *getNcFile(int ifile);
     const std::string& getFileName(int ifile);
 
-    std::vector<std::string> getVariableNames() NCEXCEPTION_CLAUSE;
+    std::vector<std::string> getVariableNames() throw(NcException);
 
     // std::vector<std::string> getStationNames();
     // int hasNonStationTSVariables();
 
-    const std::vector<const NcDim*>& getVariableDimensions(std::string vname) NCEXCEPTION_CLAUSE;
+    const std::vector<const NcDim*>& getVariableDimensions(std::string vname) throw(NcException);
 
     void addTimeDimensionName(const std::string& name);
 
@@ -52,15 +54,15 @@ public:
         return _possibleTimeDimensionNames;
     }
 
-    NcVar* getTimeVariable(NcFile* ncf) NCEXCEPTION_CLAUSE;
+    NcVar* getTimeVariable(NcFile* ncf) throw(NcException);
 
     /**
      * Retrieve mapping of station number to name, read from
      * first file with a station dimension and variable.
      */
-    std::map<int,std::string> getStations() NCEXCEPTION_CLAUSE;
+    std::map<int,std::string> getStations() throw(NcException);
 
-protected:
+private:
     const int MAX_FILES_OPEN;
 
     NcFile **_files;
@@ -78,6 +80,12 @@ protected:
 
     std::set<std::string> _possibleTimeDimensionNames;
 
+    // no copying, assignment
+    NcFileSet(const NcFileSet&);
+    NcFileSet& operator=(const NcFileSet&) const;
+
 };
+
+}   // namespace eolts
 
 #endif

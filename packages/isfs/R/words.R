@@ -5,38 +5,17 @@ nwords <- function(s,sep=".")
 
 words <- function(x,first=1,last=1000000,sep=".")
 {
-    if (length(first) * length(last) == 1) {
-        sapply(x,
-            function(x,first,last,sep)
-            {
-                # cat("sep=",sep,",first=",first,",last=",last,"\n")
-                x = unlist(strsplit(x,split=sep,fixed=TRUE))
-                nw = length(x)
-                if (first <= nw) {
-                    last = min(last,nw)
-                    # cat("length(x)=",length(x),"\n")
-                    paste(x[first:last],collapse=sep)
-                }
-                else ""
-            },first,last,sep)
-    }
-    else {
-        sapply(1:length(x),
-            function(i,x,first,last,sep)
-            {
-                # cat("sep=",sep,",first=",first,",last=",last,"\n")
-                x = unlist(strsplit(x[i],split=sep,fixed=TRUE))
-                nw = length(x)
-                fi = i
-                if (fi > length(first)) fi = (i %% length(first)) + 1
-                li = i
-                if (li > length(last)) li = (i %% length(last)) + 1
-                if (first[fi] <= nw) {
-                    last = min(last[li],nw)
-                    # cat("length(x)=",length(x),"\n")
-                    paste(x[first[fi]:last],collapse=sep)
-                }
-                else ""
-            },x,first,last,sep)
-    }
+
+    if (length(first) == 1) first = rep(first,length(x))
+    if (length(last) == 1) last = rep(last,length(x))
+    sapply(1:length(first),
+       function(i,x,first,last,sep)
+       {
+           xi = i
+           if (xi > length(x)) xi = ((i-1) %% length(x)) + 1
+           x = unlist(strsplit(x[xi],split=sep,fixed=TRUE))
+           if (last[i] > length(x)) last[i] = length(x)
+           if (last[i] < first[i]) ""
+           else paste(x[first[i]:last[i]],collapse=sep)
+       },x,first,last,sep)
 }

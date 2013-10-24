@@ -20,9 +20,11 @@ nts <- function(data,positions,names,units,weights,weightmap,stations,wss,time.f
     ret = new("nts")
    
     if(missing(positions) || missing(data)) return(ret)
+
     ret@data = asSeriesData(data)
     if (!is.matrix(ret@data)) ret@data <- matrix(ret@data,ncol=1)
-    ret@positions = as(as(positions,"utime"),"timeDate")
+    ret@positions = as(positions,"utime")
+
     # ret@positions@format = unlist(options("time.out.format"))
 
     if (length(ret@positions) != nrow(ret@data))
@@ -44,11 +46,12 @@ nts <- function(data,positions,names,units,weights,weightmap,stations,wss,time.f
     else ret@units = rep("",ncol(ret@data))
 
     if (!missing(names)) dimnames(ret@data) <- list(NULL,names)
-    if (!missing(weightmap)) ret@weightmap = weightmap
+    if (!missing(weightmap)) ret@weightmap = as.integer(weightmap)
     if (!missing(weights)) ret@weights = weights
 
     if (missing(stations) || length(stations) == 0)
           stations = rep(NA_integer_,ncol(ret@data))
+    else if (!is.integer(stations)) stations = as.integer(stations)
     if (!is(stations,"named")) names(stations) <- rep("",length(stations))
     ret@stations = stations
 
@@ -333,7 +336,7 @@ match.nts <- function(e1,e2,dt=options("dt.eps")[[1]],...)
     e2 <- as.numeric(as(e2@positions,"utime"))
 
     if (is.null(dt)) 
-      if (is.na(dt <- min(d1[1],d2[1]) * .01 / 86400)) dt <- 1/86400
+      if (is.na(dt <- min(d1[1],d2[1]) * .01)) dt <- 1
 
     # avoid warnings of non-unique indices if there are repeated
     # timetags but the two sets are identical
@@ -364,9 +367,7 @@ match.delta <- function(e1,e2,delta,cond="nearest")
 
         mx2 = .C("match_within",
             e1,l1,e2,l2,delta,icond,match=ii,
-            COPY=c(F,F,F,F,F,F,F),
-            CLASSES=c("numeric","integer","numeric","integer","numeric",
-              "integer","integer"))[["match"]]
+            package="eolts")
         mx[mx==0] = mx2
     }
     mx
@@ -488,7 +489,10 @@ setMethod("[",signature(x="nts"),
 
         if (length(weightmap) > 0) {
             weightmap <- weightmap[j]
-            if (all(weightmap==0)) weights <- weightmap <- NULL
+            if (length(weightmap) == 0) {
+                weights = matrix(ncol=0,nrow=0)
+                weightmap = integer(0)
+            }
             else if (length(weights) > 0) {
                 uw <- unique(weightmap)
                 uw <- uw[uw!=0]
@@ -497,7 +501,7 @@ setMethod("[",signature(x="nts"),
                 weights <- weights[i,uw,drop=FALSE]
             }
         }
-        else weights <- NULL
+        else weights <- matrix(ncol=0,nrow=0)
 
         if (!is.null(weights)) {
             x@weights = weights
@@ -774,7 +778,7 @@ setMethod("Math",signature(x="nts"),
 setMethod("atan2",signature(y="nts",x="nts"),
     function(y,x)
     {
-        if (length(tol <- options("dt.eps")[[1]] / 86400) == 0) {
+        if (length(tol <- options("dt.eps")[[1]]) == 0) {
             d1 <- deltat(y)
             d2 <- deltat(x)
 
@@ -784,9 +788,9 @@ setMethod("atan2",signature(y="nts",x="nts"),
             if (!is.null(d2) && nrow(x) > 1 && !is.na(d2["min"]) &&
               d2["min"] < 0) warning("Second time series is not ordered. align results are probably not correct")
 
-            # If dt.eps is not defined, use .1 of deltat, expressed in days.
+            # If dt.eps is not defined, use .1 of deltat.
             # deltat() for a one-row time series is null, min(NULL) is NA
-            if (is.na(tol <- min(d1[1],d2[1]) * .1 / 86400)) tol <- 1/86400
+            if (is.na(tol <- min(d1[1],d2[1]) * .1)) tol <- 1.0;
         }
 
         p1 <- positions(y)
@@ -803,12 +807,11 @@ setMethod("atan2",signature(y="nts",x="nts"),
             # interpolation weights )
 
             # points in p1 which exceed deltat tolerance of p2
-            nuke.p1 <- .Call("time_align", p1, p2, c("NA", "NA"), tol, COPY = c(F, F, F, F),
-              CLASSES = c("timeDate", "timeDate", "character", "numeric"))
+            nuke.p1 <- .Call("utime_align", p1, p2, c("NA", "NA"), tol, package="eolts")
 
             # points in p2 which exceed deltat tolerance of p1
-            nuke.p2 <- .Call("time_align", p2, p1, c("NA", "NA"), tol, COPY = c(F, F, F, F),
-              CLASSES = c("timeDate", "timeDate", "character", "numeric"))
+            nuke.p2 <- .Call("utime_align", p2, p1, c("NA", "NA"), tol, package="eolts")
+              
             # cat("length(p1) before nuke=",length(p1),"\n")
             # cat("length(p2) before nuke=",length(p2),"\n")
             # browser()
@@ -819,17 +822,17 @@ setMethod("atan2",signature(y="nts",x="nts"),
             # points in p2 which are within deltat tolerance of p1
             p2 = p2[nuke.p2[[3]][!nuke.p2[[1]] & !nuke.p2[[2]]]]
 
-            # cat("length(p1) after nuke=",length(p1),", dt.eps=",dt.eps,"\n")
-            # cat("length(p2) after nuke=",length(p2),", dt.eps=",dt.eps,"\n")
+            # cat("length(p1) after nuke=",length(p1),", tol=",tol,"\n")
+            # cat("length(p2) after nuke=",length(p2),", tol=",tol,"\n")
 
             # create the union of p1 and p2, discard points that are close
-            dt = min(d1[1]*.5,d2[1]*.5,dt.eps)
-            tol2 <- dt / 86400   # days
-            p1 <- sort(concat(p1, p2))
+            dt = min(d1[1] * .5,d2[1] * .5, tol)
+            tol2 <- dt
+            p1 <- sort(c(p1, p2))
             ok <- abs(diff(p1)) > tol2
             if(length(ok) && !all(ok)) {
                 # make it the right length
-                ok <- concat(ok, T)
+                ok <- c(ok, T)
                 p1 <- p1[ok]
             }
             # cat("length(p1) after unionPositions=",length(p1),", dt=",dt,"\n")
@@ -910,7 +913,7 @@ setMethod("Ops",sig=signature(e1="nts",e2="nts"),
           # deltat() for a one-row time series is NA, min(NULL) is NA
           if (is.na(dt.eps <- min(d1[1],d2[1]) * .1)) dt.eps <- 1
         }
-        tol <- dt.eps / 86400   # days
+        tol <- dt.eps
         p1 <- positions(e1)
         p2 <- positions(e2)
 
@@ -925,12 +928,11 @@ setMethod("Ops",sig=signature(e1="nts",e2="nts"),
           # interpolation weights )
 
           # points in p1 which exceed deltat tolerance of p2
-          nuke.p1 <- .Call("time_align", p1, p2, c("NA", "NA"), tol, COPY = c(F, F, F, F),
-            CLASSES = c("timeDate", "timeDate", "character", "numeric"))
+          nuke.p1 <- .Call("utime_align", p1, p2, c("NA", "NA"), tol, package="eolts")
 
           # points in p2 which exceed deltat tolerance of p1
-          nuke.p2 <- .Call("time_align", p2, p1, c("NA", "NA"), tol, COPY = c(F, F, F, F),
-            CLASSES = c("timeDate", "timeDate", "character", "numeric"))
+          nuke.p2 <- .Call("utime_align", p2, p1, c("NA", "NA"), tol, package="eolts")
+            
           # cat("length(p1) before nuke=",length(p1),"\n")
           # cat("length(p2) before nuke=",length(p2),"\n")
           # browser()
@@ -946,12 +948,12 @@ setMethod("Ops",sig=signature(e1="nts",e2="nts"),
 
           # create the union of p1 and p2, discard points that are close
           dt = min(d1[1]*.5,d2[1]*.5,dt.eps)
-          tol2 <- dt / 86400   # days
-          p1 <- sort(concat(p1, p2))
+          tol2 <- dt
+          p1 <- sort(c(p1, p2))
           ok <- abs(diff(p1)) > tol2
           if(length(ok) && !all(ok)) {
               # make it the right length
-              ok <- concat(ok, T)
+              ok <- c(ok, T)
               p1 <- p1[ok]
           }
           # cat("length(p1) after unionPositions=",length(p1),", dt=",dt,"\n")
@@ -1119,10 +1121,10 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
 
         if (hasArg(matchtol)) matchtol = args$matchtol
         else {
-            if (hasArg(dt)) matchtol = args$dt / 86400
-            else matchtol = min(deltat(x1)[1],deltat(x2)[1]) * .5 / 86400
+            if (hasArg(dt)) matchtol = args$dt
+            else matchtol = min(deltat(x1)[1],deltat(x2)[1]) * .5
         }
-        if (is.na(matchtol)) matchtol <- 1/86400	# 1 second
+        if (is.na(matchtol)) matchtol <- 1	# 1 second
 
         if (hasArg(suffixes)) suffixes = args$suffixes
         else suffixes <- paste(".", 1:(ndots + 2), sep = "")
@@ -1141,11 +1143,11 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
 
         if (length(x1@weights) > 0)
           w1 <- nts(x1@weights,x1@positions,rep("",ncol(x1@weights)))
-        else w1 = NULL
+        else w1 = matrix(ncol=0,nrow=0)
 
         if (length(x2@weights) > 0)
           w2 <- nts(x2@weights,x2@positions,rep("",ncol(x2@weights)))
-        else w2 = NULL
+        else w2 = matrix(ncol=0,nrow=0)
 
         wm1 <- x1@weightmap
         wm2 <- x2@weightmap
@@ -1161,7 +1163,7 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
         dimnames(x1) <- list(NULL,c(n1,n2))
 
         # Perhaps x1 has weights and x2 doesn't, or vv
-        wmap <- NULL
+        wmap <- integer(0)
 
         ncw1 <- ncw2 <- 0
 
@@ -1172,10 +1174,10 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
 
         if (length(w2) > 0) {
           ncw2 <- ncol(w2)
-          if (is.null(wmap)) wmap <- rep(0,nc1)
+          if (length(wmap) == 0) wmap <- rep(0,nc1)
           wmap <- c(wmap,wm2 + ncw1)
         }
-        else if (!is.null(wmap)) wmap <- c(wmap,rep(0,nc2))
+        else if (length(wmap) > 0) wmap <- c(wmap,rep(0,nc2))
 
         if (ncw1 + ncw2 > 0) {
           if (ncw1 > 0) {
@@ -1200,7 +1202,7 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
         }
 
         x1@weights <- w1
-        x1@weightmap <- wmap
+        x1@weightmap <- as.integer(wmap)
         s1 <- c(s1,s2)
         stations(x1) <- s1
 
@@ -1257,10 +1259,10 @@ setMethod("seriesMerge",signature(x1="nts",x2="numeric"),
 
         if (hasArg(matchtol)) matchtol = args$matchtol
         else {
-            if (hasArg(dt)) matchtol = args$dt / 86400
-            else matchtol = min(deltat(x1)[1],deltat(x2)[1]) * .1 / 86400
+            if (hasArg(dt)) matchtol = args$dt
+            else matchtol = min(deltat(x1)[1],deltat(x2)[1]) * .1
         }
-        if (is.na(matchtol)) matchtol <- 1/86400	# 1 second
+        if (is.na(matchtol)) matchtol <- 1	# 1 second
 
         if (hasArg(suffixes)) suffixes = args$suffixes
         else suffixes <- paste(".", 1:(ndots + 2), sep = "")
@@ -1323,15 +1325,15 @@ setMethod("seriesConcat",signature(x1="nts",x2="nts"),
         p2 <- x2@positions
 
         wm1 <- x1@weightmap
-        if (is.null(wm1) || length(wm1) == 0) wm1 <- rep(0,ncol(x1))
+        if (length(wm1) == 0) wm1 <- rep(0,ncol(x1))
         wm2 <- x2@weightmap
-        if (is.null(wm2) || length(wm2) == 0) wm2 <- rep(0,ncol(x2))
+        if (length(wm2) == 0) wm2 <- rep(0,ncol(x2))
 
         weightmap <- matrix(c(wm1,wm2),nrow=2,byrow=T)
      
         # non-zeros in this result  are for columns that have at least
         # one weight
-        weightmap <- as.vector(t(c(1,1)) %*% weightmap)
+        weightmap <- as.integer(as.vector(t(c(1,1)) %*% weightmap))
 
         weights <- matrix(ncol=0,nrow=0)
 
@@ -1433,18 +1435,18 @@ setMethod("average", signature=(x="nts"),
                 x,
                 avgperiod,
                 outinterval,
-                use.weights,COPY=c(F,F,F,F))
+                use.weights,package="eolts")
           }
           else if (method=="median") {
             x <- .Call("ntsaverage_median",
                 x,
                 avgperiod,
                 outinterval,
-                use.weights,COPY=c(F,F,F,F))
+                use.weights,package="eolts")
           }
           start(x) <- t1
           end(x) <- t2
-          x@deltat <- NULL
+          x@deltat <- numeric(0)
           deltat(x) <- deltat(x)
           x
     }
@@ -1478,6 +1480,8 @@ setMethod("show",signature(object="nts"),
         print(cols,na.print="NA",quote=FALSE)
     }
 )
+
+# setGeneric("approx",function(x,...) standardGeneric("approx"))
 setMethod("approx",signature(x="nts"),
     function(x,xout,method="linear",rule=1,f=0)
     {
@@ -1543,8 +1547,8 @@ setMethod("align",signature="nts",
     {
         if (is.null(how)) how = "NA"
         if (!is.null(matchtol)) tol = matchtol
-        else tol = dt / 86400
-        if (length(tol) == 0) tol <- min(deltat(x)[1],deltat(pos)[1]) * .1 / 86400
+        else tol = dt
+        if (length(tol) == 0) tol <- min(deltat(x)[1],deltat(pos)[1]) * .1
 
         if (inherits(pos,"nts")) pos = positions(pos)
         else if (inherits(pos,"utime")) pos = as(pos,"timeDate")
@@ -1553,7 +1557,7 @@ setMethod("align",signature="nts",
         class(x) = "timeSeries"
         if (how == "interp") {
             if (is.null(dti)) interp.tol = tol / 10
-            else interp.tol = dti / 86400
+            else interp.tol = dti
             xpos = positions(align(x,pos,how="drop",error.how="drop",matchtol=tol))
             x = align(x,pos,how=how,error.how="drop",matchtol=interp.tol)
             x = align(x,xpos,how="drop",error.how="drop",matchtol=tol)
@@ -1585,33 +1589,6 @@ setMethod("not.is.na",signature(x="nts"),
         x
     }
 )
-
-setGeneric("suffixes",function(x,...) standardGeneric("suffixes"))
-
-setMethod("suffixes",signature="nts",
-    function(x,first=2,leadch=".")
-    {
-        # function to strip words from front of dimnames(x)[[2]]
-        # first is first word to save, e.g. for a dimname of "T.hygt.1.5m", 
-        # suffixes returns ".hygt.1.5m" (first=2)
-        # leadch is the character prepended to result
-        x <- dimnames(x)[[2]]
-        suffixes(x,first=first,leadch=leadch)
-    }
-)
-setMethod("suffixes",signature="character",
-    function(x,first=2,leadch=".")
-    {
-        if (length(first) == 1) first = rep(first,length(x))
-        x <- words(x,first, nwords(x,sep="."),sep=".")
-        x[x!=""] <- paste(leadch, x[x!=""], sep="")
-        x
-    }
-)
-expand <- function(x,y,first=2)
-{
-    paste(x,suffixes(y,first=first),sep="")
-}
 
 setGeneric("replace.nas",function(x,warn) standardGeneric("replace.nas"))
 
@@ -1864,11 +1841,51 @@ setMethod("lag",signature(x="nts"),
 setGeneric("write",function(x,...) standardGeneric("write"))
 
 setMethod("write", signature(x="nts"),
-    function(x,...)
+    function(x,digits=6,...)
     {
-        ts <- format(x@positions,format=fmt,time.zone=x@time.zone)
+        ts <- format(x@positions,format=x@time.format,time.zone=x@time.zone)
         x <- signif(x,digits=digits)
         x <- apply(cbind(ts,x@data),1,paste,collapse="\t")
         write(x,...)
     }
 )
+
+setMethod( "summary", "nts", function( object, ... )
+{
+    ps <- summary( object@positions,format=object@time.format,time.zone=object@time.zone )
+    # assume summary() always returns a 1-row table; want matrix
+    oldClass(ps) <- NULL
+    ds <- lapply( 1:numCols(object@data),
+                  function(i, x)
+                  {
+                    ret <- summary(subscript2d(x,,i))
+                    oldClass(ret) <- NULL
+                    ret
+                  }, object@data )
+
+    lens <- sapply( ds, "numCols" )
+    lens <- c( numCols(ps), lens )
+    maxlen <- max( lens )
+
+    # make all summaries into name : value character strings
+
+    pastenames <- function( tab, newlen )
+    {
+      ret <- paste( format( dimnames(tab)[[2]] ), ":",  format( tab ),
+                    "  ", sep = "" )
+      length( ret ) <- newlen
+      ret
+    }
+
+    allcols <- cbind( pastenames( ps, maxlen ),
+                      sapply( ds, pastenames, maxlen ))
+
+    colnames <- names(object@data)
+    if( is.null( colnames ))
+      colnames <- 1:numCols(object@data)
+    dimnames( allcols ) <- list( rep("",maxlen),
+                             c( "Positions", colnames ))
+    oldClass( allcols ) <- "table"
+    allcols
+})
+

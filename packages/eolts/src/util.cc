@@ -15,13 +15,15 @@
 
 #include "util.h"
 
+#include <Rinternals.h>
+
 using std::vector;
 using std::string;
 
 /**
  * Convert a dimension vector to a string - for debugging or error reporting.
  */
-string dimToString(const size_t* d, size_t nd)
+string eolts::dimToString(const size_t* d, size_t nd)
 {
     std::ostringstream ost;
     for (size_t i = 0; i < nd; i++) {
@@ -31,7 +33,7 @@ string dimToString(const size_t* d, size_t nd)
     return ost.str();
 }
 
-string dimToString(const ssize_t* d, size_t nd)
+string eolts::dimToString(const ssize_t* d, size_t nd)
 {
     std::ostringstream ost;
     for (size_t i = 0; i < nd; i++) {
@@ -42,17 +44,17 @@ string dimToString(const ssize_t* d, size_t nd)
 }
 
 
-string dimToString(const vector<size_t>& d)
+string eolts::dimToString(const vector<size_t>& d)
 {
     return dimToString(&d.front(),d.size());
 }
 
-string dimToString(const vector<ssize_t>& d)
+string eolts::dimToString(const vector<ssize_t>& d)
 {
     return dimToString(&d.front(),d.size());
 }
 
-string rModeToString(int rmode) {
+string eolts::rModeToString(int rmode) {
     switch (rmode) {
     case INTSXP:
         return "integer";
@@ -65,7 +67,7 @@ string rModeToString(int rmode) {
     }
 }
 
-int sizeOfRMode(int mode)
+int eolts::sizeOfRMode(int mode)
 {
     switch(mode) {
     case INTSXP:

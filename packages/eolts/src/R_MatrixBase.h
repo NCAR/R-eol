@@ -19,20 +19,11 @@
 #include <R.h>
 #include <Rinternals.h>
 
+namespace eolts {
+
 /*
 */
 class R_MatrixBase {
-protected:
-    SEXP _obj;
-    int _type;
-    size_t _dims[2];
-    size_t _length;
-    int _pindx;
-    /**
-     * Dim names.
-     */
-    SEXP _dnobj;
-
 public:
     R_MatrixBase(int type,size_t nrow,size_t ncol);
     R_MatrixBase(int type, SEXP obj);
@@ -61,11 +52,30 @@ public:
 
     virtual int getSizeOfT() = 0;
 
+protected:
+
+    SEXP _obj;
+
+    int _type;
+
+    size_t _dims[2];
+
+    size_t _length;
+
+    int _pindx;
+
+    /**
+     * Dim names.
+     */
+    SEXP _dnobj;
+
 private:
     // declared private to prevent copying and assignment
     R_MatrixBase(const R_MatrixBase &);
     R_MatrixBase &operator=(const R_MatrixBase &);
 
 };
+
+}   // namespace eolts
 
 #endif

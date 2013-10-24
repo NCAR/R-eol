@@ -1,11 +1,13 @@
 #include "R_nts.h"
 #include "R_NamedVector.h"
 
-#include <string.h>
-#include <math.h>
+// #include <string.h>
+// #include <math.h>
 
 using std::vector;
 using std::string;
+
+using namespace eolts;
 
 SEXP R_nts::classDef;
 SEXP R_nts::dataSlotName;
@@ -19,17 +21,22 @@ SEXP R_nts::endposSlotName;
 SEXP R_nts::timeFormatSlotName;
 SEXP R_nts::timeZoneSlotName;
 
-R_nts::R_nts()
+R_nts::R_nts(): _obj(0),_pindx(-1)
 {
     if (!classDef) classDef = R_do_MAKE_CLASS("nts");
-    _obj = PROTECT(R_do_new_object(classDef));
+    _obj = R_do_new_object(classDef);
+    PROTECT_WITH_INDEX(_obj,&_pindx);
+}
+
+R_nts::R_nts(SEXP obj):_obj(obj),_pindx(-1)
+{
 }
 
 R_nts::~R_nts() {
 #ifdef DEBUG
-    Rprintf("~R_nts\n");
+    Rprintf("~R_nts, _pindx=%d\n",_pindx);
 #endif
-    if (_obj) UNPROTECT(1);
+    if (_pindx >= 0) UNPROTECT(1);
 }
 
 void R_nts::setMatrix(R_MatrixBase *val)
@@ -148,7 +155,6 @@ void R_nts::setTimeZone(const string& val)
     }
     SET_STRING_ELT(cobj,0,mkChar(val.c_str()));
     setAttrib(_obj,timeZoneSlotName,cobj);
-    UNPROTECT(1);
 }
 
 string R_nts::getTimeZone() const

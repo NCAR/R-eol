@@ -15,11 +15,10 @@
 
 #include <set>
 
-#include <R.h>
-#include <Rinternals.h>
-
 #include "NcFileSet.h"
 
+#include <R.h>
+#include <Rinternals.h>
 
 extern "C" {
     SEXP open_netcdf(SEXP con,SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod);
@@ -45,6 +44,8 @@ extern "C" {
     SEXP is_netcdf_open(SEXP obj);
 }
 
+namespace eolts {
+
 class R_NetcdfConnection {
 public:
 
@@ -62,29 +63,29 @@ public:
 
     SEXP read(const std::vector<std::string>& vnames,
             const std::vector<size_t> &start,
-            const std::vector<size_t> &count) NCEXCEPTION_CLAUSE;
+            const std::vector<size_t> &count) throw(NcException);
 
     SEXP read(const std::vector<std::string>& vnames,
             double start, double end,
             const std::vector<int>& stations,
             const std::vector<std::string>& tnames,
             const std::string& btname,
-            const std::string& timezone) NCEXCEPTION_CLAUSE;
+            const std::string& timezone) throw(NcException);
 
 #ifdef SUPPORT_WRITE
     int write(R_nts& nts, const std::vector<NSVarDim>& ntdv,
-            double dt, double fillValue) NCEXCEPTION_CLAUSE;
+            double dt, double fillValue) throw(NcException);
 
     int write(datarec_float *rec) RPCEXCEPTION_CLAUSE;
 
     int nonBatchWrite(datarec_float *rec) RPCEXCEPTION_CLAUSE;
 #endif
 
-    SEXP getVariables() NCEXCEPTION_CLAUSE;
+    SEXP getVariables() throw(NcException);
 
-    SEXP getTimeSeriesVariables() NCEXCEPTION_CLAUSE;
+    SEXP getTimeSeriesVariables() throw(NcException);
 
-    SEXP getStations() NCEXCEPTION_CLAUSE;
+    SEXP getStations() throw(NcException);
 
     static bool addConnection(R_NetcdfConnection *);
 
@@ -118,5 +119,7 @@ private:
     R_NetcdfConnection &operator=(const R_NetcdfConnection &);
 
 };
+
+}   // namespace eolts
 
 #endif

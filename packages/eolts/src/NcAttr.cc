@@ -16,7 +16,9 @@
 using std::string;
 using std::vector;
 
-NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) NCEXCEPTION_CLAUSE
+using namespace eolts;
+
+NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) throw(NcException)
 {
 
     char name[NC_MAX_NAME];
@@ -26,26 +28,14 @@ NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) NCEXCEPTION_CLAUSE
     int status;
     status = nc_inq_attname(var->getNcid(),var->getId(),attnum,name);
     if (status != NC_NOERR)  {
-#ifdef THROW_NCEXCEPTION
         throw NcException("nc_inq_attname",var->getFileName(),
                 var->getName(),status);
-#else
-        Rprintf("Error %s: %s: %d: nc_inq_attname: %s\n",
-                var->getFileName().c_str(),var->getName().c_str(),
-                attnum,::nc_strerror(status));
-#endif
     }
 
     status = nc_inq_att(var->getNcid(),var->getId(),name,&nctype,&len);
     if (status != NC_NOERR) {
-#ifdef THROW_NCEXCEPTION
         throw NcException("nc_inq_att",var->getFileName(),
                 var->getName(),status);
-#else
-        Rprintf("Error %s: %s: %s: nc_inq_att: %s\n",
-                var->getFileName().c_str(),var->getName().c_str(),
-                name,::nc_strerror(status));
-#endif
     }
 
     NcAttr *attr = 0;
@@ -55,14 +45,8 @@ NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) NCEXCEPTION_CLAUSE
             char *val = new char[len+1];
             status = nc_get_att_text(var->getNcid(),var->getId(),name,val);
             if (status != NC_NOERR) {
-#ifdef THROW_NCEXCEPTION
                 throw NcException("nc_get_att_text",var->getFileName(),
                         var->getName(),status);
-#else
-                Rprintf("Error %s: %s: %s: nc_inq_att_text: %s\n",
-                        var->getFileName().c_str(),var->getName().c_str(),
-                        name,::nc_strerror(status));
-#endif
                 delete [] val;
                 return 0;
             }
@@ -86,14 +70,8 @@ NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) NCEXCEPTION_CLAUSE
             int *val = new int[len];
             status = nc_get_att_int(var->getNcid(),var->getId(),name,val);
             if (status != NC_NOERR) {
-#ifdef THROW_NCEXCEPTION
                 throw NcException("nc_get_att_int",var->getFileName(),
                         var->getName(),status);
-#else
-                Rprintf("Error %s: %s: %s: nc_inq_att_int: %s\n",
-                        var->getFileName().c_str(),var->getName().c_str(),
-                        name,::nc_strerror(status));
-#endif
                 delete [] val;
                 return 0;
             }
@@ -110,14 +88,8 @@ NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) NCEXCEPTION_CLAUSE
             float *val = new float[len];
             status = nc_get_att_float(var->getNcid(),var->getId(),name,val);
             if (status != NC_NOERR) {
-#ifdef THROW_NCEXCEPTION
                 throw NcException("nc_get_att_float", var->getFileName(),
                         var->getName(),status);
-#else
-                Rprintf("Error %s: %s: %s: nc_inq_att_float: %s\n",
-                        var->getFileName().c_str(),var->getName().c_str(),
-                        name,::nc_strerror(status));
-#endif
                 delete [] val;
                 return 0;
             }
@@ -134,14 +106,8 @@ NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) NCEXCEPTION_CLAUSE
             double *val = new double[len];
             status = nc_get_att_double(var->getNcid(),var->getId(),name,val);
             if (status != NC_NOERR) {
-#ifdef THROW_NCEXCEPTION
                 throw NcException("nc_get_att_double", var->getFileName(),
                         var->getName(),status);
-#else
-                Rprintf("Error %s: %s: %s: nc_inq_att_double: %s\n",
-                        var->getFileName().c_str(),var->getName().c_str(),
-                        name,::nc_strerror(status));
-#endif
                 delete [] val;
                 return 0;
             }
@@ -154,15 +120,8 @@ NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) NCEXCEPTION_CLAUSE
         }
         break;
     default:
-#ifdef THROW_NCEXCEPTION
         throw NcException(var->getFileName(),
                 string("unknown type for attribute ") + name);
-#else
-        Rprintf("Error %s: %s: %s: %s\n",
-                var->getFileName().c_str(),var->getName().c_str(),
-                name,"unknown type of attribute");
-#endif
-        break;
     }
     return attr;
 }

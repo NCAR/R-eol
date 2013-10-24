@@ -19,18 +19,11 @@
 #include <R.h>
 #include <Rinternals.h>
 
+namespace eolts {
+
 /*
 */
 class R_ArrayBase {
-protected:
-
-    SEXP _obj;
-    int _type;
-    std::vector<size_t> _dims;
-    size_t _length;
-    int _pindx;
-    SEXP _dnobj;
-
 public:
     R_ArrayBase(int type, const std::vector<size_t>& dims);
     R_ArrayBase(int type, SEXP obj);
@@ -53,11 +46,27 @@ public:
 
     virtual int getSizeOfT() = 0;
 
+protected:
+
+    SEXP _obj;
+
+    int _type;
+
+    std::vector<size_t> _dims;
+
+    size_t _length;
+
+    int _pindx;
+
+    SEXP _dnobj;
+
 private:
     // declared private to prevent copying and assignment
     R_ArrayBase(const R_ArrayBase &);
-    R_ArrayBase &operator=(const R_ArrayBase &);
+    R_ArrayBase &operator=(const R_ArrayBase &) const;
 
 };
+
+}   // namespace eolts
 
 #endif

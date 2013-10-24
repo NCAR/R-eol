@@ -18,6 +18,8 @@
 
 #include "NcAttr.h"
 
+namespace eolts {
+
 /**
  * Class providing necessary information about a NetCDF variable.
  */
@@ -28,7 +30,7 @@ protected:
 public:
 
     NcAttrT(std::string name, nc_type nctype) :
-        NcAttr(name,nctype) {}
+        NcAttr(name,nctype),_value() {}
     ~NcAttrT() {}
 
     void setValue(std::vector<T> val) { _value = val; }
@@ -38,8 +40,10 @@ public:
 
     T getValue(int i) const { return _value[i]; }
 
-    double getNumericValue(int i) const { return 0.0; }
+    double getNumericValue(int i) const;
 
 };
+
+}   // namespace eolts
 
 #endif

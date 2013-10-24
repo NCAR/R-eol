@@ -13,9 +13,10 @@
 
 #include "R_Matrix.h"
 
-
 using std::vector;
 using std::string;
+
+namespace eolts {
 
 template class R_Matrix<double>;
 template class R_Matrix<int>;
@@ -75,6 +76,10 @@ R_Matrix<char*>::R_Matrix(SEXP obj) : R_MatrixBase(STRSXP,obj)
 {
 }
 #endif
+
+}   // namespace eolts
+
+using namespace eolts;
 
 extern "C" {
 SEXP create_matrix(SEXP type, SEXP nrow,SEXP ncol)
@@ -162,5 +167,7 @@ SEXP set_dimnames(SEXP x, SEXP names)
     if (!ans) error("unvalid type of x");
     return ans;
 }
-}
+
+}   // extern "C"
+
 
