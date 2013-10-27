@@ -13,8 +13,7 @@ dpar <- function(...,save.cache=F)
                           robust=F,
                           accelgrav=9.81,
                           vonKarman=0.4,
-                          start=utime("now"),
-                          lenday=1
+                          length=86400
                           )
         assign(".dpar",dpar.list,envir=.eoltsEnv)
     }
@@ -35,7 +34,7 @@ dpar <- function(...,save.cache=F)
     # names that can be queried, they are ignored if setting
     query.names <- c("length")
 
-    time.len.names <- c("lenday","lenhr","lenmin","lensec")
+    time.len.names <- c("lenday","lenhr","lenmin")
 
     # Changing any of the data.selection.names or data.opt.names
     # will result in the cache being flushed.
@@ -146,71 +145,55 @@ dpar <- function(...,save.cache=F)
         dpar.list$day <- NULL
     }
 
-    if (is.null(dpar.list$start)) dpar.list$start <- utime("now")
-    else dpar.list$start <- utime(dpar.list$start)	# make sure it is a utime
+    # make sure start is a utime
+    if (!is.null(dpar.list$start)) dpar.list$start = utime(dpar.list$start)
 
     # If any length parameter is specified,
     # zero out lengths not specified
     if (any(match(time.len.names,inames,nomatch=0) != 0)) {
         len.not <- time.len.names[match(time.len.names,inames,nomatch=0) == 0]
-        dpar.list[len.not] <- 0
-        dpar.list$length <- dpar.list$lenday * 86400 + dpar.list$lenhr * 3600 +
-        dpar.list$lenmin * 60 + dpar.list$lensec
+        dpar.list[len.not] = 0
+        dpar.list$length = dpar.list$lenday * 86400 + dpar.list$lenhr * 3600 +
+            dpar.list$lenmin * 60
         # length specified, overwrite end
-        dpar.list$end <- dpar.list$start + dpar.list$length
+        if (!is.null(dpar.list$start)) dpar.list$end = dpar.list$start + dpar.list$length
     }
     else if (match("end",inames,nomatch=0) != 0) {
         # end specified, but not length
         # end may be a character string, convert to utime.
         dpar.list$end <- utime(dpar.list$end)
-        dpar.list$length <- as.numeric(dpar.list$end - dpar.list$start)
-        dpar.list$lensec <- 0
-        dpar.list$lenmin <- 0
-        dpar.list$lenhr <- 0
-        dpar.list$lenday <- 0
-        if (dpar.list$length == 86400) dpar.list$lenday <- 1
-        else dpar.list$lensec <- dpar.list$length
-    }
-    else {
-        # Neither length or end specified, set length if null,
-        # then set end from start and length
-        if (is.null(dpar.list$length)) {
-            dpar.list$length <- 86400
-            dpar.list$lensec <- 0
-            dpar.list$lenmin <- 0
-            dpar.list$lenhr <- 0
-            dpar.list$lenday <- 1
+        if (!is.null(dpar.list$start)) {
+            dpar.list$length = as.numeric(dpar.list$end - dpar.list$start)
+            dpar.list$lenmin = 0
+            dpar.list$lenhr = 0
+            dpar.list$lenday = 0
         }
-        dpar.list$end <- dpar.list$start + dpar.list$length
     }
+    if (!is.null(dpar.list$start)) dpar.list$end = dpar.list$start + dpar.list$length
+
     dpar.list$end <- utime(dpar.list$end)	# make sure it is a utime
 
-    # if (is.null(dpar.list$length) || is.na(dpar.list$length)
-    # 	|| dpar.list$length <= 0) {
-    #     dpar.list$lensec <- 0
-    #     dpar.list$lenmin <- 0
-    #     dpar.list$lenhr <- 0
-    #     dpar.list$lenday <- 1
-    #     dpar.list$length <- 86400
-    #   }
-
     # Read available stations from NetCDF file
-    if (!exists(".all.stations",envir=.eoltsEnv)) {
+    if (!is.null(dpar.list$start) && !exists(".all.stations",envir=.eoltsEnv)) {
         iwarn <- options(warn=-1)
         # cat("calling netcdf\n")
         iod <- netcdf(start=dpar.list$start,end=dpar.list$end)
         all.stations <- stations(iod)
         close(iod)
         options(iwarn)
-        if (length(all.stations) > 0) assign(".all.stations",all.stations,envir=.eoltsEnv)
+        # cat("all.stations=",paste(all.stations,collapse=","),"\n")
+        assign(".all.stations",all.stations,envir=.eoltsEnv)
         if (is.null(dpar.list$stns)) dpar.list$stns <- all.stations
     }
-    else all.stations = get(".all.stations",envir=.eoltsEnv)
 
-    if (any(inames == "stns") && length(all.stations) > 0)
-        # dpar.list$stns <- all.stations[dpar.list$stns]
-        dpar.list$stns <- all.stations[match(dpar.list$stns,all.stations,
+    if (any(inames == "stns")) {
+        if (exists(".all.stations",envir=.eoltsEnv)) {
+            all.stations = get(".all.stations",envir=.eoltsEnv)
+            if (length(dpar.list$stns) == 0) dpar.list$stns = all.stations
+            else dpar.list$stns = all.stations[match(dpar.list$stns,all.stations,
                                              nomatch=0)]
+        }
+    }
 
     # user has specified any of the data.selection.names or data.opt.names,
     # or changed the start or length or stations, then remove
@@ -233,13 +216,19 @@ dpar <- function(...,save.cache=F)
 }
 dpar.next <- function()
 {
-    t1 = dpar("start") + dpar("length")
-    invisible(dpar(start=t1))
+    if (is.null(dpar("start"))) invisible(dpar.now())
+    else {
+        t1 = dpar("start") + dpar("length")
+        invisible(dpar(start=t1))
+    }
 }
 dpar.prev <- function()
 {
-    t1 = dpar("start") - dpar("length")
-    invisible(dpar(start=t1))
+    if (is.null(dpar("start"))) invisible(dpar.now())
+    else {
+        t1 = dpar("start") - dpar("length")
+        invisible(dpar(start=t1))
+    }
 }
 dpar.now <- function()
 {
