@@ -64,5 +64,6 @@ exportMethods(
     "plot",
     "points",
     "lines",
-    "write"
+    "write",
+    "mean","var"
 )
