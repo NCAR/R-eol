@@ -53,8 +53,10 @@ void NcFile::open() throw(NcException)
 {
     if (_ncid < 0) {
         int status = nc_open(_name.c_str(),NC_SHARE,&_ncid);
-        if (status != NC_NOERR) 
+        if (status != NC_NOERR) {
+            Rprintf("error on open, _ncid=%d\n",_ncid);
             throw NcException("opening",_name,status);
+        }
         readDimensions();
     }
     else if (_unlimitedDim) _unlimitedDim->readLength(this);
@@ -378,15 +380,22 @@ const NcDim* NcFile::getTimeDimension(const set<string>& possibleNames)
     if (_timeDim) return _timeDim;			// already found
 
     _timeDim = getUnlimitedDimension();
-    if (_timeDim &&
-            possibleNames.find(_timeDim->getName()) != possibleNames.end())
+    if (_timeDim && possibleNames.find(_timeDim->getName()) != possibleNames.end())
         return _timeDim;
 
-    _timeDim = 0;
     set<string>::iterator itr;
     for (itr = possibleNames.begin();
-            !_timeDim && itr != possibleNames.end(); ++itr)
-        _timeDim = getDimension(*itr);
+            !_timeDim && itr != possibleNames.end(); ++itr) {
+        const NcDim* dim = getDimension(*itr);
+        if (dim) {
+            _timeDim = dim;
+            return _timeDim;
+        }
+    }
+
+    if (_timeDim) Rprintf("Unlimited dimension (%s) does not match an expected name for time\n",
+            _timeDim->getName().c_str());
+
     return _timeDim;
 }
 
