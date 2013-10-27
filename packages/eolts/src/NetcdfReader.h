@@ -45,7 +45,7 @@ public:
         const std::string & baseTimeName,const std::string& timezone,
         bool readCounts = false) throw(NcException);
 
-    size_t searchTime(NcVar* var,double stime,timeTests test)
+    size_t searchTime(NcVar* var,double stime,timeTests test,double timeMult)
         throw(NcException);
 
     static int rMode(nc_type type);

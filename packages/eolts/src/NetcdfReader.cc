@@ -81,8 +81,97 @@ namespace {
             dp += nc;
         }
     }     
-}     
 
+    double parseCFTimeString(const string& ustr,double unitsMult) throw(string)
+    {
+        if (ustr.find("second") != string::npos) unitsMult = 1.0;
+        else if (ustr.find("day") != string::npos) unitsMult = 86400.0;
+        else if (ustr.find("hour") != string::npos) unitsMult = 3600.0;
+        else if (ustr.find("minute") != string::npos) unitsMult = 60.0;
+        else throw string("cannot parse time units: ") + ustr;
+
+        string::size_type ss = ustr.find("since");
+        if (ss == string::npos)
+            throw string("cannot find \"since\": ") + ustr;
+
+        string str = ustr.substr(ss+5);
+
+        struct tm tm;
+        char* sp = strptime(str.c_str(),"%Y-%m-%d%H:%M:%S",&tm);
+        if (!sp) throw string("cannot parse with strptime: ") + str;
+        tm.tm_isdst = 0;
+        time_t tval = ::mktime(&tm);    // treats tm as local time
+        if (tval == -1) throw string("cannot convert with mktime: ") + str;
+
+#define CHECK_TIMEZONE_GLOBAL
+#ifdef USE_TIMEZONE_GLOBAL
+        tval -= timezone;
+        // Rprintf("timezone=%d\n",timezone);
+#else
+        // compute difference between UTC and local time
+        gmtime_r(&tval,&tm);   // convert tval to time fields in GMT
+        tm.tm_isdst = 0;
+        time_t tval2 = ::mktime(&tm);
+#ifdef CHECK_TIMEZONE_GLOBAL
+        // Rprintf("timezone=%d, tval2-tval=%d\n",timezone,tval2-tval);
+        if (tval2 - tval != timezone)
+            Rprintf("timezone discrepancy: timezone=%d, tval2-tval=%d\n",
+                    timezone,tval2-tval);
+#endif
+        tval -= (tval2 - tval);
+#endif
+
+        float fsec = 0.0;
+        if (*sp == '.' && ::sscanf(sp++,"%f",&fsec) == 1)
+            while(*sp && ::isdigit(*sp)) sp++;
+
+        while(*sp && ::isspace(*sp)) sp++;
+        if (!*sp) return (double)tval + fsec;
+
+        /* parse time zone spec:
+         * [+-]H:M  where H and M can be one or two digits
+         * [+-]H    one digit hour
+         * [+-]HH   two digit hour
+         * [+-]HMM  one digit hour, two digit minutes
+         * [+-]HHMM two digit hour, two digit minutes
+         */
+
+        bool pos = true;
+        if (*sp == '+') sp++;
+        else if (*sp == '-') {
+            pos = false;
+            sp++;
+        }
+
+        int hr,mn = 0;
+        int toff = 0;
+        if (::strchr(sp,':')) {
+            if (::sscanf(sp,"%d:%d",&hr,&mn) != 2)
+                throw string("cannot parse time zone in: ") + str;
+            toff = hr * 3600 + mn * 60;
+        }
+        else {
+            int sl = ::strlen(sp);
+            if (sl < 3) {
+                if (::sscanf(sp,"%d",&hr) != 1)
+                    throw string("cannot parse time zone in: ") + str;
+                toff = hr * 3600;
+            }
+            else if (sl == 3) {
+                if (::sscanf(sp,"%1d%d",&hr,&mn) != 2) 
+                    throw string("cannot parse time zone in: ") + str;
+                toff = hr * 3600 + mn * 60;
+            }
+            else {
+                if (::sscanf(sp,"%2d%d",&hr,&mn) != 2)
+                    throw string("cannot parse time zone in: ") + str;
+                toff = hr * 3600 + mn * 60;
+            }
+        }
+        if (!pos) toff = -toff;
+        return (double)tval + fsec + toff;
+    }
+}     
 
 NetcdfReader::NetcdfReader(R_NetcdfConnection* conn):
     _connection(conn)
@@ -540,7 +629,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
     return result;
 }
 
-size_t NetcdfReader::searchTime(NcVar* var,double stime,NetcdfReader::timeTests test)
+size_t NetcdfReader::searchTime(NcVar* var,double stime,NetcdfReader::timeTests test,double timeMult)
     throw(NcException)
 {
     /*
@@ -585,6 +674,7 @@ size_t NetcdfReader::searchTime(NcVar* var,double stime,NetcdfReader::timeTests 
             throw NcException("nc_get_var1_double",
                     var->getFileName(),var->getName(),status);
         }
+        dtime *= timeMult;
         switch (test) {
         case GE:
         case LT:
@@ -616,6 +706,7 @@ size_t NetcdfReader::searchTime(NcVar* var,double stime,NetcdfReader::timeTests 
             throw NcException("nc_get_var1_double",
                     var->getFileName(),var->getName(),status);
         }
+        dtime *= timeMult;
         switch (test) {
         case GE:
         case LT:
@@ -635,6 +726,7 @@ size_t NetcdfReader::searchTime(NcVar* var,double stime,NetcdfReader::timeTests 
             throw NcException("nc_get_var1_double",
                     var->getFileName(),var->getName(),status);
         }
+        dtime *= timeMult;
         switch (test) {
         case GE:
         case LT:
@@ -680,6 +772,9 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
 
     int nfiles = fileset->getNFiles();
 
+#ifdef DEBUG
+    Rprintf("stations.size()=%zu\n",stations.size());
+#endif
     NcFileSetSummary vs(fileset,vnames,stations,readCounts);
 
     // create start array, with enough dimensions for all input variables
@@ -781,6 +876,13 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
         if (!ncf || !ncf->isOpen()) continue;
 
         const NcDim* timeDim = ncf->getTimeDimension(timeDimensionNames);
+        if (!timeDim) {
+            std::ostringstream ost;
+            ost << "error reading file " << ncf->getName() <<
+                ", cannot find a time dimension";
+            warning(ost.str().c_str());
+            continue;
+        }
 
         int ncid = ncf->getNcid();
         NcVar* btvar = ncf->getVariable(baseTimeName);	// OK to fail
@@ -797,6 +899,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
             warning(ost.str().c_str());
             continue;
         }
+
         double basetime = 0.0;
         size_t nrec = 0;
 
@@ -805,6 +908,38 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
             if (status != NC_NOERR) {
                 throw NcException("nc_get_var1_double",
                         btvar->getFileName(),btvar->getName(),status);
+            }
+            const NcAttr* unitsAttr = btvar->getAttribute("units");
+            if (unitsAttr->getLength() == 1 && unitsAttr->getNcType() == NC_CHAR) {
+                const NcAttrT<string>* sattr;
+                if ((sattr = dynamic_cast<const NcAttrT<string>*>(unitsAttr))) {
+                    string tunits = sattr->getValue(0);
+                    try {
+                        double unitsMult = 1.0;
+                        double toff = parseCFTimeString(tunits,unitsMult);
+                        basetime *= unitsMult;
+                        basetime += toff;
+                    }
+                    catch(const string& e) {
+                        warning(e.c_str());
+                    }
+                }
+            }
+        }
+
+        double timemult = 1.0;
+
+        const NcAttr* unitsAttr = tvar->getAttribute("units");
+        if (unitsAttr->getLength() == 1 && unitsAttr->getNcType() == NC_CHAR) {
+            const NcAttrT<string>* sattr;
+            if ((sattr = dynamic_cast<const NcAttrT<string>*>(unitsAttr))) {
+                string tunits = sattr->getValue(0);
+                try {
+                    basetime = parseCFTimeString(tunits,timemult);
+                }
+                catch(const string& e) {
+                    warning(e.c_str());
+                }
             }
         }
 
@@ -822,11 +957,11 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
             Rprintf("%s interval attribute= %f\n",ncf->getName().c_str(),interval);
         }
 
-        size_t n1 = searchTime(tvar,std::max(startTime-basetime,0.0),GE);
-        size_t n2 = searchTime(tvar,endTime-basetime,GT);
+        size_t n1 = searchTime(tvar,std::max(startTime-basetime,0.0),GE,timemult);
+        size_t n2 = searchTime(tvar,endTime-basetime,GT,timemult);
 
 #ifdef DEBUG
-        Rprintf("%s basetime = %f, t1=%f, t2=%f, n1=%d, n2=%d\n",
+        Rprintf("%s basetime=%f, t1=%f, t2=%f, n1=%d, n2=%d\n",
                 ncf->getName().c_str(),
                 basetime,startTime-basetime, endTime-basetime, n1,n2);
 #endif
@@ -841,12 +976,14 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
             throw NcException("nc_get_var1_double",
                     tvar->getFileName(),tvar->getName(),status);
         }
+        t1 += timemult;
         size_t n = n2 - 1;
         status = nc_get_var1_double(ncid,tvar->getId(),&n,&t2);
         if (status != NC_NOERR) {
             throw NcException("nc_get_var1_double",
                     tvar->getFileName(),tvar->getName(),status);
         }
+        t2 += timemult;
         double recsPerSec;
         if (t2 - t1 > 0.0)
             recsPerSec = (nrec-1) / (t2 - t1);
@@ -930,9 +1067,12 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                 if (maxSampleDim > 1) {
                     double dt = 1;	// if nrec == 1, dt is undefined
 
+                    if (timemult != 1.0)
+                        for (ui = offset; ui < nrec * maxSampleDim; ui += maxSampleDim)
+                            timesPtr[ui] *= timemult;
+
                     // interpolate times if getMaxSampleDimension() > 1
                     // This is symmetrical only if getMaxSampleDimension is odd
-
                     for (ui = offset; ui < (nrec-1) * maxSampleDim; ui += maxSampleDim) {
                         dt = (timesPtr[ui+maxSampleDim] - timesPtr[ui]) / maxSampleDim;
                         if (ui == offset) 
@@ -950,6 +1090,10 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                         &count.front(),0,&tmap,timesPtr);
                 if (status != NC_NOERR) throw NcException("nc_get_varm_double",
                         tvar->getFileName(),tvar->getName(),status);
+                if (timemult != 1.0)
+                    for (ui = 0; ui < nrec * maxSampleDim; ui += maxSampleDim)
+                        timesPtr[ui] *= timemult;
+
                 if (maxSampleDim > 1) {
                     double dt = 1;	// if nrec == 1, dt is undefined
                     // interpolate times if getMaxSampleDimension() > 1
@@ -962,7 +1106,9 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                 }
             }
 
-            for (ui = 0; ui < nrec * maxSampleDim; ui++) *timesPtr++ += basetime;
+            for (ui = 0; ui < nrec * maxSampleDim; ui++) {
+                *timesPtr++ += basetime;
+            }
         }
 
         unsigned int colNum = 0;
