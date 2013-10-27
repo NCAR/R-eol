@@ -30,6 +30,7 @@ set<R_NetcdfConnection *>R_NetcdfConnection::_openSet;
 
 SEXP R_NetcdfConnection::fileSlotName;
 SEXP R_NetcdfConnection::dirSlotName;
+SEXP R_NetcdfConnection::timeNamesSlotName;
 SEXP R_NetcdfConnection::cppSlotName;
 
 SEXP open_netcdf(SEXP con,SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod)
@@ -231,11 +232,6 @@ SEXP read_netcdf_ts(SEXP args)
         timezone = string(CHAR(STRING_ELT(obj,0)));
         args = CDR(args);
     }
-    if (args != R_NilValue) {
-        SEXP obj = CAR(args);
-        timezone = string(CHAR(STRING_ELT(obj,0)));
-        args = CDR(args);
-    }
     
     R_NetcdfConnection *nccon = R_NetcdfConnection::getR_NetcdfConnection(con);
     if (!nccon) {
@@ -331,32 +327,40 @@ R_NetcdfConnection *R_NetcdfConnection::getR_NetcdfConnection(SEXP obj)
 
 void R_NetcdfConnection::openFileSet(SEXP obj)
 {
-    SEXP fslot = getAttrib(obj,fileSlotName);
+    SEXP slot = getAttrib(obj,fileSlotName);
 #ifdef DEBUG
-    Rprintf("file slot length=%d, type=%d\n",length(fslot),TYPEOF(fslot));
+    Rprintf("file slot length=%d, type=%d\n",length(slot),TYPEOF(slot));
 #endif
 
     vector<string> fnames;
-    for (size_t i = 0; i < (unsigned)length(fslot); i++) {
-        SEXP dn = STRING_ELT(fslot,i);
+    for (size_t i = 0; i < (unsigned)length(slot); i++) {
+        SEXP dn = STRING_ELT(slot,i);
         fnames.push_back(CHAR(dn));
     }
 
-    SEXP dslot = getAttrib(obj,dirSlotName);
+    slot = getAttrib(obj,dirSlotName);
 #ifdef DEBUG
-    Rprintf("dir slot length=%d, type=%d\n",length(dslot),TYPEOF(dslot));
+    Rprintf("dir slot length=%d, type=%d\n",length(slot),TYPEOF(slot));
 #endif
 
     vector<string> dnames;
-    for (size_t i = 0; i < (unsigned)length(dslot); i++) {
-        SEXP dn = STRING_ELT(dslot,i);
+    for (size_t i = 0; i < (unsigned)length(slot); i++) {
+        SEXP dn = STRING_ELT(slot,i);
         dnames.push_back(CHAR(dn));
     }
 
     vector<string> fullnames = makeFileNameList(fnames,dnames);
 
+    slot = getAttrib(obj,timeNamesSlotName);
+
+    vector<string> tnames;
+    for (size_t i = 0; i < (unsigned)length(slot); i++) {
+        SEXP dn = STRING_ELT(slot,i);
+        tnames.push_back(CHAR(dn));
+    }
+
     delete _fileset;
-    _fileset = new NcFileSet(fullnames);
+    _fileset = new NcFileSet(fullnames,tnames);
 }
 
 vector<string> R_NetcdfConnection::makeFileNameList(const vector<string>& fnames,

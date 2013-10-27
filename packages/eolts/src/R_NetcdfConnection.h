@@ -99,11 +99,14 @@ public:
 
     static SEXP dirSlotName;
 
+    static SEXP timeNamesSlotName;
+
     /**
      * perhaps this should be an EXTPTRSXP instead of a raw(8)?
      * See section 5.13 of R Externals, page 122.
      */
     static SEXP cppSlotName;
+
 
 protected:
 
