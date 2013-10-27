@@ -775,6 +775,21 @@ setMethod("Math",signature(x="nts"),
   }
 )
 
+setMethod("mean",signature(x="nts"),
+    function(x,trim=0,na.rm=TRUE,...)
+    {
+        mean(x@data,trim=trim,na.rm=na.rm,...)
+    }
+)
+
+setGeneric("var")
+setMethod("var",signature(x="nts"),
+    function(x,y=NULL,na.rm=TRUE,use)
+    {
+        var(x@data,na.rm=na.rm,use=use)
+    }
+)
+
 setMethod("atan2",signature(y="nts",x="nts"),
     function(y,x)
     {
