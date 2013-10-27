@@ -16,7 +16,7 @@
 
 #include <R.h>
 
-#include "R_NetcdfConnection.h"
+#include "R_netcdf.h"
 
 namespace eolts {
 
@@ -26,7 +26,7 @@ public:
     /**
      * for creating an R_NetcdfVariable object from scratch.
      */
-    R_NetcdfVariable(R_NetcdfConnection *,NcVar* var);
+    R_NetcdfVariable(R_netcdf *,NcVar* var);
 
     /**
      */
@@ -36,7 +36,7 @@ public:
 
     const std::string& getName() const { return _name; }
 
-    R_NetcdfConnection *getConnection() const { return _connection; }
+    R_netcdf *getConnection() const { return _connection; }
 
     void setMode(const std::string& mode);
     void setNcType(const std::string& type);
@@ -56,7 +56,7 @@ private:
 
     std::string _name;
 
-    R_NetcdfConnection* _connection;
+    R_netcdf* _connection;
 
     std::string _type;	// "character","single","integer"
 

@@ -46,11 +46,11 @@ extern "C" {
 
 namespace eolts {
 
-class R_NetcdfConnection {
+class R_netcdf {
 public:
 
-    R_NetcdfConnection(SEXP obj, SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod);
-    virtual ~R_NetcdfConnection();
+    R_netcdf(SEXP obj, SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod);
+    virtual ~R_netcdf();
 
     static std::vector<std::string> makeFileNameList(
             const std::vector<std::string>& fnames, 
@@ -87,13 +87,13 @@ public:
 
     SEXP getStations() throw(NcException);
 
-    static bool addConnection(R_NetcdfConnection *);
+    static bool addConnection(R_netcdf *);
 
-    static bool removeConnection(R_NetcdfConnection *);
+    static bool removeConnection(R_netcdf *);
 
-    static bool findConnection(R_NetcdfConnection *);
+    static bool findConnection(R_netcdf *);
 
-    static R_NetcdfConnection *getR_NetcdfConnection(SEXP  obj);
+    static R_netcdf *getR_netcdf(SEXP  obj);
 
     static SEXP fileSlotName;
 
@@ -110,7 +110,7 @@ public:
 
 protected:
 
-    static std::set<R_NetcdfConnection*> _openSet;
+    static std::set<R_netcdf*> _openSet;
 
     NcFileSet* _fileset;
 
@@ -118,8 +118,8 @@ protected:
 
 private:
     // declared private to prevent copying and assignment
-    R_NetcdfConnection(const R_NetcdfConnection &);
-    R_NetcdfConnection &operator=(const R_NetcdfConnection &);
+    R_netcdf(const R_netcdf &);
+    R_netcdf &operator=(const R_netcdf &) const;
 
 };
 

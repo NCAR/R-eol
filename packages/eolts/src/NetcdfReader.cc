@@ -173,7 +173,7 @@ namespace {
     }
 }     
 
-NetcdfReader::NetcdfReader(R_NetcdfConnection* conn):
+NetcdfReader::NetcdfReader(R_netcdf* conn):
     _connection(conn)
 {
 }
@@ -1118,8 +1118,6 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
         unsigned int colNum = 0;
         int stnDimNum;
         int sampleDimNum;
-
-        int printedmsg = 0;
 
         // for each counts variable in a file, the countsGroupName
         map <string, string> countsGroupNameByCountsVariable;

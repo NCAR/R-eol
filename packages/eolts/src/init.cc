@@ -11,7 +11,7 @@
  *	This is called by R when this library is loaded.
  */
 
-#include "R_NetcdfConnection.h"
+#include "R_netcdf.h"
 #include "R_NetcdfVariable.h"
 #include "R_utime.h"
 #include "R_nts.h"
@@ -29,9 +29,10 @@ extern "C" {
         Rprintf("static R_init_eolts\n");
 #endif
 
-        R_NetcdfConnection::fileSlotName = install("file");
-        R_NetcdfConnection::dirSlotName = install("dir");
-        R_NetcdfConnection::cppSlotName = install("cppPtr");
+        R_netcdf::fileSlotName = install("file");
+        R_netcdf::dirSlotName = install("dir");
+        R_netcdf::timeNamesSlotName = install("timeNames");
+        R_netcdf::cppSlotName = install("cppPtr");
 
         R_NetcdfVariable::nameSlotName = install("name");
         R_NetcdfVariable::modeSlotName = install("mode");

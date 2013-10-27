@@ -10,7 +10,7 @@
 #include <set>
 #include <sstream>
 
-#include "R_NetcdfConnection.h"
+#include "R_netcdf.h"
 
 #include "R_NetcdfVariable.h"
 #include "R_NamedVector.h"
@@ -24,14 +24,14 @@ using std::set;
 using namespace eolts;
 
 /*
- * Collection of R_NetcdfConnection instances
+ * Collection of R_netcdf instances
  */
-set<R_NetcdfConnection *>R_NetcdfConnection::_openSet;
+set<R_netcdf *>R_netcdf::_openSet;
 
-SEXP R_NetcdfConnection::fileSlotName;
-SEXP R_NetcdfConnection::dirSlotName;
-SEXP R_NetcdfConnection::timeNamesSlotName;
-SEXP R_NetcdfConnection::cppSlotName;
+SEXP R_netcdf::fileSlotName;
+SEXP R_netcdf::dirSlotName;
+SEXP R_netcdf::timeNamesSlotName;
+SEXP R_netcdf::cppSlotName;
 
 SEXP open_netcdf(SEXP con,SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod)
 {
@@ -45,13 +45,13 @@ SEXP open_netcdf(SEXP con,SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod)
         Rprintf("class=%s\n",classname.c_str());
     }
 #endif
-    new R_NetcdfConnection(con,cdlfile,rpcTimeout,rpcBatchPeriod);
+    new R_netcdf(con,cdlfile,rpcTimeout,rpcBatchPeriod);
     return con;
 }
 
 SEXP is_netcdf_open(SEXP obj)
 {
-    R_NetcdfConnection *con = R_NetcdfConnection::getR_NetcdfConnection(obj);
+    R_netcdf *con = R_netcdf::getR_netcdf(obj);
 
     // return a logical
     SEXP ans = PROTECT(allocVector(LGLSXP,1));
@@ -62,7 +62,7 @@ SEXP is_netcdf_open(SEXP obj)
 
 SEXP close_netcdf(SEXP obj)
 {
-    R_NetcdfConnection *con = R_NetcdfConnection::getR_NetcdfConnection(obj);
+    R_netcdf *con = R_netcdf::getR_netcdf(obj);
     if (!con) {
         warning("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
@@ -81,7 +81,7 @@ SEXP get_variables(SEXP obj, SEXP allobj)
     Rprintf("get_variables\n");
 #endif
 
-    R_NetcdfConnection *con = R_NetcdfConnection::getR_NetcdfConnection(obj);
+    R_netcdf *con = R_netcdf::getR_netcdf(obj);
     if (!con) {
         error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
@@ -104,7 +104,7 @@ SEXP get_stations(SEXP obj)
     Rprintf("get_variables\n");
 #endif
 
-    R_NetcdfConnection *con = R_NetcdfConnection::getR_NetcdfConnection(obj);
+    R_netcdf *con = R_netcdf::getR_netcdf(obj);
     if (!con) {
         error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
@@ -122,7 +122,7 @@ SEXP read_netcdf(SEXP obj,SEXP variables, SEXP startreq, SEXP countreq)
 {
     int i;
 
-    R_NetcdfConnection *con = R_NetcdfConnection::getR_NetcdfConnection(obj);
+    R_netcdf *con = R_netcdf::getR_netcdf(obj);
     if (!con) {
         error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
@@ -233,7 +233,7 @@ SEXP read_netcdf_ts(SEXP args)
         args = CDR(args);
     }
     
-    R_NetcdfConnection *nccon = R_NetcdfConnection::getR_NetcdfConnection(con);
+    R_netcdf *nccon = R_netcdf::getR_netcdf(con);
     if (!nccon) {
         error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
@@ -247,12 +247,12 @@ SEXP read_netcdf_ts(SEXP args)
     return 0;
 }
 
-R_NetcdfConnection::R_NetcdfConnection(SEXP con, SEXP cdlfile,
+R_netcdf::R_netcdf(SEXP con, SEXP cdlfile,
         SEXP rpcTimeout, SEXP rpcBatchPeriod):_fileset(0)
 {
 
 #ifdef DEBUG
-    Rprintf("R_NetcdfConnection ctor, this = %p\n",this);
+    Rprintf("R_netcdf ctor, this = %p\n",this);
 #endif
 
     SEXP cslot = getAttrib(con,cppSlotName);
@@ -266,27 +266,27 @@ R_NetcdfConnection::R_NetcdfConnection(SEXP con, SEXP cdlfile,
     if (TYPEOF(cslot) != RAWSXP || length(cslot) != 8)
         error("slot cppPtr of object is not of type \"raw\", length 8");
 
-    *((R_NetcdfConnection **)RAW(cslot)) = this;
+    *((R_netcdf **)RAW(cslot)) = this;
 
     addConnection(this);
 
     openFileSet(con);
 }
 
-R_NetcdfConnection::~R_NetcdfConnection()
+R_netcdf::~R_netcdf()
 {
     removeConnection(this);
     delete _fileset;
 }
 
-bool R_NetcdfConnection::findConnection(R_NetcdfConnection *con)
+bool R_netcdf::findConnection(R_netcdf *con)
 {
     // these accesses of _openSet should be protected with a mutex...
-    set<R_NetcdfConnection*>::const_iterator si = _openSet.find(con);
+    set<R_netcdf*>::const_iterator si = _openSet.find(con);
     return si != _openSet.end();
 }
 
-bool R_NetcdfConnection::addConnection(R_NetcdfConnection *con) {
+bool R_netcdf::addConnection(R_netcdf *con) {
 
     // these accesses of _openSet should be protected with a mutex...
     if (findConnection(con)) return false;
@@ -294,10 +294,10 @@ bool R_NetcdfConnection::addConnection(R_NetcdfConnection *con) {
     return true;
 }
 
-bool R_NetcdfConnection::removeConnection(R_NetcdfConnection *con)
+bool R_netcdf::removeConnection(R_netcdf *con)
 {
     // these accesses of _openSet should be protected with a mutex...
-    set<R_NetcdfConnection*>::const_iterator si = _openSet.find(con);
+    set<R_netcdf*>::const_iterator si = _openSet.find(con);
     if (si != _openSet.end()) {
         _openSet.erase(si);
         return true;
@@ -306,10 +306,10 @@ bool R_NetcdfConnection::removeConnection(R_NetcdfConnection *con)
 }
 
 /**
- * Get pointer to C++ R_NetcdfConnection object from R object.
+ * Get pointer to C++ R_netcdf object from R object.
  * Verify that it is valid pointer.
  */
-R_NetcdfConnection *R_NetcdfConnection::getR_NetcdfConnection(SEXP obj)
+R_netcdf *R_netcdf::getR_netcdf(SEXP obj)
 {
 #ifdef DEBUG
     Rprintf("looking for cppPtr slot\n");
@@ -319,13 +319,13 @@ R_NetcdfConnection *R_NetcdfConnection::getR_NetcdfConnection(SEXP obj)
     Rprintf("cpp slot: %p, length=%d, type=%d\n",cslot,
             (cslot ? length(cslot):0),(cslot ? TYPEOF(cslot): NILSXP));
 #endif
-    R_NetcdfConnection *con = *(R_NetcdfConnection **)RAW(cslot);
+    R_netcdf *con = *(R_netcdf **)RAW(cslot);
     if (!findConnection(con)) con = 0;
     return con;
 }
 
 
-void R_NetcdfConnection::openFileSet(SEXP obj)
+void R_netcdf::openFileSet(SEXP obj)
 {
     SEXP slot = getAttrib(obj,fileSlotName);
 #ifdef DEBUG
@@ -363,7 +363,7 @@ void R_NetcdfConnection::openFileSet(SEXP obj)
     _fileset = new NcFileSet(fullnames,tnames);
 }
 
-vector<string> R_NetcdfConnection::makeFileNameList(const vector<string>& fnames,
+vector<string> R_netcdf::makeFileNameList(const vector<string>& fnames,
         const vector<string>& dnames)
 {
     vector<string> res;
@@ -379,7 +379,7 @@ vector<string> R_NetcdfConnection::makeFileNameList(const vector<string>& fnames
     return res;
 }
 
-SEXP R_NetcdfConnection::getVariables() throw(NcException)
+SEXP R_netcdf::getVariables() throw(NcException)
 {
 #ifdef DEBUG
         Rprintf("getVariables\n");
@@ -442,7 +442,7 @@ SEXP R_NetcdfConnection::getVariables() throw(NcException)
     return result;
 }
 
-SEXP R_NetcdfConnection::getTimeSeriesVariables() throw(NcException)
+SEXP R_netcdf::getTimeSeriesVariables() throw(NcException)
 {
 
     int nfiles = _fileset->getNFiles();
@@ -491,7 +491,7 @@ SEXP R_NetcdfConnection::getTimeSeriesVariables() throw(NcException)
     return result;
 }
 
-SEXP R_NetcdfConnection::getStations() throw(NcException)
+SEXP R_netcdf::getStations() throw(NcException)
 {
     getFileSet();
     std::map<int,string> stations = _fileset->getStations();
@@ -516,7 +516,7 @@ SEXP R_NetcdfConnection::getStations() throw(NcException)
     return namedStations.getRObject();
 }
 
-SEXP R_NetcdfConnection::read(const vector<string> &vnames,
+SEXP R_netcdf::read(const vector<string> &vnames,
         const vector<size_t> &start, const vector<size_t> &count)
     throw(NcException)
 {
@@ -526,7 +526,7 @@ SEXP R_NetcdfConnection::read(const vector<string> &vnames,
     return reader.read(vnames,start,count);
 }
 
-SEXP R_NetcdfConnection::read(const vector<string> &vnames,
+SEXP R_netcdf::read(const vector<string> &vnames,
         double start, double end,
         const vector<int> &stations,
         const vector<string> &tnames,

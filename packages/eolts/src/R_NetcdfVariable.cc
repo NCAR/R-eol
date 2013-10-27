@@ -35,7 +35,7 @@ SEXP R_NetcdfVariable::nctypeSlotName;
 SEXP R_NetcdfVariable::dimensionSlotName;
 SEXP R_NetcdfVariable::attributeSlotName;
 
-R_NetcdfVariable::R_NetcdfVariable(R_NetcdfConnection *con,NcVar *var):
+R_NetcdfVariable::R_NetcdfVariable(R_netcdf *con,NcVar *var):
     _obj(0),_name(var->getName()),_connection(con),_type("unknown")
 {
     if (!classDef) classDef = R_do_MAKE_CLASS("netcdfVariable");

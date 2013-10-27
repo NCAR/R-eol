@@ -18,7 +18,7 @@
 
 #include <R.h>
 
-#include "R_NetcdfConnection.h"
+#include "R_netcdf.h"
 #include "R_Matrix.h"
 #include "R_Array.h"
 
@@ -30,7 +30,7 @@ public:
 
     enum timeTests {LT,LE,GT,GE};
 
-    NetcdfReader(R_NetcdfConnection*);
+    NetcdfReader(R_netcdf*);
 
     ~NetcdfReader();
 
@@ -54,7 +54,7 @@ public:
 
 private:
 
-    R_NetcdfConnection* _connection;
+    R_netcdf* _connection;
 
     // no copying, assignment
     NetcdfReader(const NetcdfReader&);
