@@ -9,17 +9,19 @@ setClass("netcdf",
         start="utime",
         end="utime",
         lenfile="integer",
+        timeNames="character",
         server="character",
         interval="numeric",
         cdlfile="character",
         cppPtr="raw"
         ),
     prototype=list(
-        file=Sys.getenv("R_NETCDF_FILE"),
-        dir=Sys.getenv("R_NETCDF_DIR"),
+        file=ifelse(Sys.getenv("R_NETCDF_FILE")!="",Sys.getenv("R_NETCDF_FILE"),Sys.getenv("NETCDF_FILE")),
+        dir=ifelse(Sys.getenv("R_NETCDF_DIR")!="",Sys.getenv("R_NETCDF_DIR"),Sys.getenv("NETCDF_DIR")),
         start=utime(0),
         end=utime(0),
         lenfile=as.integer(86400),
+        timeNames=c("time","Time"),
         server="",
         interval=300,
         cdlfile="",
@@ -27,20 +29,22 @@ setClass("netcdf",
 )
 
 netcdf = function(
-        file=Sys.getenv("R_NETCDF_FILE"),
-        dir=Sys.getenv("R_NETCDF_DIR"),
-        start=dpar("start"),
-        end=dpar("end"),
-        lenfile=dpar("lenfile"),
-        server="",
-        interval=300,
-        cdlfile="")
+    file=ifelse(Sys.getenv("R_NETCDF_FILE")!="",Sys.getenv("R_NETCDF_FILE"),Sys.getenv("NETCDF_FILE")),
+    dir=ifelse(Sys.getenv("R_NETCDF_DIR")!="",Sys.getenv("R_NETCDF_DIR"),Sys.getenv("NETCDF_DIR")),
+    start=dpar("start"),
+    end=dpar("end"),
+    lenfile=dpar("lenfile"),
+    timeNames=c("time","Time"),
+    server="",
+    interval=300,
+    cdlfile="")
 {
     if (is.null(lenfile)) lenfile = 86400
     obj = new("netcdf",
         file=file,dir=dir,
         start=start,end=end,
         lenfile=as.integer(lenfile),
+        timeNames=timeNames,
         server=server,interval=interval,cdlfile=cdlfile)
 
     if (lenfile == 31 * 86400) times = monthly(from=utime(start,time.zone="GMT"),to=end-1)
@@ -178,10 +182,13 @@ setMethod("readts",
     function(con,variables,start,end,...)
     {
         dots <- list(...)
+
         if (!hasArg(timevar) || is.null((timevar <- dots$timevar)))
-          timevar <- c("time","time_offset")
+          timevar <- c("time","Time","time_offset")
+
         if (!hasArg(basetime) || is.null((basetime <- dots$basetime)))
           basetime <- "base_time"
+
         if (!hasArg(stns) || is.null((stns <- dots$stns)))
           stns <- dpar("stns")
 
@@ -192,7 +199,7 @@ setMethod("readts",
           time.zone = options("time.zone")[[1]]
 
         x = .External("read_netcdf_ts",con,variables,start,end,
-            stns,timevar,basetime,PACKAGE="eolts")
+            stns,timevar,basetime,time.zone,PACKAGE="eolts")
 
         # utime slot from read_netcdf_ts is a single utime, with
         # a vector of numeric values. Change it to a vector
