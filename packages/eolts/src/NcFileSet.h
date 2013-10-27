@@ -32,7 +32,8 @@ namespace eolts {
 class NcFileSet {
 public:
 
-    NcFileSet(const std::vector<std::string>& fnames);
+    NcFileSet(const std::vector<std::string>& fnames,
+        const std::vector<std::string>& tnames);
     virtual ~NcFileSet();
 
     int getNFiles() const { return _nfiles; }

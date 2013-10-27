@@ -31,7 +31,7 @@ using std::map;
 
 using namespace eolts;
 
-NcFileSet::NcFileSet(const vector<string>& fnames):
+NcFileSet::NcFileSet(const vector<string>& fnames,const vector<string>& tnames):
     MAX_FILES_OPEN(40),_files(0),_nfiles(fnames.size()),
     _nopen(0),_nextToOpen(0),_nextToClose(0),
     _possibleTimeDimensionNames()
@@ -41,7 +41,8 @@ NcFileSet::NcFileSet(const vector<string>& fnames):
     for (int i = 0; i < _nfiles; i++) 
         _files[i] = new NcFile(fnames[i]);
 
-    addTimeDimensionName(string("time"));
+    for (unsigned int i = 0; i < tnames.size(); i++)
+        addTimeDimensionName(tnames[i]);
 }
 
 NcFileSet::~NcFileSet() {
@@ -149,9 +150,11 @@ map<int,string> NcFileSet::getStations() throw(NcException)
                 nstations = stnDim->getLength();
 
         const NcDim* tdim = ncf->getTimeDimension(_possibleTimeDimensionNames);
-        stations = ncf->getStations(tdim);
-        // stations may have an extra member for station 0
-        if (stations.size() > 0) return stations;
+        if (tdim) {
+            stations = ncf->getStations(tdim);
+            // stations may have an extra member for station 0
+            if (stations.size() > 0) return stations;
+        }
     }
 
     char cname[6];
