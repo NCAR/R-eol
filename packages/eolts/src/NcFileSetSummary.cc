@@ -6,6 +6,7 @@
 #include <vector>
 #include <set>
 #include <string>
+#include <limits>
 
 #include "NcFileSetSummary.h"
 #include "NcFile.h"
@@ -45,9 +46,10 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
     /* determine start and count for station dimension */
     /* the stations arg is not empty */
     bool onlyStationVarsRequested = true;	// station 0 not requested
-    int minStation = 9999999;
+    int minStation = std::numeric_limits<int>::max();
     int maxStation = 0;
 
+    // convert to C numbering: -1 is the non-station, 0 is the first station number
     for (unsigned int i = 0; i < stations.size(); i++) {
         int s = stations[i] - 1;
         if (s < 0) onlyStationVarsRequested = false;
@@ -60,6 +62,10 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
     _stationStart = minStation;
     if (maxStation >= minStation) _stationCount = maxStation - minStation + 1;
     else _stationCount = 0;
+    
+#ifdef DEBUG
+    Rprintf("_stationCount=%d\n",_stationCount);
+#endif
 
     /*
      * scan over dimensions of all requested variables.
@@ -207,11 +213,13 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                             var->getName().c_str(),ivar,_stationCount,_stationDims[ivar],_ncolOut);
 #endif
                 }
-                else
-                    _stationDims[ivar] = 0;	// didn't ask for variables with a station dim
+                // didn't ask for variables with a station dim and this
+                // variable doesn't have one. Set virtual dimension to 1.
+                else _stationDims[ivar] = 1;
             }
             else 
-                // only asked for vars with station dim
+                // This variable doesn't have a station dimension, and user
+                // asked only for vars with station dim.
                 if (onlyStationVarsRequested) _stationDims[ivar] = 0;
 
             // check other dimensions
