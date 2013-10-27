@@ -278,20 +278,21 @@ setMethod("select",signature(x="dat"),
     function(x,...)
     {
         dots = list(...)
-        if (hasArg(stns) && !is.null((stns <- dots$stns))) {
-          if (!is.null(xstns <- stations(x)) && length(xstns) == ncol(x)) {
-              sm <- match(xstns,stns,nomatch=0)
-              sm <- seq(along=sm)[sm!=0][sort.list(sm[sm!=0])]
-              if (length(sm) > 0) x <- x[,sm]
-              else {
-                  x <- NULL
-                  warning(paste("no selected stations (",paste(stns,collapse=","),
-                    ") found in stations(x)=c(",paste(xstns,collapse=","),
-                    "). select(x,stns) returning NULL"))
-              }
+        if (hasArg(stns) && length((stns <- dots$stns)) > 0) {
+            xstns = stations(x)
+            if (length(xstns) == ncol(x)) {
+                sm <- match(xstns,stns,nomatch=0)
+                sm <- seq(along=sm)[sm!=0][sort.list(sm[sm!=0])]
+                if (length(sm) > 0) x <- x[,sm]
+                else {
+                    x <- NULL
+                    warning(paste("no selected stations (",paste(stns,collapse=","),
+                      ") found in stations(x)=c(",paste(xstns,collapse=","),
+                      "). select(x,stns) returning NULL"))
+                }
             }
         }
-        if (hasArg(hts) && !is.null((hts <- dots$hts)) && !is.null(x)) {
+        if (hasArg(hts) && !is.null((hts <- dots$hts))) {
             # Select heights (exactly)
             hts <- dots$hts
             if (!is.null(xhts <- heights(x)) && length(xhts) == ncol(x)) {
@@ -327,7 +328,7 @@ setMethod("select",signature(x="dat"),
                 }
             }
         }
-        if (hasArg(sfxs) && !is.null(sfxs <- dots$sfxs) && !is.null(x)) {
+        if (hasArg(sfxs) && !is.null(sfxs <- dots$sfxs)) {
             # Select sfxs
             # remove leading dots
             ldots <- substring(sfxs,1,1) == "."
@@ -361,7 +362,7 @@ setMethod("select",signature(x="dat"),
                 x <- NULL
             }
         }
-          if (hasArg(sites) && !is.null(sites <- dots$sites) && !is.null(x)) {
+        if (hasArg(sites) && !is.null(sites <- dots$sites)) {
             # Select sites
             dsites = sites(dimnames(x)[[2]])
 
