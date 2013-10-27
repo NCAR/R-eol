@@ -756,7 +756,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
         const vector<int> &stations,
         const vector<string> &timeVarNames,
         const string &baseTimeName,
-        const string& timezone,bool readCounts) throw(NcException)
+        const string& timezone,bool readCountsOnly) throw(NcException)
 {
 
     int ifile,ivar;
@@ -775,7 +775,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
 #ifdef DEBUG
     Rprintf("stations.size()=%zu\n",stations.size());
 #endif
-    NcFileSetSummary vs(fileset,vnames,stations,readCounts);
+    NcFileSetSummary vs(fileset,vnames,stations,readCountsOnly);
 
     // create start array, with enough dimensions for all input variables
     int maxdim = 3;	// time,sample,station
@@ -961,14 +961,18 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
         size_t n2 = searchTime(tvar,endTime-basetime,GT,timemult);
 
 #ifdef DEBUG
-        Rprintf("%s basetime=%f, t1=%f, t2=%f, n1=%d, n2=%d\n",
+        Rprintf("%s basetime=%f, t1=%f, t2=%f, n1=%zd, n2=%zd\n",
                 ncf->getName().c_str(),
                 basetime,startTime-basetime, endTime-basetime, n1,n2);
 #endif
         nrec = n2 - n1;
 
         // nothing to read in this file.
-        if (nrec < 1) continue;
+        if (nrec < 1) {
+            Rprintf("Requested times not found in file: %s\n",
+                    ncf->getShortName().c_str());
+            continue;
+        }
 
         double t1,t2;
         status = nc_get_var1_double(ncid,tvar->getId(),&n1,&t1);
@@ -976,14 +980,14 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
             throw NcException("nc_get_var1_double",
                     tvar->getFileName(),tvar->getName(),status);
         }
-        t1 += timemult;
+        t1 *= timemult;
         size_t n = n2 - 1;
         status = nc_get_var1_double(ncid,tvar->getId(),&n,&t2);
         if (status != NC_NOERR) {
             throw NcException("nc_get_var1_double",
                     tvar->getFileName(),tvar->getName(),status);
         }
-        t2 += timemult;
+        t2 *= timemult;
         double recsPerSec;
         if (t2 - t1 > 0.0)
             recsPerSec = (nrec-1) / (t2 - t1);
@@ -1041,7 +1045,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                 break;
             }
 
-            if (!readCounts) {
+            if (!readCountsOnly) {
                 ptrdiff_t di = timesPtr - &times.front();
                 size_t nalloc = n * maxSampleDim;
                 times.resize(nalloc);
@@ -1054,7 +1058,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
         start[0] = n1;
         size_t offset;
 
-        if (!readCounts) {
+        if (!readCountsOnly) {
             ptrdiff_t tmap = maxSampleDim;
 
             if (timesAreMidpoints) {
@@ -1132,26 +1136,20 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
 #ifdef DEBUG
             Rprintf("var=%s, stationDim=%u\n",vnames[ivar].c_str(),stationDim);
 #endif
-            size_t sampleDim = vs.getSampleDimension(ivar);
-
             // variable does not match stations requested
             if (stationDim == 0) continue;
 
+            size_t sampleDim = vs.getSampleDimension(ivar);
+
             NcVar* var = 0;
 
-            if (readCounts)
+            if (readCountsOnly)
                 var = ncf->getTimeSeriesCountsVariable(vnames[ivar],timeDim);
             else
                 var = ncf->getTimeSeriesVariable(vnames[ivar],timeDim);
 
             // found this variable in this file
             if (var) {
-                if (!printedmsg) {
-                    Rprintf("Reading %s, %d variables: %s ... start=%d,count=%d\n",
-                            ncf->getShortName().c_str(),vnames.size(),var->getName().c_str(),start[0],count[0]);
-                    printedmsg = 1;
-                }
-
                 offset = 0;
                 int sampleRatio = maxSampleDim / sampleDim;
 
@@ -1218,6 +1216,13 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                     }
                 }
 
+                Rprintf("Reading %s, %s: ... start=(%s), count=(%s)\n",
+                    ncf->getShortName().c_str(),
+                    var->getName().c_str(),
+                    dimToString(&start.front(),varDims.size()).c_str(),
+                    dimToString(&count.front(),varDims.size()).c_str());
+
+
                 int varid = var->getId();
                 const NcAttr* attr;
 
@@ -1225,8 +1230,8 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                 case REALSXP:
 
 #ifdef DEBUG
-                    Rprintf("Reading %s %s into %s, readCounts=%d\n",
-                        ncf->getShortName().c_str(),var->getName().c_str(),NcVar::typeToString(vs.getOutType()).c_str(),readCounts);
+                    Rprintf("Reading %s %s into %s, readCountsOnly=%d\n",
+                        ncf->getShortName().c_str(),var->getName().c_str(),NcVar::typeToString(vs.getOutType()).c_str(),readCountsOnly);
                 Rprintf("ndim=%d, dims=%s, start=%s, count=%s, imap=%s, offset=%d ptrdiff=%d\n",
                         varDims.size(),
                         dimToString(varDims).c_str(),
@@ -1251,8 +1256,8 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                     break;
                 case INTSXP:
 #ifdef DEBUG
-                    Rprintf("Reading %s %s into %s, readCounts=%d\n",
-                        ncf->getShortName().c_str(),var->getName().c_str(),NcVar::typeToString(vs.getOutType()).c_str(),readCounts);
+                    Rprintf("Reading %s %s into %s, readCountsOnly=%d\n",
+                        ncf->getShortName().c_str(),var->getName().c_str(),NcVar::typeToString(vs.getOutType()).c_str(),readCountsOnly);
                 Rprintf("ndim=%d, dims=%s, start=%s, count=%s, imap=%s, offset=%d ptrdiff=%d\n",
                         varDims.size(),
                         dimToString(varDims).c_str(),
@@ -1436,7 +1441,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
 
     matrix->setColumnNames(colNames);
 
-    if (!readCounts) {
+    if (!readCountsOnly) {
         assert((timesPtr - &times.front()) == nrecs * maxSampleDim);
         R_utime positions;
 #ifdef DEBUG

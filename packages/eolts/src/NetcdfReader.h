@@ -43,7 +43,7 @@ public:
         const std::vector<int> &stations,
         const std::vector<std::string> &timeVarNames,
         const std::string & baseTimeName,const std::string& timezone,
-        bool readCounts = false) throw(NcException);
+        bool readCountsOnly = false) throw(NcException);
 
     size_t searchTime(NcVar* var,double stime,timeTests test,double timeMult)
         throw(NcException);
