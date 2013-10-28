@@ -29,6 +29,8 @@
 #include "R_utime.h"
 #include "R_nts.h"
 
+#include <R_ext/Parse.h>
+
 using std::string;
 using std::vector;
 using std::map;
@@ -82,6 +84,7 @@ namespace {
         }
     }     
 
+#if !defined(__MINGW32__) && !defined(__MINGW64__)
     double parseCFTimeString(const string& ustr,double unitsMult) throw(string)
     {
         if (ustr.find("second") != string::npos) unitsMult = 1.0;
@@ -93,11 +96,13 @@ namespace {
         string::size_type ss = ustr.find("since");
         if (ss == string::npos)
             throw string("cannot find \"since\": ") + ustr;
+        ss += 5;
+        while(::isspace(ustr[ss])) ss++;
+        string str = ustr.substr(ss);
 
-        const char *sp1;
         struct tm tm;
 
-// #define TEST_STRPTIME
+#define TEST_STRPTIME
 #ifdef TEST_STRPTIME
         {
             // strptime on Mac OSX is quite finiky.
@@ -109,11 +114,11 @@ namespace {
             //    a bad year is in the tm struct.  "%Y-%m" returns NULL.
             // 2. Similarly %H must have a space before it, "%H" alone doesn't
             //    remove spaces
-            const char* fmts[] = {"%Y"," %Y","%Y-%m"," %Y-%m",
+            const char* fmts[] = {"%F %T", " %F %T", "%Y"," %Y","%Y-%m"," %Y-%m",
                 " %Y-%m-%d"," %Y-%m-%d %H",
                 " %Y-%m-%d%H"," %Y-%m-%d %H:%M"," %Y-%m-%d %H:%M:%S"};
 
-            sp1 = " 2011-11-15 21:23:00";
+            const char *sp1 = " 2011-11-15 21:23:00";
 
             // while(*sp1 && ::isspace(*sp1)) sp1++;
             
@@ -134,21 +139,17 @@ namespace {
         }
 #endif
 
-        string str = ustr.substr(ss+5);
-        sp1 = str.c_str();
-        while(*sp1 && ::isspace(*sp1)) sp1++;
-
         const char* fmt = "%Y-%m-%d %H:%M:%S";
-        const char* sp = ::strptime(sp1,fmt,&tm);
+        const char* sp = ::strptime(str.c_str(),fmt,&tm);
         if (!sp) {
             Rprintf("cannot parse with strptime: \"%s\", format: \"%s\"\n",
-                    sp1,fmt);
-            throw string("cannot parse with strptime: \"") + sp1 +
+                    str.c_str(),fmt);
+            throw string("cannot parse with strptime: \"") + str +
             "\", format: \"" + fmt +"\"";
         }
         tm.tm_isdst = 0;
         time_t tval = ::mktime(&tm);    // treats tm as local time
-        if (tval == -1) throw string("cannot convert with mktime: ") + sp1;
+        if (tval == -1) throw string("cannot convert with mktime: ") + str;
 
 #define CHECK_TIMEZONE_GLOBAL
 #ifdef USE_TIMEZONE_GLOBAL
@@ -194,29 +195,78 @@ namespace {
         int toff = 0;
         if (::strchr(sp,':')) {
             if (::sscanf(sp,"%d:%d",&hr,&mn) != 2)
-                throw string("cannot parse time zone in: ") + sp1;
+                throw string("cannot parse time zone in: ") + str;
             toff = hr * 3600 + mn * 60;
         }
         else {
             int sl = ::strlen(sp);
             if (sl < 3) {
                 if (::sscanf(sp,"%d",&hr) != 1)
-                    throw string("cannot parse time zone in: ") + sp1;
+                    throw string("cannot parse time zone in: ") + str;
                 toff = hr * 3600;
             }
             else if (sl == 3) {
                 if (::sscanf(sp,"%1d%d",&hr,&mn) != 2) 
-                    throw string("cannot parse time zone in: ") + sp1;
+                    throw string("cannot parse time zone in: ") + str;
                 toff = hr * 3600 + mn * 60;
             }
             else {
                 if (::sscanf(sp,"%2d%d",&hr,&mn) != 2)
-                    throw string("cannot parse time zone in: ") + sp1;
+                    throw string("cannot parse time zone in: ") + str;
                 toff = hr * 3600 + mn * 60;
             }
         }
         if (!pos) toff = -toff;
         return (double)tval + fsec + toff;
+    }
+#endif
+
+    double R_parseCFTimeString(const string& ustr,double unitsMult) throw(string)
+    {
+        double val = 0.0;
+
+        if (ustr.find("second") != string::npos) unitsMult = 1.0;
+        else if (ustr.find("day") != string::npos) unitsMult = 86400.0;
+        else if (ustr.find("hour") != string::npos) unitsMult = 3600.0;
+        else if (ustr.find("minute") != string::npos) unitsMult = 60.0;
+        else throw string("cannot parse time units: ") + ustr;
+
+        string::size_type ss = ustr.find("since");
+        if (ss == string::npos)
+            throw string("cannot find \"since\": ") + ustr;
+        ss += 5;
+        while(::isspace(ustr[ss])) ss++;
+        string str = ustr.substr(ss);
+
+        string cmd = string("utime(\"" + str + "\",in.format=\"%F %T %z\",time.zone=\"UTC\")");
+
+        SEXP cmdSexp = PROTECT(allocVector(STRSXP,1));
+        SET_STRING_ELT(cmdSexp,0,mkChar(cmd.c_str()));
+        ParseStatus status;
+        SEXP cmdexpr = PROTECT(R_ParseVector(cmdSexp,-1,&status,R_NilValue));
+        if (status != PARSE_OK) {
+            UNPROTECT(2);
+            throw string("cannot parse ") + cmd;
+        }
+        if (length(cmdexpr) != 1) {
+            UNPROTECT(2);
+            throw string("unexpected return from ") + cmd;
+        }
+
+        SEXP ans = PROTECT(eval(VECTOR_ELT(cmdexpr,0),R_GlobalEnv));
+#ifdef DEBUG
+        Rprintf("ans %d, TYPEOF=%d,length=%d\n",
+            i,TYPEOF(ans),length(ans));
+#endif
+        if (TYPEOF(ans) == REALSXP && length(ans) == 1) {
+            val = REAL(ans)[0];
+            if (ISNAN(val)) {
+                UNPROTECT(3);
+                throw string("cannot parse: ") + cmd;
+            }
+        }
+        UNPROTECT(3);
+        return val;
     }
 }     
 
@@ -963,7 +1013,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                     string tunits = sattr->getValue(0);
                     try {
                         double unitsMult = 1.0;
-                        double toff = parseCFTimeString(tunits,unitsMult);
+                        double toff = R_parseCFTimeString(tunits,unitsMult);
                         basetime *= unitsMult;
                         basetime += toff;
                     }
@@ -982,7 +1032,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
             if ((sattr = dynamic_cast<const NcAttrT<string>*>(unitsAttr))) {
                 string tunits = sattr->getValue(0);
                 try {
-                    basetime = parseCFTimeString(tunits,timemult);
+                    basetime = R_parseCFTimeString(tunits,timemult);
                 }
                 catch(const string& e) {
                     warning(e.c_str());
