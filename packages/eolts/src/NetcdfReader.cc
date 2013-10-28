@@ -94,14 +94,61 @@ namespace {
         if (ss == string::npos)
             throw string("cannot find \"since\": ") + ustr;
 
-        string str = ustr.substr(ss+5);
-
+        const char *sp1;
         struct tm tm;
-        char* sp = strptime(str.c_str(),"%Y-%m-%d%H:%M:%S",&tm);
-        if (!sp) throw string("cannot parse with strptime: ") + str;
+
+// #define TEST_STRPTIME
+#ifdef TEST_STRPTIME
+        {
+            // strptime on Mac OSX is quite finiky.
+            // In order to parse:  " 2011-11-15 21:23:00" with "%Y-%m-%d %H:%M:%S"
+            // Seems that:
+            // 1. must have a space before the %Y descriptor, or move the char
+            //    pointer to point to the first non-space in the date string.
+            //    Otherwise, strptime with "%Y" by itself returns non-NULL but
+            //    a bad year is in the tm struct.  "%Y-%m" returns NULL.
+            // 2. Similarly %H must have a space before it, "%H" alone doesn't
+            //    remove spaces
+            const char* fmts[] = {"%Y"," %Y","%Y-%m"," %Y-%m",
+                " %Y-%m-%d"," %Y-%m-%d %H",
+                " %Y-%m-%d%H"," %Y-%m-%d %H:%M"," %Y-%m-%d %H:%M:%S"};
+
+            sp1 = " 2011-11-15 21:23:00";
+
+            // while(*sp1 && ::isspace(*sp1)) sp1++;
+            
+            for (unsigned int i = 0; i < sizeof(fmts)/sizeof(fmts[0]); i++) {
+                const char* sp = ::strptime(sp1,fmts[i],&tm);
+                if (!sp) {
+                    Rprintf("cannot parse with strptime: \"%s\", format: \"%s\"\n",
+                        sp1,fmts[i]);
+                }
+                else {
+                    Rprintf("successful parse with strptime: \"%s\", format: \"%s\"\n",
+                        sp1,fmts[i]);
+                    if (tm.tm_year != 111) Rprintf("bad year after parse: %d\n",
+                            tm.tm_year);
+
+                }
+            }
+        }
+#endif
+
+        string str = ustr.substr(ss+5);
+        sp1 = str.c_str();
+        while(*sp1 && ::isspace(*sp1)) sp1++;
+
+        const char* fmt = "%Y-%m-%d %H:%M:%S";
+        const char* sp = ::strptime(sp1,fmt,&tm);
+        if (!sp) {
+            Rprintf("cannot parse with strptime: \"%s\", format: \"%s\"\n",
+                    sp1,fmt);
+            throw string("cannot parse with strptime: \"") + sp1 +
+            "\", format: \"" + fmt +"\"";
+        }
         tm.tm_isdst = 0;
         time_t tval = ::mktime(&tm);    // treats tm as local time
-        if (tval == -1) throw string("cannot convert with mktime: ") + str;
+        if (tval == -1) throw string("cannot convert with mktime: ") + sp1;
 
 #define CHECK_TIMEZONE_GLOBAL
 #ifdef USE_TIMEZONE_GLOBAL
@@ -147,24 +194,24 @@ namespace {
         int toff = 0;
         if (::strchr(sp,':')) {
             if (::sscanf(sp,"%d:%d",&hr,&mn) != 2)
-                throw string("cannot parse time zone in: ") + str;
+                throw string("cannot parse time zone in: ") + sp1;
             toff = hr * 3600 + mn * 60;
         }
         else {
             int sl = ::strlen(sp);
             if (sl < 3) {
                 if (::sscanf(sp,"%d",&hr) != 1)
-                    throw string("cannot parse time zone in: ") + str;
+                    throw string("cannot parse time zone in: ") + sp1;
                 toff = hr * 3600;
             }
             else if (sl == 3) {
                 if (::sscanf(sp,"%1d%d",&hr,&mn) != 2) 
-                    throw string("cannot parse time zone in: ") + str;
+                    throw string("cannot parse time zone in: ") + sp1;
                 toff = hr * 3600 + mn * 60;
             }
             else {
                 if (::sscanf(sp,"%2d%d",&hr,&mn) != 2)
-                    throw string("cannot parse time zone in: ") + str;
+                    throw string("cannot parse time zone in: ") + sp1;
                 toff = hr * 3600 + mn * 60;
             }
         }
