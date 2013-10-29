@@ -1,2 +1,2 @@
-PKG_CPPFLAGS = @CPPFLAGS@ -Weffc++ -DR_NO_REMAP
+PKG_CPPFLAGS = @CPPFLAGS@ -Weffc++ -DR_NO_REMAP -I../inst/include
 PKG_LIBS = @LIBS@
