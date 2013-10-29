@@ -4,10 +4,10 @@
 #ifndef NTS_MATH_H
 #define NTS_MATH_H
 
-#include "R_nts.h"
-
 #include <R.h>
 #include <Rinternals.h>
+
+#include "R_nts.h"
 
 extern "C" {
     SEXP ntsaverage(SEXP nts,SEXP avgperiod, SEXP outperiod,

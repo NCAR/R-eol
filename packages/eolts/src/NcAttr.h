@@ -16,9 +16,6 @@
 #include <string>
 
 #include "NcVar.h"
-// #include "NcException.h"
-//
-
 
 namespace eolts {
 

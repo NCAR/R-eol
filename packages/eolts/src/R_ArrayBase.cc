@@ -31,18 +31,16 @@ using namespace eolts;
 R_ArrayBase::R_ArrayBase(int type,const vector<size_t>& dims):
     _obj(0),_type(type),_dims(dims),_length(0),_pindx(-1),_dnobj(0)
 {
-    SEXP dimobj = allocVector(INTSXP,_dims.size());
+    SEXP dimobj = PROTECT(Rf_allocVector(INTSXP,_dims.size()));
     _length = 1;
     for (unsigned int i = 0; i < _dims.size(); i++) {
         INTEGER(dimobj)[i] = _dims[i];
         _length *= _dims[i];
     }
 
-    _obj = allocArray(type,dimobj);
+    _obj = Rf_allocArray(type,dimobj);
+    UNPROTECT(1);
     PROTECT_WITH_INDEX(_obj,&_pindx);
-
-    /* UNPROTECT(1) dimobj? Not sure.
-     * Instead we'll not PROTECT the allocVector */
 }
 
 /**
@@ -52,15 +50,15 @@ R_ArrayBase::R_ArrayBase(int type, SEXP obj) :
     _obj(obj),_type(type),_dims(),_length(0),_pindx(-1),_dnobj(0)
 {
     if (TYPEOF(obj) != type) {
-        _obj = coerceVector(_obj,type);
+        _obj = Rf_coerceVector(_obj,type);
         PROTECT_WITH_INDEX(_obj,&_pindx);
     }
     _length = LENGTH(_obj);
-    SEXP dimobj = getAttrib(_obj,R_DimSymbol);
-    if (isNull(dimobj)) {
-        dimobj = PROTECT(allocVector(INTSXP,1));
+    SEXP dimobj = Rf_getAttrib(_obj,R_DimSymbol);
+    if (Rf_isNull(dimobj)) {
+        dimobj = PROTECT(Rf_allocVector(INTSXP,1));
         INTEGER(dimobj)[0] = _length;
-        _obj = setAttrib(_obj,R_DimSymbol,dimobj);
+        _obj = Rf_setAttrib(_obj,R_DimSymbol,dimobj);
         UNPROTECT(1);
         if (_pindx >= 0)
             REPROTECT(_obj,_pindx);
@@ -76,9 +74,9 @@ R_ArrayBase::R_ArrayBase(int type, SEXP obj) :
             _dims.push_back(l);
             len *= l;
         }
-        if (len != _length) error("incorrect dimensions");
+        if (len != _length) Rf_error("incorrect dimensions");
     }
-    _dnobj = getAttrib(_obj,R_DimNamesSymbol);
+    _dnobj = Rf_getAttrib(_obj,R_DimNamesSymbol);
 }
 
 R_ArrayBase::~R_ArrayBase()
@@ -100,32 +98,32 @@ vector<string> R_ArrayBase::getDimNames(unsigned int idim)
 
     if (idim >= _dims.size()) {
         Rprintf("R_ArrayBase::getDimNames: idim=%u exceeds maximum index for number of dimensions, %zu\n",idim,_dims.size());
-        error("invalid idim argument");
+        Rf_error("invalid idim argument");
     }
 
-    if (!_dnobj || length(_dnobj) == 0) return names;
+    if (!_dnobj || Rf_length(_dnobj) == 0) return names;
 
-    if (!isNewList(_dnobj)) {
-        warning("dimnames is not a list");
-        _dnobj = PROTECT(allocVector(VECSXP,_dims.size()));
-        setAttrib(_obj,R_DimNamesSymbol,_dnobj);
+    if (!Rf_isNewList(_dnobj)) {
+        Rf_warning("dimnames is not a list");
+        _dnobj = PROTECT(Rf_allocVector(VECSXP,_dims.size()));
+        Rf_setAttrib(_obj,R_DimNamesSymbol,_dnobj);
         UNPROTECT(1);
         return names;
     }
 
-    if ((unsigned)length(_dnobj) != _dims.size()) {
+    if ((unsigned)Rf_length(_dnobj) != _dims.size()) {
         Rprintf("R_ArrayBase::getDimNames: length of dimnames list, %u, is not equal to number of dimensions, %zu\n",
-                (unsigned)length(_dnobj),_dims.size());
-        error("internal error: bad length of dimnames list");
+                (unsigned)Rf_length(_dnobj),_dims.size());
+        Rf_error("internal error: bad length of dimnames list");
     }
 
     SEXP dobj = VECTOR_ELT(_dnobj,idim);
-    if (!isString(dobj) || length(dobj) == 0) return names;
+    if (!Rf_isString(dobj) || Rf_length(dobj) == 0) return names;
 
-    if ((unsigned)length(dobj) != _dims[idim]) {
+    if ((unsigned)Rf_length(dobj) != _dims[idim]) {
         Rprintf("R_ArrayBase::getDimNames: length of dimnames for dimension %d is %u, and not equal to dimension length %zu\n",
-                idim,(unsigned)length(dobj),_dims[idim]);
-        error("wrong length for dimnames");
+                idim,(unsigned)Rf_length(dobj),_dims[idim]);
+        Rf_error("wrong length for dimnames");
     }
 
     for (size_t i = 0; i < _dims[idim]; i++) {
@@ -140,30 +138,30 @@ void R_ArrayBase::setDimNames(unsigned int idim,const vector<string>& names)
     if (idim >= _dims.size()) {
         Rprintf("R_ArrayBase::setDimNames: idim=%u exceeds maximum index for number of dimensions, %zu\n",
                 idim,_dims.size());
-        error("invalid idim argument");
+        Rf_error("invalid idim argument");
     }
 
-    if (!_dnobj || !isNewList(_dnobj) || (unsigned) length(_dnobj) != _dims.size()) {
-        _dnobj = PROTECT(allocVector(VECSXP,_dims.size()));
-        setAttrib(_obj,R_DimNamesSymbol,_dnobj);
+    if (!_dnobj || !Rf_isNewList(_dnobj) || (unsigned) Rf_length(_dnobj) != _dims.size()) {
+        _dnobj = PROTECT(Rf_allocVector(VECSXP,_dims.size()));
+        Rf_setAttrib(_obj,R_DimNamesSymbol,_dnobj);
         UNPROTECT(1);
     }
 
     if (names.size() > 0 && names.size() != _dims[idim]) {
         Rprintf("R_ArrayBase::setDimNames: length of dimension %d is %zu, and not equal to number of names for that dimension, %zu\n",
                 idim,_dims[idim],names.size());
-        error("wrong length for dimension names");
+        Rf_error("wrong length for dimension names");
     }
 
     SEXP dobj = VECTOR_ELT(_dnobj,idim);
-    if (!dobj || (unsigned)length(dobj) != names.size()) {
-        dobj = PROTECT(allocVector(STRSXP,names.size()));
+    if (!dobj || (unsigned)Rf_length(dobj) != names.size()) {
+        dobj = PROTECT(Rf_allocVector(STRSXP,names.size()));
         SET_VECTOR_ELT(_dnobj,idim,dobj);
         UNPROTECT(1);
     }
 
     for (size_t i = 0; i < names.size(); i++)
-        SET_STRING_ELT(dobj,i,mkChar(names[i].c_str()));
+        SET_STRING_ELT(dobj,i,Rf_mkChar(names[i].c_str()));
 
 }
 

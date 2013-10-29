@@ -59,24 +59,24 @@ void R_Matrix<T>::setDims(size_t nr,size_t nc)
     if (nr > onr) {
         /* number of rows has increased */
 #ifdef DEBUG
-        Rprintf("lengthgets %d\n",nr*onc);
+        Rprintf("Rf_lengthgets %d\n",nr*onc);
 #endif
-        _obj = lengthgets(_obj,nr*onc);
+        _obj = Rf_lengthgets(_obj,nr*onc);
         if (_pindx >= 0)
             REPROTECT(_obj,_pindx);
         else
             PROTECT_WITH_INDEX(_obj,&_pindx);
 #ifdef DEBUG
-        Rprintf("lengthgets done %d\n",nr*onc);
+        Rprintf("Rf_lengthgets done %d\n",nr*onc);
 #endif
-        SEXP dimobj = PROTECT(allocVector(INTSXP,2));
+        SEXP dimobj = PROTECT(Rf_allocVector(INTSXP,2));
         INTEGER(dimobj)[0] = nr;
         INTEGER(dimobj)[1] = onc;
 #define USE_DIMGETS
 #ifdef USE_DIMGETS
-        dimgets(_obj,dimobj);
+        Rf_dimgets(_obj,dimobj);
 #else
-        setAttrib(_obj,R_DimSymbol,dimobj);
+        Rf_setAttrib(_obj,R_DimSymbol,dimobj);
 #endif
         UNPROTECT(1);
 
@@ -126,19 +126,19 @@ void R_Matrix<T>::setDims(size_t nr,size_t nc)
             fpo = fp + ic * onr; 
             for (size_t ir = 0; ir < nr; ir++) *fpn++ = *fpo++;
         }
-        _obj = lengthgets(_obj,nr*onc);
+        _obj = Rf_lengthgets(_obj,nr*onc);
         if (_pindx >= 0)
             REPROTECT(_obj,_pindx);
         else
             PROTECT_WITH_INDEX(_obj,&_pindx);
 
-        SEXP dimobj = PROTECT(allocVector(INTSXP,2));
+        SEXP dimobj = PROTECT(Rf_allocVector(INTSXP,2));
         INTEGER(dimobj)[0] = nr;
         INTEGER(dimobj)[1] = onc;
 #ifdef USE_DIMGETS
-        dimgets(_obj,dimobj);
+        Rf_dimgets(_obj,dimobj);
 #else
-        setAttrib(_obj,R_DimSymbol,dimobj);
+        Rf_setAttrib(_obj,R_DimSymbol,dimobj);
 #endif
         UNPROTECT(1);
 
@@ -152,19 +152,19 @@ void R_Matrix<T>::setDims(size_t nr,size_t nc)
      * NA fill.
      */
     if (onc != nc) {
-        _obj = lengthgets(_obj,nr*nc);
+        _obj = Rf_lengthgets(_obj,nr*nc);
         if (_pindx >= 0)
             REPROTECT(_obj,_pindx);
         else
             PROTECT_WITH_INDEX(_obj,&_pindx);
 
-        SEXP dimobj = PROTECT(allocVector(INTSXP,2));
+        SEXP dimobj = PROTECT(Rf_allocVector(INTSXP,2));
         INTEGER(dimobj)[0] = nr;
         INTEGER(dimobj)[1] = nc;
 #ifdef USE_DIMGETS
-        dimgets(_obj,dimobj);
+        Rf_dimgets(_obj,dimobj);
 #else
-        setAttrib(_obj,R_DimSymbol,dimobj);
+        Rf_setAttrib(_obj,R_DimSymbol,dimobj);
 #endif
         UNPROTECT(1);
 #ifdef DEBUG

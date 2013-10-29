@@ -16,7 +16,7 @@
 #include "R_utime.h"
 #include "R_nts.h"
 
-#include <R.h>  // install
+#include <R.h>  // Rf_install
 #include <R_ext/Rdynload.h>   // DllInfo
 
 using namespace eolts;
@@ -29,29 +29,29 @@ extern "C" {
         Rprintf("static R_init_eolts\n");
 #endif
 
-        R_netcdf::fileSlotName = install("file");
-        R_netcdf::dirSlotName = install("dir");
-        R_netcdf::timeNamesSlotName = install("timeNames");
-        R_netcdf::cppSlotName = install("cppPtr");
+        R_netcdf::fileSlotName = Rf_install("file");
+        R_netcdf::dirSlotName = Rf_install("dir");
+        R_netcdf::timeNamesSlotName = Rf_install("timeNames");
+        R_netcdf::cppSlotName = Rf_install("cppPtr");
 
-        R_NetcdfVariable::nameSlotName = install("name");
-        R_NetcdfVariable::modeSlotName = install("mode");
-        R_NetcdfVariable::nctypeSlotName = install("nctype");
-        R_NetcdfVariable::dimensionSlotName = install("dimension");
-        R_NetcdfVariable::attributeSlotName = install("attributes");
+        R_NetcdfVariable::nameSlotName = Rf_install("name");
+        R_NetcdfVariable::modeSlotName = Rf_install("mode");
+        R_NetcdfVariable::nctypeSlotName = Rf_install("nctype");
+        R_NetcdfVariable::dimensionSlotName = Rf_install("dimension");
+        R_NetcdfVariable::attributeSlotName = Rf_install("attributes");
 
-        R_nts::dataSlotName = install("data");
-        R_nts::posSlotName = install("positions");
-        R_nts::unitsSlotName = install("units");
-        R_nts::weightsSlotName = install("weights");
-        R_nts::weightMapSlotName = install("weightmap");
-        R_nts::stationsSlotName = install("stations");
-        R_nts::startposSlotName = install("start");
-        R_nts::endposSlotName = install("end");
-        R_nts::timeFormatSlotName = install("time.format");
-        R_nts::timeZoneSlotName = install("time.zone");
+        R_nts::dataSlotName = Rf_install("data");
+        R_nts::posSlotName = Rf_install("positions");
+        R_nts::unitsSlotName = Rf_install("units");
+        R_nts::weightsSlotName = Rf_install("weights");
+        R_nts::weightMapSlotName = Rf_install("weightmap");
+        R_nts::stationsSlotName = Rf_install("stations");
+        R_nts::startposSlotName = Rf_install("start");
+        R_nts::endposSlotName = Rf_install("end");
+        R_nts::timeFormatSlotName = Rf_install("time.format");
+        R_nts::timeZoneSlotName = Rf_install("time.zone");
 
-        R_utime::dotDataSlotName = install(".Data");
+        R_utime::dotDataSlotName = Rf_install(".Data");
 
     }
 

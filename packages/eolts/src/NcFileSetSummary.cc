@@ -12,8 +12,6 @@
 #include "NcFile.h"
 #include "util.h"
 
-// include <R.h> after <sstream>, otherwise you'll get a compile error on Mac OS X:
-// /usr/include/c++/4.2.1/bits/codecvt.h: error: macro "length" passed 4 arguments, but takes just 1
 #include <R.h>  // warning
 
 // #define DEBUG
@@ -120,7 +118,7 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                 std::ostringstream ost;
                 ost << "time series variable \"" << _vnames[ivar] <<
                     "\" not found in file " << ncf->getName();
-                // warning(ost.str().c_str());
+                // Rf_warning(ost.str().c_str());
                 Rprintf("%s\n",ost.str().c_str());
                 continue;
             }
@@ -155,7 +153,7 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                         "\"(" << dimToString(vedges,ndim) <<
                         ") are different than dimensions in previous file: " <<
                         dimToString(_dims[ivar]) << " Skipping variable";
-                    warning(ost.str().c_str());
+                    Rf_warning(ost.str().c_str());
                     _dims[ivar].resize(0);
                 }
             }
@@ -184,7 +182,7 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                         ", variable \"" << var->getName() << "\": sample dimension with length " <<
                         sampleDim->getLength() <<
                         " is not the second dimension. I don't know what to do! Skipping variable";
-                    warning(ost.str().c_str());
+                    Rf_warning(ost.str().c_str());
                     _dims[ivar].resize(0);
                     continue;
                 }
@@ -202,7 +200,7 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                             ", variable \"" << var->getName() << "\": station dimension with length " <<
                         stationDim->getLength() <<
                         " is less than requested station=%d. Skipping variable";
-                        warning(ost.str().c_str());
+                        Rf_warning(ost.str().c_str());
                         _dims[ivar].resize(0);
                         continue;
                     }
@@ -233,7 +231,7 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                         dim->getName() << " of length " << dim->getLength() <<
                         ". Skipping variable";
 
-                    warning(ost.str().c_str());
+                    Rf_warning(ost.str().c_str());
                     _dims[ivar].resize(0);
                 }
             }
@@ -274,7 +272,7 @@ void NcFileSetSummary::checkType(NcVar*var)
      * If any input column is character, then they all must be character.
      */
     if (_outType != NC_NAT && (_outType == NC_CHAR || type == NC_CHAR) && _outType != type) {
-        error("error: cannot mix character and numeric variables");
+        Rf_error("error: cannot mix character and numeric variables");
     }
 
     switch (type) {
@@ -317,7 +315,7 @@ void NcFileSetSummary::checkType(NcVar*var)
             std::ostringstream ost;
             ost << "unknown type for variable \"" << var->getName() <<
                 "\" in file " << var->getFileName();
-            error(ost.str().c_str());
+            Rf_error(ost.str().c_str());
         }
         break;
     }
@@ -333,7 +331,7 @@ void NcFileSetSummary::resolveOutType() {
     if (_outType == NC_NAT) {
         std::ostringstream ost;
         ost << "error: no requested variables found";
-        error(ost.str().c_str());
+        Rf_error(ost.str().c_str());
     }
 
     if (_outType == NC_SHORT || _outType == NC_BYTE) _outType = NC_INT;

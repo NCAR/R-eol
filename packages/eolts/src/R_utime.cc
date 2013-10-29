@@ -24,7 +24,7 @@ R_utime::R_utime() : _obj(0),_length(1),_pindx(-1)
 #endif
 
     assert(TYPEOF(_obj) == REALSXP);
-    _length = length(_obj);
+    _length = Rf_length(_obj);
 }
 
 R_utime::R_utime(SEXP obj) : _obj(obj),_length(0),_pindx(-1)
@@ -34,7 +34,7 @@ R_utime::R_utime(SEXP obj) : _obj(obj),_length(0),_pindx(-1)
 #endif
     assert(TYPEOF(obj) == REALSXP);
 
-    _length = length(_obj);
+    _length = Rf_length(_obj);
 
 #ifdef DEBUG
     Rprintf("R_utime::R_utime(SEXP), _length=%d, val[0]=%f\n",
@@ -53,7 +53,7 @@ R_utime::~R_utime()
 void R_utime::setLength(size_t val)
 {
     if (_length != val) {
-        _obj = lengthgets(_obj,val);
+        _obj = Rf_lengthgets(_obj,val);
         if (_pindx >= 0) UNPROTECT(1);
         PROTECT_WITH_INDEX(_obj,&_pindx);
         _length = val;

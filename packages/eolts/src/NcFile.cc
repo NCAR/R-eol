@@ -16,9 +16,7 @@
 #include "NcDim.h"
 #include "NcAttr.h"
 
-// include <R.h> after <sstream>, otherwise you'll get a compile error on Mac OS X:
-// /usr/include/c++/4.2.1/bits/codecvt.h: error: macro "length" passed 4 arguments, but takes just 1
-#include <R.h>  // warning()
+#include <R.h>
 
 using std::vector;
 using std::string;
@@ -422,7 +420,7 @@ map<int,string> NcFile::getStations(const NcDim *tdim) throw(NcException)
     if (var->getNcType() != NC_CHAR) {
         std::ostringstream ost;
         ost << "error in " << getName() << ": station variable is not character";
-        warning(ost.str().c_str());
+        Rf_warning(ost.str().c_str());
         return stations;
     }
     const NcDim* stnVarDim = 0;
@@ -431,7 +429,7 @@ map<int,string> NcFile::getStations(const NcDim *tdim) throw(NcException)
     if (!stnVarDim || stnVarDim->getId() != stationDim->getId()) {
         std::ostringstream ost;
         ost << "error in " << getName() << ": station variable does not have dimensions of (station,namelen)";
-        warning(ost.str().c_str());
+        Rf_warning(ost.str().c_str());
         return stations;
     }
 

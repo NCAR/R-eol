@@ -41,31 +41,31 @@ R_nts::~R_nts() {
 
 void R_nts::setMatrix(R_MatrixBase *val)
 {
-    setAttrib(_obj,dataSlotName,val->getRObject());
+    Rf_setAttrib(_obj,dataSlotName,val->getRObject());
 }
 
 R_Matrix<double> *R_nts::getRealMatrix()
 {
-    SEXP obj = getAttrib(_obj,dataSlotName);
+    SEXP obj = Rf_getAttrib(_obj,dataSlotName);
     R_Matrix<double> *mat = new R_Matrix<double>(REALSXP,obj);
     return mat;		// owned by caller
 }
 
 R_Matrix<int> *R_nts::getIntMatrix()
 {
-    SEXP obj = getAttrib(_obj,dataSlotName);
+    SEXP obj = Rf_getAttrib(_obj,dataSlotName);
     R_Matrix<int> *mat = new R_Matrix<int>(INTSXP,obj);
     return mat;		// owned by caller
 }
 
 void R_nts::setPositions(R_utime *val)
 {
-    setAttrib(_obj,posSlotName,val->getRObject());
+    Rf_setAttrib(_obj,posSlotName,val->getRObject());
 }
 
 R_utime *R_nts::getPositions()
 {
-    SEXP obj = getAttrib(_obj,posSlotName);
+    SEXP obj = Rf_getAttrib(_obj,posSlotName);
     R_utime *pos = new R_utime(obj);
     return pos;		// owned by caller
 }
@@ -80,12 +80,12 @@ void R_nts::setStations(const vector<string>& names,const vector<int>& numbers)
 
     stns.setNames(names);
 
-    setAttrib(_obj,stationsSlotName,stns.getRObject());
+    Rf_setAttrib(_obj,stationsSlotName,stns.getRObject());
 }
 
 vector<int> R_nts::getStationNumbers() const
 {
-    SEXP obj = getAttrib(_obj,stationsSlotName);
+    SEXP obj = Rf_getAttrib(_obj,stationsSlotName);
     R_NamedVector<int> stns(INTSXP,obj);
 
     size_t n = stns.getLength();
@@ -99,28 +99,28 @@ vector<int> R_nts::getStationNumbers() const
 
 vector<string> R_nts::getStationNames() const
 {
-    SEXP obj = getAttrib(_obj,stationsSlotName);
+    SEXP obj = Rf_getAttrib(_obj,stationsSlotName);
     R_NamedVector<int> stns(INTSXP,obj);
     return stns.getNames();
 }
 
 void R_nts::setUnits(const vector<string>& units)
 {
-    SEXP cobj = PROTECT(allocVector(STRSXP,units.size()));
+    SEXP cobj = PROTECT(Rf_allocVector(STRSXP,units.size()));
 
     for (unsigned int i = 0; i < units.size(); i++)
-        SET_STRING_ELT(cobj,i,mkChar(units[i].c_str()));
+        SET_STRING_ELT(cobj,i,Rf_mkChar(units[i].c_str()));
 
-    setAttrib(_obj,unitsSlotName,cobj);
+    Rf_setAttrib(_obj,unitsSlotName,cobj);
     UNPROTECT(1);
 }
 
 vector<string> R_nts::getUnits() const
 {
-    SEXP cobj = getAttrib(_obj,unitsSlotName);
+    SEXP cobj = Rf_getAttrib(_obj,unitsSlotName);
 
     vector<string> units;
-    for (int i = 0; i < length(cobj); i++) 
+    for (int i = 0; i < Rf_length(cobj); i++) 
         units.push_back(string(CHAR(STRING_ELT(cobj,i))));
 
     return units;
@@ -128,50 +128,50 @@ vector<string> R_nts::getUnits() const
 
 void R_nts::setTimeFormat(const string& val)
 {
-    SEXP cobj = getAttrib(_obj,timeFormatSlotName);
-    if (length(cobj) != 1) {
-        cobj = PROTECT(lengthgets(cobj,1));
-        setAttrib(_obj,timeFormatSlotName,cobj);
+    SEXP cobj = Rf_getAttrib(_obj,timeFormatSlotName);
+    if (Rf_length(cobj) != 1) {
+        cobj = PROTECT(Rf_lengthgets(cobj,1));
+        Rf_setAttrib(_obj,timeFormatSlotName,cobj);
         UNPROTECT(1);
     }
-    SET_STRING_ELT(cobj,0,mkChar(val.c_str()));
-    setAttrib(_obj,timeFormatSlotName,cobj);
+    SET_STRING_ELT(cobj,0,Rf_mkChar(val.c_str()));
+    Rf_setAttrib(_obj,timeFormatSlotName,cobj);
 }
 
 string R_nts::getTimeFormat() const
 {
-    SEXP cobj = getAttrib(_obj,timeFormatSlotName);
-    if (length(cobj) != 1) return "";
+    SEXP cobj = Rf_getAttrib(_obj,timeFormatSlotName);
+    if (Rf_length(cobj) != 1) return "";
     return CHAR(STRING_ELT(cobj,0));
 }
 
 void R_nts::setTimeZone(const string& val)
 {
-    SEXP cobj = getAttrib(_obj,timeZoneSlotName);
-    if (length(cobj) != 1) {
-        cobj = PROTECT(lengthgets(cobj,1));
-        setAttrib(_obj,timeZoneSlotName,cobj);
+    SEXP cobj = Rf_getAttrib(_obj,timeZoneSlotName);
+    if (Rf_length(cobj) != 1) {
+        cobj = PROTECT(Rf_lengthgets(cobj,1));
+        Rf_setAttrib(_obj,timeZoneSlotName,cobj);
         UNPROTECT(1);
     }
-    SET_STRING_ELT(cobj,0,mkChar(val.c_str()));
-    setAttrib(_obj,timeZoneSlotName,cobj);
+    SET_STRING_ELT(cobj,0,Rf_mkChar(val.c_str()));
+    Rf_setAttrib(_obj,timeZoneSlotName,cobj);
 }
 
 string R_nts::getTimeZone() const
 {
-    SEXP cobj = getAttrib(_obj,timeZoneSlotName);
-    if (length(cobj) != 1) return "";
+    SEXP cobj = Rf_getAttrib(_obj,timeZoneSlotName);
+    if (Rf_length(cobj) != 1) return "";
     return CHAR(STRING_ELT(cobj,0));
 }
 
 void R_nts::setWeights(SEXP weights)
 {
-    setAttrib(_obj,weightsSlotName,weights);
+    Rf_setAttrib(_obj,weightsSlotName,weights);
 }
 
 R_Matrix<int> *R_nts::getWeights()
 {
-    SEXP obj = getAttrib(_obj,weightsSlotName);
+    SEXP obj = Rf_getAttrib(_obj,weightsSlotName);
     return new R_Matrix<int>(INTSXP,obj);	// owned by caller
 }
 
@@ -182,14 +182,14 @@ void R_nts::setWeightMap(vector<int> wmap)
 
     for (unsigned int i = 0; i < wmap.size(); i++) iptr[i] = wmap[i];
 
-    setAttrib(_obj,weightMapSlotName,wtmap.getRObject());
+    Rf_setAttrib(_obj,weightMapSlotName,wtmap.getRObject());
 }
 
 vector<int> R_nts::getWeightMap() const
 {
     vector<int> wmap;
 
-    SEXP obj = getAttrib(_obj,weightMapSlotName);
+    SEXP obj = Rf_getAttrib(_obj,weightMapSlotName);
     R_NamedVector<int> wtmap(INTSXP,obj);
 
     int *iptr = wtmap.getDataPtr();

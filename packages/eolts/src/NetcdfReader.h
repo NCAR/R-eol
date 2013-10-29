@@ -17,6 +17,7 @@
 #include <vector>
 
 #include <R.h>
+#include <Rinternals.h>
 
 #include "R_netcdf.h"
 #include "R_Matrix.h"

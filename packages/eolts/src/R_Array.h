@@ -53,7 +53,7 @@ void R_Array<T>::setDims(const std::vector<size_t>& dims)
     for (unsigned int i = 0; i < _dims.size(); i++) length *= _dims[i];
 
     if (length != _length) {
-        _obj = lengthgets(_obj,length);
+        _obj = Rf_lengthgets(_obj,length);
         if (_pindx >= 0)
             REPROTECT(_obj,_pindx);
         else
@@ -61,14 +61,14 @@ void R_Array<T>::setDims(const std::vector<size_t>& dims)
         _length = length;
     }
 
-    SEXP dimobj = PROTECT(allocVector(INTSXP,_dims.size()));
+    SEXP dimobj = PROTECT(Rf_allocVector(INTSXP,_dims.size()));
     for (unsigned int i = 0; i < _dims.size(); i++)
         INTEGER(dimobj)[i] = _dims[i];
 
 #ifdef USE_DIMGETS
-    dimgets(_obj,dimobj);
+    Rf_dimgets(_obj,dimobj);
 #else
-    setAttrib(_obj,R_DimSymbol,dimobj);
+    Rf_setAttrib(_obj,R_DimSymbol,dimobj);
 #endif
     UNPROTECT(1);
 

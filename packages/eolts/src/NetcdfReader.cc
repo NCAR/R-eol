@@ -11,8 +11,6 @@
  * 
  */
 
-// include <R.h> after <sstream>, otherwise you'll get a compile error on Mac OS X:
-// /usr/include/c++/4.2.1/bits/codecvt.h: error: macro "length" passed 4 arguments, but takes just 1
 #include <sstream>
 #include <memory>   // auto_ptr
 
@@ -84,7 +82,64 @@ namespace {
         }
     }     
 
+    /**
+     * Parse a numeric time zone specification, with one of the
+     * following formats.
+     * [+-]H:M  where H and M can be one or two digits
+     * [+-]H    one digit hour
+     * [+-]HH   two digit hour
+     * [+-]HMM  one digit hour, two digit minutes
+     * [+-]HHMM two digit hour, two digit minutes
+     *
+     * The %z strptime descriptor does not seem to handle all of the
+     * above on Linux, Mac and MINGW, so we have to do it by hand.
+     */
+    int parseTimeZoneSpec(const string& str)
+    {
+
+        const char *sp = str.c_str();
+        while(*sp && ::isspace(*sp)) sp++;
+        bool pos = true;
+        if (*sp == '+') sp++;
+        else if (*sp == '-') {
+            pos = false;
+            sp++;
+        }
+
+        int hr,mn = 0;
+        int toff = 0;
+        if (::strchr(sp,':')) {
+            if (::sscanf(sp,"%d:%d",&hr,&mn) != 2)
+                throw string("cannot parse time zone in: ") + str;
+            toff = hr * 3600 + mn * 60;
+        }
+        else {
+            int sl = ::strlen(sp);
+            if (sl < 3) {
+                if (::sscanf(sp,"%d",&hr) != 1)
+                    throw string("cannot parse time zone in: ") + str;
+                toff = hr * 3600;
+            }
+            else if (sl == 3) {
+                if (::sscanf(sp,"%1d%d",&hr,&mn) != 2) 
+                    throw string("cannot parse time zone in: ") + str;
+                toff = hr * 3600 + mn * 60;
+            }
+            else {
+                if (::sscanf(sp,"%2d%d",&hr,&mn) != 2)
+                    throw string("cannot parse time zone in: ") + str;
+                toff = hr * 3600 + mn * 60;
+            }
+        }
+        if (!pos) toff = -toff;
+        return toff;
+    }
+
 #if !defined(__MINGW32__) && !defined(__MINGW64__)
+    /**
+     * Parse time/date string using strptime and mktime system calls.
+     * These are not available on MINGW.
+     */
     double parseCFTimeString(const string& ustr,double unitsMult) throw(string)
     {
         if (ustr.find("second") != string::npos) unitsMult = 1.0;
@@ -176,51 +231,17 @@ namespace {
         while(*sp && ::isspace(*sp)) sp++;
         if (!*sp) return (double)tval + fsec;
 
-        /* parse time zone spec:
-         * [+-]H:M  where H and M can be one or two digits
-         * [+-]H    one digit hour
-         * [+-]HH   two digit hour
-         * [+-]HMM  one digit hour, two digit minutes
-         * [+-]HHMM two digit hour, two digit minutes
-         */
+        int toff = parseTimeZoneSpec(string(sp));
 
-        bool pos = true;
-        if (*sp == '+') sp++;
-        else if (*sp == '-') {
-            pos = false;
-            sp++;
-        }
-
-        int hr,mn = 0;
-        int toff = 0;
-        if (::strchr(sp,':')) {
-            if (::sscanf(sp,"%d:%d",&hr,&mn) != 2)
-                throw string("cannot parse time zone in: ") + str;
-            toff = hr * 3600 + mn * 60;
-        }
-        else {
-            int sl = ::strlen(sp);
-            if (sl < 3) {
-                if (::sscanf(sp,"%d",&hr) != 1)
-                    throw string("cannot parse time zone in: ") + str;
-                toff = hr * 3600;
-            }
-            else if (sl == 3) {
-                if (::sscanf(sp,"%1d%d",&hr,&mn) != 2) 
-                    throw string("cannot parse time zone in: ") + str;
-                toff = hr * 3600 + mn * 60;
-            }
-            else {
-                if (::sscanf(sp,"%2d%d",&hr,&mn) != 2)
-                    throw string("cannot parse time zone in: ") + str;
-                toff = hr * 3600 + mn * 60;
-            }
-        }
-        if (!pos) toff = -toff;
         return (double)tval + fsec + toff;
     }
+
 #endif
 
+    /**
+     * Parse time/date string by calling R "utime" method.
+     * This should work on all platforms.
+     */
     double R_parseCFTimeString(const string& ustr,double unitsMult) throw(string)
     {
         double val = 0.0;
@@ -238,27 +259,26 @@ namespace {
         while(::isspace(ustr[ss])) ss++;
         string str = ustr.substr(ss);
 
-        string cmd = string("utime(\"" + str + "\",in.format=\"%F %T %z\",time.zone=\"UTC\")");
-
-        SEXP cmdSexp = PROTECT(allocVector(STRSXP,1));
-        SET_STRING_ELT(cmdSexp,0,mkChar(cmd.c_str()));
+        string cmd = string("utime(\"" + str + "\",in.format=\"%F %H:%M:%OS\",time.zone=\"UTC\")");
+        SEXP cmdSexp = PROTECT(Rf_allocVector(STRSXP,1));
+        SET_STRING_ELT(cmdSexp,0,Rf_mkChar(cmd.c_str()));
         ParseStatus status;
         SEXP cmdexpr = PROTECT(R_ParseVector(cmdSexp,-1,&status,R_NilValue));
         if (status != PARSE_OK) {
             UNPROTECT(2);
             throw string("cannot parse ") + cmd;
         }
-        if (length(cmdexpr) != 1) {
+        if (Rf_length(cmdexpr) != 1) {
             UNPROTECT(2);
             throw string("unexpected return from ") + cmd;
         }
 
-        SEXP ans = PROTECT(eval(VECTOR_ELT(cmdexpr,0),R_GlobalEnv));
+        SEXP ans = PROTECT(Rf_eval(VECTOR_ELT(cmdexpr,0),R_GlobalEnv));
 #ifdef DEBUG
         Rprintf("ans %d, TYPEOF=%d,length=%d\n",
-            i,TYPEOF(ans),length(ans));
+            i,TYPEOF(ans),Rf_length(ans));
 #endif
-        if (TYPEOF(ans) == REALSXP && length(ans) == 1) {
+        if (TYPEOF(ans) == REALSXP && Rf_length(ans) == 1) {
             val = REAL(ans)[0];
             if (ISNAN(val)) {
                 UNPROTECT(3);
@@ -266,7 +286,24 @@ namespace {
             }
         }
         UNPROTECT(3);
-        return val;
+
+        string::size_type bs = str.find(' ');     // space between date and time
+        if (bs == string::npos)
+            throw string("cannot parse: ") + str;
+        ss = str.find(' ',bs+1);     // space between time and time zone spec
+        if (ss == string::npos) {
+            ss = str.find('+',bs+1); // '+' or '-' at start of time zone spec
+            if (ss == string::npos && (ss = str.find('-',bs+1)) == string::npos)
+                throw string("cannot parse time zone spec: ") + str;
+        }
+        else ss++;
+
+#ifdef DEBUG
+        Rprintf("time zone spec:%s\n",str.substr(ss).c_str());
+#endif
+        int toff = parseTimeZoneSpec(str.substr(ss));
+
+        return val + toff;
     }
 }     
 
@@ -368,8 +405,8 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
     Rprintf("nfiles=%d\n",nfiles);
 #endif
 
-    SEXP result = PROTECT(allocVector(VECSXP,vnames.size()));
-    SEXP resnames = PROTECT(allocVector(STRSXP,vnames.size()));
+    SEXP result = PROTECT(Rf_allocVector(VECSXP,vnames.size()));
+    SEXP resnames = PROTECT(Rf_allocVector(STRSXP,vnames.size()));
 
     vector<size_t> startreq = startarg;
     vector<size_t> countreq = countarg;
@@ -407,7 +444,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                 std::ostringstream ost;
                 ost << "variable \"" << vnames[ivar] << "\" not found in " <<
                     ncf->getName();
-                warning(ost.str().c_str());
+                Rf_warning(ost.str().c_str());
 #else
                 Rprintf("variable \"%s\" not found in file %s\n",
                         vnames[ivar].c_str(),ncf->getName().c_str());
@@ -443,7 +480,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                                 var1->getFileName() << " is of type " << var1->typeToString() <<
                                 ", variable " << var->getName() << " in file " <<
                                 var->getFileName() << " is of type " << var->typeToString();
-                            warning(ost.str().c_str());
+                            Rf_warning(ost.str().c_str());
                         }
                         break;
                     case -1:
@@ -454,7 +491,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                                 var1->getFileName() << " is of type " << var1->typeToString() <<
                                 ", variable " << var->getName() << " in file " <<
                                 var->getFileName() << " is of type " << var->typeToString();
-                            error(ost.str().c_str());
+                            Rf_error(ost.str().c_str());
                         }
                         break;
                     }
@@ -469,7 +506,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                         " in file " << var1->getFileName() << " has different dimensions than " <<
                         "variable " << var->getName() << '(' << dimToString(vedges,ndims) << ')' <<
                         " in file " << var->getFileName();
-                    error(ost.str().c_str());
+                    Rf_error(ost.str().c_str());
                 }
             }
 
@@ -511,7 +548,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                     ost << "netcdf read error: start=c(" << dimToString(start) << ')' <<
                         " exceeds dimensions of variable " << vnames[ivar] << '(' << 
                         dimToString(vedges,ndims) << ')' << " in file " << ncf->getShortName();
-                    error(ost.str().c_str());
+                    Rf_error(ost.str().c_str());
                 }
                 if (start[i]+count[i] > vedges[i]) {
                     std::ostringstream ost;
@@ -519,7 +556,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                         " + count=c(" << dimToString(count) << ')' <<
                         " exceeds dimensions of variable " << vnames[ivar] << '(' << 
                         dimToString(vedges,ndims) << ')' << " in file " << ncf->getShortName();
-                    error(ost.str().c_str());
+                    Rf_error(ost.str().c_str());
                 }
             }
 
@@ -569,7 +606,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
 #ifdef DO_CSINGLE_ATTR
                         if (var->getNcType() == NC_FLOAT) {
                             Rprintf("setting Csingle attribute\n");
-                            setAttrib(array.get()->getRObject(),install("Csingle"),ScalarLogical(1));
+                            Rf_setAttrib(array.get()->getRObject(),install("Csingle"),ScalarLogical(1));
                         }
 #endif
                     }
@@ -699,7 +736,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                             throw NcException("nc_get_vara_text",
                                     var->getFileName(),var->getName(),status);
                         }
-                        SET_STRING_ELT(array->getRObject(),lenRead + iread,mkCharLen(tmpstr,slen));
+                        SET_STRING_ELT(array->getRObject(),lenRead + iread,Rf_mkCharLen(tmpstr,slen));
 
                         tstart[nrdims-1]++;		// read next
                         for (idim = nrdims-1; tstart[idim] == (start[idim] + count[idim]); ) {
@@ -719,9 +756,9 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
             lenRead += rlen;
         }
         if (array.get()) SET_VECTOR_ELT(result,ivar,array->getRObject());
-        if (var1) SET_STRING_ELT(resnames,ivar,mkChar(var1->getName().c_str()));
+        if (var1) SET_STRING_ELT(resnames,ivar,Rf_mkChar(var1->getName().c_str()));
     }
-    setAttrib(result,R_NamesSymbol,resnames);
+    Rf_setAttrib(result,R_NamesSymbol,resnames);
     UNPROTECT(2);   // resnames,result
     return result;
 }
@@ -790,7 +827,7 @@ size_t NetcdfReader::searchTime(NcVar* var,double stime,NetcdfReader::timeTests 
             std::ostringstream ost;
             ost << "Variable " << var->getName() << " in file " <<
                     var->getFileName() << " does not seem to be ordered";
-            warning(ost.str().c_str());
+            Rf_warning(ost.str().c_str());
             n2 = 0;
             break;
         }
@@ -977,7 +1014,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
             std::ostringstream ost;
             ost << "error reading file " << ncf->getName() <<
                 ", cannot find a time dimension";
-            warning(ost.str().c_str());
+            Rf_warning(ost.str().c_str());
             continue;
         }
 
@@ -993,7 +1030,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
             std::ostringstream ost;
             ost << "error reading file " << ncf->getName() <<
                 ", cannot find time variables";
-            warning(ost.str().c_str());
+            Rf_warning(ost.str().c_str());
             continue;
         }
 
@@ -1018,7 +1055,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                         basetime += toff;
                     }
                     catch(const string& e) {
-                        warning(e.c_str());
+                        Rf_warning(e.c_str());
                     }
                 }
             }
@@ -1035,7 +1072,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                     basetime = R_parseCFTimeString(tunits,timemult);
                 }
                 catch(const string& e) {
-                    warning(e.c_str());
+                    Rf_warning(e.c_str());
                 }
             }
         }
@@ -1254,7 +1291,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                         " does not divide evenly into maximum sample rate of requested variables, which is " <<
                     maxSampleDim << ". Timetags of " << vnames[ivar] <<
                     " will be approximate";
-                    warning(ost.str().c_str());
+                    Rf_warning(ost.str().c_str());
                 }
                 else if (!(sampleRatio % 2)) {
                     std::ostringstream ost;
@@ -1262,7 +1299,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                         ". Maximum sample rate of requested variables is " <<
                         maxSampleDim << ". Since " << maxSampleDim << "/" << sampleDim << "=" <<
                         sampleRatio << " is not odd, timetags of " << vnames[ivar] << " will be approximate";
-                    warning(ost.str().c_str());
+                    Rf_warning(ost.str().c_str());
                 }
 
                 sampleDimNum = -1;
@@ -1275,7 +1312,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                                 var->getName() << ": dimension " <<
                                 dim->getName() << " has length " <<
                                 dim->getLength() << " should be " << sampleDim;
-                            error(ost.str().c_str());
+                            Rf_error(ost.str().c_str());
                         }
                         sampleDimNum = i;
                     }
@@ -1384,7 +1421,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                 std::ostringstream ost;
                 ost << "variable \"" << vnames[ivar] << "\" not found in " <<
                     ncf->getName();
-                warning(ost.str().c_str());
+                Rf_warning(ost.str().c_str());
 #else
                 Rprintf("variable \"%s\" not found in %s\n",
                         vnames[ivar].c_str(),ncf->getShortName().c_str());
@@ -1406,7 +1443,6 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                 if (countsMap[colNum] == 0) {
                     string cname = var->getCharAttribute("counts");
 
-#undef length
                     if (cname.length() > 0) {
                         string groupName;
                         map<string,string>::iterator vi =

@@ -10,7 +10,8 @@
 
 #include "align.h"
 #include "R_utime.h"
-#include <Rdefines.h>
+
+#include <R.h>
 
 /**********************************************************************
  * C Code DOCUMENTATION ************************************************
@@ -97,10 +98,10 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
     eolts::R_utime atime(align_pos);
     double* avals = atime.getTimePtr();
 
-    if( !IS_NUMERIC( match_tol_a ) || (( tmplen = length(match_tol_a) ) < 1) ||
-            !IS_CHARACTER( how_obj ) || (( tmplen = length(how_obj) ) < 2)
+    if( !Rf_isReal( match_tol_a ) || (( tmplen = Rf_length(match_tol_a) ) < 1) ||
+            !Rf_isString( how_obj ) || (( tmplen = Rf_length(how_obj) ) < 2)
       )
-        error( "Invalid data in c function time_align" ); 
+        Rf_error( "Invalid data in c function time_align" ); 
 
     if( !strcmp( CHAR(STRING_ELT(how_obj, 0)), "NA" ))
         how = 0;
@@ -115,7 +116,7 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
     else if( !strcmp( CHAR(STRING_ELT(how_obj, 0)), "interp" ))
         how = 5;
     else
-        error( "Invalid third argument in C function time_align" );
+        Rf_error( "Invalid third argument in C function time_align" );
 
     if( !strcmp( CHAR(STRING_ELT(how_obj, 1)), "NA" ))
         error_how = 0;
@@ -124,11 +125,11 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
     else if( !strcmp( CHAR(STRING_ELT(how_obj, 1)), "nearest" ))
         error_how = 2;
     else
-        error( "invalid third argument in C function time_align" );
+        Rf_error( "invalid third argument in C function time_align" );
 
     match_tol = REAL( match_tol_a )[0];
     if(match_tol < 0)
-        error( "invalid fourth argument in C function num_align" );
+        Rf_error( "invalid fourth argument in C function num_align" );
 
     /* see if the inputs are increasing or decreasing series */
     in_start = align_start = 0;
@@ -164,19 +165,19 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
 
     if( how == 5 )
     {
-        PROTECT(ret = NEW_LIST(6));
-        na_data = LOGICAL( SET_VECTOR_ELT(ret, 0 , NEW_LOGICAL(align_len)) );
-        drop_data = LOGICAL( SET_VECTOR_ELT(ret, 1 , NEW_LOGICAL(align_len)) );
-        weight1_data = REAL( SET_VECTOR_ELT(ret, 2 , NEW_NUMERIC(align_len)) );
-        sub1_data = INTEGER( SET_VECTOR_ELT(ret, 3 , NEW_INTEGER(align_len)) );
-        weight2_data = REAL( SET_VECTOR_ELT(ret, 4 , NEW_NUMERIC(align_len)) );
-        sub2_data = INTEGER( SET_VECTOR_ELT(ret, 5 , NEW_INTEGER(align_len)) );
+        PROTECT(ret = Rf_allocVector(VECSXP,6));
+        na_data = LOGICAL( SET_VECTOR_ELT(ret, 0 , Rf_allocVector(LGLSXP,align_len)) );
+        drop_data = LOGICAL( SET_VECTOR_ELT(ret, 1 , Rf_allocVector(LGLSXP,align_len)) );
+        weight1_data = REAL( SET_VECTOR_ELT(ret, 2 , Rf_allocVector(REALSXP,align_len)) );
+        sub1_data = INTEGER( SET_VECTOR_ELT(ret, 3 , Rf_allocVector(INTSXP,align_len)) );
+        weight2_data = REAL( SET_VECTOR_ELT(ret, 4 , Rf_allocVector(REALSXP,align_len)) );
+        sub2_data = INTEGER( SET_VECTOR_ELT(ret, 5 , Rf_allocVector(INTSXP,align_len)) );
     } else
     {
-        PROTECT(ret = NEW_LIST(3));
-        na_data = LOGICAL( SET_VECTOR_ELT(ret, 0 , NEW_LOGICAL(align_len)) );
-        drop_data = LOGICAL( SET_VECTOR_ELT(ret, 1 , NEW_LOGICAL(align_len)) );
-        sub1_data = INTEGER( SET_VECTOR_ELT(ret, 2 , NEW_INTEGER(align_len)) );
+        PROTECT(ret = Rf_allocVector(VECSXP,3));
+        na_data = LOGICAL( SET_VECTOR_ELT(ret, 0 , Rf_allocVector(LGLSXP,align_len)) );
+        drop_data = LOGICAL( SET_VECTOR_ELT(ret, 1 , Rf_allocVector(LGLSXP,align_len)) );
+        sub1_data = INTEGER( SET_VECTOR_ELT(ret, 2 , Rf_allocVector(INTSXP,align_len)) );
     }
 
     /* go through the alignment positions and find the right indexes,

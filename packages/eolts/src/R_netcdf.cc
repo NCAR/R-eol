@@ -37,9 +37,9 @@ SEXP open_netcdf(SEXP con,SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod)
 {
 
 #ifdef DEBUG
-    SEXP cobj = getAttrib(con,R_ClassSymbol);
+    SEXP cobj = Rf_getAttrib(con,R_ClassSymbol);
     if (isString(cobj)) {
-        Rprintf("string ClassSymbol, length=%d\n",length(cobj));
+        Rprintf("string ClassSymbol, length=%d\n",Rf_length(cobj));
         SEXP str = STRING_ELT(cobj,0);
         string classname(CHAR(str));
         Rprintf("class=%s\n",classname.c_str());
@@ -54,7 +54,7 @@ SEXP is_netcdf_open(SEXP obj)
     R_netcdf *con = R_netcdf::getR_netcdf(obj);
 
     // return a logical
-    SEXP ans = PROTECT(allocVector(LGLSXP,1));
+    SEXP ans = PROTECT(Rf_allocVector(LGLSXP,1));
     LOGICAL(ans)[0] = con != 0;
     UNPROTECT(1);
     return ans;
@@ -64,12 +64,12 @@ SEXP close_netcdf(SEXP obj)
 {
     R_netcdf *con = R_netcdf::getR_netcdf(obj);
     if (!con) {
-        warning("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_warning("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
     delete con;
 
     // return a logical
-    SEXP ans = PROTECT(allocVector(LGLSXP,1));
+    SEXP ans = PROTECT(Rf_allocVector(LGLSXP,1));
     *LOGICAL(ans) = con != 0;
     UNPROTECT(1);       // ans
     return ans;
@@ -83,7 +83,7 @@ SEXP get_variables(SEXP obj, SEXP allobj)
 
     R_netcdf *con = R_netcdf::getR_netcdf(obj);
     if (!con) {
-        error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
 
     bool all = LOGICAL(allobj)[0];
@@ -93,7 +93,7 @@ SEXP get_variables(SEXP obj, SEXP allobj)
         else return con->getTimeSeriesVariables();
     }
     catch (const NcException& nce) {
-        error(nce.toString().c_str());
+        Rf_error(nce.toString().c_str());
     }
     return 0;
 }
@@ -106,14 +106,14 @@ SEXP get_stations(SEXP obj)
 
     R_netcdf *con = R_netcdf::getR_netcdf(obj);
     if (!con) {
-        error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
 
     try {
         return con->getStations();
     }
     catch (const NcException& nce) {
-        error(nce.toString().c_str());
+        Rf_error(nce.toString().c_str());
     }
     return 0;
 }
@@ -124,33 +124,33 @@ SEXP read_netcdf(SEXP obj,SEXP variables, SEXP startreq, SEXP countreq)
 
     R_netcdf *con = R_netcdf::getR_netcdf(obj);
     if (!con) {
-        error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
 
-    int nvars = length(variables);
+    int nvars = Rf_length(variables);
 #ifdef DEBUG
     Rprintf("::read nvars = %d\n",nvars);
 #endif
     if (nvars == 0)
-        error("netcdf read error: length of variables argument is zero");
+        Rf_error("netcdf read error: length of variables argument is zero");
 
     vector<string> vnames;
-    for (size_t i = 0; i < (unsigned)length(variables); i++) {
+    for (size_t i = 0; i < (unsigned)Rf_length(variables); i++) {
         SEXP dn = STRING_ELT(variables,i);
         vnames.push_back(CHAR(dn));
     }
 
     vector<size_t> start;
-    for (i = 0; i < length(startreq); i++) start.push_back((size_t)INTEGER(startreq)[i]);
+    for (i = 0; i < Rf_length(startreq); i++) start.push_back((size_t)INTEGER(startreq)[i]);
 
     vector<size_t> count;
-    for (i = 0; i < length(countreq); i++) count.push_back((size_t)INTEGER(countreq)[i]);
+    for (i = 0; i < Rf_length(countreq); i++) count.push_back((size_t)INTEGER(countreq)[i]);
 
     try {
         return con->read(vnames,start,count);
     }
     catch (const NcException& nce) {
-        error(nce.toString().c_str());
+        Rf_error(nce.toString().c_str());
     }
     return 0;
 }
@@ -180,9 +180,9 @@ SEXP read_netcdf_ts(SEXP args)
     }
     if (args != R_NilValue) {
         SEXP vars = CAR(args);
-        unsigned int nvars = length(vars);
+        unsigned int nvars = Rf_length(vars);
         if (nvars == 0)
-            error("netcdf read error: length of variables argument is zero");
+            Rf_error("netcdf read error: length of variables argument is zero");
 
         for (size_t i = 0; i < nvars; i++) {
             SEXP dn = STRING_ELT(vars,i);
@@ -218,7 +218,7 @@ SEXP read_netcdf_ts(SEXP args)
     }
     if (args != R_NilValue) {
         SEXP obj = CAR(args);
-        for (int i = 0; i < length(obj); i++)
+        for (int i = 0; i < Rf_length(obj); i++)
             tnames.push_back(CHAR(STRING_ELT(obj,i)));
         args = CDR(args);
     }
@@ -235,14 +235,14 @@ SEXP read_netcdf_ts(SEXP args)
     
     R_netcdf *nccon = R_netcdf::getR_netcdf(con);
     if (!nccon) {
-        error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
 
     try {
         return nccon->read(vnames,startTime,endTime,stations,tnames,btname,timezone);
     }
     catch (const NcException& nce) {
-        error(nce.toString().c_str());
+        Rf_error(nce.toString().c_str());
     }
     return 0;
 }
@@ -255,16 +255,16 @@ R_netcdf::R_netcdf(SEXP con, SEXP cdlfile,
     Rprintf("R_netcdf ctor, this = %p\n",this);
 #endif
 
-    SEXP cslot = getAttrib(con,cppSlotName);
+    SEXP cslot = Rf_getAttrib(con,cppSlotName);
 
 #ifdef DEBUG
-    Rprintf("cpp slot length=%d, type=%d\n",length(cslot),TYPEOF(cslot));
+    Rprintf("cpp slot length=%d, type=%d\n",Rf_length(cslot),TYPEOF(cslot));
 #endif
 
     // store a pointer to the C++ object into the cppPtr slot of the
     // con argument.
-    if (TYPEOF(cslot) != RAWSXP || length(cslot) != 8)
-        error("slot cppPtr of object is not of type \"raw\", length 8");
+    if (TYPEOF(cslot) != RAWSXP || Rf_length(cslot) != 8)
+        Rf_error("slot cppPtr of object is not of type \"raw\", length 8");
 
     *((R_netcdf **)RAW(cslot)) = this;
 
@@ -314,10 +314,10 @@ R_netcdf *R_netcdf::getR_netcdf(SEXP obj)
 #ifdef DEBUG
     Rprintf("looking for cppPtr slot\n");
 #endif
-    SEXP cslot = getAttrib(obj,cppSlotName);
+    SEXP cslot = Rf_getAttrib(obj,cppSlotName);
 #ifdef DEBUG
     Rprintf("cpp slot: %p, length=%d, type=%d\n",cslot,
-            (cslot ? length(cslot):0),(cslot ? TYPEOF(cslot): NILSXP));
+            (cslot ? Rf_length(cslot):0),(cslot ? TYPEOF(cslot): NILSXP));
 #endif
     R_netcdf *con = *(R_netcdf **)RAW(cslot);
     if (!findConnection(con)) con = 0;
@@ -327,34 +327,34 @@ R_netcdf *R_netcdf::getR_netcdf(SEXP obj)
 
 void R_netcdf::openFileSet(SEXP obj)
 {
-    SEXP slot = getAttrib(obj,fileSlotName);
+    SEXP slot = Rf_getAttrib(obj,fileSlotName);
 #ifdef DEBUG
-    Rprintf("file slot length=%d, type=%d\n",length(slot),TYPEOF(slot));
+    Rprintf("file slot length=%d, type=%d\n",Rf_length(slot),TYPEOF(slot));
 #endif
 
     vector<string> fnames;
-    for (size_t i = 0; i < (unsigned)length(slot); i++) {
+    for (size_t i = 0; i < (unsigned)Rf_length(slot); i++) {
         SEXP dn = STRING_ELT(slot,i);
         fnames.push_back(CHAR(dn));
     }
 
-    slot = getAttrib(obj,dirSlotName);
+    slot = Rf_getAttrib(obj,dirSlotName);
 #ifdef DEBUG
-    Rprintf("dir slot length=%d, type=%d\n",length(slot),TYPEOF(slot));
+    Rprintf("dir slot length=%d, type=%d\n",Rf_length(slot),TYPEOF(slot));
 #endif
 
     vector<string> dnames;
-    for (size_t i = 0; i < (unsigned)length(slot); i++) {
+    for (size_t i = 0; i < (unsigned)Rf_length(slot); i++) {
         SEXP dn = STRING_ELT(slot,i);
         dnames.push_back(CHAR(dn));
     }
 
     vector<string> fullnames = makeFileNameList(fnames,dnames);
 
-    slot = getAttrib(obj,timeNamesSlotName);
+    slot = Rf_getAttrib(obj,timeNamesSlotName);
 
     vector<string> tnames;
-    for (size_t i = 0; i < (unsigned)length(slot); i++) {
+    for (size_t i = 0; i < (unsigned)Rf_length(slot); i++) {
         SEXP dn = STRING_ELT(slot,i);
         tnames.push_back(CHAR(dn));
     }
@@ -405,7 +405,7 @@ SEXP R_netcdf::getVariables() throw(NcException)
             if (!var) {
                 std::ostringstream ost;
                 ost << "bad variable in " << ncf->getName();
-                error(ost.str().c_str());
+                Rf_error(ost.str().c_str());
             }
 #ifdef DEBUG
             Rprintf("file=%s, var=%s\n",ncf->getName().c_str(),var->getName().c_str());
@@ -417,25 +417,25 @@ SEXP R_netcdf::getVariables() throw(NcException)
         }
     }
 
-    SEXP result = PROTECT(allocVector(VECSXP,vars.size()));
-    SEXP resnames = getAttrib(result,R_NamesSymbol);
+    SEXP result = PROTECT(Rf_allocVector(VECSXP,vars.size()));
+    SEXP resnames = Rf_getAttrib(result,R_NamesSymbol);
 
     if (!resnames || TYPEOF(resnames) != STRSXP ||
-        (unsigned) length(resnames) != vars.size()) {
+        (unsigned) Rf_length(resnames) != vars.size()) {
 #ifdef DEBUG
         Rprintf("allocating R_NamesSymbol for variables\n");
 #endif
-        resnames = PROTECT(allocVector(STRSXP,vars.size()));
-        setAttrib(result,R_NamesSymbol,resnames);
+        resnames = PROTECT(Rf_allocVector(STRSXP,vars.size()));
+        Rf_setAttrib(result,R_NamesSymbol,resnames);
         UNPROTECT(1);   // resnames
     }
 #ifdef DEBUG
-    Rprintf("resnames length=%d\n",length(resnames));
+    Rprintf("resnames length=%d\n",Rf_length(resnames));
 #endif
 
     for (unsigned int i = 0; i < vars.size(); i++) {
         R_NetcdfVariable rvar(this,vars[i]);
-        SET_STRING_ELT(resnames,i,mkChar(rvar.getName().c_str()));
+        SET_STRING_ELT(resnames,i,Rf_mkChar(rvar.getName().c_str()));
         SET_VECTOR_ELT(result,i,rvar.getRObject());
     }
     UNPROTECT(1);       // result
@@ -469,22 +469,22 @@ SEXP R_netcdf::getTimeSeriesVariables() throw(NcException)
         }
     }
 
-    SEXP result = PROTECT(allocVector(VECSXP,tvars.size()));
-    SEXP resnames = getAttrib(result,R_NamesSymbol);
+    SEXP result = PROTECT(Rf_allocVector(VECSXP,tvars.size()));
+    SEXP resnames = Rf_getAttrib(result,R_NamesSymbol);
 
     if (!resnames || TYPEOF(resnames) != STRSXP ||
-        (unsigned) length(resnames) != tvars.size()) {
+        (unsigned) Rf_length(resnames) != tvars.size()) {
 #ifdef DEBUG
         Rprintf("allocating R_NamesSymbol for variables\n");
 #endif
-        resnames = PROTECT(allocVector(STRSXP,tvars.size()));
-        setAttrib(result,R_NamesSymbol,resnames);
+        resnames = PROTECT(Rf_allocVector(STRSXP,tvars.size()));
+        Rf_setAttrib(result,R_NamesSymbol,resnames);
         UNPROTECT(1);   // resnames
     }
 
     for (unsigned int i = 0; i < tvars.size(); i++) {
         R_NetcdfVariable rvar(this,tvars[i]);
-        SET_STRING_ELT(resnames,i,mkChar(rvar.getName().c_str()));
+        SET_STRING_ELT(resnames,i,Rf_mkChar(rvar.getName().c_str()));
         SET_VECTOR_ELT(result,i,rvar.getRObject());
     }
     UNPROTECT(1);       // result

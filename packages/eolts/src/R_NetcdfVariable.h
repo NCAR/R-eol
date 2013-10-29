@@ -15,6 +15,7 @@
 #define R_NETCDFVARIABLE_H
 
 #include <R.h>
+#include <Rinternals.h>
 
 #include "R_netcdf.h"
 

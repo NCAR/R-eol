@@ -74,7 +74,7 @@ public:
 private:
     // declared private to prevent copying and assignment
     R_nts(const R_nts &);
-    R_nts &operator=(const R_nts &);
+    R_nts &operator=(const R_nts &) const;
 
     int _pindx;
 
