@@ -12,10 +12,19 @@ setClass("nts",
         wss="numeric",
         time.format="character",
         time.zone="character"
+    ),
+    prototype=list(
+        weights=matrix(0,ncol=0,nrow=0),
+        weightmap=integer(0),
+        stations=integer(0),
+        deltat=numeric(0),
+        wss=numeric(0),
+        time.format=options("time.out.format")[[1]],
+        time.zone=options("time.zone")[[1]]
     )
 )
 
-nts <- function(data,positions,names,units,weights,weightmap,stations,wss,time.format=options("time.out.format")[[1]],time.zone=options("time.zone")[[1]])
+nts = function(data,positions,names,units,weights,weightmap,stations,wss,time.format=options("time.out.format")[[1]],time.zone=options("time.zone")[[1]])
 {
     ret = new("nts")
    
@@ -297,6 +306,7 @@ setMethod("deltat", signature(x="nts"),
         # cat(paste("deltat of nts, length(x@deltat)=",length(x@deltat),"\n"))
         if (length(dt <- x@deltat) == 0)
             dt = deltat(x@positions)
+        # cat("deltat dt=",paste(dt,collapse=","),"\n")
         dt
     }
 )
@@ -1855,8 +1865,14 @@ setMethod("lag",signature(x="nts"),
 
 setGeneric("write",function(x,...) standardGeneric("write"))
 
+setMethod("write", signature(x="ANY"),
+    function(x,file="data",ncolumns=if(is.character(x)) 1 else 5, append=FALSE,sep=" ",...)
+    {
+        base::write(x,file=file,ncolumns=ncolumns,append=append,sep=sep,...)
+    }
+)
 setMethod("write", signature(x="nts"),
-    function(x,digits=6,...)
+    function(x,file="data",ncolumns=if(is.character(x)) 1 else 5, append=FALSE,sep=" ",digits=6,...)
     {
         ts <- format(x@positions,format=x@time.format,time.zone=x@time.zone)
         x <- signif(x,digits=digits)
