@@ -1,2 +1,28 @@
 PKG_CPPFLAGS = @CPPFLAGS@ -Weffc++ -DR_NO_REMAP -I../inst/include
 PKG_LIBS = @LIBS@
+
+## $(SHLIB) is the usual default target that is built automatically from all source 
+## files in this directory. userLibrary is an additional target for the second library
+## that will be installed in ../inst/lib$(R_ARCH) and which users can link against.
+
+all: 	$(SHLIB) userLibrary 
+
+## we place it inside the inst/ directory so that it gets installed by the package
+USERDIR =	../inst/lib
+
+USERLIB	=	libeolts$(DYLIB_EXT)
+
+userLibrary: 	$(USERLIB)
+		-@if test ! -e $(USERDIR)$(R_ARCH); then mkdir -p $(USERDIR)$(R_ARCH); fi
+		cp $(USERLIB) $(USERDIR)$(R_ARCH)
+		rm $(USERLIB)
+
+$(USERLIB): 	$(OBJECTS)
+		$(SHLIB_CXXLD) -o $(USERLIB) $(OBJECTS) $(SHLIB_CXXLDFLAGS) $(ALL_LIBS)
+		@: $${INSTALL_NAME_TOOL=/usr/bin/install_name_tool}; if test -e "$$INSTALL_NAME_TOOL"; then "$$INSTALL_NAME_TOOL" -id '$(R_PACKAGE_DIR)/lib$(R_ARCH)/$(USERLIB)' '$(USERLIB)'; fi
+
+.PHONY: 	all clean userLibrary 
+
+clean:
+		rm -f $(OBJECTS) $(SHLIB) $(USERLIB)
+

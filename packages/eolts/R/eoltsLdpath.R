@@ -20,7 +20,11 @@ staticLinking <- function() {
 ## Use R's internal knowledge of path settings to find the lib/ directory
 ## plus optinally an arch-specific directory on system building multi-arch
 eoltsLdPath <- function(static) {
-    dir = ifelse(static,"lib","libs")
+    if (static || .Platform$pkgType == "mac.binary")
+        dir = "lib"
+    else
+        dir = "libs"
+
     if (nzchar(.Platform$r_arch)) {	## eg amd64, ia64, mips
         path <- eolts.system.file(dir,.Platform$r_arch)
     } else {
@@ -47,7 +51,11 @@ eoltsLdFlags <- function(static=staticLinking()) {
         # use  -l:filename option, so that the leading "lib" is not appended
         # when searching for the library. In this way we can use the
         # same library that is loaded by the eolts package.
-        flags <- paste("-L", lddir, " -l:eolts.so", sep="") # baseline setting
+        if (.Platform$pkgType == "mac.binary")
+            flags <- paste("-L", lddir, " -leolts", sep="") # baseline setting
+        else
+            flags <- paste("-L", lddir, " -l:eolts.so", sep="") # baseline setting
+
         if ((.Platform$OS.type == "unix") &&    # on Linux, we can use rpath to encode path
             (length(grep("^linux",R.version$os)))) {
             flags <- paste(flags, " -Wl,-rpath,", lddir, sep="")

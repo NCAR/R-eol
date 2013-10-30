@@ -1,0 +1,4 @@
+#!/bin/sh
+rm -f aotom4te.cache confdefs.h config.log config.status \
+    src/*.so src/*.o src/Makevars \
+    R/prep.R

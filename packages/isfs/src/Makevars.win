@@ -1,0 +1,2 @@
+PKG_CPPFLAGS=-I$(NETCDF)/libsrc -DR_NO_REMAP
+PKG_LIBS = @LIBS@ `$(R_HOME)/bin/Rscript -e "eolts:::LdFlags()"`
