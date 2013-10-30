@@ -3,8 +3,6 @@
 //
 #include "R_utime.h"
 
-#include <cassert>
-
 using std::string;
 
 using namespace eolts;
@@ -19,11 +17,16 @@ R_utime::R_utime() : _obj(0),_length(1),_pindx(-1)
     _obj = R_do_new_object(classDef);
     PROTECT_WITH_INDEX(_obj,&_pindx);
 
+    SEXP cls = PROTECT(Rf_allocVector(STRSXP,1));
+    SET_STRING_ELT(cls,0,Rf_mkChar("utime"));
+    Rf_classgets(_obj,cls);
+    UNPROTECT(1);
+
 #ifdef DEBUG
     Rprintf("R_utime::R_utime(), TYPEOF(_obj)=%d\n",TYPEOF(_obj));
+    Rprintf("R_utime::R_utime(), IS_S4_OBJECT(_obj)=%d\n",IS_S4_OBJECT(_obj));
 #endif
 
-    assert(TYPEOF(_obj) == REALSXP);
     _length = Rf_length(_obj);
 }
 
@@ -32,7 +35,6 @@ R_utime::R_utime(SEXP obj) : _obj(obj),_length(0),_pindx(-1)
 #ifdef DEBUG
     Rprintf("R_utime::R_utime(SEXP), TYPEOF(obj)=%d\n",TYPEOF(obj));
 #endif
-    assert(TYPEOF(obj) == REALSXP);
 
     _length = Rf_length(_obj);
 
