@@ -1,2 +1,2 @@
-PKG_CPPFLAGS=-I$(NETCDF)/libsrc -DR_NO_REMAP
+PKG_CPPFLAGS=-I$(NETCDF)/libsrc -DR_NO_REMAP -I../inst/include
 PKG_LIBS=-L$(NETCDF)/libsrc -lnetcdf

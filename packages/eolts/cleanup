@@ -1,5 +1,3 @@
 #!/bin/sh
-rm -rf *.cache
-rm -rf ./config.*
-rm -rf ./src/Makevars
-rm -rf ./src/*.so ./src/*.o
+rm -f aotom4te.cache confdefs.h config.log config.status \
+    src/*.so src/*.o src/Makevars
