@@ -1,5 +1,7 @@
 import(methods,eolts)
 
+useDynLib(isfs)
+
 # exported functions
 export(
     dat,
@@ -16,12 +18,13 @@ export(
     fun.logo.stamp,
     profile.plot,
     plotdat.ts,
-    plotdat.xy
+    plotdat.xy,
+    prep
 )
 
 exportPattern("^dat\\.")
 
-exportClasses(dat)
+exportClasses(dat,prep)
 
 exportMethods(
     "select",
@@ -44,5 +47,8 @@ exportMethods(
     "Summary",
     "coerce",
     "format","show",
-    "plot"
+    "plot",
+    "close",
+    "pid",
+    "readts"
 )

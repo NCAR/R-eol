@@ -14,7 +14,7 @@ setClass("prep",
 
 prep <- function(variables,rate=0)
 {
-    if (!TRUE) stop("sorry prep not available")
+    if (!@HAVE_PREP@) stop("sorry prep not available")
     obj = new("prep",variables=variables,rate=rate)
     .Call("open_prep",obj,PACKAGE="isfs")
 }

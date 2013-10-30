@@ -9,5 +9,6 @@ Maintainer: Gordon Maclean <maclean@ucar.edu>
 Depends: R (>= 1.8.0), methods, eolts
 Description: This package provides R functions to access and manipulate
     Integrated Surface Flux System time series.
+LinkingTo: eolts
 License: GPL (>= 2)
 URL: http://www.eol.ucar.edu/
