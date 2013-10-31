@@ -50,5 +50,7 @@ exportMethods(
     "plot",
     "close",
     "pid",
-    "readts"
+    "readts",
+    "conform",
+    "match.columns"
 )

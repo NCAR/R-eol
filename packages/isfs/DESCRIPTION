@@ -7,6 +7,7 @@ Authors@R: person("Gordon","Maclean",role=c("aut","cre"),
 Author: Gordon Maclean
 Maintainer: Gordon Maclean <maclean@ucar.edu>
 Depends: R (>= 1.8.0), methods, eolts
+Collate: onAttach.R dat.R prep.R words.R lookup.R set.mar.R label.times.R plot.dat.R plotdat.xy.R plotdat.ts.R profile.plot.R qctable.R conform.R density.R dimensionless.R fasth2o.R fluxes.R krypton.R licor7500.R rad.R rotate.R scaling.R soil.R water.R winds.R 
 Description: This package provides R functions to access and manipulate
     Integrated Surface Flux System time series.
 LinkingTo: eolts

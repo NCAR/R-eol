@@ -1,2 +1,2 @@
-PKG_CPPFLAGS = @CPPFLAGS@ -Weffc++ -DR_NO_REMAP
-PKG_LIBS = @LIBS@ `$(R_HOME)/bin/Rscript -e "eolts:::LdFlags()"`
+PKG_CPPFLAGS = -Weffc++ -DR_NO_REMAP
+PKG_LIBS = `$(R_HOME)/bin/Rscript -e "eolts:::LdFlags()"`

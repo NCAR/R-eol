@@ -1,4 +1,4 @@
-PKG_CPPFLAGS = @CPPFLAGS@ -Weffc++ -DR_NO_REMAP -I../inst/include
+PKG_CPPFLAGS = -Weffc++ -DR_NO_REMAP -I../inst/include
 PKG_LIBS = @LIBS@
 
 ## $(SHLIB) is the usual default target that is built automatically from all source 
