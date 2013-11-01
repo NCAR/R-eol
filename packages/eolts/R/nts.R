@@ -24,7 +24,9 @@ setClass("nts",
     )
 )
 
-nts = function(data,positions,names,units,weights,weightmap,stations,wss,time.format=options("time.out.format")[[1]],time.zone=options("time.zone")[[1]])
+nts = function(data,positions,names,units,weights,weightmap, stations,wss,
+    time.format=options("time.out.format")[[1]],
+    time.zone=options("time.zone")[[1]])
 {
     ret = new("nts")
    
@@ -83,6 +85,14 @@ nts = function(data,positions,names,units,weights,weightmap,stations,wss,time.fo
     ret
 }
 
+setAs("nts","numeric",
+    function(from)
+    {
+        as.numeric(from@data)
+    }
+)
+
+if (FALSE) {
 setGeneric("is.nts",function(x) standardGeneric("is.nts"))
 
 setMethod("is.nts", signature(x="nts"),
@@ -96,6 +106,55 @@ setMethod("is.nts", signature(x="ANY"),
     function(x)
     {
         F
+    }
+)
+}
+
+setAs("nts","numeric",
+    function(from)
+    {
+        as.numeric(from@data)
+    }
+)
+
+as.vector.nts = function(x,mode="any")
+{
+    as.vector(x@data,mode=mode)
+}
+
+"!.nts" = function(x)
+{
+    x@data = !x@data
+    x
+}
+
+setMethod("!", signature(x="nts"),
+    function(x) {
+        "!.nts"(x)
+    }
+)
+
+setMethod("is.na",signature(x="nts"),
+    function(x)
+    {
+        x@data <- is.na(x@data)
+        x
+    }
+)
+
+setMethod("is.finite",signature(x="nts"),
+    function(x)
+    {
+        x@data <- is.finite(x@data)
+        x
+    }
+)
+
+setMethod("is.infinite",signature(x="nts"),
+    function(x)
+    {
+        x@data <- is.infinite(x@data)
+        x
     }
 )
 
@@ -1598,23 +1657,6 @@ setMethod("align",signature="nts",
     }
 )
 
-setMethod("is.na",signature(x="nts"),
-    function(x)
-    {
-        x@data <- is.na(x@data)
-        x
-    }
-)
-
-setGeneric("not.is.na",function(x,...) standardGeneric("not.is.na"))
-setMethod("not.is.na",signature(x="nts"),
-    function(x)
-    {
-        x@data <- !is.na(x@data)
-        x
-    }
-)
-
 setGeneric("replace.nas",function(x,warn) standardGeneric("replace.nas"))
 
 setMethod("replace.nas",signature=signature("nts","logical"),
@@ -1866,20 +1908,32 @@ setMethod("lag",signature(x="nts"),
 setGeneric("write",function(x,...) standardGeneric("write"))
 
 setMethod("write", signature(x="ANY"),
-    function(x,file="data",ncolumns=if(is.character(x)) 1 else 5, append=FALSE,sep=" ",...)
+    function(x,file="data",ncolumns=if(is.character(x)) 1 else 5, append=FALSE,sep=" ")
     {
-        base::write(x,file=file,ncolumns=ncolumns,append=append,sep=sep,...)
+        base::write(x,file=file,ncolumns=ncolumns,append=append,sep=sep)
     }
 )
+
 setMethod("write", signature(x="nts"),
-    function(x,file="data",ncolumns=if(is.character(x)) 1 else 5, append=FALSE,sep=" ",digits=6,...)
+    function(x,file="data",ncolumns=if(is.character(x)) 1 else 5, append=FALSE,sep=" ",...)
     {
+        if (hasArg(digits)) how = args$digits
+        else digits = 6
+
         ts <- format(x@positions,format=x@time.format,time.zone=x@time.zone)
         x <- signif(x,digits=digits)
         x <- apply(cbind(ts,x@data),1,paste,collapse="\t")
-        write(x,...)
+        write(x,file=file,append=append,sep=sep)
     }
 )
+
+write.nts = function(x,file="data",append=FALSE,sep=" ",digits=6)
+{
+    ts <- format(x@positions,format=x@time.format,time.zone=x@time.zone)
+    x <- signif(x,digits=digits)
+    x <- apply(cbind(ts,x@data),1,paste,collapse=sep)
+    write(x,file=file,append=append,sep=sep)
+}
 
 setMethod( "summary", "nts", function( object, ... )
 {
