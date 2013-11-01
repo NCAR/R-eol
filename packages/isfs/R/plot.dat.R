@@ -175,12 +175,12 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
         clipped <- F
         cmin <- ylim1[1]
         cmax <- ylim1[2]
-        clip.min <- datacol < cmin & not.is.na(datacol)
+        clip.min <- datacol < cmin & !is.na(datacol)
         if (any(clip.min)) {
             datacol@data[clip.min@data] <- NA_real_
             clipped <- T
         }
-        clip.max <- datacol > cmax & not.is.na(datacol)
+        clip.max <- datacol > cmax & !is.na(datacol)
         if (any(clip.max)) {
             datacol@data[clip.max@data] <- NA_real_
             clipped <- T

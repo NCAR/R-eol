@@ -16,9 +16,9 @@ dat.L <- function(what,cache=F,k=dpar("vonKarman"),g=dpar("accelgrav"),...)
     x <- -(dat(expand("tc",what),avg=T,smooth=T)+273.15)*
     dat("u*",avg=T,smooth=T)^3/k/g/
     dat(expand("w'tc'",what),avg=T,smooth=T)
-    x[is.inf(x)] <- NA
+    x[is.infinite(x)] <- NA_real_
 
-    dimnames(x) <- list(NULL,paste("L",sfxnames(x,2),sep=""))
+    dimnames(x) <- list(NULL,paste("L",suffixes(x,2),sep=""))
     x@units <- rep("m",ncol(x))
     x
 }
@@ -38,7 +38,7 @@ dat.L <- function(what,cache=F,k=dpar("vonKarman"),g=dpar("accelgrav"),...)
         ustm = (uw*uw + vw*vw)^0.25
         x[ib] = ustm[ib]
     }
-    dimnames(x) <- list(NULL,paste("u*",sfxnames(x,2),sep=""))
+    dimnames(x) <- list(NULL,paste("u*",suffixes(x,2),sep=""))
     x@units <- rep("m/s",ncol(x))
     x
 }
@@ -88,7 +88,7 @@ dat.z0raw <- function(what,cache=F,k=dpar("vonKarman"),...)
     x <- (z2-z1)/(exp(k*U2/ustar) - exp(k*U1/ustar))
 
     check <- (U2 - U1) / (z2 - z1) > 0
-    x@data[!check@data] <- NA
+    x@data[!check@data] <- NA_real_
 
     dimnames(x) <- list(NULL,rep("zoraw",ncol(x)))
     x@units <- rep("m",ncol(x))
@@ -123,7 +123,7 @@ dat.Draw <- function(what,cache=F,k=dpar("vonKarman"),...)
     (exp(-k*U1/ustar) - exp(-k*U2/ustar))
 
     check <- (U2 - U1) / (z2 - z1) > 0
-    x@data[!check@data] <- NA
+    x@data[!check@data] <- NA_real_
     # cat("number of !checks=",sum(!check),"\n")
 
     dimnames(x) <- list(NULL,rep("Draw",ncol(x)))
@@ -147,7 +147,7 @@ dat.heightSonic <- function(what,...)
                 paste(dimnames(x[,noz])[[2]],"(stn",stations(x[,noz]),")",collapse=",",sep="")))
     }
 
-    sfxs <- sfxnames(x,2)
+    sfxs <- suffixes(x,2)
     if (nrow(x) > 1) {
         tz <- c(tspar(x)[1],tspar(x)[nrow(x)])
         z <- matrix(rep(z,2),nrow=2,byrow=T)
@@ -181,7 +181,7 @@ dat.heightProp <- function(what,...) {
                 paste(dimnames(x[,noz])[[2]],"(stn",stations(x[,noz]),")",collapse=",",sep="")))
     }
 
-    sfxs <- sfxnames(x,2)
+    sfxs <- suffixes(x,2)
     if (nrow(x) > 1) {
         tz <- c(tspar(x)[1],tspar(x)[nrow(x)])
         z <- matrix(rep(z,2),nrow=2,byrow=T)

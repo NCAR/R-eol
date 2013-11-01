@@ -46,14 +46,14 @@ calc.Rlw <- function(Rpile,Tcase,Tdome=NULL,B=4,swcor=0,Rsw=NULL)
     if (any(!is.na(swcor) & swcor != 0) && !is.null(Rsw) && length(Rsw) > 0 && any(!is.na(Rsw))) {
         # Short wave correction
         # Warn if Rsw looks negative.
-        which <- sfxnames(Rsw,2,leadch="")[1]
+        which <- suffixes(Rsw,2,leadch="")[1]
         if (mean(Rsw,na.rm=T) < -5)
             warning(paste("mean Rsw.",which,
                     " is negative. Shortwave correction to Rlw.",which," may be wrong",sep=""))
         Rpile <- Rpile - swcor * Rsw
     }
 
-    dimnames(Rpile) <- list(NULL,paste("Rlw",sfxnames(Rpile,2),sep=""))
+    dimnames(Rpile) <- list(NULL,paste("Rlw",suffixes(Rpile,2),sep=""))
     Rpile@units <- rep("W/m^2",ncol(Rpile))
     Rpile
 }
@@ -202,7 +202,7 @@ dat.Rsum <- function(what,...)
     conform(dat(expand("Rlw.out",what),...),Rsw.in)
 
     if (is.null(x)) return(x)
-    dimnames(x) <- list(NULL,paste("Rsum",sfxnames(x,3),sep=""))
+    dimnames(x) <- list(NULL,paste("Rsum",suffixes(x,3),sep=""))
     x@units <- rep("W/m^2",ncol(x))
     x
 }
@@ -215,7 +215,7 @@ dat.Rsw.net <- function(what,...)
     x <- Rsw.in - conform(Rsw.out,Rsw.in)
 
     if (is.null(x)) return(x)
-    dimnames(x) <- list(NULL,paste("Rsw.net",sfxnames(x,3),sep=""))
+    dimnames(x) <- list(NULL,paste("Rsw.net",suffixes(x,3),sep=""))
     x@units <- rep("W/m^2",ncol(x))
     x
 }
@@ -226,7 +226,7 @@ dat.Rlw.net <- function(what,...)
     x <- Rlw.in - conform(Rlw.out,Rlw.in)
 
     if (is.null(x)) return(x)
-    dimnames(x) <- list(NULL,paste("Rlw.net",sfxnames(x,3),sep=""))
+    dimnames(x) <- list(NULL,paste("Rlw.net",suffixes(x,3),sep=""))
     x@units <- rep("W/m^2",ncol(x))
     x
 }
@@ -235,9 +235,9 @@ dat.albedo <- function(what,...)
     Rsw.in <- dat(expand("Rsw.in",what),...)
     Rsw.out <- dat(expand("Rsw.out",what),...)
     x <- Rsw.out/conform(Rsw.in,Rsw.out)
-    x[Rsw.in < 1 | Rsw.out < 1] <- NA
+    x[Rsw.in < 1 | Rsw.out < 1] <- NA_real_
 
-    dimnames(x) <- list(NULL,paste("albedo",sfxnames(x,3),sep=""))
+    dimnames(x) <- list(NULL,paste("albedo",suffixes(x,3),sep=""))
     x@units <- rep("",ncol(x))
     x
 }
@@ -255,7 +255,7 @@ dat.Tsfc <- function(what,emissivity=dpar("emissivity.sfc"),...)
         vars = lookup(what,verbose=F)
         if (length(vars) > 0) tsfc = dat(what,...,derived=F)
     }
-    else what = paste("Tsfc",sfxnames(what,3),sep="")
+    else what = paste("Tsfc",suffixes(what,3),sep="")
 
     vars = lookup(expand("Rlw.out",what),verbose=F)
     rvars = lookup(expand("Rpile.out",what),verbose=F)
@@ -268,7 +268,7 @@ dat.Tsfc <- function(what,emissivity=dpar("emissivity.sfc"),...)
         else rlwin = conform(rlwin,rlwout)
 
         x <- ( (rlwout - (1-emissivity)* rlwin) / (emissivity*SB) )^0.25 - 273.1
-        dimnames(x) <- list(NULL,paste("Tsfc.pyrg",sfxnames(x,3),sep=""))
+        dimnames(x) <- list(NULL,paste("Tsfc.pyrg",suffixes(x,3),sep=""))
         x@units <- rep("degC",ncol(x))
         if (!is.null(tsfc)) x = Cbind(tsfc,x)
     }
@@ -281,7 +281,7 @@ dat.Tsky <- function(what,...)
 
     x <- (dat(expand("Rlw.in",what),...) / SB) ^ 0.25 - 273.15
 
-    dimnames(x) <- list(NULL,paste("Tsky",sfxnames(x,3),sep=""))
+    dimnames(x) <- list(NULL,paste("Tsky",suffixes(x,3),sep=""))
     x@units <- rep("degC",ncol(x))
     x
 }

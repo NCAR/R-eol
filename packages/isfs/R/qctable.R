@@ -132,7 +132,7 @@ qctable.list = function(x=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntper=4
                                             t2 = t1 + dt
                                             # cat("t1=",t1," t2=",t2,"\n")
                                             x = x[utime(c(t1,t2)),]
-                                            if (length(x) == 0) rep(NA,4)
+                                            if (length(x) == 0) rep(NA_real_,4)
                                             else {
                                                 nas = sum(is.na(x))
                                                 x = clip(x)
@@ -386,9 +386,9 @@ qctable.html = function(vars,x=NULL,ntper=4,file="",append=F,title=NULL,
                 mins = apply(dmat[,ix],2,min,na.rm=T)
             }
             else {
-                meds = rep(NA,length(ix))
-                maxs = rep(NA,length(ix))
-                mins = rep(NA,length(ix))
+                meds = rep(NA_real_,length(ix))
+                maxs = rep(NA_real_,length(ix))
+                mins = rep(NA_real_,length(ix))
             }
 
             # There can be more than one point the same distance from

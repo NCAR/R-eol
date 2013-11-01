@@ -16,7 +16,7 @@ calc.x.t <- function(what,robust=dpar("robust"))
 
     xtc.name <- expand(paste(comp,"tc'",sep="'"),what)	# x'tc' where x is u,v or w
     xt <- dat(xtc.name,avg=T,smooth=T)
-    sfxs <- sfxnames(xt,2)
+    sfxs <- suffixes(xt,2)
 
     if (!is.null(robust) && !robust) {
 
@@ -79,7 +79,7 @@ calc.x.t <- function(what,robust=dpar("robust"))
                 cat(paste("calc.x.t: percentage of flux data removed due to dat(\"sfrac\") < dpar(sfrac.min=",
                         dpar("sfrac.min"),"):",
                         paste(dimnames(xh2o)[[2]],"(",round(rmd,1),")",sep="",collapse=", "),"\n"))
-                xh2o[sonicbad] = NA
+                xh2o[sonicbad] = NA_real_
             }
         }
 
@@ -109,7 +109,7 @@ calc.x.t <- function(what,robust=dpar("robust"))
         xh2o <- conform(xh2o,xt) * 1.e-3
         o2corr <- conform(o2corr,xt) * 1.e-3
 
-        sfxs <- sfxnames(xh2o,2)
+        sfxs <- suffixes(xh2o,2)
 
         rho.air <- conform(dat("rho.air",avg=T,smooth=T),xt)
         Q <- conform(dat("Q",avg=T,smooth=T),xt) * 1e-3
@@ -126,7 +126,7 @@ calc.x.t <- function(what,robust=dpar("robust"))
             (1 + factor * o2corr * (1-Q))
         }
 
-        xt@data[is.inf(xt@data)] <- NA
+        xt@data[is.infinite(xt@data)] <- NA_real_
     }
 
     dimnames(xt) <- list(NULL,paste(xt.name,sfxs,sep=""))
@@ -214,7 +214,7 @@ calc.x.mr <- function(what,robust=dpar("robust"))
 
     if (any(xh2o@units != "m/s g/m^3" & xh2o@units != "m/s gm/m^3"))
         warning("units of <w'kh2o'> are not m/s g/m^3")
-    sfxs <- sfxnames(xh2o,2)
+    sfxs <- suffixes(xh2o,2)
 
     if (!is.null(robust) && !robust) {
 
@@ -243,7 +243,7 @@ calc.x.mr <- function(what,robust=dpar("robust"))
                 cat(paste("calc.x.mr: percentage of flux data removed due to dat(\"sfrac\") < dpar(sfrac.min=",
                         dpar("sfrac.min"),"):",
                         paste(dimnames(xh2o)[[2]],"(",round(rmd,1),")",sep="",collapse=", "),"\n"))
-                xmr[sonicbad] = NA
+                xmr[sonicbad] = NA_real_
             }
         }
 
@@ -256,7 +256,7 @@ calc.x.mr <- function(what,robust=dpar("robust"))
             factor <- 0.51*(1-Q)
             xmr <- (xmr + o2corr * xtc / TK) / (1 + factor*o2corr*(1-Q))
         }
-        xmr@data[is.inf(xmr@data)] <- NA
+        xmr@data[is.infinite(xmr@data)] <- NA_real_
     }
 
     xmr <- xmr * 1.e3	# m/s g/kg
@@ -344,7 +344,7 @@ calc.x.h2o <- function(what,robust=dpar("robust"))
     }
     if (any(xh2o@units != "m/s g/m^3" & xh2o@units != "m/s gm/m^3"))
         warning("units of <w'kh2o'> are not m/s g/m^3")
-    sfxs <- sfxnames(xh2o,2)
+    sfxs <- suffixes(xh2o,2)
     # browser()
 
     if (!is.null(robust) && !robust) {
@@ -362,7 +362,7 @@ calc.x.h2o <- function(what,robust=dpar("robust"))
                 cat(paste("calc.x.h2o: percentage of flux data removed due to dat(\"sfrac\") < dpar(sfrac.min=",
                         dpar("sfrac.min"),"):",
                         paste(dimnames(xh2o)[[2]],"(",round(rmd,1),")",sep="",collapse=", "),"\n"))
-                xh2o[sonicbad] = NA
+                xh2o[sonicbad] = NA_real_
             }
         }
 
@@ -385,7 +385,7 @@ calc.x.h2o <- function(what,robust=dpar("robust"))
             xh2o <- (xh2o + o2corr * xtc * rhod / TK)/
             (1 + factor* o2corr * (1-Q))
         }
-        xh2o@data[is.inf(xh2o@data)] <- NA
+        xh2o@data[is.infinite(xh2o@data)] <- NA_real_
     }
 
     dimnames(xh2o) <- list(NULL,paste(xh2o.name,sfxs,sep=""))
@@ -435,7 +435,7 @@ calc.H <- function(wt,wq,Td,Q,rho)
     }
 
     if (!is.null(x)) {
-        dimnames(x) <- list(NULL,paste(Hname,sfxnames(wt,2),sep=""))
+        dimnames(x) <- list(NULL,paste(Hname,suffixes(wt,2),sep=""))
         x@units <- rep("W/m^2",ncol(x))
     }
     x
@@ -475,7 +475,7 @@ dat.LE <- function(what,robust=dpar("robust"),...)
 {
     # Turbulent latent heat flux
     x <- dat(expand("w'mr'",what),avg=T,smooth=T)
-    sfxs <- sfxnames(x,2)
+    sfxs <- suffixes(x,2)
 
     x <- conform(dat(expand("Lv",what),avg=T,smooth=T),x) *
     conform(dat("rhoDry",avg=T,smooth=T),x) * x * 1e-3
@@ -496,7 +496,7 @@ dat.Lv <- function(what,robust=dpar("robust"),...)
 
     if (!is.null(robust) && !robust) {
         x <- 2501000 - 2361 * dat(expand("T",what))
-        dimnames(x) <- list(NULL,paste("Lv",sfxnames(x,2),sep=""))
+        dimnames(x) <- list(NULL,paste("Lv",suffixes(x,2),sep=""))
         x@units <- rep("J/kg",ncol(x))
     }
     else x <- 2.5e6
@@ -507,9 +507,9 @@ dat.BR <- function(what,...)
     # Bowen ratio
     x <- dat(expand("H",what),avg=T,smooth=T) / 
     dat(expand("LE",what),avg=T,smooth=T)
-    x@data[is.inf(x@data)] <- NA
+    x@data[is.infinite(x@data)] <- NA_real_
 
-    dimnames(x) <- list(NULL,paste("BR",sfxnames(x,2),sep=""))
+    dimnames(x) <- list(NULL,paste("BR",suffixes(x,2),sep=""))
     x@units <- rep("",ncol(x))
     x
 }
@@ -528,7 +528,7 @@ dat.Scorr <- function(what,which="krypton",robust=dpar("robust"),...)
 
     if (is.null(robust) || robust) {
         S = dat("heightSonic")
-        sfxs <- sfxnames(S, 2)
+        sfxs <- suffixes(S, 2)
         S@data = matrix(1,nrow(S),ncol(S))
     }
     else {
@@ -548,7 +548,7 @@ dat.Scorr <- function(what,which="krypton",robust=dpar("robust"),...)
         if (is.null(S)) return(1)
 
         zoL <- conform(dat(expand("L",what),avg=T,smooth=T),S)
-        sfxs <- sfxnames(zoL,2)
+        sfxs <- suffixes(zoL,2)
 
         # need z and d for each sonic
         z <- conform(dat(expand("heightSonic",what)),S)
@@ -594,4 +594,13 @@ dat.Scorr <- function(what,which="krypton",robust=dpar("robust"),...)
     dimnames(S) = list(NULL,paste("Scorr",sfxs,sep=""))
     S@units <- rep("",ncol(S))
     S
+}
+
+dat.TKE <- function(cache=F,...)
+{
+    x <- sqrt(dat("u'u'")^2 + dat("v'v'")^2 + dat("w'w'")^2)/2
+
+    dimnames(x) <- list(NULL,paste("TKE",sfxnames(x,2),sep=""))
+    x@units <- rep("(m/s)^2",ncol(x))
+    x
 }

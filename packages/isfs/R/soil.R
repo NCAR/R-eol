@@ -334,8 +334,8 @@ dat.Ssoilz = function(what,dfill=F,fit=3,sum=T,...)
                     txss@data = matrix(apply(txss@data,1,function(y,z,dz,dosum) {
                             # if (sum(!is.na(y)) < 4) return(y)
                             if (sum(!is.na(y)) < 3) {
-                                if(dosum) return(NA)
-                                else return(rep(NA,length(z)))
+                                if(dosum) return(NA_real_)
+                                else return(rep(NA_real_,length(z)))
                             }
                             # 2nd order fit
                             pfit = lm(y ~ z^2 + z,data=list(y=y,z=z))
@@ -350,8 +350,8 @@ dat.Ssoilz = function(what,dfill=F,fit=3,sum=T,...)
                     txss@data = matrix(apply(txss@data,1,function(y,z,dz,dosum) {
                             # if (sum(!is.na(y)) < 4) return(y)
                             if (sum(!is.na(y)) < length(z)) {
-                                if(dosum) return(NA)
-                                else return(rep(NA,length(z)))
+                                if(dosum) return(NA_real_)
+                                else return(rep(NA_real_,length(z)))
                             }
                             # 3rd order fit
                             pfit = lm(y ~ z^3 + z^2 + z,data=list(y=y,z=z))
@@ -470,7 +470,7 @@ dat.Gsoilz <- function(what,fit=0,dfill=F,...)
 
                 if (fit == 2) {
                     txss@data = matrix(apply(txss@data,1,function(y,z,ndepths) {
-                            if (sum(!is.na(y)) < length(z)) return(rep(NA,length(ndepths)))
+                            if (sum(!is.na(y)) < length(z)) return(rep(NA_real_,length(ndepths)))
                             # 2nd order fit
                             pfit = lm(y ~ z^2 + z,data=list(y=y,z=z))
                             cs = coef(pfit)
@@ -482,7 +482,7 @@ dat.Gsoilz <- function(what,fit=0,dfill=F,...)
                 }
                 else {
                     txss@data = matrix(apply(txss@data,1,function(y,z,ndepths) {
-                            if (sum(!is.na(y)) < length(z)) return(rep(NA,length(ndepths)))
+                            if (sum(!is.na(y)) < length(z)) return(rep(NA_real_,length(ndepths)))
                             # 3rd order fit
                             pfit = lm(y ~ z^3 + z^2 + z,data=list(y=y,z=z))
                             cs = coef(pfit)

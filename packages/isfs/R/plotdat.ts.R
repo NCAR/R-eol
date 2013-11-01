@@ -140,7 +140,7 @@ plotdat.ts <- function(data,data2, select, rfrnc, nsmth, ylim, yaxt, logy=F,
     ok <- dat("chksumOK.ALL_DATA")
     data[is.na(ok) | ok==0] <- NA_real_
     }
-  data[!is.finite(data@data)] <- NA_real_
+  data[is.infinite(data@data)] <- NA_real_
   if (!missing(rfrnc)) {
     data <- data[,-rfrnc] - data[,rfrnc]
     if (clipped) {

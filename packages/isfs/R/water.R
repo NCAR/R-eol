@@ -21,7 +21,7 @@ dat.satvp <- function(what,TC,frost=dpar("RH.ice"), enhancement=T,...)
 
     if (missing(TC)) TC <- dat(expand("T",what))
 
-    sfx <- sfxnames(TC,2)
+    sfx <- suffixes(TC,2)
 
     satvp <- 6.1121*exp(17.368*TC/(238.88+TC))
 
@@ -80,7 +80,7 @@ dat.H2O <- function(what,RH,...)
     Pv <- dat("satvp",TC=Td) * RH		# pascals; satvp in mb, RH in %
     x <- Pv/Rm/(Td + 273.15)
 
-    dimnames(x) <- list(NULL,paste("H2O",sfxnames(x,2),sep=""))
+    dimnames(x) <- list(NULL,paste("H2O",suffixes(x,2),sep=""))
     x@units <- rep("g/m^3",ncol(x))
     x
 }
@@ -106,7 +106,7 @@ dat.MR <- function(what,...)
 
     if (is.null(P)) {
         warning("No pressure data available")
-        P <- dat(nts(matrix(NA,ncol=ncol(Pv),nrow=nrow(Pv)),
+        P <- dat(nts(matrix(NA_real_,ncol=ncol(Pv),nrow=nrow(Pv)),
                 Pv@positions,stations=stations(Pv),
                 names=paste("P",suffixes(Pv))))
     }
@@ -114,9 +114,9 @@ dat.MR <- function(what,...)
     if (ncol(P) > 1) P = conform(P,Pv)
 
     x <- 622*Pv/(P - Pv)
-    x[is.inf(x)] <- NA
+    x[is.infinite(x)] <- NA_real_
 
-    dimnames(x) <- list(NULL,paste("MR",sfxnames(x,2),sep=""))
+    dimnames(x) <- list(NULL,paste("MR",suffixes(x,2),sep=""))
     x@units <- rep("g/kg",ncol(x))
     x
 }
@@ -140,7 +140,7 @@ dat.mr <- function(what,...)
 
     if (is.null(P)) {
         warning("No pressure data available")
-        P <- dat(nts(matrix(NA,ncol=ncol(Pv),nrow=nrow(Pv)),
+        P <- dat(nts(matrix(NA_real_,ncol=ncol(Pv),nrow=nrow(Pv)),
                 Pv@positions,stations=stations(Pv),
                 names=paste("P",suffixes(Pv))))
     }
@@ -148,9 +148,9 @@ dat.mr <- function(what,...)
     if (ncol(P) > 1) P = conform(P,Pv)
 
     x <- 622*Pv/(P - Pv)
-    x[is.inf(x)] <- NA
+    x[is.infinite(x)] <- NA_real_
 
-    dimnames(x) <- list(NULL,paste("mr",sfxnames(x,2),sep=""))
+    dimnames(x) <- list(NULL,paste("mr",suffixes(x,2),sep=""))
     x@units <- rep("g/kg",ncol(x))
     x
 }
@@ -172,16 +172,16 @@ dat.Q <- function(what,...)
     P <- dat("P")
     if (is.null(P)) {
         warning("No pressure data available")
-        P <- dat(nts(matrix(NA,ncol=ncol(Pv),nrow=nrow(Pv)),
+        P <- dat(nts(matrix(NA_real_,ncol=ncol(Pv),nrow=nrow(Pv)),
                 Pv@positions,stations=stations(Pv),
                 names=paste("P",suffixes(Pv),sep="")))
     }
     if (ncol(P) > 1) P = conform(P,Pv)
 
     x <- 622*Pv/(P - 0.378*Pv)
-    x[is.inf(x)] <- NA
+    x[is.infinite(x)] <- NA_real_
 
-    dimnames(x) <- list(NULL,paste("Q",sfxnames(x,2),sep=""))
+    dimnames(x) <- list(NULL,paste("Q",suffixes(x,2),sep=""))
     x@units <- rep("g/kg",ncol(x))
     x
 }
@@ -233,9 +233,9 @@ dat.Tc <- function(what,...)
     }
 
     x <- (Td + 273.15)*(1 + 0.32*Pv/P) - 273.15
-    x[is.inf(x)] <- NA
+    x[is.infinite(x)] <- NA_real_
 
-    dimnames(x) <- list(NULL,paste("Tc",sfxnames(x,2),sep=""))
+    dimnames(x) <- list(NULL,paste("Tc",suffixes(x,2),sep=""))
     x@units <- rep("degC",ncol(x))
     x
 }
@@ -248,9 +248,9 @@ dat.Tdew = function(what,...) {
     Td = conform(dat("T"),RH)
     vp = dat("satvp",TC=Td) * RH / 100
     x = 238.88/( (17.368/log(vp/6.1121))-1 )	
-    x[is.inf(x)] <- NA
+    x[is.infinite(x)] <- NA_real_
 
-    dimnames(x) <- list(NULL,paste("Tdew",sfxnames(x,2),sep=""))
+    dimnames(x) <- list(NULL,paste("Tdew",suffixes(x,2),sep=""))
     x@units <- rep("degC",ncol(x))
     x
 }
@@ -274,7 +274,7 @@ dat.evap <- function(what,...) {
         evap[,i] <- cumsum(wr[,i]*rho)*c(0,diff(tspar(wr)))/1000
     }
 
-    dimnames(evap) <- list(NULL,paste("evap",sfxnames(wr,2),sep=""))
+    dimnames(evap) <- list(NULL,paste("evap",suffixes(wr,2),sep=""))
     evap@units <- rep("mm",ncol(evap))
     evap
 }

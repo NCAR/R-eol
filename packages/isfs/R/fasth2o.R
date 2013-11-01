@@ -9,7 +9,7 @@ dat.fastH2OSep <- function(what,...)
 
   x <- dat(expand("h2o",what),derived=F)
   if (is.null(x)) return(x)
-  sfxs <- sfxnames(x,2)
+  sfxs <- suffixes(x,2)
 
   if (nrow(x) > 1) {
     tz <- c(tspar(x)[1],tspar(x)[nrow(x)])

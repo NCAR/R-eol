@@ -76,8 +76,8 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
         xdata[is.na(okx) | okx==0] <- NA_real_
         ydata[is.na(oky) | oky==0] <- NA_real_
     }
-    xdata[!is.finite(xdata@data)] <- NA_real_
-    ydata[!is.finite(ydata@data)] <- NA_real_
+    xdata[is.infinite(xdata@data)] <- NA_real_
+    ydata[is.infinite(ydata@data)] <- NA_real_
     if (!missing(nsmth) && nsmth>0) {
         xdata <- average(xdata,nsmth*dt,nsmth*dt, method=method.smth, simple=T)
         ydata <- average(ydata,nsmth*dt,nsmth*dt, method=method.smth, simple=T)
@@ -249,8 +249,8 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
                  bg="transparent", bty="n")
 
         # print time range, low-pass filter
-        t1 <- max(start(xdata[not.is.na(xdata),]),start(ydata[not.is.na(ydata),]))
-        t2 <- min(end(xdata[not.is.na(xdata),]),end(ydata[not.is.na(ydata),]))
+        t1 <- max(start(xdata[!is.na(xdata),]),start(ydata[!is.na(ydata),]))
+        t2 <- min(end(xdata[!is.na(xdata),]),end(ydata[!is.na(ydata),]))
         # max/min operators lose utime formatting
         t1 = utime(t1)	
         t2 = utime(t2)

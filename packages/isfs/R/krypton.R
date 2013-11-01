@@ -12,7 +12,7 @@ dat.kryptonX <- function(what,...)
     warning(paste("project dat.kryptonX not found for krypton path length. dat.kryptonX returning", default.val,"cm"))
 
     x <- dat(expand("kh2o",what),derived=F)
-    sfxs <- sfxnames(x,2)
+    sfxs <- suffixes(x,2)
 
     if (nrow(x) > 1) {
         tz <- c(tspar(x)[1],tspar(x)[nrow(x)])
@@ -37,7 +37,7 @@ dat.kryptonKw <- function(what,...)
     warning(paste("project dat.kryptonKw not found for krypton water vapor absorption coef. dat.kryptonKw returning", default.val))
 
     x <- dat(expand("kh2o",what),derived=F)
-    sfxs <- sfxnames(x,2)
+    sfxs <- suffixes(x,2)
 
     if (nrow(x) > 1) {
         tz <- c(tspar(x)[1],tspar(x)[nrow(x)])
@@ -65,7 +65,7 @@ dat.kryptonKo <- function(what,...)
     select <- !is.na(x) & x >= 1.95
     x[select] <- -1.3e-3
 
-    sfxs <- sfxnames(x,2)
+    sfxs <- suffixes(x,2)
 
     dimnames(x)[[2]] <- paste("kryptonKo",sfxs,sep="")
     x
@@ -81,7 +81,7 @@ dat.kryptonSep <- function(what,...)
 
     x <- dat(expand("kh2o",what),derived=F)
     if (is.null(x)) return(x)
-    sfxs <- sfxnames(x,2)
+    sfxs <- suffixes(x,2)
 
     if (nrow(x) > 1) {
         tz <- c(tspar(x)[1],tspar(x)[nrow(x)])

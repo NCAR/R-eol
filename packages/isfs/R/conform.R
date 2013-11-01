@@ -14,7 +14,7 @@ setMethod("conform",signature(x="dat",y="dat"),
         if (any(xbad <- (xcols == 0))) {
             xcols[xbad] <- 1
             x <- x[,xcols]
-            x[,xbad] <- NA
+            x[,xbad] <- NA_real_
             xstns <- stations(x)
             xstns[xbad] <- stations(y)[xbad]
             stations(x) <- xstns

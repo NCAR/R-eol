@@ -421,9 +421,9 @@ setMethod("clip",signature(x1="dat"),
             if (!is.null(cl <- clip(cn)) && (is.null(cl$clip) || cl$clip)) {
                 cmin <- cl$min
                 cmax <- cl$max
-                clip.x <- x1[,i] < cmin & not.is.na(x1[,i])
+                clip.x <- x1[,i] < cmin & !is.na(x1[,i])
                 if (any(clip.x)) x1[clip.x,i] <- NA_real_
-                clip.x <- x1[,i] > cmax & not.is.na(x1[,i])
+                clip.x <- x1[,i] > cmax & !is.na(x1[,i])
                 if (any(clip.x)) x1[clip.x,i] <- NA_real_
             }
         }

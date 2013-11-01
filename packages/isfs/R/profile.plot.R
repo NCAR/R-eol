@@ -54,21 +54,21 @@ profile.plot = function(x, every=3600, ntraces=6, smooth=deltat(x)[1],
     t1 = NULL
     t2 = NULL
 
-    xp = array(NA,dim=c(length(tps),ntraces,length(hts)))
+    xp = array(NA_real_,dim=c(length(tps),ntraces,length(hts)))
 
     xinfo <- plot.dat.limits(x,xlim,TRUE)
 
     clipped <- F
     cmin <- xinfo$ylim[1]
     cmax <- xinfo$ylim[2]
-    clip.min <- x < cmin & not.is.na(x)
+    clip.min <- x < cmin & !is.na(x)
     if (any(clip.min)) {
-      x@data[clip.min] <- NA
+      x@data[clip.min] <- NA_real_
       clipped <- T
     }
-    clip.max <- x > cmax & not.is.na(x)
+    clip.max <- x > cmax & !is.na(x)
     if (any(clip.max)) {
-        x@data[clip.max] <- NA
+        x@data[clip.max] <- NA_real_
         clipped <- T
     }
     
