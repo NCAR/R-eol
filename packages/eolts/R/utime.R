@@ -140,7 +140,7 @@ setAs("character","utime",
     function(from)
     {
         time.zone = options("time.zone")[[1]]
-        as(as(from,"POSIXct",tz=time.zone),"utime")
+        as(as.POSIXct(from,tz=time.zone),"utime")
     }
 )
 
@@ -148,7 +148,7 @@ setAs("utime","list",
     function(from)
     {
         time.zone = options("time.zone")[[1]]
-        to = as.POSIXlt(as(from,"POSIXct",tz=time.zone),tz=time.zone)
+        to = as.POSIXlt(as(from,"POSIXct"),tz=time.zone)
         list(year=to$year + 1900,
             mon=to$mon + 1,
             day=to$mday,
