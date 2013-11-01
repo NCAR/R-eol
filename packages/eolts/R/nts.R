@@ -92,31 +92,6 @@ setAs("nts","numeric",
     }
 )
 
-if (FALSE) {
-setGeneric("is.nts",function(x) standardGeneric("is.nts"))
-
-setMethod("is.nts", signature(x="nts"),
-    function(x)
-    {
-        T
-    }
-)
-
-setMethod("is.nts", signature(x="ANY"),
-    function(x)
-    {
-        F
-    }
-)
-}
-
-setAs("nts","numeric",
-    function(from)
-    {
-        as.numeric(from@data)
-    }
-)
-
 as.vector.nts = function(x,mode="any")
 {
     as.vector(x@data,mode=mode)
