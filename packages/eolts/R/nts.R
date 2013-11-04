@@ -72,8 +72,6 @@ nts = function(data,positions,
           stations = rep(NA_integer_,ncol(ret@data))
     else if (!is.integer(stations)) stations = as.integer(stations)
 
-    if (!is(stations,"named")) names(stations) <- rep("",length(stations))
-
     ret@stations = stations
 
     # Window squared and summed: if data is windowed (commonly
@@ -308,7 +306,6 @@ setGeneric("stations<-",function(x,value) standardGeneric("stations<-"))
 setReplaceMethod("stations", signature(x="nts",value="integer"),
     function(x,value)
     {
-        if (!is(value,"named")) names(value) <- rep("",length(value))
         x@stations <- value
         x
     }
@@ -1387,7 +1384,6 @@ setMethod("seriesMerge",signature(x1="nts",x2="numeric"),
         if (length(wm1) > 0) wm1 <- c(wm1,rep(0,nc2))
         s1 <- c(s1,rep(0,nc2))
 
-        if (!is(s1,"named")) names(s1) <- rep("",length(s1))
         x2 <- nts(cbind(x1@data,x2),x1@positions,weights=w1,weightmap=wm1,
           stations=s1)
         dimnames(x2) <- list(NULL,c(dimnames(x1)[[2]],nx2))

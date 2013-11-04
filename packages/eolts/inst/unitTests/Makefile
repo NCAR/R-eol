@@ -1,4 +1,4 @@
-PKG=timeSeries
+PKG=eolts
 TOP=../..
 SUITE=doRUnit.R
 R=R
@@ -7,7 +7,7 @@ all: inst test
 
 inst: # Install package -- but where ?? -- will that be in R_LIBS ?
 	cd ${TOP}/..;\
-	${R} CMD INSTALL ${PKG}
+	${R} --vanilla CMD INSTALL ${PKG}
 
 test: # Run unit tests
 	export RCMDCHECK=FALSE;\
