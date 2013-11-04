@@ -8,6 +8,7 @@ Author: Gordon Maclean
 Maintainer: Gordon Maclean <maclean@ucar.edu>
 Depends: R (>= 1.8.0), methods
 Imports: splusTimeDate,splusTimeSeries
+Suggests: RUnit
 Collate: onAttach.R cache.R utime.R nts.R netcdf.R dpar.R plot.R eoltsLdpath.R
 Description: This package provides R functions to read time-series data
   from NetCDF files containing data acquired by the Integrated Surface
