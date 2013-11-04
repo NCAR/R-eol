@@ -82,26 +82,31 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
            under_num, align_num;
     double match_tol;
 
-    Sint in_len, align_len=0, tmplen;
-    Sint in_inc, in_start, in_curr;
-    Sint align_inc, align_start, align_end, align_curr;
+    size_t in_len, in_start, in_curr;
+    int in_inc, align_inc;
+
+    size_t align_len, align_start, align_end, align_curr;
     int how, error_how;
     int over_set, under_set;
 
-    Sint *na_data, *drop_data, *sub1_data, *sub2_data;
+    Sint *na_data, *drop_data, *sub1_data, *sub2_data=0;
     double *weight1_data=0, *weight2_data=0;
+
+    if(
+        (Rf_length(time_obj) < 1) || (Rf_length(align_pos) < 1) ||
+        !Rf_isReal( match_tol_a ) || (Rf_length(match_tol_a) < 1) ||
+        !Rf_isString( how_obj ) || (Rf_length(how_obj) < 2)
+      )
+        Rf_error( "Invalid data in c function time_align" ); 
 
     /* extract input data*/
     eolts::R_utime itime(time_obj);
     double* ivals = itime.getTimePtr();
+    in_len = itime.getLength();
 
     eolts::R_utime atime(align_pos);
     double* avals = atime.getTimePtr();
-
-    if( !Rf_isReal( match_tol_a ) || (( tmplen = Rf_length(match_tol_a) ) < 1) ||
-            !Rf_isString( how_obj ) || (( tmplen = Rf_length(how_obj) ) < 2)
-      )
-        Rf_error( "Invalid data in c function time_align" ); 
+    align_len = atime.getLength();
 
     if( !strcmp( CHAR(STRING_ELT(how_obj, 0)), "NA" ))
         how = 0;
