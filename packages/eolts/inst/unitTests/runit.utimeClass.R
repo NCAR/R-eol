@@ -25,5 +25,17 @@ test.utime = function()
     xx = utime(sx,in.format="%Y %m %d %H:%M:%OS",time.zone="US/Mountain")
     checkTrue(abs(xx-x) < .01,"check equivalence of times")
 
+    xx = utime(as(x,"list"))
+    checkTrue(abs(xx-x) < 1.,"check equivalence of times from lists")
+
+    xx = c(x,x+1.5)
+    checkEquals(diff(xx),1.5)
+    checkEquals(class(diff(xx)),"numeric")
+
+    xx = c(x,x+1.5,xx+3)
+
+    xx[3] = xx[2]
+    checkEquals(diff(xx),c(1.5,0.0,3.0))
+
     return()
 }

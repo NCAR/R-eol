@@ -29,22 +29,13 @@ utime = function(val=as.numeric(Sys.time()),
     if (is(val,"numeric")) {
         res = new("utime",val)
     }
-    else if (is(val,"utime")) {
-        res = val
-    }
-    else if (is(val,"POSIXct")) {
-        res = as(val,"utime")
-    }
-    else if (is(val,"timeDate")) {  # splusTimeDate::timeDate
-        res = as(val,"utime")
-    }
     else if (is.character(val)) {
         if (length(val) == 1 && val == "now") res = as(Sys.time(),"utime")
         else for (i in 1:length(in.format)) {
             # cat("trying format",in.format[[i]],"\n")
-            res = as.POSIXct(val,format=in.format[[i]],tz=time.zone)
+            res = strptime(val,format=in.format[[i]],tz=time.zone)
             if (!any(is.na(res))) {
-                res = as(res,"utime")
+                res = utime(as.numeric(res))
                 break
             }
         }
@@ -54,15 +45,22 @@ utime = function(val=as.numeric(Sys.time()),
             else warning(paste("some dates not parsable with in.format=",in.format))
         }
     }
+    else if (is(val,"POSIXct")) {
+        res = utime(as.numeric(val))
+    }
+    else if (is(val,"timeDate")) {  # splusTimeDate::timeDate
+        res = as(val,"utime")
+    }
+    else if (is(val,"utime")) {
+        res = val
+    }
+    else if (is.list(val)) {
+        res = as(val,"utime")
+    }
     else if (is.null(val)) {
         res = new("utime")
     }
     res
-}
-
-if (FALSE) {
-    # this is created automatically
-    setAs("utime","numeric",function(from) from@.Data)
 }
 
 # coerce from numeric to utime
@@ -71,29 +69,6 @@ setAs("numeric","utime",
     {
         res = new("utime",val=from)
         res
-    }
-)
-
-# coerce from utime to timeDate
-setAs("utime","timeDate",
-    function(from)
-    {
-        # the timeDate constructor chokes if ms is NA, so set it to 0.
-        if (any(bad <- is.na(from@.Data)))
-            splusTimeDate::timeDate(julian=floor(from@.Data/86400) + 3653,
-                ms=ifelse(bad,0,round((from@.Data %% 86400) * 1000,digits=3)),
-                format=options("time.out.format")[[1]],
-                zone=options("time.zone")[[1]])
-
-        else {
-            # cat("utime=",from@.Data[2],"\n")
-            # cat("julian=",floor(from@.Data[2]/86400) + 3653,"\n")
-            # cat("ms=",round((from@.Data[2] %% 86400.0) * 1000,digits=3),"\n")
-            splusTimeDate::timeDate(julian=floor(from@.Data/86400) + 3653,
-                ms=round((from@.Data %% 86400.0) * 1000,digits=3),
-                format=options("time.out.format")[[1]],
-                zone=options("time.zone")[[1]])
-        }
     }
 )
 
@@ -121,6 +96,29 @@ setAs("POSIXct","utime",
 setAs("timeDate","utime",
     function(from) {
         utime((from@columns[[1]] - 3653) * 86400 + from@columns[[2]] / 1000)
+    }
+)
+
+# coerce from utime to timeDate
+setAs("utime","timeDate",
+    function(from)
+    {
+        # the timeDate constructor chokes if ms is NA, so set it to 0.
+        if (any(bad <- is.na(from@.Data)))
+            splusTimeDate::timeDate(julian=floor(from@.Data/86400) + 3653,
+                ms=ifelse(bad,0,round((from@.Data %% 86400) * 1000,digits=3)),
+                format=options("time.out.format")[[1]],
+                zone=options("time.zone")[[1]])
+
+        else {
+            # cat("utime=",from@.Data[2],"\n")
+            # cat("julian=",floor(from@.Data[2]/86400) + 3653,"\n")
+            # cat("ms=",round((from@.Data[2] %% 86400.0) * 1000,digits=3),"\n")
+            splusTimeDate::timeDate(julian=floor(from@.Data/86400) + 3653,
+                ms=round((from@.Data %% 86400.0) * 1000,digits=3),
+                format=options("time.out.format")[[1]],
+                zone=options("time.zone")[[1]])
+        }
     }
 )
 
@@ -165,16 +163,17 @@ setAs("utime","list",
 setAs("list","utime",
     function(from)
     {
-        # Splus doesn't have a %D or %j for day of year input parsing.
-        # It does have a %D to output the day of year...
         if (!is.null(from$yday) && is.null(from$mon) && is.null(from$day)) {
             utime(paste(from$year,from$yday-1,from$hour,from$min,from$sec),
-                in.format="%Y%j[%H[%M[%S[.%N]]]]",time.zone=as.character(from$TZ))
+                in.format="%Y%j%H%M%OS",
+                time.zone =
+                if (is.null(from$TZ)) options("time.zone")[[1]] else time.zone=as.character(from$TZ))
         }
         else {
             utime(paste(from$year,from$mon,from$day,
                 from$hour,from$min,from$sec),
-                in.format="%Y%m%d[%H[%M[%S[.%N]]]]",time.zone=as.character(from$TZ))
+                in.format="%Y%m%d%H%M%OS",
+                if (is.null(from$TZ)) options("time.zone")[[1]] else time.zone=as.character(from$TZ))
         }
     }
 )
@@ -205,6 +204,15 @@ setMethod("format","utime",
     }
 )
 
+setMethod("show",signature(object="utime"),
+    function(object)
+    {
+        # cat("in show utime\n")
+        print.default(format(object,format=options("time.out.format")[[1]],
+               time.zone=options("time.zone")[[1]]),quote=FALSE)
+    }
+)
+
 
 setGeneric("monthly",function(from,to) standardGeneric("monthly"))
 
@@ -225,16 +233,8 @@ setMethod("monthly",signature(from="utime",to="utime"),
     }
 )
 
-setMethod("show",signature(object="utime"),
-    function(object)
-    {
-        # cat("in show utime\n")
-        print.default(format(object,format=options("time.out.format")[[1]],
-               time.zone=options("time.zone")[[1]]),quote=FALSE)
-    }
-)
-
-setMethod("diff","utime",function(x,...) diff(x@.Data))
+diff.utime = function(x,...) diff(x@.Data)
+# setMethod("diff","utime",function(x,...) diff(x@.Data))
 
 setMethod( "c", signature(x="utime"),
     function(x, ...)
@@ -294,6 +294,12 @@ setReplaceMethod("[",signature(x="utime",i="ANY",j="missing",value="ANY"),
 setMethod("Ops",signature(e1="utime",e2="utime"),
     function(e1,e2)
     {
+        # Ops are the usual binary operators: 
+        # +,-,*,^,%%,%/%,/,==,>,<,!=,<=,>=,&,|
+        # Do ?Ops
+        # cat("Ops(utime,utime) .Generic=",.Generic,"\n")
+        # the most usual Ops for 2 utimes is subtraction, which 
+        # should return a numeric, not a utime.
         callGeneric(e1@.Data,e2@.Data)
     }
 )
@@ -301,21 +307,34 @@ setMethod("Ops",signature(e1="utime",e2="utime"),
 setMethod("Ops",signature(e1="utime",e2="numeric"),
     function(e1,e2)
     {
-        callGeneric(e1@.Data,e2)
+        # the most usual Ops for a utime and a numeric is
+        # addition, where we want to return a utime.
+        # cat("Ops(utime,numeric): .Generic=",.Generic,"\n")
+        e1@.Data = callGeneric(e1@.Data,e2)
+        e1
     }
 )
 
 setMethod("Ops",signature(e1="numeric",e2="utime"),
     function(e1,e2)
     {
-        callGeneric(e1,e2@.Data)
+        # the most usual Ops for a utime and a numeric is
+        # addition, where we want to return a utime.
+        # cat("Ops(numeric,utime): .Generic=",.Generic,"\n")
+        e2@.Data = callGeneric(e1,e2@.Data)
+        e2
     }
 )
 
 setMethod("Math",signature(x="utime"),
     function(x)
     {
-        x@.Data <- callGeneric(x@.Data)
+        # from ?Math: abs, sign,sqrt, ceiling,floor
+        # The most common use is probably ceiling or floor,
+        # where we'll return a utime
+        # cat("Math(utime): .Generic=",.Generic,"\n")
+
+        x@.Data = callGeneric(x@.Data)
         x
     }
 )
@@ -375,7 +394,4 @@ setMethod("summary",signature(object="utime"),
 
     }
 )
-
-
-
 
