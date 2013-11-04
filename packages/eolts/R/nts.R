@@ -24,7 +24,13 @@ setClass("nts",
     )
 )
 
-nts = function(data,positions,names,units,weights,weightmap, stations,wss,
+nts = function(data,positions,
+    units,
+    names=NULL,
+    weights=NULL,
+    weightmap=NULL,
+    stations=NULL,
+    wss=NULL,
     time.format=options("time.out.format")[[1]],
     time.zone=options("time.zone")[[1]])
 {
@@ -56,14 +62,18 @@ nts = function(data,positions,names,units,weights,weightmap, stations,wss,
     }
     else ret@units = rep("",ncol(ret@data))
 
-    if (!missing(names)) dimnames(ret@data) <- list(NULL,names)
-    if (!missing(weightmap)) ret@weightmap = as.integer(weightmap)
-    if (!missing(weights)) ret@weights = weights
+    if (!is.null(names)) dimnames(ret@data) <- list(NULL,names)
+    if (!is.null(weights)) {
+        ret@weights = weights
+        ret@weightmap = as.integer(weightmap)
+    }
 
-    if (missing(stations) || length(stations) == 0)
+    if (is.null(stations) || length(stations) == 0)
           stations = rep(NA_integer_,ncol(ret@data))
     else if (!is.integer(stations)) stations = as.integer(stations)
+
     if (!is(stations,"named")) names(stations) <- rep("",length(stations))
+
     ret@stations = stations
 
     # Window squared and summed: if data is windowed (commonly
@@ -71,7 +81,7 @@ nts = function(data,positions,names,units,weights,weightmap, stations,wss,
     # squared window coefficients * N. If a square window of
     # all 1's, then wss = N^2
     # We're assuming same window for all columns of this nts
-    if (!missing(wss)) res@wss = wss
+    if (!is.null(wss)) res@wss = wss
 
     deltat(ret) = deltat(ret)	# this actualy does something!
 
@@ -85,12 +95,43 @@ nts = function(data,positions,names,units,weights,weightmap, stations,wss,
     ret
 }
 
+setMethod("as.numeric", signature(x="nts"),
+    function(x,...)
+    {
+        as.numeric(x@data,...)
+    }
+)
+
 setAs("nts","numeric",
     function(from)
     {
         as.numeric(from@data)
     }
 )
+
+setMethod("as.logical", signature(x="nts"),
+    function(x,...)
+    {
+        as.logical(x@data,...)
+    }
+)
+
+setAs("nts","logical",
+    function(from)
+    {
+        as.logical(from@data)
+    }
+)
+
+as.logical.nts <- function(x,...)
+{
+    as.logical(x@data,...)
+}
+
+as.double.nts <- function(x,...)
+{
+    as.numeric(x@data,...)
+}
 
 as.vector.nts = function(x,mode="any")
 {
@@ -358,7 +399,7 @@ setGeneric("deltat<-",function(x,value) standardGeneric("deltat<-"))
 setReplaceMethod("deltat", signature(x="nts",value="numeric"),
     function(x,value)
     {
-        if (!is(value,"named")) names(value) <- rep("",length(value))
+        if (length(names(value)) == 0) names(value) <- rep("",length(value))
         x@deltat <- value
         x
     }
@@ -442,7 +483,10 @@ setMethod("[",signature(x="nts"),
         has.i <- !missing(i)
         if (nargs() == 2) {
             if (!has.i) return(x)
-            else return(x@data[i])
+            else {
+                if (is(i,"nts")) i = i@data
+                return(x@data[i])
+            }
         }
         has.j <- !missing(j)
 
@@ -463,8 +507,6 @@ setMethod("[",signature(x="nts"),
                 #	use its times to subsample x.
                 #	If it is logical, just use column 1 (this is debateable)
                 if (is.logical(i@data)) {
-                    # apply() over an nts may generate a nts with a vector @data
-                    if (is.vector(i@data)) i@data = matrix(i@data,ncol=1)
                     ii <- !is.na(as.logical(i@data[,1])) & as.logical(i@data[,1])
                     if (!any(ii)) {
                         warning("i[,1] is all false")
@@ -472,13 +514,12 @@ setMethod("[",signature(x="nts"),
                     }
                     i <- i[ii,1]
                 }
-                i[] <- 1
+                i[] <- TRUE
 
                 # for each time in i, its position in x
                 i <- match.nts(i,x)
                 if (all(i==0)) warning("Time series are not synchronized. No matching observations found.  Increase 'options(dt.eps=seconds)'")
-                i <- i[i!=0 & !duplicated(i)]
-
+                i <- i[i & !duplicated(i)]
             }
             else if(is(i, "utime") || is(i[1], "utime")) {
                 if (length(dim(i)) != 2) i <- matrix(as.numeric(i),nrow=2)
@@ -1018,6 +1059,7 @@ setMethod("Ops",sig=signature(e1="nts",e2="nts"),
           # cat("length(p1) after unionPositions=",length(p1),", dt=",dt,"\n")
           if (length(p1) == 0) return(NULL)
 
+          # browser()
           e1 <- align(e1, p1, how = "NA",matchtol=tol)
           e1@deltat = numeric(0)
           e1@weights = matrix(ncol=0,nrow=0)
@@ -1599,10 +1641,10 @@ setMethod("approx",signature(x="nts"),
     }
 )
 
-setGeneric("align",function(x,...) standardGeneric("align"))
+setGeneric("align",function(x,pos,how,dt,matchtol,dti) standardGeneric("align"))
 
 setMethod("align",signature="nts",
-    function(x,pos,how="NA",dt=options("dt.eps")[[1]],matchtol=NULL,dti=NULL,...)
+    function(x,pos,how="NA",dt=options("dt.eps")[[1]],matchtol=NULL,dti=NULL)
     {
         if (is.null(how)) how = "NA"
         if (!is.null(matchtol)) tol = matchtol
@@ -1617,16 +1659,17 @@ setMethod("align",signature="nts",
         if (how == "interp") {
             if (is.null(dti)) interp.tol = tol / 10
             else interp.tol = dti
-            xpos = positions(align(x,pos,how="drop",error.how="drop",matchtol=tol))
-            x = align(x,pos,how=how,error.how="drop",matchtol=interp.tol)
-            x = align(x,xpos,how="drop",error.how="drop",matchtol=tol)
+            xpos = positions(splusTimeSeries::align(x,pos,how="drop",error.how="drop",matchtol=tol))
+            x = splusTimeSeries::align(x,pos,how=how,error.how="drop",matchtol=interp.tol)
+            x = splusTimeSeries::align(x,xpos,how="drop",error.how="drop",matchtol=tol)
         }
-        else x = align(x,pos,how=how,error.how=how,matchtol=tol)
+        else x = splusTimeSeries::align(x,pos,how=how,error.how=how,matchtol=tol)
         class(x) = class.x
         x@deltat = numeric(0)
         x@deltat = deltat(x)
-        x@start.position = utime(x@positions[1])
-        x@end.position = utime(x@positions[length(x@positions)])
+        x@positions = utime(x@positions)
+        x@start.position = x@positions[1]
+        x@end.position = x@positions[length(x@positions)]
         stations(x) = stations.x
         x
     }
