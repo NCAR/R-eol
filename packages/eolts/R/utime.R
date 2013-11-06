@@ -308,21 +308,28 @@ setMethod("Ops",signature(e1="utime",e2="numeric"),
     function(e1,e2)
     {
         # the most usual Ops for a utime and a numeric is
-        # addition, where we want to return a utime.
+        # addition or subtracting an number of seconds,
+        # where we want to return a utime.
         # cat("Ops(utime,numeric): .Generic=",.Generic,"\n")
-        e1@.Data = callGeneric(e1@.Data,e2)
-        e1
+        if (.Generic == "+" || .Generic == "-") {
+            e1@.Data = callGeneric(e1@.Data,e2)
+            e1
+        }
+        else callGeneric(e1@.Data,e2)
     }
 )
 
 setMethod("Ops",signature(e1="numeric",e2="utime"),
     function(e1,e2)
     {
-        # the most usual Ops for a utime and a numeric is
+        # the most usual Ops for a numeric and a utime is
         # addition, where we want to return a utime.
         # cat("Ops(numeric,utime): .Generic=",.Generic,"\n")
-        e2@.Data = callGeneric(e1,e2@.Data)
-        e2
+        if (.Generic == "+") {
+            e2@.Data = callGeneric(e1,e2@.Data)
+            e2
+        }
+        else callGeneric(e1,e2@.Data)
     }
 )
 
@@ -395,3 +402,13 @@ setMethod("summary",signature(object="utime"),
     }
 )
 
+seq.utime <- function(from,to,by=((to-from)/(length-1)),length=NULL)
+{
+    if (missing(to))
+        utime(seq(from=as.numeric(from),by=by,length=length))
+    else if (missing(length)) 
+        utime(seq(from=as.numeric(from),to=as.numeric(to),by=by))
+    else if (missing(by))
+        utime(seq(from=as.numeric(from),to=as.numeric(to),length=length))
+    else NULL
+}
