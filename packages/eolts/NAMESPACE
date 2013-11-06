@@ -11,6 +11,7 @@ export(
     netcdf,
     utime,
     diff.utime,
+    seq.utime,
     nts,
     as.double.nts,
     as.vector.nts,
@@ -72,5 +73,6 @@ exportMethods(
     "plot",
     "points",
     "lines",
-    "mean","var"
+    "mean",
+    "var"
 )

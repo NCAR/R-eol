@@ -308,8 +308,13 @@ setMethod("Ops",signature(e1="utime",e2="numeric"),
     function(e1,e2)
     {
         # the most usual Ops for a utime and a numeric is
-        # addition or subtracting an number of seconds,
+        # addition or subtracting a number of seconds,
         # where we want to return a utime.
+        # Otherwise one may divide, then truncate and
+        # multiply to convert to an even boundary, such as hour or day.
+        # It could remain as a utime for all those operations,
+        # but it seems best to make the result of a divide or multiply
+        # a numeric, which must be converted back into a utime.
         # cat("Ops(utime,numeric): .Generic=",.Generic,"\n")
         if (.Generic == "+" || .Generic == "-") {
             e1@.Data = callGeneric(e1@.Data,e2)
@@ -323,7 +328,8 @@ setMethod("Ops",signature(e1="numeric",e2="utime"),
     function(e1,e2)
     {
         # the most usual Ops for a numeric and a utime is
-        # addition, where we want to return a utime.
+        # addition, where we want to return a utime. Otherwise
+        # return a numeric.
         # cat("Ops(numeric,utime): .Generic=",.Generic,"\n")
         if (.Generic == "+") {
             e2@.Data = callGeneric(e1,e2@.Data)

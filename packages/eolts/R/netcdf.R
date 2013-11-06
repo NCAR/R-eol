@@ -48,7 +48,7 @@ netcdf = function(
         server=server,interval=interval,cdlfile=cdlfile)
 
     if (lenfile == 31 * 86400) times = monthly(from=utime(start,time.zone="GMT"),to=end-1)
-    else times = utime(seq(from=floor(start/lenfile)*lenfile,to=end-1,by=lenfile))
+    else times = seq(from=utime(floor(start/lenfile)*lenfile),to=end-1,by=lenfile)
 
     obj@file = unique(format(times,format=as(file,"character"),time.zone="GMT"))
 
