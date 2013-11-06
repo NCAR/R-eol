@@ -1,3 +1,5 @@
+# -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
+# vim: set shiftwidth=4 softtabstop=4 expandtab:
 #
 #               Copyright (C) by UCAR
 # 
@@ -12,7 +14,7 @@ setClass("nts",
         wss="numeric",
         time.format="character",
         time.zone="character"
-    ),
+        ),
     prototype=list(
         weights=matrix(0,ncol=0,nrow=0),
         weightmap=integer(0),
@@ -21,8 +23,8 @@ setClass("nts",
         wss=numeric(0),
         time.format=options("time.out.format")[[1]],
         time.zone=options("time.zone")[[1]]
+        )
     )
-)
 
 nts = function(data,positions,
     units,
@@ -35,7 +37,7 @@ nts = function(data,positions,
     time.zone=options("time.zone")[[1]])
 {
     ret = new("nts")
-   
+
     if(missing(positions) || missing(data)) return(ret)
 
     ret@data = asSeriesData(data)
@@ -46,7 +48,7 @@ nts = function(data,positions,
 
     if (length(ret@positions) != nrow(ret@data))
         stop(paste("length(positions)=",length(positions),
-                   " not equal to nrow(data)=",nrow(ret@data)))
+                " not equal to nrow(data)=",nrow(ret@data)))
 
     if(!missing(units)) {
         ret@units <- as(units, "character")
@@ -55,7 +57,7 @@ nts = function(data,positions,
             lu = length(ret@units)
             nc = ncol(ret@data)
             warning(paste("length of units (",lu,
-              ") is not equal to number of columns in data (",nc,")",sep=""))
+                    ") is not equal to number of columns in data (",nc,")",sep=""))
             if (nc < lu) ret$units[1:nc]
             else ret@units = c(ret@units,rep("?",nc-lu))
         }
@@ -69,7 +71,7 @@ nts = function(data,positions,
     }
 
     if (is.null(stations) || length(stations) == 0)
-          stations = rep(NA_integer_,ncol(ret@data))
+        stations = rep(NA_integer_,ncol(ret@data))
     else if (!is.integer(stations)) stations = as.integer(stations)
 
     ret@stations = stations
@@ -98,28 +100,28 @@ setMethod("as.numeric", signature(x="nts"),
     {
         as.numeric(x@data,...)
     }
-)
+    )
 
 setAs("nts","numeric",
     function(from)
     {
         as.numeric(from@data)
     }
-)
+    )
 
 setMethod("as.logical", signature(x="nts"),
     function(x,...)
     {
         as.logical(x@data,...)
     }
-)
+    )
 
 setAs("nts","logical",
     function(from)
     {
         as.logical(from@data)
     }
-)
+    )
 
 as.logical.nts <- function(x,...)
 {
@@ -146,7 +148,7 @@ setMethod("!", signature(x="nts"),
     function(x) {
         "!.nts"(x)
     }
-)
+    )
 
 setMethod("is.na",signature(x="nts"),
     function(x)
@@ -154,7 +156,7 @@ setMethod("is.na",signature(x="nts"),
         x@data <- is.na(x@data)
         x
     }
-)
+    )
 
 setMethod("is.finite",signature(x="nts"),
     function(x)
@@ -162,7 +164,7 @@ setMethod("is.finite",signature(x="nts"),
         x@data <- is.finite(x@data)
         x
     }
-)
+    )
 
 setMethod("is.infinite",signature(x="nts"),
     function(x)
@@ -170,7 +172,7 @@ setMethod("is.infinite",signature(x="nts"),
         x@data <- is.infinite(x@data)
         x
     }
-)
+    )
 
 setMethod("start", signature(x="nts"),
     function(x,...) {
@@ -181,7 +183,7 @@ setMethod("start", signature(x="nts"),
         }
         t1
     }
-)
+    )
 
 setMethod("end", signature(x="nts"),
     function(x,...)
@@ -193,7 +195,7 @@ setMethod("end", signature(x="nts"),
         }
         t2
     }
-)
+    )
 
 setGeneric("start<-",function(x,value) standardGeneric("start<-"))
 
@@ -204,7 +206,7 @@ setReplaceMethod("start",signature(x="nts",value="utime"),
         x@start.position <- value
         x
     }
-)
+    )
 
 setGeneric("end<-",function(x,value) standardGeneric("end<-"))
 
@@ -214,7 +216,7 @@ setReplaceMethod("end",signature(x="nts",value="utime"),
         x@end.position <- value
         x
     }
-)
+    )
 
 setGeneric("units",function(x) standardGeneric("units"))
 
@@ -223,7 +225,7 @@ setMethod("units", signature(x="nts"),
     {
         x@units
     }
-)
+    )
 
 # setGeneric("units<-",function(x,value) standardGeneric("units<-"))
 
@@ -235,7 +237,7 @@ setReplaceMethod("units",signature(x="nts",value="character"),
         x@units <- value
         x
     }
-)
+    )
 
 setGeneric("tspar",function(x) standardGeneric("tspar"))
 setMethod("tspar", signature(x="nts"),
@@ -244,14 +246,14 @@ setMethod("tspar", signature(x="nts"),
         if (length(x@positions)) utime(x@positions)
         else stop("Empty time series")
     }
-)
+    )
 
 setMethod("positions", signature(object="nts"),
     function(object)
     {
         object@positions
     }
-)
+    )
 
 setReplaceMethod("positions", signature(object="nts",value="utime"),
     function(object,value)
@@ -259,21 +261,21 @@ setReplaceMethod("positions", signature(object="nts",value="utime"),
         object@positions <- value
         object
     }
-)
+    )
 
 setMethod("dim", signature(x="nts"),
     function(x)
     {
         dim(x@data)
     }
-)
+    )
 
 setMethod("dimnames", signature(x="nts"),
     function(x)
     {
-      dimnames(x@data)
+        dimnames(x@data)
     }
-)
+    )
 
 setReplaceMethod("dim", signature(x="nts",value="numeric"),
     function(x,value)
@@ -282,7 +284,7 @@ setReplaceMethod("dim", signature(x="nts",value="numeric"),
         x@positions <- x@positions[1:value[1]]
         x
     }
-)
+    )
 
 setReplaceMethod("dimnames", signature(x="nts",value="list"),
     function(x,value)
@@ -290,7 +292,7 @@ setReplaceMethod("dimnames", signature(x="nts",value="list"),
         dimnames(x@data) <- value
         x
     }
-)
+    )
 
 setGeneric("stations",function(x) standardGeneric("stations"))
 
@@ -299,7 +301,7 @@ setMethod("stations", signature(x="nts"),
     {
         x@stations
     }
-)
+    )
 
 setGeneric("stations<-",function(x,value) standardGeneric("stations<-"))
 
@@ -309,7 +311,7 @@ setReplaceMethod("stations", signature(x="nts",value="integer"),
         x@stations <- value
         x
     }
-)
+    )
 
 setReplaceMethod("stations", signature(x="nts",value="ANY"),
     function(x,value)
@@ -324,7 +326,7 @@ setReplaceMethod("stations", signature(x="nts",value="ANY"),
         x@stations <- value
         x
     }
-)
+    )
 
 setMethod("deltat", signature(x="utime"),
     # deltat on splus library has args: x,...
@@ -360,16 +362,16 @@ setMethod("deltat", signature(x="utime"),
                 bestdt <- NA_real_
             }
             else if (tmendt == 0 || (abs(meddt-tmendt)/tmendt > .1 &&
-                abs(mendt-tmendt)/tmendt < .05)) bestdt <- mendt
-            else bestdt <- tmendt
+                    abs(mendt-tmendt)/tmendt < .05)) bestdt <- mendt
+        else bestdt <- tmendt
 
-            dt <- c(bestdt,meddt,mindt,maxdt,mendt,tmendt)
+        dt <- c(bestdt,meddt,mindt,maxdt,mendt,tmendt)
         }
         else dt <- rep(NA_real_,6)
         names(dt) <- c("","median","min","max","mean","trimmed.mean")
         dt
     }
-)
+    )
 
 # setGeneric("deltat",function(x,...) standardGeneric("deltat"))
 setMethod("deltat", signature(x="nts"),
@@ -381,14 +383,14 @@ setMethod("deltat", signature(x="nts"),
         # cat("deltat dt=",paste(dt,collapse=","),"\n")
         dt
     }
-)
+    )
 
 setMethod("deltat", signature(x="timeDate"),
     function(x,...)
     {
         deltat(as(x,"utime"))
     }
-)
+    )
 
 
 setGeneric("deltat<-",function(x,value) standardGeneric("deltat<-"))
@@ -400,7 +402,7 @@ setReplaceMethod("deltat", signature(x="nts",value="numeric"),
         x@deltat <- value
         x
     }
-)
+    )
 
 match.nts <- function(e1,e2,dt=options("dt.eps")[[1]],...)
 {
@@ -418,7 +420,7 @@ match.nts <- function(e1,e2,dt=options("dt.eps")[[1]],...)
     e2 <- as.numeric(as(e2@positions,"utime"))
 
     if (is.null(dt)) 
-      if (is.na(dt <- min(d1[1],d2[1]) * .01)) dt <- 1
+        if (is.na(dt <- min(d1[1],d2[1]) * .01)) dt <- 1
 
     # avoid warnings of non-unique indices if there are repeated
     # timetags but the two sets are identical
@@ -445,7 +447,7 @@ match.delta <- function(e1,e2,delta,cond="nearest")
         l2 <- length(e2)
         ii <- integer(l1)
         icond = if (cond == "nearest") 1 else if (cond == "first") 0 
-            else stop(paste("cond=",cond,"should be either nearest or first"))
+        else stop(paste("cond=",cond,"should be either nearest or first"))
 
         mx2 = .C("match_within",
             e1,l1,e2,l2,delta,icond,match=ii,
@@ -608,7 +610,7 @@ setMethod("[",signature(x="nts"),
         }
         x
     }
-)
+    )
 
 setReplaceMethod("[",signature(x="nts",value="nts"),
     function(x,i,j,...,value)
@@ -696,21 +698,21 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
             detrend.x <- NULL
             if (!is.null(nrow(value)) && nr != nrow(value))
                 warning(paste("nrows of x (",nr,") are not equal to nrows of value (",
-                    nrow(value),")",sep=""))
+                        nrow(value),")",sep=""))
 
             # detrend.new <- attr(value,"detrend")
             detrend.new <- NULL
 
             if (!is.null(detrend.x) || !is.null(detrend.new)) {
                 if (is.null(detrend.new)) {
-                  if (is.matrix(value)) {
-                      detrend.new <- matrix(0,nrow=2,ncol=ncol(value),
-                          dimnames=list(c("Intercept","X"),dimnames(value)[[2]]))
-                  }
-                  else {
-                      detrend.new <- matrix(0,nrow=2,ncol=1,
+                    if (is.matrix(value)) {
+                        detrend.new <- matrix(0,nrow=2,ncol=ncol(value),
+                            dimnames=list(c("Intercept","X"),dimnames(value)[[2]]))
+                    }
+                    else {
+                        detrend.new <- matrix(0,nrow=2,ncol=1,
                             dimnames=list(c("Intercept","X")," "))
-                  }
+                    }
                 }
                 if (is.null(detrend.x))
                     detrend.x <- matrix(0,nrow=2,ncol=nc,
@@ -720,8 +722,8 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
 
             # weights
             if ((length(weights.new <- value@weights) > 0 &&
-                any(wm.new <- (wmap.new <- value@weightmap) != 0)) ||
-                      length(x@weights) > 0) { 
+                    any(wm.new <- (wmap.new <- value@weightmap) != 0)) ||
+                length(x@weights) > 0) { 
 
                 weights.x <- x@weights
                 wmap.x <- x@weightmap
@@ -730,9 +732,9 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
                     wmap.x[j] <- 0
                     wm <- wmap.x != 0	# untouched columns with weights
                     if (length(weights.new) > 0 && nrow(weights.x) != nrow(weights.new)) {
-                       # if (nr != nrow(value))
-                          # warning(paste("nrows of x (",nr,") are not equal to nrows of value (",
-                          # nrow(value),")",sep=""))
+                        # if (nr != nrow(value))
+                        # warning(paste("nrows of x (",nr,") are not equal to nrows of value (",
+                        # nrow(value),")",sep=""))
 
                         weights.new <- NULL
                         wmap.new[] <- 0
@@ -765,7 +767,7 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
         else x@data[i,j] <- value
         x
     }
-)
+    )
 
 setReplaceMethod("[",signature(x="nts",value="vector"),
     function(x,i,j,...,value)
@@ -846,7 +848,7 @@ setReplaceMethod("[",signature(x="nts",value="vector"),
         else x@data[i,j] <- value
         x
     }
-)
+    )
 
 
 setMethod("Math",signature(x="nts"),
@@ -854,15 +856,15 @@ setMethod("Math",signature(x="nts"),
     {
         x@data <- asSeriesData(callGeneric(x@data))
         x
-  }
-)
+    }
+    )
 
 setMethod("mean",signature(x="nts"),
     function(x,trim=0,na.rm=TRUE,...)
     {
         mean(x@data,trim=trim,na.rm=na.rm,...)
     }
-)
+    )
 
 setGeneric("var")
 setMethod("var",signature(x="nts"),
@@ -870,7 +872,7 @@ setMethod("var",signature(x="nts"),
     {
         var(x@data,na.rm=na.rm,use=use)
     }
-)
+    )
 
 setMethod("atan2",signature(y="nts",x="nts"),
     function(y,x)
@@ -880,10 +882,10 @@ setMethod("atan2",signature(y="nts",x="nts"),
             d2 <- deltat(x)
 
             if (!is.null(d1) && nrow(y) > 1 && !is.na(d1["min"]) &&
-              d1["min"] < 0) warning("First time series is not ordered. align results are probably not correct")
+                d1["min"] < 0) warning("First time series is not ordered. align results are probably not correct")
 
             if (!is.null(d2) && nrow(x) > 1 && !is.na(d2["min"]) &&
-              d2["min"] < 0) warning("Second time series is not ordered. align results are probably not correct")
+                d2["min"] < 0) warning("Second time series is not ordered. align results are probably not correct")
 
             # If dt.eps is not defined, use .1 of deltat.
             # deltat() for a one-row time series is null, min(NULL) is NA
@@ -897,7 +899,7 @@ setMethod("atan2",signature(y="nts",x="nts"),
         if (!identical(p1,p2)) {
             if(is(p1, "utime") != is(p2,"utime"))
                 stop(paste("Cannot mix series types. Positions(",
-                    class(p1),",",class(p2),") are not comparable"))
+                        class(p1),",",class(p2),") are not comparable"))
 
             # call C function to find out alignment
             # returns a list of ( indexes for NA, indexes to drop, subscript or
@@ -908,7 +910,7 @@ setMethod("atan2",signature(y="nts",x="nts"),
 
             # points in p2 which exceed deltat tolerance of p1
             nuke.p2 <- .Call("utime_align", p2, p1, c("NA", "NA"), tol, package="eolts")
-              
+
             # cat("length(p1) before nuke=",length(p1),"\n")
             # cat("length(p2) before nuke=",length(p2),"\n")
             # browser()
@@ -965,7 +967,7 @@ setMethod("atan2",signature(y="nts",x="nts"),
         y@weightmap = integer(0)
         y
     }
-)
+    )
 
 setMethod("atan2",signature(y="nts",x="ANY"),
     function(y,x)
@@ -973,7 +975,7 @@ setMethod("atan2",signature(y="nts",x="ANY"),
         y@data = atan2(y@data,x)
         x
     }
-)
+    )
 
 setMethod("atan2",signature(y="ANY",x="nts"),
     function(y,x)
@@ -981,7 +983,7 @@ setMethod("atan2",signature(y="ANY",x="nts"),
         x@data = atan2(y,x@data)
         x
     }
-)
+    )
 
 # Override Ops method for nts.  The version in Splus 6.0.1 (and perhaps
 # all versions 5.x and 6.x before that) does not specify a matchtol
@@ -1001,14 +1003,14 @@ setMethod("Ops",sig=signature(e1="nts",e2="nts"),
 
         dt.eps = options("dt.eps")[[1]] # seconds
         if (length(dt.eps) == 0) {
-          if (!is.null(d1) && nrow(e1) > 1 && !is.na(d1["min"]) &&
-            d1["min"] < 0) warning("First time series is not ordered. align results are probably not correct")
+            if (!is.null(d1) && nrow(e1) > 1 && !is.na(d1["min"]) &&
+                d1["min"] < 0) warning("First time series is not ordered. align results are probably not correct")
 
-          if (!is.null(d2) && nrow(e2) > 1 && !is.na(d2["min"]) &&
-              d2["min"] < 0) warning("Second time series is not ordered. align results are probably not correct")
+            if (!is.null(d2) && nrow(e2) > 1 && !is.na(d2["min"]) &&
+                d2["min"] < 0) warning("Second time series is not ordered. align results are probably not correct")
 
-          # deltat() for a one-row time series is NA, min(NULL) is NA
-          if (is.na(dt.eps <- min(d1[1],d2[1]) * .1)) dt.eps <- 1
+            # deltat() for a one-row time series is NA, min(NULL) is NA
+            if (is.na(dt.eps <- min(d1[1],d2[1]) * .1)) dt.eps <- 1
         }
         tol <- dt.eps
         p1 <- positions(e1)
@@ -1016,56 +1018,56 @@ setMethod("Ops",sig=signature(e1="nts",e2="nts"),
 
         # make union of positions. Taken from default method for seriesMerge
         if (!identical(p1,p2)) {
-          if(is(p1, "positionsCalendar") != is(p2,"positionsCalendar"))
-            stop(paste("Cannot mix series types. Positions(",
-                class(p1),",",class(p2),") are not comparable"))
+            if(is(p1, "positionsCalendar") != is(p2,"positionsCalendar"))
+                stop(paste("Cannot mix series types. Positions(",
+                        class(p1),",",class(p2),") are not comparable"))
 
-          # call C function to find out alignment
-          # returns a list of ( indexes for NA, indexes to drop, subscript or
-          # interpolation weights )
+            # call C function to find out alignment
+            # returns a list of ( indexes for NA, indexes to drop, subscript or
+            # interpolation weights )
 
-          # points in p1 which exceed deltat tolerance of p2
-          nuke.p1 <- .Call("utime_align", p1, p2, c("NA", "NA"), tol, package="eolts")
+            # points in p1 which exceed deltat tolerance of p2
+            nuke.p1 <- .Call("utime_align", p1, p2, c("NA", "NA"), tol, package="eolts")
 
-          # points in p2 which exceed deltat tolerance of p1
-          nuke.p2 <- .Call("utime_align", p2, p1, c("NA", "NA"), tol, package="eolts")
-            
-          # cat("length(p1) before nuke=",length(p1),"\n")
-          # cat("length(p2) before nuke=",length(p2),"\n")
-          # browser()
+            # points in p2 which exceed deltat tolerance of p1
+            nuke.p2 <- .Call("utime_align", p2, p1, c("NA", "NA"), tol, package="eolts")
 
-          # points in p1 which are within deltat tolerance of p2
-          p1 = p1[nuke.p1[[3]][!nuke.p1[[1]] & !nuke.p1[[2]]]]
+            # cat("length(p1) before nuke=",length(p1),"\n")
+            # cat("length(p2) before nuke=",length(p2),"\n")
+            # browser()
 
-          # points in p2 which are within deltat tolerance of p1
-          p2 = p2[nuke.p2[[3]][!nuke.p2[[1]] & !nuke.p2[[2]]]]
+            # points in p1 which are within deltat tolerance of p2
+            p1 = p1[nuke.p1[[3]][!nuke.p1[[1]] & !nuke.p1[[2]]]]
 
-          # cat("length(p1) after nuke=",length(p1),", dt.eps=",dt.eps,"\n")
-          # cat("length(p2) after nuke=",length(p2),", dt.eps=",dt.eps,"\n")
+            # points in p2 which are within deltat tolerance of p1
+            p2 = p2[nuke.p2[[3]][!nuke.p2[[1]] & !nuke.p2[[2]]]]
 
-          # create the union of p1 and p2, discard points that are close
-          dt = min(d1[1]*.5,d2[1]*.5,dt.eps)
-          tol2 <- dt
-          p1 <- sort(c(p1, p2))
-          ok <- abs(diff(p1)) > tol2
-          if(length(ok) && !all(ok)) {
-              # make it the right length
-              ok <- c(ok, T)
-              p1 <- p1[ok]
-          }
-          # cat("length(p1) after unionPositions=",length(p1),", dt=",dt,"\n")
-          if (length(p1) == 0) return(NULL)
+            # cat("length(p1) after nuke=",length(p1),", dt.eps=",dt.eps,"\n")
+            # cat("length(p2) after nuke=",length(p2),", dt.eps=",dt.eps,"\n")
 
-          # browser()
-          e1 <- align(e1, p1, how = "NA",matchtol=tol)
-          e1@deltat = numeric(0)
-          e1@weights = matrix(ncol=0,nrow=0)
-          e1@weightmap = integer(0)
+            # create the union of p1 and p2, discard points that are close
+            dt = min(d1[1]*.5,d2[1]*.5,dt.eps)
+            tol2 <- dt
+            p1 <- sort(c(p1, p2))
+            ok <- abs(diff(p1)) > tol2
+            if(length(ok) && !all(ok)) {
+                # make it the right length
+                ok <- c(ok, T)
+                p1 <- p1[ok]
+            }
+            # cat("length(p1) after unionPositions=",length(p1),", dt=",dt,"\n")
+            if (length(p1) == 0) return(NULL)
 
-          e2 <- align(e2, p1, how = "NA",matchtol=tol)
-          e2@deltat = numeric(0)
-          e2@weights = matrix(ncol=0,nrow=0)
-          e2@weightmap = integer(0)
+            # browser()
+            e1 <- align(e1, p1, how = "NA",matchtol=tol)
+            e1@deltat = numeric(0)
+            e1@weights = matrix(ncol=0,nrow=0)
+            e1@weightmap = integer(0)
+
+            e2 <- align(e2, p1, how = "NA",matchtol=tol)
+            e2@deltat = numeric(0)
+            e2@weights = matrix(ncol=0,nrow=0)
+            e2@weightmap = integer(0)
         }
 
         nr1 <- nrow(e1)
@@ -1074,11 +1076,11 @@ setMethod("Ops",sig=signature(e1="nts",e2="nts"),
         nc2 <- ncol(e2)
 
         if (nr1 == nr2 && nc1 != nc2) {
-          if ((nc1 %% nc2) == 0)		# nc2 divides evenly into nc1
-            e1@data <- asSeriesData(callGeneric(e1@data, as.vector(e2@data)))
-          else if ((nc2 %% nc1) == 0)		# nc1 divides evenly into nc2
-            e1@data <- asSeriesData(callGeneric(as.vector(e1@data), e2@data))
-          else e1@data <- asSeriesData(callGeneric(e1@data, e2@data))
+            if ((nc1 %% nc2) == 0)		# nc2 divides evenly into nc1
+                e1@data <- asSeriesData(callGeneric(e1@data, as.vector(e2@data)))
+            else if ((nc2 %% nc1) == 0)		# nc1 divides evenly into nc2
+                e1@data <- asSeriesData(callGeneric(as.vector(e1@data), e2@data))
+            else e1@data <- asSeriesData(callGeneric(e1@data, e2@data))
         }
         else e1@data <- asSeriesData(callGeneric(e1@data, e2@data))
 
@@ -1086,17 +1088,17 @@ setMethod("Ops",sig=signature(e1="nts",e2="nts"),
 
         # If weights are identical then keep them, otherwise discard
         if (length((wts1 <- e1@weights)) > 0 && length((wts2 <- e2@weights)) > 0) {
-          wm1 = e1@weightmap
-          wm2 = e2@weightmap
-          # if weights are identical then keep e1 weights
-          if (!identical(wts1[,wm1],wts2[,wm2])) {
-            e1@weights = matrix(ncol=0,nrow=0)
-            e1@weightmap = integer(0)
-          }
+            wm1 = e1@weightmap
+            wm2 = e2@weightmap
+            # if weights are identical then keep e1 weights
+            if (!identical(wts1[,wm1],wts2[,wm2])) {
+                e1@weights = matrix(ncol=0,nrow=0)
+                e1@weightmap = integer(0)
+            }
         }
         else {
-          e1@weights = matrix(ncol=0,nrow=0)
-          e1@weightmap = integer(0)
+            e1@weights = matrix(ncol=0,nrow=0)
+            e1@weightmap = integer(0)
         }
         if (length(s1) > length(s2)) {
             ns = names(s1)
@@ -1112,7 +1114,7 @@ setMethod("Ops",sig=signature(e1="nts",e2="nts"),
         stations(e1) = s1
         e1
     }
-)
+    )
 
 setMethod("Ops",signature(e1="nts",e2="timeSeries"),
     function(e1,e2)
@@ -1129,7 +1131,7 @@ setMethod("Ops",signature(e1="nts",e2="timeSeries"),
         e1@weightmap <- wmx
         e1
     }
-)
+    )
 setMethod("Ops",signature(e1="nts",e2="ANY"),
     function(e1,e2)
     {
@@ -1138,7 +1140,7 @@ setMethod("Ops",signature(e1="nts",e2="ANY"),
         if (length(e1@data) == 0) e1 <- NULL
         e1
     }
-)
+    )
 
 setMethod("Ops",signature(e1="timeSeries",e2="nts"),
     function(e1,e2)
@@ -1155,7 +1157,7 @@ setMethod("Ops",signature(e1="timeSeries",e2="nts"),
         e2@weightmap <- wmx
         e2
     }
-)
+    )
 setMethod("Ops",signature(e1="ANY",e2="nts"),
     function(e1,e2)
     {
@@ -1164,7 +1166,7 @@ setMethod("Ops",signature(e1="ANY",e2="nts"),
         if (length(e2@data) == 0) e2 <- NULL
         e2
     }
-)
+    )
 setMethod("Ops",signature(e1="nts",e2="missing"),
     function(e1,e2)
     {
@@ -1180,7 +1182,7 @@ setMethod("Ops",signature(e1="nts",e2="missing"),
         e1@weightmap <- wmx
         e1
     }
-)
+    )
 
 setMethod("Summary",signature(x="nts"),
     function(x,...,na.rm=TRUE)
@@ -1188,7 +1190,7 @@ setMethod("Summary",signature(x="nts"),
         if (all(is.na(x@data))) callGeneric(x@data,...,na.rm=FALSE)
         else callGeneric(x@data,...,na.rm=TRUE)
     }
-)
+    )
 
 setGeneric("seriesMerge")
 # setGeneric("seriesMerge",function(x1,x2,...) standardGeneric("seriesMerge"))
@@ -1201,11 +1203,11 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
         args = list(...)
 
         haspos <- unlist(sapply(args, function(x) {
-            if (.hasSlot(x,"positions"))
-                T
-            else
-                F
-        }))
+                if (.hasSlot(x,"positions"))
+                    T
+                else
+                    F
+                        }))
         ndots = sum(haspos)
 
         if (hasArg(how)) how = args$how
@@ -1213,9 +1215,6 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
 
         if (hasArg(error.how)) error.how = args$error.how
         else error.how = "NA"
-
-        if (hasArg(localzone)) localzone = args$localzone
-        else localzone = F
 
         if (hasArg(matchtol)) matchtol = args$matchtol
         else {
@@ -1240,11 +1239,11 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
         if (length(s2) == 0) s2 <- rep(NA_integer_,nc2)
 
         if (length(x1@weights) > 0)
-          w1 <- nts(x1@weights,x1@positions,rep("",ncol(x1@weights)))
+            w1 <- nts(x1@weights,x1@positions,rep("",ncol(x1@weights)))
         else w1 = matrix(ncol=0,nrow=0)
 
         if (length(x2@weights) > 0)
-          w2 <- nts(x2@weights,x2@positions,rep("",ncol(x2@weights)))
+            w2 <- nts(x2@weights,x2@positions,rep("",ncol(x2@weights)))
         else w2 = matrix(ncol=0,nrow=0)
 
         wm1 <- x1@weightmap
@@ -1254,7 +1253,8 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
         class(x2) <- "timeSeries"
 
         # cat("calling seriesMerge, timeSeries, timeSeries\n")
-        x1 <- seriesMerge(x1,x2,pos="union",how=how,error.how=error.how,localzone=localzone,matchtol=matchtol,suffixes=suffixes[1:2])
+        x1 <- splusTimeSeries::seriesMerge(x1,x2,pos="union",
+            how=how,error.how=error.how,matchtol=matchtol,suffixes=suffixes[1:2])
         class(x1) <- "nts"
 
         # seriesMerge adds arg numbers to dimnames: "a" + "b" -> "a1" "b2". Remove them
@@ -1266,36 +1266,34 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
         ncw1 <- ncw2 <- 0
 
         if (length(w1) > 0) {
-          ncw1 <- ncol(w1)
-          wmap <- wm1
+            ncw1 <- ncol(w1)
+            wmap <- wm1
         }
 
         if (length(w2) > 0) {
-          ncw2 <- ncol(w2)
-          if (length(wmap) == 0) wmap <- rep(0,nc1)
-          wmap <- c(wmap,wm2 + ncw1)
+            ncw2 <- ncol(w2)
+            if (length(wmap) == 0) wmap <- rep(0,nc1)
+            wmap <- c(wmap,wm2 + ncw1)
         }
         else if (length(wmap) > 0) wmap <- c(wmap,rep(0,nc2))
 
         if (ncw1 + ncw2 > 0) {
-          if (ncw1 > 0) {
-            if (ncw2 > 0) {
-              if (nrow(w1) == nrow(w2) && nrow(w1) == nrow(x1)) w1 <- cbind(w1@data,w2@data)
-              else {
-                  w1 <- seriesMerge(w1,w2,
-                    pos="union",how=how,error.how=error.how,localzone=localzone,
+            if (ncw1 > 0) {
+                if (ncw2 > 0) {
+                    if (nrow(w1) == nrow(w2) && nrow(w1) == nrow(x1)) w1 <- cbind(w1@data,w2@data)
+                    else {
+                        w1 <- seriesMerge(w1,w2,
+                            pos="union",how=how,error.how=error.how,
                             matchtol=matchtol,suffixes=suffixes[1:2])@data
-              }
+                    }
+                }
+                else w1 <- align(w1,positions(x1),how=how,matchtol=matchtol)@data
+
             }
-            else w1 <- align(w1,positions(x1),how=how,error.how=error.how,
-                    localzone=localzone,matchtol=matchtol)@data
+            else w1 <- align(w2,positions(x1),how=how, matchtol=matchtol)@data
 
-          }
-          else w1 <- align(w2,positions(x1),how=how,error.how=error.how,
-                    localzone=localzone,matchtol=matchtol)@data
-
-          if (nrow(w1) != nrow(x1)) stop(paste("nrow(x1@weights)=",nrow(w1),
-            " is not equal to nrow(x1)=",nrow(x1),sep=""))
+            if (nrow(w1) != nrow(x1)) stop(paste("nrow(x1@weights)=",nrow(w1),
+                    " is not equal to nrow(x1)=",nrow(x1),sep=""))
 
         }
 
@@ -1306,13 +1304,13 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
 
         i = 1
         while( i <= length(args)) {
-          x1 <- seriesMerge(x1,args[[i]],pos="union",how=how,error.how=error.how,
-                    localzone=localzone,matchtol=matchtol,suffixes=suffixes[c(1,i+2)])
-          i = i + 1
+            x1 <- seriesMerge(x1,args[[i]],pos="union",how=how,error.how=error.how,
+                matchtol=matchtol,suffixes=suffixes[c(1,i+2)])
+            i = i + 1
         }
         x1
     }
-)
+    )
 
 setMethod("seriesMerge",signature(x1="nts",x2="timeSeries"),
     function(x1,x2,...)
@@ -1339,11 +1337,11 @@ setMethod("seriesMerge",signature(x1="nts",x2="numeric"),
         args = list(...)
 
         haspos <- unlist(sapply(args, function(x) {
-            if (.hasSlot(x,"positions"))
-                T
-            else
-                F
-        }))
+                if (.hasSlot(x,"positions"))
+                    T
+                else
+                    F
+                    }))
         ndots = sum(haspos)
 
         if (hasArg(how)) how = args$how
@@ -1351,9 +1349,6 @@ setMethod("seriesMerge",signature(x1="nts",x2="numeric"),
 
         if (hasArg(error.how)) error.how = args$error.how
         else error.how = NULL
-
-        if (hasArg(localzone)) localzone = args$localzone
-        else localzone = F
 
         if (hasArg(matchtol)) matchtol = args$matchtol
         else {
@@ -1374,30 +1369,29 @@ setMethod("seriesMerge",signature(x1="nts",x2="numeric"),
         if (length(s1) == 0) s1 <- rep(NA_integer_,nc1)
 
         if (is.matrix(x2)) {
-          nx2 <- dimnames(x2)[[2]]
-          nc2 <- ncol(x2)
+            nx2 <- dimnames(x2)[[2]]
+            nc2 <- ncol(x2)
         }
         else {
-          nx2 <- "x2"
-          nc2 <- 1
+            nx2 <- "x2"
+            nc2 <- 1
         }
         if (length(wm1) > 0) wm1 <- c(wm1,rep(0,nc2))
         s1 <- c(s1,rep(0,nc2))
 
         x2 <- nts(cbind(x1@data,x2),x1@positions,weights=w1,weightmap=wm1,
-          stations=s1)
+            stations=s1)
         dimnames(x2) <- list(NULL,c(dimnames(x1)[[2]],nx2))
 
         i = 1
         while( i <= length(args)) {
-          x2 <- seriesMerge(x2,args[[i]],
-            how=how,error.how=error.how,localzone=localzone,
-            matchtol=matchtol,suffixes=suffixes[c(1,i+2)])
-          i = i + 1
+            x2 <- seriesMerge(x2,args[[i]],
+                how=how,error.how=error.how,matchtol=matchtol,suffixes=suffixes[c(1,i+2)])
+            i = i + 1
         }
         x2
     }
-)
+    )
 
 setMethod("is.finite",signature(x="nts"),
     function(x)
@@ -1405,7 +1399,7 @@ setMethod("is.finite",signature(x="nts"),
         x@data <- is.finite(x@data)
         x
     }
-)
+    )
 
 setGeneric("seriesConcat",function(x1,x2,...) standardGeneric("seriesConcat"))
 
@@ -1427,7 +1421,7 @@ setMethod("seriesConcat",signature(x1="nts",x2="nts"),
         if (length(wm2) == 0) wm2 <- rep(0,ncol(x2))
 
         weightmap <- matrix(c(wm1,wm2),nrow=2,byrow=T)
-     
+
         # non-zeros in this result  are for columns that have at least
         # one weight
         weightmap <- as.integer(as.vector(t(c(1,1)) %*% weightmap))
@@ -1436,16 +1430,16 @@ setMethod("seriesConcat",signature(x1="nts",x2="nts"),
 
         if (any(weightmap != 0)) {
 
-          # create an ordered weightmap
-          weightmap[weightmap > 0] <- 1:length(seq(along=weightmap)[weightmap > 0])
+            # create an ordered weightmap
+            weightmap[weightmap > 0] <- 1:length(seq(along=weightmap)[weightmap > 0])
 
-          w1 <- matrix(NA_integer_,nrow=nrow(x1),ncol=max(weightmap))
-          if (any(wm1 != 0)) w1[,weightmap[wm1 != 0]] <- x1@weights[,wm1[wm1 != 0]]
+            w1 <- matrix(NA_integer_,nrow=nrow(x1),ncol=max(weightmap))
+            if (any(wm1 != 0)) w1[,weightmap[wm1 != 0]] <- x1@weights[,wm1[wm1 != 0]]
 
-          w2 <- matrix(NA_integer_,nrow=nrow(x2),ncol=max(weightmap))
-          if (any(wm2 != 0)) w2[,weightmap[wm2 != 0]] <- x2@weights[,wm2[wm2 != 0]]
+            w2 <- matrix(NA_integer_,nrow=nrow(x2),ncol=max(weightmap))
+            if (any(wm2 != 0)) w2[,weightmap[wm2 != 0]] <- x2@weights[,wm2[wm2 != 0]]
 
-          weights <- rbind(w1,w2)
+            weights <- rbind(w1,w2)
         } 
         else weightmap <- integer(0)
 
@@ -1461,45 +1455,45 @@ setMethod("seriesConcat",signature(x1="nts",x2="nts"),
         if (length(list(...)) > 0) x1 <- seriesConcat(x1,...)
         x1
     }
-)
+    )
 
 if (FALSE) {
-setGeneric("rbind")
-setMethod("rbind",signature(x1="nts",x2="nts"),
-    function(x1,x2,...) seriesConcat(x1,x2,...)
-)
-setGeneric("cbind")
-setMethod("cbind",signature(x1="nts",x2="nts"),
-    function(x1,x2,...) seriesMerge(x1,x2,...,pos="union")
-)
+    setGeneric("rbind")
+    setMethod("rbind",signature(x1="nts",x2="nts"),
+        function(x1,x2,...) seriesConcat(x1,x2,...)
+        )
+    setGeneric("cbind")
+    setMethod("cbind",signature(x1="nts",x2="nts"),
+        function(x1,x2,...) seriesMerge(x1,x2,...,pos="union")
+        )
 
-setMethod("cbind",signature(x1="ANY",x2="nts"),
-    function(x1,x2,...)
-    {
-        if (is.null(x1)) x2
-        else stop("unsupported argument type x1")
-    }
-)
+    setMethod("cbind",signature(x1="ANY",x2="nts"),
+        function(x1,x2,...)
+        {
+            if (is.null(x1)) x2
+            else stop("unsupported argument type x1")
+        }
+        )
 
-setMethod("cbind",signature(x1="nts",x2="ANY"),
-    function(x1,x2,...)
-    {
-        if (is.null(x2)) x1
-        else stop("unsupported argument type x2")
-    }
-)
+    setMethod("cbind",signature(x1="nts",x2="ANY"),
+        function(x1,x2,...)
+        {
+            if (is.null(x2)) x1
+            else stop("unsupported argument type x2")
+        }
+        )
 }
 
 setGeneric("Rbind",function(x1,x2,...) standardGeneric("Rbind"))
 setMethod("Rbind",signature(x1="nts",x2="nts"),
     function(x1,x2,...) seriesConcat(x1,x2,...)
-)
+    )
 
 setGeneric("Cbind",function(x1,x2,...) standardGeneric("Cbind"))
 
 setMethod("Cbind",signature(x1="nts",x2="nts"),
     function(x1,x2,...) seriesMerge(x1,x2,...,pos="union")
-)
+    )
 
 setMethod("Cbind",signature(x1="ANY",x2="nts"),
     function(x1,x2,...)
@@ -1507,7 +1501,7 @@ setMethod("Cbind",signature(x1="ANY",x2="nts"),
         if (is.null(x1)) x2
         else stop("unsupported argument type x1")
     }
-)
+    )
 
 setMethod("Cbind",signature(x1="nts",x2="ANY"),
     function(x1,x2,...)
@@ -1515,7 +1509,7 @@ setMethod("Cbind",signature(x1="nts",x2="ANY"),
         if (is.null(x2)) x1
         else stop("unsupported argument type x2")
     }
-)
+    )
 
 if (!isGeneric("average",where=1)) 
     setGeneric("average",function(x,...) standardGeneric("average"))
@@ -1523,41 +1517,41 @@ if (!isGeneric("average",where=1))
 setMethod("average", signature=(x="nts"),
     function(x,avgperiod,outinterval,method="mean",use.weights=T,simple=T)
     {
-          if (!simple) stop("average on an nts cannot do non-simple averaging. Non-simple averaging must be done on a dat object")
-          cat(paste("average x=",dimnames(x)[[2]],", period=",avgperiod,", outinterval=",outinterval," ,use.weights=",use.weights,"\n",sep=""))
-          t1 <- start(x)
-          t2 <- end(x)
-          if (method=="mean") {
+        if (!simple) stop("average on an nts cannot do non-simple averaging. Non-simple averaging must be done on a dat object")
+        cat(paste("average x=",dimnames(x)[[2]],", period=",avgperiod,", outinterval=",outinterval," ,use.weights=",use.weights,"\n",sep=""))
+        t1 <- start(x)
+        t2 <- end(x)
+        if (method=="mean") {
             x <- .Call("ntsaverage",
                 x,
                 avgperiod,
                 outinterval,
                 use.weights,package="eolts")
-          }
-          else if (method=="median") {
+        }
+        else if (method=="median") {
             x <- .Call("ntsaverage_median",
                 x,
                 avgperiod,
                 outinterval,
                 use.weights,package="eolts")
-          }
-          start(x) <- t1
-          end(x) <- t2
-          x@deltat <- numeric(0)
-          deltat(x) <- deltat(x)
-          x
+        }
+        start(x) <- t1
+        end(x) <- t2
+        x@deltat <- numeric(0)
+        deltat(x) <- deltat(x)
+        x
     }
-)
+    )
 
 setMethod("show",signature(object="nts"),
     function(object)
     {
         # stolen almost verbatim from getMethod("show",sig="seriesVirtual")
-              
+
         # print out the data by making a table
         if(!numRows(object@data)) {
-                cat("NULL data\n")
-                return()
+            cat("NULL data\n")
+            return()
         }
         cols <- unlist(lapply(1:numCols(object@data), function(i, x)
                 subscript2d(x,,i),object@data))
@@ -1569,10 +1563,10 @@ setMethod("show",signature(object="nts"),
         cols <- matrix(cols, ncol = numCols(object@data) + 1)
         colnames <- colIds(object@data)
         if(is.null(colnames) || !length(colnames))
-                colnames <- 1:numCols(object@data)
+            colnames <- 1:numCols(object@data)
         dimnames(cols) <- list(rep("", numRows(cols)), c(
-          paste("Time(",time.zone,")",sep=""),
-            colnames))
+                paste("Time(",time.zone,")",sep=""),
+                colnames))
         oldClass(cols) <- "table"
         print(cols,na.print="NA",quote=FALSE)
     }
@@ -1597,73 +1591,84 @@ setMethod("approx",signature(x="nts"),
 
         yout <- matrix(NA_real_,ncol=nc,nrow=length(xout),dimnames=list(NULL,dnames))
         if (nc > 1) {
-          for (i in 1:nc) {
-            if (any(xx <- is.na(x[,i]))) {
-              if (!all(xx)) {
-                xx <- x[!xx,i]
-                if (nrow(xx) == 1 && method == "constant") xx <- xx[c(1,1),]
-                if (nrow(xx) > 1)
-                    yout[,i] <- approx(x=as.numeric(tspar(xx))-xoff,
-                          y=xx@data,xout=xout-xoff,method=method,rule=rule,f=f)$y
-              }
+            for (i in 1:nc) {
+                if (any(xx <- is.na(x[,i]))) {
+                    if (!all(xx)) {
+                        xx <- x[!xx,i]
+                        if (nrow(xx) == 1 && method == "constant") xx <- xx[c(1,1),]
+                        if (nrow(xx) > 1)
+                            yout[,i] <- approx(x=as.numeric(tspar(xx))-xoff,
+                                y=xx@data,xout=xout-xoff,method=method,rule=rule,f=f)$y
+                    }
+                }
+                else {
+                    if (nrow(x) == 1 && method == "constant") x <- x[c(1,1),]
+                    if (nrow(x) > 1)
+                        yout[,i] <- approx(x=as.numeric(tspar(x))-xoff,
+                            y=x@data[,i],xout=xout-xoff,method=method,rule=rule,f=f)$y
+                }
+                NULL
             }
-            else {
-              if (nrow(x) == 1 && method == "constant") x <- x[c(1,1),]
-              if (nrow(x) > 1)
-                  yout[,i] <- approx(x=as.numeric(tspar(x))-xoff,
-                      y=x@data[,i],xout=xout-xoff,method=method,rule=rule,f=f)$y
-            }
-            NULL
-          }
         }
         else {
-          if (any(xx <- is.na(x))) {
-            if (!all(xx)) {
-              xx <- x[!xx,]
-              if (nrow(xx) == 1 && method == "constant") xx <- xx[c(1,1),]
-              if (nrow(xx) > 1)
-                  yout[] <- approx(x=as.numeric(tspar(xx))-xoff,
-                        y=xx@data,xout=xout-xoff,method=method,rule=rule,f=f)$y
+            if (any(xx <- is.na(x))) {
+                if (!all(xx)) {
+                    xx <- x[!xx,]
+                    if (nrow(xx) == 1 && method == "constant") xx <- xx[c(1,1),]
+                    if (nrow(xx) > 1)
+                        yout[] <- approx(x=as.numeric(tspar(xx))-xoff,
+                            y=xx@data,xout=xout-xoff,method=method,rule=rule,f=f)$y
+                }
             }
-          }
-          else {
-            if (nrow(x) == 1 && method == "constant") x <- x[c(1,1),]
-            if (nrow(x) > 1)
-                yout[] <- approx(x=as.numeric(tspar(x))-xoff,
-                    y=x@data,xout=xout-xoff,method=method,rule=rule,f=f)$y
-          }
+            else {
+                if (nrow(x) == 1 && method == "constant") x <- x[c(1,1),]
+                if (nrow(x) > 1)
+                    yout[] <- approx(x=as.numeric(tspar(x))-xoff,
+                        y=x@data,xout=xout-xoff,method=method,rule=rule,f=f)$y
+            }
         }
         nts(yout,xout,units=dunits,stations=stns)
     }
 )
 
-setGeneric("align",function(x,pos,how,dt,matchtol,dti) standardGeneric("align"))
+setGeneric("align",function(x,pos,how,error.how,matchtol) standardGeneric("align"))
 
 setMethod("align",signature="nts",
-    function(x,pos,how="NA",dt=options("dt.eps")[[1]],matchtol=NULL,dti=NULL)
+    function(x,pos,how,error.how,matchtol)
     {
-        if (is.null(how)) how = "NA"
-        if (!is.null(matchtol)) tol = matchtol
-        else tol = dt
-        if (length(tol) == 0) tol <- min(deltat(x)[1],deltat(pos)[1]) * .1
+        if (missing(how)) how = "NA"
+        if (missing(error.how)) error.how = "NA"
+
+        if (!missing(matchtol)) tol = matchtol
+        else tol = options("dt.eps")[[1]]
+
+        if (length(tol) == 0) tol <- deltat(pos)["trimmed.mean"] * .1
 
         if (inherits(pos,"nts")) pos = positions(pos)
         else if (inherits(pos,"utime")) pos = as(pos,"timeDate")
+
         class.x = class(x)
         stations.x <- stations(x)
         class(x) = "timeSeries"
         if (how == "interp") {
-            if (is.null(dti)) interp.tol = tol / 10
-            else interp.tol = dti
-            xpos = positions(splusTimeSeries::align(x,pos,how="drop",error.how="drop",matchtol=tol))
-            x = splusTimeSeries::align(x,pos,how=how,error.how="drop",matchtol=interp.tol)
-            x = splusTimeSeries::align(x,xpos,how="drop",error.how="drop",matchtol=tol)
+
+            # output times that are within tol of input time series
+            xpos = positions(splusTimeSeries::align(x,pos,how="drop",
+                    error.how="drop",matchtol=tol/86400))
+
+            # interpolate x to pos
+            x = splusTimeSeries::align(x,pos,how=how,error.how=error.how,
+                matchtol=0)
+
+            # result time series of interpolated values which are not
+            # interpolated over more than tol.
+            x = splusTimeSeries::align(x,xpos,how="drop",error.how="drop",matchtol=tol/86400)
         }
-        else x = splusTimeSeries::align(x,pos,how=how,error.how=how,matchtol=tol)
+        else x = splusTimeSeries::align(x,pos,how=how,error.how=how,matchtol=tol/86400)
         class(x) = class.x
-        x@deltat = numeric(0)
-        x@deltat = deltat(x)
         x@positions = utime(x@positions)
+        x@deltat = numeric(0)
+        deltat(x) = deltat(x)
         x@start.position = x@positions[1]
         x@end.position = x@positions[length(x@positions)]
         stations(x) = stations.x
@@ -1677,36 +1682,36 @@ setMethod("replace.nas",signature=signature("nts","logical"),
     function(x,warn=T)
     {
         if (any(is.na(x@data)))
-          x@data = replace.nas(x@data,warn=warn)
+            x@data = replace.nas(x@data,warn=warn)
         x
     }
-)
+    )
 
 setMethod("replace.nas",signature=signature("nts","missing"),
     function(x)
     {
         replace.nas(x,T)
     }
-)
+    )
 
 setMethod("replace.nas",signature=signature(x="matrix",warn="logical"),
     function(x,warn=F)
     {
         if (any(is.na(x))) {
-          nc <- ncol(x)
-          nr <- nrow(x)
-          dns <- dimnames(x)[[2]]     # names of data columns
-          na.cnt <- t(rep(1,nr)) %*% is.na(x)
-          na.cols <- (1:nc)[na.cnt > 0]
-          if (is.null(dns)) dns <- paste("col",1:nc,sep="")
+            nc <- ncol(x)
+            nr <- nrow(x)
+            dns <- dimnames(x)[[2]]     # names of data columns
+            na.cnt <- t(rep(1,nr)) %*% is.na(x)
+            na.cols <- (1:nc)[na.cnt > 0]
+            if (is.null(dns)) dns <- paste("col",1:nc,sep="")
 
-          if (warn) warning(paste("Missing data in",dns[na.cols],
-                  ". Replacing",na.cnt[na.cols],"NAs out of",nr,"total points with previous non-NA\n",collapse=" "))
-          x = apply(x,2,replace.nas,F)
+            if (warn) warning(paste("Missing data in",dns[na.cols],
+                    ". Replacing",na.cnt[na.cols],"NAs out of",nr,"total points with previous non-NA\n",collapse=" "))
+            x = apply(x,2,replace.nas,F)
         }
         x
     }
-)
+    )
 
 setMethod("replace.nas",signature=signature(x="numeric",warn="logical"),
     function(x,warn=F)
@@ -1725,19 +1730,19 @@ setMethod("replace.nas",signature=signature(x="numeric",warn="logical"),
         no0 <- seq(along=dmsnax)[dmsnax > 0]
 
         dno0 <- diff(c(0,dmsnax[no0]))        # for each continuous group
-                                              # of NAs, the number in each group
+        # of NAs, the number in each group
         xdmsnax <- rep(0,n)
         xdmsnax[no0] <- dno0                  # just after a continuous group
-                                              # the number in the group
+        # the number in the group
         cdmsnax <- cumsum(xdmsnax)
 
         cdmsnax[!nax] <- 0                    # number of NA's before this group
-                                                                    
+
         xx <- snax - cdmsnax                  # how many earlier is a non NA
         xx[!nax] <- 0
 
         i <- seq(along=nax) - xx              # where the previous non-NA is
-                                              # 0's indicate first one is NA
+        # 0's indicate first one is NA
         # In case sequence starts with NA's
         fn <- i[!nax][1]
         i[i==0] <- fn
@@ -1745,7 +1750,7 @@ setMethod("replace.nas",signature=signature(x="numeric",warn="logical"),
         y <- x[i]
         y
     }
-)
+    )
 
 setMethod("window", signature(x="nts"),
     function(x,...)
@@ -1757,19 +1762,19 @@ setMethod("window", signature(x="nts"),
         nr <- nrow(x)
 
         switch(type,
-          hamming = w <- .54 - .46 * cos(2. * pi * (0:(nr-1)) / (nr-1)),
-          parzen = w <- 1 - abs((0:(nr-1) - .5 * (nr-1)) / .5 / (nr+1)),
-          welch = w <- 1 - ((0:(nr-1) - .5 * (nr-1)) / .5 / (nr+1))^2,
-          hanning = w <- .5 * (1. - cos(2. * pi * (0:(nr-1)) / (nr-1))),
-          square = w <- rep(1,nr),
-          stop("Unknown window type")
-        )
+            hamming = w <- .54 - .46 * cos(2. * pi * (0:(nr-1)) / (nr-1)),
+            parzen = w <- 1 - abs((0:(nr-1) - .5 * (nr-1)) / .5 / (nr+1)),
+            welch = w <- 1 - ((0:(nr-1) - .5 * (nr-1)) / .5 / (nr+1))^2,
+            hanning = w <- .5 * (1. - cos(2. * pi * (0:(nr-1)) / (nr-1))),
+            square = w <- rep(1,nr),
+            stop("Unknown window type")
+            )
         x <- x * w
         # "window squared and summed" normalization factor
         x@wss <- sum(w*w) * nr
         invisible(x)
     }
-)
+    )
 
 setGeneric("trend",function(x,use.lsfit) standardGeneric("trend"))
 
@@ -1786,54 +1791,54 @@ setMethod("trend", signature(x="nts",use.lsfit="logical"),
         # coef <- lsfit(times,matrix(x,ncol=nc),wt=wts[,wtm])$coef
 
         if (use.lsfit) {
-          times <- as.numeric(tspar(x))
-          times <- times - times[1]
+            times <- as.numeric(tspar(x))
+            times <- times - times[1]
 
-          coef <- lsfit(times,x@data)$coef
-          matrix(as.vector(coef),nrow=2,
+            coef <- lsfit(times,x@data)$coef
+            matrix(as.vector(coef),nrow=2,
                 dimnames=list(dimnames(coef)[[1]],dimnames(x)[[2]]))
         }
         else {
-          if (removenasfirst <- F) {
-            non.nas <- (is.na(x) %*% rep(1,nc)) == 0
-            x <- x[non.nas,]
-          }
+            if (removenasfirst <- F) {
+                non.nas <- (is.na(x) %*% rep(1,nc)) == 0
+                x <- x[non.nas,]
+            }
 
-          nr <- nrow(x)
-          times <- as.numeric(tspar(x))
+            nr <- nrow(x)
+            times <- as.numeric(tspar(x))
 
-          if (nr < 2) {
-            a <- rep(NA_real_,nc)
-            b <- rep(NA_real_,nc)
-          }
-          else {
-            times <- times - times[1]
+            if (nr < 2) {
+                a <- rep(NA_real_,nc)
+                b <- rep(NA_real_,nc)
+            }
+            else {
+                times <- times - times[1]
 
-            # Don't use weights
-            x@weights <- matrix(ncol=0,nrow=0)
-            x@weightmap <- integer(0)
-            mean.x <- apply(x@data,2,mean,na.rm=T)
+                # Don't use weights
+                x@weights <- matrix(ncol=0,nrow=0)
+                x@weightmap <- integer(0)
+                mean.x <- apply(x@data,2,mean,na.rm=T)
 
-            mean.t <- rep(mean(times),nc)
-            mean.t2 <- rep(mean(times*times),nc)
+                mean.t <- rep(mean(times),nc)
+                mean.t2 <- rep(mean(times*times),nc)
 
-            mean.tx <- apply(x@data * matrix(rep(times,nc),ncol=nc),2,mean,na.rm=T)
+                mean.tx <- apply(x@data * matrix(rep(times,nc),ncol=nc),2,mean,na.rm=T)
 
-            a <- (mean.tx - mean.t * mean.x) / (mean.t2 - mean.t^2)
-            b <- mean.x - a * mean.t
+                a <- (mean.tx - mean.t * mean.x) / (mean.t2 - mean.t^2)
+                b <- mean.x - a * mean.t
 
-          }
-          matrix(c(b,a),nrow=2,byrow=T,
-              dimnames=list(c("Intercept","X"),dimnames(x)[[2]]))
+            }
+            matrix(c(b,a),nrow=2,byrow=T,
+                dimnames=list(c("Intercept","X"),dimnames(x)[[2]]))
         }
     }
-)
+    )
 
 setMethod("trend",signature(x="nts",use.lsfit="missing"),
     function(x,use.lsfit) {
         trend(x,F)
     }
-)
+    )
 
 setGeneric("detrend",function(x,trnd) standardGeneric("detrend"))
 
@@ -1846,12 +1851,12 @@ setMethod("detrend", signature(x="nts",trnd="matrix"),
         times <- times - times[1]
 
         x <- x - ((times %o% as.vector(trnd["X",])) +
-              matrix(rep(trnd["Intercept",],nr),ncol=nc,byrow=T))
+            matrix(rep(trnd["Intercept",],nr),ncol=nc,byrow=T))
 
         # attr(x,"detrend") <- trnd
         invisible(x)
     }
-)
+    )
 
 setMethod("detrend",signature(x="nts",trnd="missing"),
     function(x,trnd)
@@ -1859,7 +1864,7 @@ setMethod("detrend",signature(x="nts",trnd="missing"),
         trnd = trend(x)
         detrend(x,trnd)
     }
-)
+    )
 
 setGeneric("lag",function(x) standardGeneric("lag"))
 
@@ -1878,7 +1883,7 @@ setMethod("lag",signature(x="nts"),
         dt <- deltat(x)
 
         if (length(seconds) != nc)
-          stop(paste("length(seconds) must be equal to the number of columns in time series:",nc))
+            stop(paste("length(seconds) must be equal to the number of columns in time series:",nc))
 
         if (length(dt) > 1) {
             mindt <- dt["min"]
@@ -1917,7 +1922,7 @@ setMethod("lag",signature(x="nts"),
         if (!is.na(maxlag) && maxlag > 0) n2 <- nr - maxlag
         x[n1:n2,]
     }
-)
+    )
 
 setGeneric("write",function(x,...) standardGeneric("write"))
 
@@ -1926,7 +1931,7 @@ setMethod("write", signature(x="ANY"),
     {
         base::write(x,file=file,ncolumns=ncolumns,append=append,sep=sep)
     }
-)
+    )
 
 setMethod("write", signature(x="nts"),
     function(x,file="data",ncolumns=if(is.character(x)) 1 else 5, append=FALSE,sep=" ",...)
@@ -1939,7 +1944,7 @@ setMethod("write", signature(x="nts"),
         x <- apply(cbind(ts,x@data),1,paste,collapse="\t")
         write(x,file=file,append=append,sep=sep)
     }
-)
+    )
 
 write.nts = function(x,file="data",append=FALSE,sep=" ",digits=6)
 {
@@ -1950,41 +1955,41 @@ write.nts = function(x,file="data",append=FALSE,sep=" ",digits=6)
 }
 
 setMethod( "summary", "nts", function( object, ... )
-{
-    ps <- summary( object@positions,format=object@time.format,time.zone=object@time.zone )
-    # assume summary() always returns a 1-row table; want matrix
-    oldClass(ps) <- NULL
-    ds <- lapply( 1:numCols(object@data),
-                  function(i, x)
-                  {
-                    ret <- summary(subscript2d(x,,i))
-                    oldClass(ret) <- NULL
-                    ret
-                  }, object@data )
-
-    lens <- sapply( ds, "numCols" )
-    lens <- c( numCols(ps), lens )
-    maxlen <- max( lens )
-
-    # make all summaries into name : value character strings
-
-    pastenames <- function( tab, newlen )
     {
-      ret <- paste( format( dimnames(tab)[[2]] ), ":",  format( tab ),
-                    "  ", sep = "" )
-      length( ret ) <- newlen
-      ret
-    }
+        ps <- summary( object@positions,format=object@time.format,time.zone=object@time.zone )
+        # assume summary() always returns a 1-row table; want matrix
+        oldClass(ps) <- NULL
+        ds <- lapply( 1:numCols(object@data),
+            function(i, x)
+            {
+                ret <- summary(subscript2d(x,,i))
+                oldClass(ret) <- NULL
+                ret
+            }, object@data )
 
-    allcols <- cbind( pastenames( ps, maxlen ),
-                      sapply( ds, pastenames, maxlen ))
+        lens <- sapply( ds, "numCols" )
+        lens <- c( numCols(ps), lens )
+        maxlen <- max( lens )
 
-    colnames <- names(object@data)
-    if( is.null( colnames ))
-      colnames <- 1:numCols(object@data)
-    dimnames( allcols ) <- list( rep("",maxlen),
-                             c( "Positions", colnames ))
-    oldClass( allcols ) <- "table"
-    allcols
-})
+        # make all summaries into name : value character strings
+
+        pastenames <- function( tab, newlen )
+        {
+            ret <- paste( format( dimnames(tab)[[2]] ), ":",  format( tab ),
+                "  ", sep = "" )
+            length( ret ) <- newlen
+            ret
+        }
+
+        allcols <- cbind( pastenames( ps, maxlen ),
+            sapply( ds, pastenames, maxlen ))
+
+        colnames <- names(object@data)
+        if( is.null( colnames ))
+            colnames <- 1:numCols(object@data)
+        dimnames( allcols ) <- list( rep("",maxlen),
+            c( "Positions", colnames ))
+        oldClass( allcols ) <- "table"
+        allcols
+    })
 
