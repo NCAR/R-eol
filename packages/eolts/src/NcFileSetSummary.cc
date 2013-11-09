@@ -41,9 +41,15 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
 
     int ifile;
 
-    /* determine start and count for station dimension */
-    /* the stations arg is not empty */
-    bool onlyStationVarsRequested = true;	// station 0 not requested
+    /*
+     * determine start and count for station dimension.
+     * If the stations vector is empty, then user
+     * wants data from all stations.
+     *
+     * onlyStationVarsRequested==true means the user only
+     * wants data from variables with a station dimension.
+     */
+    bool onlyStationVarsRequested = !stations.empty();
     int minStation = std::numeric_limits<int>::max();
     int maxStation = 0;
 
