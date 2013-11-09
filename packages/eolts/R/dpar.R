@@ -173,25 +173,27 @@ dpar <- function(...,save.cache=F)
 
     dpar.list$end <- utime(dpar.list$end)	# make sure it is a utime
 
-    # Read available stations from NetCDF file
-    if (!is.null(dpar.list$start) && !exists(".all.stations",envir=.eoltsEnv)) {
-        iwarn <- options(warn=-1)
-        # cat("calling netcdf\n")
-        iod <- netcdf(start=dpar.list$start,end=dpar.list$end)
-        all.stations <- stations(iod)
-        close(iod)
-        options(iwarn)
-        # cat("all.stations=",paste(all.stations,collapse=","),"\n")
-        assign(".all.stations",all.stations,envir=.eoltsEnv)
-        if (is.null(dpar.list$stns)) dpar.list$stns <- all.stations
-    }
+    if (FALSE) {
+        # Read available stations from NetCDF file
+        if (!is.null(dpar.list$start) && !exists(".all.stations",envir=.eoltsEnv)) {
+            iwarn <- options(warn=-1)
+            # cat("calling netcdf\n")
+            iod <- netcdf(start=dpar.list$start,end=dpar.list$end)
+            all.stations <- stations(iod)
+            close(iod)
+            options(iwarn)
+            # cat("all.stations=",paste(all.stations,collapse=","),"\n")
+            assign(".all.stations",all.stations,envir=.eoltsEnv)
+            if (is.null(dpar.list$stns)) dpar.list$stns <- all.stations
+        }
 
-    if (any(inames == "stns")) {
-        if (exists(".all.stations",envir=.eoltsEnv)) {
-            all.stations = get(".all.stations",envir=.eoltsEnv)
-            if (length(dpar.list$stns) == 0) dpar.list$stns = all.stations
-            else dpar.list$stns = all.stations[match(dpar.list$stns,all.stations,
-                                             nomatch=0)]
+        if ("stns" %in% inames) {
+            if (exists(".all.stations",envir=.eoltsEnv)) {
+                all.stations = get(".all.stations",envir=.eoltsEnv)
+                if (length(dpar.list$stns) == 0) dpar.list$stns = all.stations
+                else dpar.list$stns = all.stations[match(dpar.list$stns,all.stations,
+                                                 nomatch=0)]
+            }
         }
     }
 
