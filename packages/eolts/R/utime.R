@@ -6,7 +6,7 @@
 # since Jan 1, 1970 00:00 UTC
 setClass("utime",
     contains=c("positionsCalendar", "numeric"),
-    prototype=prototype(0)
+    prototype=c(.Data=0)
 )
 
 setMethod("initialize",
@@ -408,13 +408,21 @@ setMethod("summary",signature(object="utime"),
     }
 )
 
-seq.utime <- function(from,to,by=((to-from)/(length-1)),length=NULL)
+seq.utime <- function(...)
 {
-    if (missing(to))
+    # from,to,by=((to-from)/(length-1)),length=NULL)
+    if (hasArg(from)) from = list(...)$from
+    if (hasArg(to)) to = list(...)$to
+    if (hasArg(length)) length = list(...)$length
+    if (hasArg(by)) by = list(...)$by
+    else by = ((to - from) / (length - 1))
+
+    if (!hasArg(to))
         utime(seq(from=as.numeric(from),by=by,length=length))
-    else if (missing(length)) 
+    else if (!hasArg(length)) 
         utime(seq(from=as.numeric(from),to=as.numeric(to),by=by))
-    else if (missing(by))
+    else if (!hasArg(by))
         utime(seq(from=as.numeric(from),to=as.numeric(to),length=length))
     else NULL
 }
+
