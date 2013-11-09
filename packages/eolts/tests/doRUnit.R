@@ -1,12 +1,8 @@
+# -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
+# vim: set shiftwidth=4 softtabstop=4 expandtab:
 #### doRUnit.R --- Run RUnit tests
 ####------------------------------------------------------------------------
 
-### Origianlly follows Gregor Gojanc's example in CRAN package  'gdata'
-### and the corresponding section in the R Wiki:
-###  http://wiki.r-project.org/rwiki/doku.php?id=developers:runit
-
-### MM: Vastly changed:  This should also be "runnable" for *installed*
-##              package which has no ./tests/
 ## ----> put the bulk of the code e.g. in  ../inst/unitTests/runTests.R :
 
 if(require("RUnit", quietly = TRUE)) {
