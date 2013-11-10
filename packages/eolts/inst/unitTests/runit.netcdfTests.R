@@ -84,7 +84,7 @@ test.netcdf2 = function()
 
     # test2.Rdput then needs editing to be successfully read by dget:
     #   remove ".Data =" in initialization of utimes (3 places)
-    dput(x,file.path("/tmp","test2.Rdput"),control="all")
+    # dput(x,file.path("/tmp","test2.Rdput"),control="all")
     xx = dget(file.path(datadir,"test2.Rdput"))
     checkTrue(max(abs(x-xx),na.rm=TRUE) < 1.e-10)
     checkTrue(all.equal(x@data,xx@data))
