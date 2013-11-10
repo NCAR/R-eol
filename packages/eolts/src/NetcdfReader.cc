@@ -885,6 +885,7 @@ size_t NetcdfReader::searchTime(NcVar* var,double stime,NetcdfReader::timeTests 
     return n2;
 }
 
+// #define DEBUG
 SEXP NetcdfReader::read(const vector<string> &vnames,
         double startTime, double endTime,
         const vector<int> &stations,
@@ -1348,7 +1349,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                     }
                 }
 
-                Rprintf("Reading %s, %s: ... start=(%s), count=(%s)\n",
+                Rprintf("Reading %s, %s, start=(%s), count=(%s)\n",
                     ncf->getShortName().c_str(),
                     var->getName().c_str(),
                     dimToString(&start.front(),varDims.size()).c_str(),

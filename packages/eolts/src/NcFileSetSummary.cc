@@ -22,6 +22,8 @@ using std::string;
 
 using namespace eolts;
 
+// #define DEBUG
+
 NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
         const vector<string> &varnames,const vector<int> &stations,
         bool getCounts) throw(NcException) :
@@ -65,7 +67,6 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
 
     _stationStart = minStation;
     if (maxStation >= minStation) _stationCount = maxStation - minStation + 1;
-    else _stationCount = 0;
     
 #ifdef DEBUG
     Rprintf("_stationCount=%d\n",_stationCount);
@@ -132,7 +133,6 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
 #ifdef DEBUG
             Rprintf("NcFileSetSummary ctor ts var ifile=%d,ivar=%d %s\n",
                     ifile,ivar,_vnames[ivar].c_str());
-            Rprintf("NcFileSetSummary ctor var=0x%x\n",var);
 #endif
             int ndim = var->getNumDimensions();
             const size_t* vedges = var->getEdges();
@@ -198,6 +198,10 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
 
             const NcDim* stationDim = var->getDimension("station");
             if (stationDim) {
+                if (stations.empty() && _stationStart != 0) {
+                    _stationStart = 0;
+                    _stationCount = stationDim->getLength();
+                }
                 stationid = stationDim->getId();
                 if (_stationCount > 0) {
                     if (stationDim->getLength() < _stationStart + _stationCount) {
@@ -221,10 +225,11 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                 // variable doesn't have one. Set virtual dimension to 1.
                 else _stationDims[ivar] = 1;
             }
-            else 
+            else {
                 // This variable doesn't have a station dimension, and user
                 // asked only for vars with station dim.
                 if (onlyStationVarsRequested) _stationDims[ivar] = 0;
+            }
 
             // check other dimensions
             for (int i = 1; i < ndim; i++) {
