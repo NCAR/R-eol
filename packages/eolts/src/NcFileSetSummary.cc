@@ -177,6 +177,8 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                 // Rprintf("dim name=%s\n",dim->getName().c_str());
                 if (dim->getName().substr(0,6) == "sample")
                     sampleDim = dim;
+                else if (dim->getName().substr(0,3) == "sps")
+                    sampleDim = dim;
             }
 
             if (sampleDim) {

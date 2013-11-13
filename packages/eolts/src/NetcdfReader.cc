@@ -1306,7 +1306,8 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                 sampleDimNum = -1;
                 for (unsigned int i = 1; i < var->getNumDimensions(); i++) {
                     const NcDim* dim = var->getDimension(i);
-                    if (dim->getName().substr(0,6) == "sample") {
+                    if (dim->getName().substr(0,6) == "sample" ||
+                        dim->getName().substr(0,3) == "sps") {
                         if (sampleDim != dim->getLength()) {
                             std::ostringstream ost;
                             ost << "Error " << var->getFileName() << ": " <<
