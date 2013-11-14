@@ -62,8 +62,6 @@ test.nts = function()
 
     checkEquals(stations(x[,2:3]),2:3)
 
-
-
     # align: align/interpolate a time series to a new positions
     t1n = floor(t1)
     txn = seq(from=t1n,by=dt,length=nr)
@@ -92,8 +90,14 @@ test.nts = function()
     checkTrue(all(is.na(xx[1,])))
     checkTrue(all(abs((x[c(-1,-4),]-xx[-1,])-(dtxx/dt)) < .00001))
 
+    xx = Rbind(x[1:as.integer(nr/2),],x[(as.integer(nr/2)+1):nr,])
+    checkEquals(dim(x),dim(xx))
+    checkEquals(x@data,xx@data)
+    for (ic in 1:nc) {
+        checkEquals(x[,ic]@weights,xx[,ic]@weights)
+    }
 
-    # TODO: seriesMerge, Cbind, Rbind
+    # TODO: seriesMerge, Cbind
 
     return()
 }
