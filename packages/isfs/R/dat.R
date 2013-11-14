@@ -753,62 +753,6 @@ setMethod("sites","dat",
     }
 )
 
-
-setMethod("seriesMerge",signature(x1="dat",x2="dat"),
-    function(x1,x2,...)
-    {
-        class(x1) <- "nts"
-        class(x2) <- "nts"
-        x1 <- seriesMerge(x1,x2,...)
-        class(x1) <- "dat"
-        x1
-    }
-)
-
-setMethod("seriesMerge",signature(x1="dat",x2="missing"),
-    function(x1,x2,...) x1
-)
-
-setMethod("seriesMerge",signature(x1="dat",x2="timeSeries"),
-    function(x1,x2,...)
-    {
-        # convert second arg to nts
-        x2 <- nts(x2@data,x2@positions,x2@units)
-        class(x2) <- "dat"
-        seriesMerge(x1,x2,...)
-    }
-)
-
-setMethod("seriesMerge",signature(x1="timeSeries",x2="dat"),
-    function(x1,x2,...)
-    {
-        # convert first arg to nts
-        x1 <- nts(x1@data,x1@positions,x1@units)
-        class(x1) <- "dat"
-        seriesMerge(x1,x2,...)
-    }
-)
-
-setMethod("seriesMerge",signature(x1="dat",x2="numeric"),
-    function(x1,x2,...)
-    {
-        class(x1) <- "nts"
-        x1 <- seriesMerge(x1,x2,...)
-        class(x1) <- "dat"
-        x1
-    }
-)
-
-setMethod("seriesMerge",signature(x1="numeric",x2="dat"),
-    function(x1,x2,...)
-    {
-        class(x2) <- "nts"
-        x1 <- seriesMerge(x1,x2,...)
-        class(x1) <- "dat"
-        x1
-    }
-)
-
 # The following dimnames replacement function is critical.  Without it,
 # these statements will cause a Splus crash (happens in
 # version 6.0, 6.0.1, 6.1):
