@@ -320,7 +320,7 @@ setReplaceMethod("stations", signature(x="nts",value="ANY"),
         if (is.null(nv)) nv = rep("",length(value))
         if (!is.integer(value)) {
             if (is.numeric(value)) value = round(value)
-            else value = as.integer(value)
+            value = as.integer(value)
         }
         names(value) = nv
         x@stations <- value
@@ -1444,9 +1444,7 @@ setMethod("seriesConcat",signature(x1="nts",x2="nts"),
         else weightmap <- integer(0)
 
         x1@data <- rbind(x1@data,x2@data)
-        p1@.Data <-
-            list(c(p1@.Data[[1]],p2@.Data[[1]]),c(p1@.Data[[2]],p2@.Data[[2]]))
-        x1@positions <- p1
+        positions(x1) = c(p1,p2)
         end(x1) <- end(x2)
 
         x1@weightmap <- weightmap
