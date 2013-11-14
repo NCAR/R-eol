@@ -176,7 +176,7 @@ setMethod("is.infinite",signature(x="nts"),
 
 setMethod("start", signature(x="nts"),
     function(x,...) {
-        t1 = x@start.position
+        t1 = utime(x@start.position)
         if (length(t1) == 0) {
             if (length(x@positions) > 0) t1 = x@positions[1]
             else t1 = utime(0)
@@ -188,7 +188,7 @@ setMethod("start", signature(x="nts"),
 setMethod("end", signature(x="nts"),
     function(x,...)
     {
-        t2 = x@end.position
+        t2 = utime(x@end.position)
         if (length(t2) == 0) {
             if (length(x@positions) > 0) t2 = x@positions[length(x@positions)]
             else t2 = utime(0)
@@ -544,8 +544,8 @@ setMethod("[",signature(x="nts"),
         weightmap <- x@weightmap
         stations <- x@stations
         units <- x@units
-        t1 <- x@start.position
-        t2 <- x@end.position
+        t1 <- start(x)
+        t2 <- end(x)
 
         newdt <- F
 
@@ -1199,7 +1199,6 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
     function(x1,x2,...)
     {
 
-        # cat("seriesMerge, nts, nts\n")
         args = list(...)
 
         haspos <- unlist(sapply(args, function(x) {
@@ -1210,21 +1209,35 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
                         }))
         ndots = sum(haspos)
 
-        if (hasArg(how)) how = args$how
+        if (hasArg(how)) {
+            if ("how" %in% names(args)) how = args$how
+        }
         else how = "NA"
 
-        if (hasArg(error.how)) error.how = args$error.how
+        if (hasArg(error.how)) {
+            if ("error.how" %in% names(args)) error.how = args$error.how
+        }
         else error.how = "NA"
 
-        if (hasArg(matchtol)) matchtol = args$matchtol
+        if (hasArg(matchtol)) {
+            if ("matchtol" %in% names(args)) matchtol = args$matchtol
+        }
         else {
-            if (hasArg(dt)) matchtol = args$dt
+            if (hasArg(dt) && "dt" %in% names(args)) matchtol = args$dt
             else matchtol = min(deltat(x1)[1],deltat(x2)[1]) * .5
         }
-        if (is.na(matchtol)) matchtol <- 1	# 1 second
+        if (length(matchtol) < 1 || is.na(matchtol)) matchtol <- 1	# 1 second
 
-        if (hasArg(suffixes)) suffixes = args$suffixes
+        if (hasArg(suffixes)) {
+            if ("suffixes" %in% names(args)) suffixes = args$suffixes
+        }
         else suffixes <- paste(".", 1:(ndots + 2), sep = "")
+
+        # cat("seriesMerge, nts, nts,length(args)=",length(args),
+        #     ", names(args)=", paste(names(args),collapse=","),
+        #     ", hasArg=", hasArg(error.how),
+        #     ", args$error.how=",args$error.how,
+        #     ", error.how=",error.how,"\n")
 
         args = args[haspos]
 
@@ -1310,7 +1323,7 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
         }
         x1
     }
-    )
+)
 
 setMethod("seriesMerge",signature(x1="nts",x2="timeSeries"),
     function(x1,x2,...)
@@ -1662,7 +1675,7 @@ setMethod("align",signature="nts",
             # interpolated over more than tol.
             x = splusTimeSeries::align(x,xpos,how="drop",error.how="drop",matchtol=tol/86400)
         }
-        else x = splusTimeSeries::align(x,pos,how=how,error.how=how,matchtol=tol/86400)
+        else x = splusTimeSeries::align(x,pos,how=how,error.how=error.how,matchtol=tol/86400)
         class(x) = class.x
         x@positions = utime(x@positions)
         x@deltat = numeric(0)
