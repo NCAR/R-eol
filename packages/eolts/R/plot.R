@@ -528,10 +528,10 @@ xlabel.nts <- function(deltat)
        "%H%M",		#  5        HHMM
        "%H%M%S",	#  6        HHMMSS
        "%H%M%S",	#  7        HHMMSS
-       "%H%M%S.%OS1",	#  8        HHMMSS.M
-       "%H%M%S.%OS2",	#  9        HHMMSS.MM
-       "%H%M%S.%OS2",	#  10       HHMMSS.MMM
-       "%H%M%S.%OS2")	#  11       HHMMSS.MMMM
+       "%H%M%OS1",	#  8        HHMMSS.M
+       "%H%M%OS2",	#  9        HHMMSS.MM
+       "%H%M%OS3",	#  10       HHMMSS.MMM
+       "%H%M%OS4")	#  11       HHMMSS.MMMM
 
     # Format of extra label on first major tic mark, plotted below regular label
     extraformats <- c(
