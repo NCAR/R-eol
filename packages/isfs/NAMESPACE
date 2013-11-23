@@ -19,7 +19,11 @@ export(
     profile.plot,
     plotdat.ts,
     plotdat.xy,
-    prep
+    prep,
+    sonic.tilt.data,
+    select.sonic.tilt.data,
+    tiltfit,
+    plot.tilt
 )
 
 exportPattern("^dat\\.")
@@ -52,5 +56,6 @@ exportMethods(
     "pid",
     "readts",
     "conform",
-    "match.columns"
+    "match.columns",
+    "tilt"
 )
