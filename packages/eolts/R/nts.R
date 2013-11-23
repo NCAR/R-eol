@@ -109,6 +109,13 @@ setAs("nts","numeric",
     }
     )
 
+setAs("nts","matrix",
+    function(from)
+    {
+        from@data
+    }
+    )
+
 setMethod("as.logical", signature(x="nts"),
     function(x,...)
     {
@@ -136,6 +143,11 @@ as.double.nts <- function(x,...)
 as.vector.nts = function(x,mode="any")
 {
     as.vector(x@data,mode=mode)
+}
+
+as.matrix.nts = function(x)
+{
+    x@data
 }
 
 "!.nts" = function(x)
@@ -1123,9 +1135,10 @@ setMethod("Ops",signature(e1="nts",e2="timeSeries"),
         sx <- e1@stations
         wx <- e1@weights
         wmx <- e1@weightmap
+        class.e1 = class(e1)
         class(e1) = "timeSeries"
         e1 = callGeneric(e1,e2)
-        class(e1) = "nts"
+        class(e1) = class.e1
         stations(e1) <- sx
         e1@weights <- wx
         e1@weightmap <- wmx
@@ -1149,9 +1162,10 @@ setMethod("Ops",signature(e1="timeSeries",e2="nts"),
         sx <- e2@stations
         wx <- e2@weights
         wmx <- e2@weightmap
+        class.e2 = class(e2)
         class(e2) = "timeSeries"
         e2 = callGeneric(e1,e2)
-        class(e2) = "nts"
+        class(e2) = class.e2
         stations(e2) <- sx
         e2@weights <- wx
         e2@weightmap <- wmx
@@ -1174,9 +1188,10 @@ setMethod("Ops",signature(e1="nts",e2="missing"),
         sx <- e1@stations
         wx <- e1@weights
         wmx <- e1@weightmap
+        class.e1 = class(e1)
         class(e1) = "timeSeries"
         e1 = callGeneric(e1)
-        class(e1) = "nts"
+        class(e1) = class.e1
         stations(e1) <- sx
         e1@weights <- wx
         e1@weightmap <- wmx
@@ -1262,13 +1277,14 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
         wm1 <- x1@weightmap
         wm2 <- x2@weightmap
 
+        class.x1 = class(x1)
         class(x1) <- "timeSeries"
         class(x2) <- "timeSeries"
 
         # cat("calling seriesMerge, timeSeries, timeSeries\n")
         x1 <- splusTimeSeries::seriesMerge(x1,x2,pos="union",
             how=how,error.how=error.how,matchtol=matchtol,suffixes=suffixes[1:2])
-        class(x1) <- "nts"
+        class(x1) <- class.x1
 
         # seriesMerge adds arg numbers to dimnames: "a" + "b" -> "a1" "b2". Remove them
         dimnames(x1) <- list(NULL,c(n1,n2))
@@ -1466,7 +1482,7 @@ setMethod("seriesConcat",signature(x1="nts",x2="nts"),
         if (length(list(...)) > 0) x1 <- seriesConcat(x1,...)
         x1
     }
-    )
+)
 
 if (FALSE) {
     setGeneric("rbind")
@@ -1965,7 +1981,7 @@ write.nts = function(x,file="data",append=FALSE,sep=" ",digits=6)
     write(x,file=file,append=append,sep=sep)
 }
 
-setMethod( "summary", "nts", function( object, ... )
+setMethod( "summary","nts", function( object, ... )
     {
         ps <- summary( object@positions,format=object@time.format,time.zone=object@time.zone )
         # assume summary() always returns a 1-row table; want matrix
@@ -2002,5 +2018,6 @@ setMethod( "summary", "nts", function( object, ... )
             c( "Positions", colnames ))
         oldClass( allcols ) <- "table"
         allcols
-    })
+    }
+)
 

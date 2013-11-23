@@ -90,6 +90,10 @@ test.nts = function()
     checkTrue(all(is.na(xx[1,])))
     checkTrue(all(abs((x[c(-1,-4),]-xx[-1,])-(dtxx/dt)) < .00001))
 
+    xx = align(x,txn,how="before",error.how="NA",matchtol=dt/2)
+    checkEquals(dim(xx),c(nr,nc))
+    checkEquals(x@data,xx@data)
+
     xx = Rbind(x[1:as.integer(nr/2),],x[(as.integer(nr/2)+1):nr,])
     checkEquals(dim(x),dim(xx))
     checkEquals(x@data,xx@data)
@@ -97,7 +101,11 @@ test.nts = function()
         checkEquals(x[,ic]@weights,xx[,ic]@weights)
     }
 
-    # TODO: seriesMerge, Cbind
+    xxx = Cbind(x,xx)
+    checkEquals(x@data,xxx@data[,1:nc])
+    checkEquals(xx@data,xxx@data[,(nc+1):(nc*2)])
+
+    # TODO: seriesMerge
 
     return()
 }

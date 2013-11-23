@@ -29,8 +29,10 @@ setClass("netcdf",
 )
 
 netcdf = function(
-    file=ifelse(Sys.getenv("R_NETCDF_FILE")!="",Sys.getenv("R_NETCDF_FILE"),Sys.getenv("NETCDF_FILE")),
-    dir=ifelse(Sys.getenv("R_NETCDF_DIR")!="",Sys.getenv("R_NETCDF_DIR"),Sys.getenv("NETCDF_DIR")),
+    file=ifelse(Sys.getenv("R_NETCDF_FILE")!="",
+        Sys.getenv("R_NETCDF_FILE"),Sys.getenv("NETCDF_FILE")),
+    dir=ifelse(Sys.getenv("R_NETCDF_DIR")!="",
+        Sys.getenv("R_NETCDF_DIR"),Sys.getenv("NETCDF_DIR")),
     start=dpar("start"),
     end=dpar("end"),
     lenfile=dpar("lenfile"),
@@ -47,7 +49,8 @@ netcdf = function(
         timeNames=timeNames,
         server=server,interval=interval,cdlfile=cdlfile)
 
-    if (lenfile == 31 * 86400) times = monthly(from=utime(start,time.zone="GMT"),to=end-1)
+    if (lenfile == 31 * 86400)
+        times = monthly(from=utime(start,time.zone="GMT"),to=end-1)
     else times = seq(from=utime(floor(start/lenfile)*lenfile),to=end-1,by=lenfile)
 
     obj@file = unique(format(times,format=as(file,"character"),time.zone="GMT"))
