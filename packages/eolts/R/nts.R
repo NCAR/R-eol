@@ -145,7 +145,7 @@ as.vector.nts = function(x,mode="any")
     as.vector(x@data,mode=mode)
 }
 
-as.matrix.nts = function(x)
+as.matrix.nts = function(x,...)
 {
     x@data
 }
