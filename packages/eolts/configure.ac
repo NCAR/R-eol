@@ -4,6 +4,8 @@
 
 AC_INIT([eolts], 0.0.-1, [maclean@ucar.edu])
 
+PKG_PROG_PKG_CONFIG([0])
+
 #-------------------------------------------------------------------------------#
 #  Find the compiler and compiler options to use   	                 	#
 #-------------------------------------------------------------------------------#
@@ -54,6 +56,28 @@ AC_CHECK_LIB(netcdf, nc_open, [],
 #-- Check for netcdf.h and udunits.h -------------------------------------------#
 AC_CHECK_HEADERS(netcdf.h, [], AC_MSG_ERROR(netcdf header netcdf.h not found))
 
+#-- fftw3 include and library path ---------------------------------------------#
+AC_ARG_WITH([fftw3-include],
+    AC_HELP_STRING([--with-fftw3-include=DIR],
+                   [location of fftw3 headers]),
+    [fftw3_header_path=$withval]
+)
+
+AC_ARG_WITH([fftw3-lib],
+    AC_HELP_STRING([--with-fftw3-lib=DIR],
+                   [location of fftw3 library]),
+    [fftw3_lib_path=$withval]
+)
+
+AS_IF([test -n "$fftw3_header_path"], 
+    AC_SUBST([FFTW3_CFLAGS],["-I${fftw3_header_path}"])
+)
+
+AS_IF([test -n "$fftw3_lib_path"], 
+    AC_SUBST([FFTW3_LIBS],["-L${fftw3_lib_path} -lfftw3 -lm"]),
+    [PKG_CHECK_MODULES([FFTW3],[fftw3],,FFTW3_LIBS="-lfftw3 -lm")]
+)
+
 
 #-------------------------------------------------------------------------------#
 #  Do substitution                               	                 	#
@@ -62,6 +86,9 @@ AC_CHECK_HEADERS(netcdf.h, [], AC_MSG_ERROR(netcdf header netcdf.h not found))
 AC_SUBST(CPPFLAGS)
 AC_SUBST(LIBS)
 AC_OUTPUT(src/Makevars)
+
+AC_SUBST([FFTW3_CFLAGS])
+AC_SUBST([FFTW3_LIBS])
 
 #-------------------------------------------------------------------------------#
 

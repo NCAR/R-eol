@@ -27,6 +27,8 @@ public:
     T *getDataPtr();
     int getSizeOfT() { return sizeof(T); }
 
+    T naValue() const;
+
     /*
      * setDim() must be a template method because when changing
      * dimensions we have to move data around.
@@ -99,7 +101,7 @@ void R_Matrix<T>::setDims(size_t nr,size_t nc)
                 }
                 else {
                     for (ir = 0; ir < nd; ir++) {
-                        *(--fpn) = NA_REAL;
+                        *(--fpn) = naValue();
 #ifdef DEBUG
                         Rprintf("na_set fpn-fp=%d fpo-fp=%d\n",fpn - fp, fpo-fp);
 #endif

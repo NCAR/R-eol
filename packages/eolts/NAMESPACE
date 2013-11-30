@@ -31,18 +31,24 @@ export(
     get.cache.object,
     rm.cache.object,
     check.cache,
-    tlocator
+    tlocator,
+    is.complex.spectra,
+    is.complex.fftw
 )
 
-exportClasses(netcdf,netcdfVariable,utime,nts)
+exportClasses(
+    netcdf,netcdfVariable,
+    utime,nts,
+    fftw,spectra,pspectra,xspectra,cospectra,quadspectra,phase,coherence
+)
 
-# "abline",
 exportMethods(
     "Compare",
     "Math",
     "Math2",
     "Ops",
     "Summary",
+    "Complex",
     "!",
     "coerce",
     "format",
@@ -76,5 +82,10 @@ exportMethods(
     "lines",
     "mean",
     "var",
-    "atan2"
+    "atan2",
+    "fftw",
+    "deltaf","deltaf<-",
+    "frequencies","frequencies<-",
+    "pspectra","xspectra","cospectra","quadspectra",
+    "phase","coherence","autocorr","crosscorr","specsmooth"
 )

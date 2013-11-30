@@ -23,6 +23,7 @@ template class R_Matrix<int>;
 #ifdef DO_CHAR_MATRIX
 template class R_Matrix<char*>;
 #endif
+template class R_Matrix<Rcomplex>;
 
 template<>
 double *R_Matrix<double>::getDataPtr()
@@ -31,11 +32,17 @@ double *R_Matrix<double>::getDataPtr()
 }
 
 template<>
+double R_Matrix<double>::naValue() const
+{
+    return R_NaReal;
+}
+
+template<>
 R_Matrix<double>::R_Matrix(int type, size_t nr,size_t nc) : R_MatrixBase(REALSXP,nr,nc)
 {
     double *fp = getDataPtr();
     double *fpend = fp + _length;
-    for ( ; fp < fpend; ) *fp++ = NA_REAL;
+    for ( ; fp < fpend; ) *fp++ = R_NaReal;
 }
 
 template<>
@@ -50,14 +57,17 @@ int *R_Matrix<int>::getDataPtr()
 }
 
 template<>
+int R_Matrix<int>::naValue() const
+{
+    return R_NaInt;
+}
+
+template<>
 R_Matrix<int>::R_Matrix(int type, size_t nr,size_t nc) : R_MatrixBase(type,nr,nc)
 {
     int *fp = getDataPtr();
     int *fpend = fp + _length;
-    if (type == INTSXP)
-        for ( ; fp < fpend; ) *fp++ = NA_INTEGER;
-    else if (type == LGLSXP)
-        for ( ; fp < fpend; ) *fp++ = NA_LOGICAL;
+    for ( ; fp < fpend; ) *fp++ = R_NaInt;
 }
 
 template<>
@@ -76,6 +86,33 @@ R_Matrix<char*>::R_Matrix(SEXP obj) : R_MatrixBase(STRSXP,obj)
 {
 }
 #endif
+
+template<>
+Rcomplex* R_Matrix<Rcomplex>::getDataPtr()
+{
+    return COMPLEX(getRObject());
+}
+
+template<>
+Rcomplex R_Matrix<Rcomplex>::naValue() const
+{
+    const Rcomplex na = {R_NaReal,R_NaReal};
+    return na;
+}
+
+template<>
+R_Matrix<Rcomplex>::R_Matrix(int type, size_t nr,size_t nc) : R_MatrixBase(CPLXSXP,nr,nc)
+{
+    Rcomplex *fp = getDataPtr();
+    Rcomplex *fpend = fp + _length;
+    for ( ; fp < fpend; fp++) fp->r = fp->i = NA_REAL;
+}
+
+template<>
+R_Matrix<Rcomplex>::R_Matrix(int type, SEXP obj) : R_MatrixBase(CPLXSXP,obj)
+{
+}
+
 
 }   // namespace eolts
 
