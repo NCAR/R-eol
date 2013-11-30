@@ -20,24 +20,6 @@ extern "C" {
     SEXP R_rfftw(SEXP nrp,SEXP ncp, SEXP dmatp, SEXP invp);
 }
 
-class fftwAllocator
-{
-public:
-    fftwAllocator(size_t l): _ptr(fftw_malloc(l))
-    {
-    }
-    ~fftwAllocator() 
-    {
-        fftw_free(_ptr);
-    }
-    void* getPtr() { return _ptr; }
-
-private:
-    fftwAllocator(const fftwAllocator&);
-    fftwAllocator& operator=(const fftwAllocator&) const;
-    void* _ptr;
-};
-
 /*
  * From the FFTW tutorial http://www.fftw.org/doc, about rfftw_one:
  * Note also that we use the standard "in-order" output ordering--
