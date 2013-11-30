@@ -13,9 +13,6 @@
 /* FFTW header */
 #include <fftw3.h>
 
-#define FFTW3_ALL_AT_ONCE
-// #define USE_FFTW3_ALLOCATOR
-
 using eolts::R_Matrix;
 
 extern "C" {
@@ -88,7 +85,6 @@ SEXP R_cfftw(SEXP nrp,SEXP ncp, SEXP cmatp, SEXP invp)
     R_Matrix<Rcomplex> cmatout(CPLXSXP,nr,nc);
     fftw_complex* cpout = (fftw_complex*) cmatout.getDataPtr();
 
-#ifdef FFTW3_ALL_AT_ONCE
     /*
      * rank=1
      * n=&nr
@@ -111,35 +107,7 @@ SEXP R_cfftw(SEXP nrp,SEXP ncp, SEXP cmatp, SEXP invp)
             sign,FFTW_ESTIMATE);
     fftw_execute(plan);
     fftw_destroy_plan(plan);
-#else
-    /*
-     * fftw does transforms "out of place". You have to allocate
-     * a separate array for the results.
-     */
-    fftw_complex* dout;
-#ifdef USE_FFTW3_ALLOCATOR
-    fftwAllocator fftwspace(nr * sizeof(fftw_complex));
-    dout = (fftw_complex*) fftwspace.getPtr();
-#else
-    dout = cpout;
-#endif
 
-    for (size_t j = 0; j < nc; j++) {
-
-        fftw_plan plan = fftw_plan_dft_1d(nr,cpin,dout,
-                sign, FFTW_ESTIMATE);
-        fftw_execute(plan);
-        fftw_destroy_plan(plan);
-
-#ifdef USE_FFTW3_ALLOCATOR
-        memcpy(cpout,dout,nr*sizeof(fftw_complex));
-        cpout += nr;
-#else
-        dout += nr;
-#endif
-        cpin += nr;
-    }
-#endif
     return cmatout.getRObject();
 }
 
@@ -185,7 +153,6 @@ SEXP R_rfftw(SEXP nrp,SEXP ncp, SEXP dmatp, SEXP invp)
 
     double* dpin = dmat.getDataPtr();
 
-#ifdef FFTW3_ALL_AT_ONCE
     /*
      * rank=1
      * n=&nr
@@ -208,32 +175,6 @@ SEXP R_rfftw(SEXP nrp,SEXP ncp, SEXP dmatp, SEXP invp)
             &kind,FFTW_ESTIMATE);
     fftw_execute(plan);
     fftw_destroy_plan(plan);
-#else
-
-    double* dout;
-#ifdef USE_FFTW3_ALLOCATOR
-    fftwAllocator fftwspace(nr * sizeof(double));
-    dout = (double*) fftwspace.getPtr();
-#else
-    dout = dpout;
-#endif
-
-    for (size_t j = 0; j < nc; j++) {
-        // Rprintf("j=%d\n",j);
-        fftw_plan plan = fftw_plan_r2r_1d(nr,dpin,dout,
-                kind, FFTW_ESTIMATE);
-        fftw_execute(plan);
-        fftw_destroy_plan(plan);
-
-#ifdef USE_FFTW3_ALLOCATOR
-        memcpy(dpout,dout,nr*sizeof(double));
-        dpout += nr;
-#else
-        dout += nr;
-#endif
-        dpin += nr;
-    }
-#endif
 
     return dmatout.getRObject();
 }
