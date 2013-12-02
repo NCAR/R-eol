@@ -1,3 +1,5 @@
+# -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
+# vim: set shiftwidth=4 softtabstop=4 expandtab:
 #
 #               Copyright (C) by UCAR
 # 
@@ -387,7 +389,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
         plot.dat.title(title.txt,first.plot,last.plot,t1,t2,plot.stns)
     }
 
-    if (logo && last.plot) fun.logo.stamp()
+    if (logo && last.plot) fun_logo_stamp()
     par(new=F)
     NULL
 }
@@ -671,7 +673,7 @@ horiz.legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,cex=par("cex"),
     }
     NULL
 }
-fun.logo.stamp <- function(print.motto=T)
+fun_logo_stamp <- function(print.motto=T)
 {
     oma <- par("oma")
     # Adjust outer margins on left and right side, so that
@@ -687,7 +689,7 @@ fun.logo.stamp <- function(print.motto=T)
 
     lineoff <- cex / mex + .1
 
-    if (is.null(platform <- dpar("platform"))) platform <- "NCAR ISFF"
+    if (is.null(platform <- dpar("platform"))) platform <- "NCAR ISFS"
     string <- paste(platform,format(utime("now"),format="%H:%M %h %d %Y %Z"))
     mtext(string,side=1,line=oma[1]-lineoff,outer=T,adj=1)
 
@@ -704,6 +706,10 @@ fun.logo.stamp <- function(print.motto=T)
     mtext(string,side=1,line=oma[1]-lineoff,outer=T,adj=0)
 
 }
+
+# old name for backward compatibility
+fun.logo.stamp <- fun_logo_stamp
+
 std.par <- function(nyscales=1,prows=NULL,pcols=NULL,rscale=1,lscale=1)
 {
     # This function sets the par options: par,mar and mfrow based on input.

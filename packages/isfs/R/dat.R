@@ -192,6 +192,7 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
     }
 
     T1 <- dpar("start")
+    if (is.null(T1)) stop("dpar(\"start\") has not been set")
     T2 <- dpar("end")
     stns <- dpar("stns")
 

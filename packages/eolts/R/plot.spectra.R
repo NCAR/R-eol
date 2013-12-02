@@ -9,9 +9,9 @@ setMethod("plot","spectra",
         else {
             dots <- list(...)
             if (hasArg(xlab)) xlab <- dots$xlab
-            else xlab <- deparseText(substitute(x))
+            else xlab <- deparse(substitute(x))
             if (hasArg(ylab)) ylab <- dots$ylab
-            else ylab <- deparseText(substitute(y))
+            else ylab <- deparse(substitute(y))
             invisible(plot(x@data, y@data,xlab=xlab,ylab=ylab, ...))
         }
         )
@@ -22,9 +22,9 @@ setMethod("plot","pspectra",
         else {
             dots <- list(...)
             if (hasArg(xlab)) xlab <- dots$xlab
-            else xlab <- deparseText(substitute(x))
+            else xlab <- deparse(substitute(x))
             if (hasArg(ylab)) ylab <- dots$ylab
-            else ylab <- deparseText(substitute(y))
+            else ylab <- deparse(substitute(y))
             invisible(plot(x@data, y@data,xlab=xlab,ylab=ylab, ...))
         }
         )
@@ -35,9 +35,9 @@ setMethod("plot","cospectra",
         else {
             dots <- list(...)
             if (hasArg(xlab)) xlab <- dots$xlab
-            else xlab <- deparseText(substitute(x))
+            else xlab <- deparse(substitute(x))
             if (hasArg(ylab)) ylab <- dots$ylab
-            else ylab <- deparseText(substitute(y))
+            else ylab <- deparse(substitute(y))
             invisible(plot(x@data, y@data,xlab=xlab,ylab=ylab, ...))
         }
         )
@@ -48,9 +48,9 @@ setMethod("plot","xspectra",
         else {
             dots <- list(...)
             if (hasArg(xlab)) xlab <- dots$xlab
-            else xlab <- deparseText(substitute(x))
+            else xlab <- deparse(substitute(x))
             if (hasArg(ylab)) ylab <- dots$ylab
-            else ylab <- deparseText(substitute(y))
+            else ylab <- deparse(substitute(y))
             invisible(plot(x@data, y@data,xlab=xlab,ylab=ylab, ...))
         }
         )
@@ -61,9 +61,9 @@ setMethod("plot","quadspectra",
         else {
             dots <- list(...)
             if (hasArg(xlab)) xlab <- dots$xlab
-            else xlab <- deparseText(substitute(x))
+            else xlab <- deparse(substitute(x))
             if (hasArg(ylab)) ylab <- dots$ylab
-            else ylab <- deparseText(substitute(y))
+            else ylab <- deparse(substitute(y))
             invisible(plot(x@data, y@data,xlab=xlab,ylab=ylab, ...))
         }
         )
@@ -253,7 +253,10 @@ plot.spectra <- function(x,log,multfreq=T,falloff,
     # lim <- par("usr")
     # cat("logarg=",logarg,"lim=",lim,"xaxt=",par("xaxt"),"yaxt=",par("yaxt"),"\n")
     plot_spectra_tics(lim[1:2],lim[3:4],grid=grid,logx,logy,col=1)
-    if (logo && last.plot) fun.logo.stamp()
+    if (logo && last.plot && exists("fun_logo_stamp",mode="function")) {
+        fls <- get("fun_logo_stamp",mode="function")
+        fls()
+    }
 
     invisible()
 }
