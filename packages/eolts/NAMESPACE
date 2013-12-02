@@ -33,7 +33,11 @@ export(
     check.cache,
     tlocator,
     is.complex.spectra,
-    is.complex.fftw
+    is.complex.fftw,
+    plot.spectra,
+    lines.spectra,
+    points.spectra,
+    plot_spectra_tics
 )
 
 exportClasses(
