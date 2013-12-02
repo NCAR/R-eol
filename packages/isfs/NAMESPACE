@@ -6,6 +6,7 @@ useDynLib(isfs)
 export(
     dat,
     smooth.avg.dat,
+    d.by.dt,
     derived,
     expand,
     other.dat.func,
@@ -16,14 +17,15 @@ export(
     plot.dat,
     std.par,
     fun.logo.stamp,
-    profile.plot,
+    plotprofile,
     plotdat.ts,
     plotdat.xy,
     prep,
-    sonic.tilt.data,
-    select.sonic.tilt.data,
+    sonic_tilt_data,
+    select_sonic_tilt_data,
     tiltfit,
-    plot.tilt
+    plottilt,
+    sonic_tilt_matrix
 )
 
 exportPattern("^dat\\.")

@@ -57,7 +57,8 @@ setMethod("readts",
                 env = ""
             }
             else {
-                ops <- system(paste("getops",format(start,format="%Y %m %d %02H%02M%02S",TZ="GMT")),internal=TRUE)
+                ops <- system(paste("getops",
+                    format(start,format="%Y %m %d %H%M%OS",time.zone="GMT")),intern=TRUE)
 
                 runargs <- c("-D",paste(con@variables,collapse=","),
                     "-B",format(start,format="%Y %m %d %H%M%OS",time.zone="GMT"),

@@ -216,7 +216,7 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
     # browser()
     x <- select(x,stns=stns,hts=dpar("hts"),sfxs=dpar("sfxs"),sites=dpar("sites"))
 
-    if (!is.null(dpar("chksum")) && dpar("chksum")) x <- chksumck(x)
+    # if (!is.null(dpar("chksum")) && dpar("chksum")) x <- chksumck(x)
 
     if (length(what) == 1 && !is.null(x) &&
           (is.null(cache) || cache)) cache.object(what,x)
@@ -1093,3 +1093,41 @@ other.dat.func <- function(what,whine=T)
         stop(paste("An alternate version of",paste("dat",what,sep="."),"was not found on search list"))
     NULL
 }
+
+d.by.dt <- function(x,dtmax=NULL,lag=2,differences=1)
+{
+    # Compute time derivative (per second) of a time series:
+    #    dx/dt(i) = (x(i+1) - x(i-1)) / (t(i+1) - t(i-1))
+    #
+    nr <- nrow(x)
+    nc <- ncol(x)
+    stns <- stations(x)
+
+    # arbitrary
+    if (is.null(dtmax)) dtmax <- deltat(x)[1] * 10
+
+    ts <- as.numeric(tspar(x))
+
+    dx <- diff(x@data,lag=lag)
+    dt <- diff(ts,lag=lag)
+
+    mx <- -(1:(lag-1))
+    if (lag > 1) mx <- c(mx,-((nr-lag+2):nr))
+    ts <- ts[mx]
+
+    keep <- dt > 0 & dt < dtmax
+    dx <- dx[keep,]
+    dt <- dt[keep]
+    ts <- ts[keep]
+
+    dunits <- paste(x@units,"s-1")
+    dnames <- paste("d_",words(dimnames(x)[[2]],1,1),"_by_dt.",words(dimnames(x)[[2]],2),sep="")
+
+    x <- dat(nts(matrix(as.vector(dx/dt),ncol=nc,dimnames=list(NULL,dnames)),
+            ts,units=dunits,stations=stns))
+    #
+    # recursively call again if differences > 1
+    if (differences > 1) x <- d.by.dt(x,dtmax=dtmax,lag=lag,differences=differences-1)
+    x
+}
+

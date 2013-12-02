@@ -163,7 +163,10 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
                     select = select & xlim[1] < x & x < xlim[2]
                 if (!missing(ylim) | (!is.null(clipy) && clipy$clip)) 
                     select = select & ylim[1] < y & y < ylim[2]
-                fit <- l1fit(x[select,1],y[select,i], intercept=intercept)
+                if (intercept)
+                    fit <- quantreg::rq(y[select,1] ~ x[select,1],tau=0.5)
+                else
+                    fit <- quantreg::rq(y[select,1] ~ x[select,1] - 1,tau=0.5)
                 if (intercept)
                     yfit <- fit$coefficients[1] + x[select,1]*fit$coefficients[2] 
                 else
@@ -175,7 +178,10 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
                     select = select & xlim[1] < x[,i] & x[,i] < xlim[2]
                 if (!missing(ylim) | (!is.null(clipy) && clipy$clip)) 
                     select = select & ylim[1] < y[,i] & y[,i] < ylim[2]
-                fit <- l1fit(x[select,i],y[select,i], intercept=intercept)
+                if (intercept)
+                    fit <- quantreg::rq(y[select,1] ~ x[select,1],tau=0.5)
+                else
+                    fit <- quantreg::rq(y[select,1] ~ x[select,1] - 1,tau=0.5)
                 if (intercept)
                     yfit <- fit$coefficients[1] + x[select,i]*fit$coefficients[2] 
                 else
@@ -184,7 +190,7 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
             nmr[i] <- mean(abs(y[select,i] - yfit), na.rm=T)/
                       sqrt(var(y[select,i])) 
             fit.coeff[,i] <- fit$coefficients
-            rms = stdev(fit$residuals)
+            rms = sqrt(var(fit$residuals))
             if (plot)
               abline(fit, col=i)
             # test yfit

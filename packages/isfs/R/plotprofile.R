@@ -3,7 +3,7 @@
 #
 #               Copyright (C) by UCAR
 # 
-profile.plot = function(x, every=3600, ntraces=6, smooth=deltat(x)[1],
+plotprofile = function(x, every=3600, ntraces=6, smooth=deltat(x)[1],
                         xlim=NULL,ylim,ylab="Heights (m)", dx=0.02,
                         hd, ...) 
 {

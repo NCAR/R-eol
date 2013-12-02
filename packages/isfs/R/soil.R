@@ -108,7 +108,7 @@ dat.Ssoil = function(what,sum=T,dfill=F,doderiv=F,...)
         for (st in unique(sites(txs))) {
 
             txss = select(txs,sites=st)
-            if (is.null(txss)) continue
+            if (is.null(txss)) next
             # heights function returns negative values, in meters,
             # for soil depths
             depths <- -heights(txss)
@@ -130,7 +130,7 @@ dat.Ssoil = function(what,sum=T,dfill=F,doderiv=F,...)
                             else x
             },d=depths),ncol=length(depths),dimnames=dns,byrow=T)
                 }
-                else if (F) {
+                else if (FALSE) {
                     # interpolation over a grid of time and depth. Probably won't work to
                     # fill in missing data.
                     # From documentation of the interp function:

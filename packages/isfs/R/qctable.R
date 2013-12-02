@@ -95,10 +95,10 @@ qctable.list = function(x=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntper=4
 
     x = lapply(vars,
         function(vn,nframe,t1,dt,ntper) {
-            if (is.null(get("x",frame=nframe))) x = dat(vn)
+            if (is.null(get("x",pos=nframe))) x = dat(vn)
             else {
-                vnames = dimnames(get("x",frame=nframe))[[2]]
-                x = get("x",frame=nframe)[,match(words(vnames,1,nwords(vn,sep=".")),vn,nomatch=0) !=0 ]
+                vnames = dimnames(get("x",pos=nframe))[[2]]
+                x = get("x",pos=nframe)[,match(words(vnames,1,nwords(vn,sep=".")),vn,nomatch=0) !=0 ]
             }
             # discard last row in most recent data. All variables might not be ready
             if (t1 + ntper * dt > utime("now") && nrow(x) > 1) x = x[-nrow(x),]
@@ -136,8 +136,8 @@ qctable.list = function(x=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntper=4
                                             else {
                                                 nas = sum(is.na(x))
                                                 x = clip(x)
-                                                xm = mean(x,na.rm=T)
-                                                xd = sqrt(var(x,na.method="available"))
+                                                xm = mean(x,na.rm=TRUE)
+                                                xd = sqrt(var(x,na.rm=TRUE))
                                                 nclipped = sum(is.na(x)) - nas
                                                 c(xm,xd,nclipped,nas)
                                             }
@@ -175,7 +175,7 @@ qctable.list = function(x=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntper=4
             x$deltat = xdeltat
             x
         },
-        sys.nframe(),t1,dt,ntper)
+        sys.frame(),t1,dt,ntper)
     # browser()
     x = unlist(x,recursive=F)
     x$period = dt

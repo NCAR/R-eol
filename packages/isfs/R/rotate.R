@@ -32,7 +32,7 @@ setMethod("rotate",signature(x="dat"),
         #
         # 
         # If angle is the cartesian wind direction,
-        #	DIRcart=atan(v,u),
+        #	DIRcart=atan2(v,u),
         # (not the meteorological wind direction, DIRmet=atan(-u,-v)=270-DIRcart)
         # then the result will be winds in streamline coordinates.
         #
@@ -62,7 +62,7 @@ setMethod("rotate",signature(x="dat"),
         xout <- x
         # create rotation values either from constant input angle or from
         # mean wind direction
-        if (is.null(angle)) angle <- atan(x[,dnsw1=="v"],x[,dnsw1=="u"])
+        if (is.null(angle)) angle <- atan2(x[,dnsw1=="v"],x[,dnsw1=="u"])
 
         st <- sin(angle)
         ct <- cos(angle)
@@ -93,16 +93,16 @@ setMethod("rotate",signature(x="dat"),
         {
             for (j in i:nsc)
             {
-                uxyc <- dnsw1==paste("u'",wscalars[i],"'",wscalars[j],"'",sep="")
-                vxyc <- dnsw1==paste("v'",wscalars[i],"'",wscalars[j],"'",sep="")
+                uxyc <- dnsw1==paste("u'",scalars[i],"'",scalars[j],"'",sep="")
+                vxyc <- dnsw1==paste("v'",scalars[i],"'",scalars[j],"'",sep="")
                 uxy <- x[,uxyc]
                 vxy <- x[,vxyc]
                 xout[,uxyc] <- uxy*ct + vxy*st
                 xout[,vxyc] <- -uxy*st + vxy*ct
             }
-            uuxc <- dnsw1==paste("u'u'",wscalars[i],"'",sep="")
-            uvxc <- dnsw1==paste("u'v'",wscalars[i],"'",sep="")
-            vvxc <- dnsw1==paste("v'v'",wscalars[i],"'",sep="")
+            uuxc <- dnsw1==paste("u'u'",scalars[i],"'",sep="")
+            uvxc <- dnsw1==paste("u'v'",scalars[i],"'",sep="")
+            vvxc <- dnsw1==paste("v'v'",scalars[i],"'",sep="")
             uux <- x[,uuxc]
             uvx <- x[,uvxc]
             vvx <- x[,vvxc]

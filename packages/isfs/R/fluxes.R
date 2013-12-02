@@ -330,7 +330,7 @@ calc.x.h2o <- function(what,robust=dpar("robust"))
     # lo2corr is either NULL or a time series of 0's
     if (is.null(o2corr))
         o2corr = 0
-    else if (is.nts(o2corr) && is.nts(lo2corr))
+    else if (is(o2corr,"nts") && is(lo2corr,"nts"))
         o2corr = Cbind(o2corr,lo2corr)
 
     scorr = Cbind(scorr,lscorr)
@@ -338,7 +338,7 @@ calc.x.h2o <- function(what,robust=dpar("robust"))
         allna = apply(xh2o,2,function(x)all(is.na(x)))
         if (!all(allna)) {
             xh2o = xh2o[,!allna]
-            if (is.nts(o2corr)) o2corr = o2corr[,!allna]
+            if (is(o2corr,"nts")) o2corr = o2corr[,!allna]
             scorr = scorr[,!allna]
         }
     }
@@ -600,7 +600,7 @@ dat.TKE <- function(cache=F,...)
 {
     x <- sqrt(dat("u'u'")^2 + dat("v'v'")^2 + dat("w'w'")^2)/2
 
-    dimnames(x) <- list(NULL,paste("TKE",sfxnames(x,2),sep=""))
+    dimnames(x) <- list(NULL,paste("TKE",suffixes(x,2),sep=""))
     x@units <- rep("(m/s)^2",ncol(x))
     x
 }

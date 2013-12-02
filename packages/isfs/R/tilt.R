@@ -3,7 +3,7 @@
 #
 #               Copyright (C) by UCAR
 # 
-sonic.tilt.data <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
+sonic_tilt_data <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
     u.off=0, v.off=0, w.off, u.gain=1, v.gain=1, w.gain=1)
 {
 
@@ -75,7 +75,7 @@ sonic.tilt.data <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
         uvwflag <- Cbind(u.flag,v.flag,w.flag)
     }
     else {
-        u.flag <- 0*u
+        u.flag <- 0 * uvw[,dnsw1=="u"]
         v.flag <- u.flag
         w.flag <- u.flag
         uvwflag <- Cbind(u.flag,v.flag,w.flag)
@@ -98,7 +98,7 @@ sonic.tilt.data <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
     list(uvw=uvw,flags=uvwflag)
 }
 
-select.sonic.tilt.data  <- function(uvw,flags,
+select_sonic_tilt_data  <- function(uvw,flags,
     wmax,spdmax,spdmin,flagmax,elmax,rm.azm,
     fix.gill=FALSE,fix.ir=FALSE,ohats=FALSE,debug=FALSE)
 {
@@ -182,7 +182,8 @@ tiltfit <- function(u,v,w, wbar=NA)
     }
     b
 }
-plot.tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag", 
+
+plottilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag", 
     u.off=0, v.off=0, w.off, u.gain=1, v.gain=1, w.gain=1,
     flagmax=.01, spdmax=20, wmax=2, elmax, spdmin=1, rm.azm=45,
     fix.gill=FALSE, fix.ir=FALSE,
@@ -228,12 +229,12 @@ plot.tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
     # using spdmin and spdmax, based on the sonic u component
 
     if (is.null(uvw) || is.null(uvwflag)) {
-        data <- sonic.tilt.data(uvw,uvwflag, flag=flag, u.off, v.off, w.off, u.gain, v.gain, w.gain)
+        data <- sonic_tilt_data(uvw,uvwflag, flag=flag, u.off, v.off, w.off, u.gain, v.gain, w.gain)
     }
     else
-        data <- list(uvw=uvw,flags=uvwflags)
+        data <- list(uvw=uvw,flags=uvwflag)
 
-    dsel <- select.sonic.tilt.data(data$uvw,data$flags,
+    dsel <- select_sonic_tilt_data(data$uvw,data$flags,
         wmax,spdmax,spdmin,flagmax,elmax,rm.azm,
         fix.gill=fix.gill,fix.ir=fix.ir,ohats=ohats,debug=debug)
 
@@ -325,8 +326,8 @@ plot.tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
             "; stn=",dpar("stns"),sep=""),cex=0.7)
 
     # notate dataset()
-    if (exists(".projectEnv") && exists("dataset.which",envir=.projectEnv))
-        mtext(paste("dataset =",get("dataset.which",envir=.projectEnv)), 2.2, adj=1)
+    if (exists(".projectEnv") && exists("dataset.which",envir=get(".projectEnv")))
+        mtext(paste("dataset =",get("dataset.which",envir=get(".projectEnv"))), 2.2, adj=1)
 
     # Plot fitted curve:
     az <- seq(-180,180,5)
@@ -383,7 +384,7 @@ plot.tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
     text(0.25,0.08,paste("b =",bf[1],bf[2],bf[3]))
     text(0.25,0.05,paste("lean=",lean,"deg, leanaz=",leanaz,"deg"))
 
-    fun.logo.stamp(print=F)
+    fun.logo.stamp(print.motto=F)
     cat(" b =",format(round(b,3)),"rms rsdl =", rms, "cm/s,",
         rms.el,"deg; lean=",lean,"leanaz=",leanaz,"deg\n")
     if (debug)
@@ -477,11 +478,12 @@ setMethod("tilt",signature(x="dat",tiltp="dat"),
                 t1 <- positions(tiltps)[r]
                 t2 <- positions(tiltps)[r+1] - 0.001
                 if (positions(xs)[nrow(xs)] >= t1 && positions(xs)[1] <= t2) {
-                    mr <- sonic.tilt.matrix(
+                    mr <- sonic_tilt_matrix(
                         tiltps@data[r,"lean"],
                         tiltps@data[r,"leanaz"])
-                    mr <- earray(t(mr))
                     # browser()
+
+                    mr <- t(mr) # transpose
 
                     sonic <- xs[utime(c(t1,t2)),]
                     nr <- nrow(sonic)
@@ -503,7 +505,8 @@ setMethod("tilt",signature(x="dat",tiltp="dat"),
                         if (length(unique(dnsw1[dc])) != length(dnsw1[dc]))
                             stop(paste("multiple u,v or w columns:",paste(dns[dc],collapse=","),". Select a sonic"))
 
-                        sonic[,dm] <- sonic[,dm] %*% mr
+                        # sonic is a 3 column time series
+                        sonic@data[,dm] <- sonic@data[,dm] %*% mr
                     }
 
                     # second moments
@@ -517,8 +520,10 @@ setMethod("tilt",signature(x="dat",tiltp="dat"),
                         if (length(unique(dnsw1[dc])) != length(dnsw1[dc]))
                             stop(paste("multiple u'*',v'*' or w'*' columns:",paste(dns[dc],collapse=","),". Select a sonic"))
 
-                        # earray class follows Einstein product convention: z[i,k] = (sum over j of) (x[i,j] * y[j,k])
-                        sonic[,dm] <- earray(aperm(earray(sonic[,dm],c(nr,3,3)) %*% mr,perm=c(1,3,2)) %*% mr,c(nr,9))
+                        # This used earray class in Splus, with a comment that it
+                        # followed the Einstein product convention:
+                        #   z[i,k] = (sum over j of) (x[i,j] * y[j,k])
+                        sonic[,dm] <- array(aperm(array(sonic[,dm],c(nr,3,3)) %*% mr,perm=c(1,3,2)) %*% mr,c(nr,9))
                     }
 
                     if (!is.null(scalars) && (length(scalars) > 0)) {
