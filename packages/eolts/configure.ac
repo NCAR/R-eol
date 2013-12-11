@@ -113,11 +113,13 @@ AS_IF([test -n "$nc_server_header_path"],
         CPPFLAGS+=" -I${nc_server_header_path}"
     ],
     [
-        PKG_CHECK_MODULES([NC_SERVER],[nc_server],
-        [
-            CPPFLAGS+=" ${NC_SERVER_CFLAGS}"
-        ]
-        )
+        if test "$PKG_CONFIG" != "" && $PKG_CONFIG --exists nc_server 2>/dev/null; then
+            PKG_CHECK_MODULES([NC_SERVER],[nc_server],
+            [
+                CPPFLAGS+=" ${NC_SERVER_CFLAGS}"
+            ]
+            )
+        fi
     ]
 )
 
@@ -135,11 +137,13 @@ AS_IF([test -n "$nc_server_lib_path"],
     ]
 )
 
-PKG_CHECK_MODULES([NC_SERVER],[nc_server],
-    [
-        LIBS="${NC_SERVER_LIBS} ${LIBS}"
-    ]
-)
+if test "$PKG_CONFIG" != "" && $PKG_CONFIG --exists nc_server 2>/dev/null; then
+    PKG_CHECK_MODULES([NC_SERVER],[nc_server],
+        [
+            LIBS="${NC_SERVER_LIBS} ${LIBS}"
+        ]
+    )
+fi
 
 AC_CHECK_LIB([nc_server_rpc],[writedatarec_float_1],
     [
