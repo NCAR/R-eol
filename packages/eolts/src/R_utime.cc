@@ -3,6 +3,10 @@
 //
 #include "R_utime.h"
 
+#include <R_ext/Parse.h>
+
+#include <sstream>
+
 using std::string;
 
 using namespace eolts;
@@ -84,3 +88,75 @@ double* R_utime::getTimePtr()
     return REAL(_obj);
 }
 
+/* static */
+double R_utime::parse(const std::string& tstr,
+        const std::string& format,const std::string& tz) throw(std::string)
+{
+
+    string cmd = string("utime(\"" + tstr + "\",in.format=\"" + format +
+        "\",time.zone=\"" + tz + "\")");
+    SEXP cmdSexp = PROTECT(Rf_allocVector(STRSXP,1));
+    SET_STRING_ELT(cmdSexp,0,Rf_mkChar(cmd.c_str()));
+    ParseStatus status;
+    SEXP cmdexpr = PROTECT(R_ParseVector(cmdSexp,-1,&status,R_NilValue));
+    if (status != PARSE_OK) {
+        UNPROTECT(2);
+        throw string("cannot parse ") + cmd;
+    }
+    if (Rf_length(cmdexpr) != 1) {
+        UNPROTECT(2);
+        throw string("unexpected return from ") + cmd;
+    }
+
+    SEXP ans = PROTECT(Rf_eval(VECTOR_ELT(cmdexpr,0),R_GlobalEnv));
+
+#ifdef DEBUG
+    Rprintf("ans %d, TYPEOF=%d,length=%d\n",
+        i,TYPEOF(ans),Rf_length(ans));
+#endif
+
+    double val = NA_REAL;
+    if (TYPEOF(ans) == REALSXP && Rf_length(ans) == 1) {
+        val = REAL(ans)[0];
+        if (ISNAN(val)) {
+            UNPROTECT(3);
+            throw string("cannot parse: ") + cmd;
+        }
+    }
+    UNPROTECT(3);
+    return val;
+}
+
+/* static */
+string R_utime::format(double time,
+        const std::string& format,const std::string& tz) throw(std::string)
+{
+
+    R_utime utime;
+    utime.setLength(1);
+    utime.setTime(0,time);
+
+    SEXP s, t;
+
+    t = s = PROTECT(Rf_allocList(4));
+
+    SET_TYPEOF(s, LANGSXP);
+    SETCAR(t, Rf_install("format")); t = CDR(t);
+    SETCAR(t, utime.getRObject()); t = CDR(t);
+    SETCAR(t, Rf_mkString(format.c_str()));
+    SET_TAG(t, Rf_install("format")); t = CDR(t);
+    SETCAR(t, Rf_mkString(tz.c_str()));
+    SET_TAG(t, Rf_install("time.zone")); t = CDR(t);
+    SEXP res = Rf_eval(s, R_GlobalEnv);
+    UNPROTECT(1);
+
+    if (Rf_length(res) != 1 || TYPEOF(res) != STRSXP) {
+        std::ostringstream ost;
+        ost << "format result is not string of length 1, length=" << Rf_length(res);
+        throw(ost.str());
+    }
+
+    string str(CHAR(STRING_ELT(res,0)));
+    UNPROTECT(1);
+    return str;
+}

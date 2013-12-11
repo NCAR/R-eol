@@ -32,7 +32,12 @@ public:
     void setLength(size_t nr);
     size_t getLength();
 
+    static double parse(const std::string& tstr,const std::string& format,const std::string& tz) throw(std::string);
+
+    static std::string format(double,const std::string& format,const std::string& tz) throw(std::string);
+
     static SEXP classDef;
+
     static SEXP dotDataSlotName;
 
 private:
