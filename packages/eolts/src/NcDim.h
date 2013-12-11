@@ -30,8 +30,7 @@ protected:
 public:
 
     NcDim(NcFile *nch,int dimid) throw(NcException);
-
-    // bool isValid() const { return _valid; }
+    NcDim(const std::string name, size_t length):_dimid(-1),_name(name),_length(length){}
 
     int getId() const { return _dimid; }
     const std::string& getName() const { return _name; }

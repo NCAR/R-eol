@@ -71,7 +71,7 @@ dpar <- function(...,save.cache=F)
          "RH.ice",		# compute RH wrt ice?
          "good.samples",	# minimum acceptable sonic sampling %age
          "platform",		# platform name, used for labeling plots
-         "lenfile",		# obscure, used if NetCDF file is > 1 day long
+         "lenfile",		# length of NetCDF file, often 86400 secs
          "gradientevalz",    # height to evaluate gradient functions
          "fh2os",            # vector of fast h2o sensors (used by calc.o2corr)
          "sonichts",         # heights of sonics at each station - useful in case heights are not in variable names
@@ -175,23 +175,23 @@ dpar <- function(...,save.cache=F)
 
     if (FALSE) {
         # Read available stations from NetCDF file
-        if (!is.null(dpar.list$start) && !exists(".all.stations",envir=.eoltsEnv)) {
+        if (!is.null(dpar.list$start) && !exists(".all_stations",envir=.eoltsEnv)) {
             iwarn <- options(warn=-1)
             # cat("calling netcdf\n")
             iod <- netcdf(start=dpar.list$start,end=dpar.list$end)
-            all.stations <- stations(iod)
+            all_stations <- stations(iod)
             close(iod)
             options(iwarn)
-            # cat("all.stations=",paste(all.stations,collapse=","),"\n")
-            assign(".all.stations",all.stations,envir=.eoltsEnv)
-            if (is.null(dpar.list$stns)) dpar.list$stns <- all.stations
+            # cat("all_stations=",paste(all_stations,collapse=","),"\n")
+            assign(".all_stations",all_stations,envir=.eoltsEnv)
+            if (is.null(dpar.list$stns)) dpar.list$stns <- all_stations
         }
 
         if ("stns" %in% inames) {
-            if (exists(".all.stations",envir=.eoltsEnv)) {
-                all.stations = get(".all.stations",envir=.eoltsEnv)
-                if (length(dpar.list$stns) == 0) dpar.list$stns = all.stations
-                else dpar.list$stns = all.stations[match(dpar.list$stns,all.stations,
+            if (exists(".all_stations",envir=.eoltsEnv)) {
+                all_stations = get(".all_stations",envir=.eoltsEnv)
+                if (length(dpar.list$stns) == 0) dpar.list$stns = all_stations
+                else dpar.list$stns = all_stations[match(dpar.list$stns,all_stations,
                                                  nomatch=0)]
             }
         }

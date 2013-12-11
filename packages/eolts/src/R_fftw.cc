@@ -4,6 +4,7 @@
 //              Copyright (C) by UCAR
 //
 
+#ifdef HAVE_FFTW3
 
 #include <R.h>
 #include <Rinternals.h>
@@ -160,3 +161,4 @@ SEXP R_rfftw(SEXP nrp,SEXP ncp, SEXP dmatp, SEXP invp)
 
     return dmatout.getRObject();
 }
+#endif  // HAVE_FFTW3

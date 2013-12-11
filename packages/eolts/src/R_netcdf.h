@@ -1,0 +1,259 @@
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
+// vim: set shiftwidth=4 softtabstop=4 expandtab:
+/*
+ *               Copyright (C) by UCAR
+ * 
+ *  $Revision: 1.18 $
+ *  $Date: 2008/09/09 23:42:36 $
+ * 
+ *  Description:
+ *    A connection from R to one or more NetCDF files.
+ * 
+ */
+#ifndef R_NETCDFCONNECTION_H
+#define R_NETCDFCONNECTION_H
+
+#include <R.h>
+#include <Rinternals.h>
+
+#include "NcFileSet.h"
+#include "R_nts.h"
+
+#include <set>
+
+#ifdef HAVE_NC_SERVER
+#include "NcAttrT.h"
+#include "NcDim.h"
+#include "nc_server_rpc.h"
+#include "RPC_Exception.h"
+#endif
+
+extern "C" {
+    SEXP open_netcdf(SEXP con,SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod);
+
+    SEXP read_netcdf(SEXP obj,SEXP variables, SEXP start, SEXP count);
+
+    SEXP read_netcdf_ts(SEXP args);
+
+#ifdef HAVE_NC_SERVER
+    SEXP write_ns_ts(SEXP args);
+
+    SEXP write_history(SEXP obj,SEXP history);
+#endif
+
+    SEXP get_variables(SEXP obj, SEXP all);
+
+    SEXP get_ts_variables(SEXP obj);
+
+    SEXP get_stations(SEXP obj);
+
+    SEXP close_netcdf(SEXP obj);
+
+    SEXP get_cxxPointer(SEXP obj);
+
+    SEXP is_netcdf_open(SEXP obj);
+}
+
+namespace eolts {
+
+class R_netcdf {
+public:
+
+    R_netcdf(SEXP obj, SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod);
+
+    virtual ~R_netcdf();
+
+    static SEXP fileSlotName;
+
+    static SEXP dirSlotName;
+
+    static SEXP timeNamesSlotName;
+
+    static SEXP serverSlotName;
+
+    static SEXP intervalSlotName;
+
+    static SEXP lenfileSlotName;
+
+    /**
+     * perhaps this should be an EXTPTRSXP instead of a raw(8)?
+     * See section 5.13 of R Externals, page 122.
+     */
+    static SEXP cppSlotName;
+
+    NcFileSet* getFileSet()
+    {
+        return _fileset;
+    }
+
+    SEXP read(const std::vector<std::string>& vnames,
+            const std::vector<size_t> &start,
+            const std::vector<size_t> &count) throw(NcException);
+
+    SEXP read(const std::vector<std::string>& vnames,
+            double start, double end,
+            const std::vector<int>& stations,
+            const std::vector<std::string>& tnames,
+            const std::string& btname,
+            const std::string& timezone) throw(NcException);
+
+#ifdef HAVE_NC_SERVER
+
+    int getId() const { return _id; }
+
+    void write(R_nts& nts, const std::vector<NcDim>& dims,
+            double dt, double fillValue) throw(RPC_Exception);
+
+    int writeHistory(const std::string&) throw(RPC_Exception);
+
+    int write(datarec_float *rec) throw(RPC_Exception);
+
+    int nonBatchWrite(datarec_float *rec) throw(RPC_Exception);
+
+    void setRPCTimeoutSecs(int secs);
+
+    void setBatchPeriod(int secs);
+
+    double getInterval(void) const { return _interval; }
+
+
+    CLIENT *getRPCClient(void) const { return _clnt; }
+
+    struct timeval& getRPCWriteTimeout(void) { return _rpcWriteTimeout; }
+    struct timeval& getRPCOtherTimeout(void) { return _rpcOtherTimeout; }
+    struct timeval& getBatchTimeout(void) { return _batchTimeout; }
+
+    void checkError() throw(RPC_Exception);
+
+#endif
+
+    SEXP getVariables() throw(NcException);
+
+    SEXP getTimeSeriesVariables() throw(NcException);
+
+    SEXP getStations() throw(NcException);
+
+    static bool addConnection(R_netcdf *);
+
+    static bool removeConnection(R_netcdf *);
+
+    static bool findConnection(R_netcdf *);
+
+    static R_netcdf *getR_netcdf(SEXP  obj);
+
+private:
+    // declared private to prevent copying and assignment
+    R_netcdf(const R_netcdf &);
+    R_netcdf &operator=(const R_netcdf &) const;
+
+    static std::set<R_netcdf*> _openSet;
+
+    NcFileSet* _fileset;
+
+    void openFileSet(SEXP obj);
+
+#ifdef HAVE_NC_SERVER
+
+    class NSVar {
+    private:
+        std::string _name;
+        std::string _units;
+        std::vector<NcAttrT<std::string> > _attrs;
+    public:
+        NSVar(const std::string& n, const std::string& u) :_name(n),_units(u),_attrs() {}
+
+        NSVar() :_name(),_units(),_attrs() {}
+
+        void addAttribute(const std::string& name, const std::string& val);
+
+        std::string& getName() { return _name; }
+        std::string& getUnits() { return _units; }
+
+        int getNumAttributes() const { return _attrs.size(); }
+        NcAttrT<std::string> &getAttribute(int i) { return _attrs[i]; }
+    };
+
+    class NSVarGroupFloat {
+    public:
+        NSVarGroupFloat(R_netcdf *conn,NS_rectype,
+                const std::vector<NcDim>& dims,double fillValue);
+        // NSVarGroupFloat() {}
+        ~NSVarGroupFloat(void);
+
+    private:
+        NSVarGroupFloat(const NSVarGroupFloat&);	// prevent copying
+        NSVarGroupFloat& operator =(const NSVarGroupFloat&);	// prevent ass
+
+    public:
+
+        int open(void) throw(RPC_Exception);
+
+        int write(double t,double *d,size_t nr, size_t nc,
+                size_t *start, size_t *count,int cnts) throw(RPC_Exception);
+
+        void addVariable(const std::string& name,const std::string& units);
+
+        unsigned int getNumVariables() const { return _vars.size(); }
+        NSVar &getVariable(int i) { return _vars[i]; }
+
+        unsigned int getNumDimensions() const { return _dims.size(); }
+        NcDim &getDimension(int i) { return _dims[i]; }
+
+        std::string toString();
+
+    protected:
+        void init_datarec(void);
+
+    private:
+        double _interval;
+        R_netcdf *_conn;
+        int _id;
+        std::vector<NSVar> _vars;
+        std::vector<NcDim> _dims;
+        NS_rectype _rectype;
+        float _fillValue;
+        datarec_float _rec;
+    };
+
+    NSVarGroupFloat *getVarGroupFloat(const std::vector<std::string>& vnames,
+        const std::vector<std::string>& vunits, NS_rectype rectype,
+        double interval, const std::vector<NcDim>& dims,
+        double fillvalue) throw(RPC_Exception);
+
+    NSVarGroupFloat *addVarGroupFloat(NS_rectype rectype,
+        double interval, const std::vector<NcDim>& dims,
+        double fillvalue);
+
+    void rpcopen(void) throw(RPC_Exception);
+
+
+    std::string _server;
+
+    /** file name, usually contains date format descriptors, see man cftime */
+    std::string _filenamefmt;
+    std::string _outputdir;
+    std::string _cdlfile;
+
+    unsigned int _lenfile;
+    double _interval;
+
+    CLIENT *_clnt;
+    int _id;
+    
+    int _rpcBatchPeriod;
+    struct timeval _rpcWriteTimeout;
+    struct timeval _rpcOtherTimeout;
+    struct timeval _batchTimeout;
+
+    int _ntry;
+    int _NTRY;
+    time_t _lastNonBatchWrite;
+
+    std::vector<NSVarGroupFloat*> _groups;
+#endif
+
+};
+
+}   // namespace eolts
+#endif
+

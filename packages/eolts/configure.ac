@@ -30,31 +30,32 @@ AC_ARG_WITH([netcdf-include],
     AC_HELP_STRING([--with-netcdf-include=DIR],
                    [location of netcdf header files]),
     [netcdf_include_path=$withval])
-if test [ -n "$netcdf_include_path" ] ; then
-   AC_SUBST([CPPFLAGS],["-I${netcdf_include_path} ${CPPFLAGS}"])
-fi
+
+AS_IF([test -n "$netcdf_include_path"], 
+   [CPPFLAGS+=" -I${netcdf_include_path}"]
+)
 
 AC_ARG_WITH([netcdf-lib],
     AC_HELP_STRING([--with-netcdf-lib=DIR],
                    [location of netcdf libraries]),
     [netcdf_lib_path=$withval])
-if test [ -n "$netcdf_lib_path" ] ; then
-   AC_SUBST([LIBS],["-L${netcdf_lib_path} ${LIBS}"])
-fi
 
-#-- Check for NetCDF and UDUNITS library ---------------------------------------#
+AS_IF([test -n "$netcdf_lib_path"], 
+    [LDFLAGS+=" -L${netcdf_lib_path}"]
+)
+
+#-- Check for NetCDF library ---------------------------------------#
 AC_CHECK_LIB(netcdf, nc_open, [],
 [
     AC_CHECK_LIB(netcdf, nc_create, [have_netcdf_hdf5=TRUE],
                  AC_MSG_ERROR(netcdf library not found),
                  [-lhdf5 -lhdf5_hl -lcurl -lz])
     if test "${have_netcdf_hdf5}" = TRUE; then
-        LIBS="${LIBS} -lnetcdf -lhdf5 -lhdf5_hl -lcurl -lz"
+        LIBS="-lnetcdf -lhdf5 -lhdf5_hl -lcurl -lz ${LIBS}"
     fi
 ])
 
-#-- Check for netcdf.h and udunits.h -------------------------------------------#
-AC_CHECK_HEADERS(netcdf.h, [], AC_MSG_ERROR(netcdf header netcdf.h not found))
+AC_CHECK_HEADER([netcdf.h], [], AC_MSG_ERROR(netcdf header netcdf.h not found))
 
 #-- fftw3 include and library path ---------------------------------------------#
 AC_ARG_WITH([fftw3-include],
@@ -63,32 +64,107 @@ AC_ARG_WITH([fftw3-include],
     [fftw3_header_path=$withval]
 )
 
+AS_IF([test -n "$fftw3_header_path"], 
+    [CPPFLAGS+=" -I${fftw3_header_path}"]
+)
+
+AC_CHECK_HEADER([fftw3.h],,
+    [
+        PKG_CHECK_MODULES([FFTW3],[fftw3],
+            [
+                CPPFLAGS+=" ${FFTW3_CFLAGS}"
+            ]
+        )
+    ]
+)
+
 AC_ARG_WITH([fftw3-lib],
     AC_HELP_STRING([--with-fftw3-lib=DIR],
                    [location of fftw3 library]),
     [fftw3_lib_path=$withval]
 )
 
-AS_IF([test -n "$fftw3_header_path"], 
-    AC_SUBST([FFTW3_CFLAGS],["-I${fftw3_header_path}"])
-)
-
 AS_IF([test -n "$fftw3_lib_path"], 
-    AC_SUBST([FFTW3_LIBS],["-L${fftw3_lib_path} -lfftw3 -lm"]),
-    [PKG_CHECK_MODULES([FFTW3],[fftw3],,FFTW3_LIBS="-lfftw3 -lm")]
+    [LDFLAGS+=" -L${fftw3_lib_path}"]
 )
 
+AC_CHECK_LIB([fftw3],[fftw_execute],
+    [
+        HAVE_FFTW3=TRUE
+        CPPFLAGS+=" -DHAVE_FFTW3"
+        LIBS="-lfftw3 -lm ${LIBS}"
+    ],
+    [
+        HAVE_FFTW3=FALSE
+    ],
+    [-lm]
+)
+
+#-- nc_server_rpc include and library path ---------------------------------#
+
+AC_ARG_WITH([nc_server-include],
+    AC_HELP_STRING([--with-nc_server-include=DIR],
+                   [location of nc_server headers]),
+    [nc_server_header_path=$withval]
+)
+
+AS_IF([test -n "$nc_server_header_path"],
+    [
+        CPPFLAGS+=" -I${nc_server_header_path}"
+    ],
+    [
+        PKG_CHECK_MODULES([NC_SERVER],[nc_server],
+        [
+            CPPFLAGS+=" ${NC_SERVER_CFLAGS}"
+        ]
+        )
+    ]
+)
+
+AC_CHECK_HEADER([nc_server_rpc.h])
+
+AC_ARG_WITH([nc_server-lib],
+    AC_HELP_STRING([--with-nc_server-lib=DIR],
+                   [location of nc_server library]),
+    [nc_server_lib_path=$withval]
+)
+
+AS_IF([test -n "$nc_server_lib_path"],
+    [
+        LDFLAGS+=" -L${nc_server_lib_path}"
+    ]
+)
+
+PKG_CHECK_MODULES([NC_SERVER],[nc_server],
+    [
+        LIBS="${NC_SERVER_LIBS} ${LIBS}"
+    ]
+)
+
+AC_CHECK_LIB([nc_server_rpc],[writedatarec_float_1],
+    [
+        HAVE_NC_SERVER=TRUE
+        CPPFLAGS+=" -DHAVE_NC_SERVER"
+    ],
+    [
+        HAVE_NC_SERVER=FALSE
+    ]
+)
 
 #-------------------------------------------------------------------------------#
 #  Do substitution                               	                 	#
 #-------------------------------------------------------------------------------#
 
-AC_SUBST(CPPFLAGS)
-AC_SUBST(LIBS)
-AC_OUTPUT(src/Makevars)
+AC_CONFIG_FILES([R/netcdfWrite.R],[chmod -w R/netcdfWrite.R])
 
-AC_SUBST([FFTW3_CFLAGS])
-AC_SUBST([FFTW3_LIBS])
+AC_SUBST([HAVE_FFTW3])
+AC_SUBST([HAVE_NC_SERVER])
+
+AC_SUBST([CPPFLAGS])
+AC_SUBST([LDFLAGS])
+AC_SUBST([LIBS])
+
+AC_OUTPUT(src/Makevars)
 
 #-------------------------------------------------------------------------------#
 

@@ -33,6 +33,9 @@ extern "C" {
         R_netcdf::dirSlotName = Rf_install("dir");
         R_netcdf::timeNamesSlotName = Rf_install("timeNames");
         R_netcdf::cppSlotName = Rf_install("cppPtr");
+        R_netcdf::serverSlotName = Rf_install("server");
+        R_netcdf::intervalSlotName = Rf_install("interval");
+        R_netcdf::lenfileSlotName = Rf_install("lenfile");
 
         R_NetcdfVariable::nameSlotName = Rf_install("name");
         R_NetcdfVariable::modeSlotName = Rf_install("mode");

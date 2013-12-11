@@ -1,5 +1,5 @@
-PKG_CPPFLAGS = -Weffc++ -DR_NO_REMAP -I../inst/include @FFTW3_CFLAGS@
-PKG_LIBS = @LIBS@ @FFTW3_LIBS@
+PKG_CPPFLAGS = -DR_NO_REMAP -I../inst/include @CPPFLAGS@
+PKG_LIBS = @LDFLAGS@ @LIBS@
 
 ## $(SHLIB) is the usual default target that is built automatically from all source 
 ## files in this directory. userLibrary is an additional target for the second library
