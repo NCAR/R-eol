@@ -373,11 +373,11 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
             ly <- usr[4] - cxy[2] * .3
 
             if (type == "l")
-              horiz.legend(lx,ly,legv,col=colv,lty=rep(1,length(colv)),background=-999999,
-                    bty="n",cex=cex*1.0)
+              horiz.legend(lx,ly,legv,col=colv,lty=rep(1,length(colv)),
+                  bty="n",cex=cex*1.0)
             else
-              horiz.legend(lx,ly,legv,col=colv,marks=colv,background=-999999,bty="n",
-                      cex=cex*1.0)
+              horiz.legend(lx,ly,legv,col=colv,marks=colv,
+                  bty="n", cex=cex*1.0)
         }
     }
 
@@ -389,7 +389,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
         plot.dat.title(title.txt,first.plot,last.plot,t1,t2,plot.stns)
     }
 
-    if (logo && last.plot) fun_logo_stamp()
+    if (logo && last.plot) logo_stamp()
     par(new=F)
     NULL
 }
@@ -620,60 +620,8 @@ plot.dat.limits <- function(data,ylim,one.scale=F)
     names(ylim$ylim) <- dn
     ylim
 }
-horiz.legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,cex=par("cex"),bty,background,xaxt="s",yaxt="s")
-{
-    # this makes a more compact legend than legend()
-    uxy <- par("usr")
-    parcex <- par("cex")
-    # cxy <- par("cxy") * cex / parcex
-    cxy <- c(strwidth("X"),strheight("X")) * cex / parcex
 
-    # cat("cex=",cex,",parcex=",parcex,"\n")
-    # cat("cxy=",cxy,",dy=",(uxy[4]-uxy[3]),",nrows=",(uxy[4]-uxy[3])/cxy[2],"\n")
-
-    nl <- length(legend)
-
-    if (is.null(col)) col <- rep(1,nl)
-    if (is.null(lty)) lty <- rep(1,nl)
-
-    # space for line or point in legend
-    ptln.size <- cxy[1]
-    # Only put lines in legend if they differ
-    if (is.null(marks) && length(unique(lty)) == 1) ptln.size <- 0
-    # browser()
-
-    maxlw <- (max(nchar(legend)) + 1) * cxy[1]	# maximum legend width
-    if (ptln.size > 0) maxlw <- maxlw + 3 * cxy[1]	
-
-    nc <- floor((uxy[2] - uxy[1]) / maxlw)
-    nr <- ceiling(nl / nc)
-
-    # Lay it out column by column (takes less vertical space)
-    y0 <- y - 1.0 * cxy[2]
-    ir <- 0
-    for (i in 1:nl) {
-        y <- y0 - ir * 1.0 * cxy[2]
-        if (ptln.size > 0) {
-            if (is.null(marks))
-              lines(c(x,x+ptln.size*2),c(y,y),col=col[i],lty=lty[i],
-                      xaxt=xaxt,yaxt=yaxt)
-            else
-              points(x+ptln.size,y,col=col[i],pch=marks[i],xaxt=xaxt,yaxt=yaxt)
-        }
-
-        text(x+2.5*ptln.size,y,legend[i],col=col[i],adj=0,cex=cex,
-            xaxt=xaxt,yaxt=yaxt)
-        ir <- ir + 1
-        if (ir == nr) {
-            nc <- nc - 1	# columns left
-            nr <- ceiling((nl-i) / nc)
-            ir <- 0
-            x <- x + maxlw
-        }
-    }
-    NULL
-}
-fun_logo_stamp <- function(print.motto=T)
+logo_stamp <- function(print.motto=T)
 {
     oma <- par("oma")
     # Adjust outer margins on left and right side, so that
@@ -708,7 +656,7 @@ fun_logo_stamp <- function(print.motto=T)
 }
 
 # old name for backward compatibility
-fun.logo.stamp <- fun_logo_stamp
+fun.logo.stamp <- logo_stamp
 
 std.par <- function(nyscales=1,prows=NULL,pcols=NULL,rscale=1,lscale=1)
 {

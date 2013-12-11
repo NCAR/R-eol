@@ -155,7 +155,7 @@ select_sonic_tilt_data  <- function(uvw,flags,
     list(fit=select.fit,plot=select.plt)
 }
 
-tiltfit <- function(u,v,w, wbar=NA)
+fit_tilt <- function(u,v,w, wbar=NA)
     # wbar = mean vertical velocity; if wbar != NA, b[1] is set equal to wbar 
     # and b[c(2,3)] are determined by the least-squares fit
     # Note that I used NA for the default because the missing() 
@@ -183,7 +183,7 @@ tiltfit <- function(u,v,w, wbar=NA)
     b
 }
 
-plottilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag", 
+plot_tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag", 
     u.off=0, v.off=0, w.off, u.gain=1, v.gain=1, w.gain=1,
     flagmax=.01, spdmax=20, wmax=2, elmax, spdmin=1, rm.azm=45,
     fix.gill=FALSE, fix.ir=FALSE,
@@ -272,7 +272,7 @@ plottilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
     # Calculate tilt angles
     if (missing(w.off))
         w.off <- NA
-    b <- tiltfit(u.fit, v.fit, w.fit, w.off)
+    b <- fit_tilt(u.fit, v.fit, w.fit, w.off)
 
     rms.residual <- sqrt(mean( (w.fit - b[1] - b[2]*u.fit
                 - b[3]*v.fit)^2, na.rm=T))

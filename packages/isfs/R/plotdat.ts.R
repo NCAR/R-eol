@@ -202,7 +202,7 @@ plotdat.ts <- function(data,data2, select, rfrnc, nsmth, ylim, yaxt, logy=F,
     if (logy=="" && usr[3]*usr[4] < 0)
         abline(h=0)
     if (mfg[1]==mfg[3] & mfg[2]==mfg[4])
-        fun_logo_stamp(F)
+        logo_stamp(F)
     DT1 <- 0
     DT2 <- 0
     if (!missing(nsmth))

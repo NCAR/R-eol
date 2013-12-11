@@ -212,7 +212,7 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
                 abline(h=0)
         }
         if (annotate)
-            fun_logo_stamp(F)
+            logo_stamp(F)
 
         # add legend
         xleg <- usr[1] + 0.01*(usr[2]-usr[1])

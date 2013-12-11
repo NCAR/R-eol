@@ -23,8 +23,8 @@ export(
     prep,
     sonic_tilt_data,
     select_sonic_tilt_data,
-    tiltfit,
-    plottilt,
+    fit_tilt,
+    plot_tilt,
     sonic_tilt_matrix
 )
 
