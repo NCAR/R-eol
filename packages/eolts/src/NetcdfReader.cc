@@ -27,8 +27,6 @@
 #include "R_utime.h"
 #include "R_nts.h"
 
-#include <R_ext/Parse.h>
-
 using std::string;
 using std::vector;
 using std::map;
@@ -244,7 +242,6 @@ namespace {
      */
     double R_parseCFTimeString(const string& ustr,double unitsMult) throw(string)
     {
-        double val = 0.0;
 
         if (ustr.find("second") != string::npos) unitsMult = 1.0;
         else if (ustr.find("day") != string::npos) unitsMult = 86400.0;
@@ -259,33 +256,7 @@ namespace {
         while(::isspace(ustr[ss])) ss++;
         string str = ustr.substr(ss);
 
-        string cmd = string("utime(\"" + str + "\",in.format=\"%F %H:%M:%OS\",time.zone=\"UTC\")");
-        SEXP cmdSexp = PROTECT(Rf_allocVector(STRSXP,1));
-        SET_STRING_ELT(cmdSexp,0,Rf_mkChar(cmd.c_str()));
-        ParseStatus status;
-        SEXP cmdexpr = PROTECT(R_ParseVector(cmdSexp,-1,&status,R_NilValue));
-        if (status != PARSE_OK) {
-            UNPROTECT(2);
-            throw string("cannot parse ") + cmd;
-        }
-        if (Rf_length(cmdexpr) != 1) {
-            UNPROTECT(2);
-            throw string("unexpected return from ") + cmd;
-        }
-
-        SEXP ans = PROTECT(Rf_eval(VECTOR_ELT(cmdexpr,0),R_GlobalEnv));
-#ifdef DEBUG
-        Rprintf("ans %d, TYPEOF=%d,length=%d\n",
-            i,TYPEOF(ans),Rf_length(ans));
-#endif
-        if (TYPEOF(ans) == REALSXP && Rf_length(ans) == 1) {
-            val = REAL(ans)[0];
-            if (ISNAN(val)) {
-                UNPROTECT(3);
-                throw string("cannot parse: ") + cmd;
-            }
-        }
-        UNPROTECT(3);
+        double val = R_utime::parse(str,"%F %H:%M:%OS","UTC");
 
         string::size_type bs = str.find(' ');     // space between date and time
         if (bs == string::npos)
