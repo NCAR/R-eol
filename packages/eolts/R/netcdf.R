@@ -1,7 +1,8 @@
+# -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
+# vim: set shiftwidth=4 softtabstop=4 expandtab:
 #
 #               Copyright (C) by UCAR
 # 
-
 setClass("netcdf",
     slots=c(
         file="character",
@@ -16,33 +17,31 @@ setClass("netcdf",
         cppPtr="raw"
         ),
     prototype=list(
-        file=ifelse(Sys.getenv("R_NETCDF_FILE")!="",Sys.getenv("R_NETCDF_FILE"),Sys.getenv("NETCDF_FILE")),
-        dir=ifelse(Sys.getenv("R_NETCDF_DIR")!="",Sys.getenv("R_NETCDF_DIR"),Sys.getenv("NETCDF_DIR")),
+        file=Sys.getenv("NETCDF_FILE"),
+        dir=Sys.getenv("NETCDF_DIR"),
         start=utime(0),
         end=utime(0),
-        lenfile=as.integer(86400),
+        lenfile=86400L,
         timeNames=c("time","Time"),
-        server="",
+        server=Sys.getenv("NETCDF_SERVER"),
         interval=300,
         cdlfile="",
         cppPtr=raw(8))
 )
 
-netcdf = function(
-    file=ifelse(Sys.getenv("R_NETCDF_FILE")!="",
-        Sys.getenv("R_NETCDF_FILE"),Sys.getenv("NETCDF_FILE")),
-    dir=ifelse(Sys.getenv("R_NETCDF_DIR")!="",
-        Sys.getenv("R_NETCDF_DIR"),Sys.getenv("NETCDF_DIR")),
+netcdf <- function(
+    file=Sys.getenv("NETCDF_FILE"),
+    dir=Sys.getenv("NETCDF_DIR"),
     start=dpar("start"),
     end=dpar("end"),
     lenfile=dpar("lenfile"),
     timeNames=c("time","Time"),
-    server="",
+    server=Sys.getenv("NETCDF_SERVER"),
     interval=300,
     cdlfile="")
 {
-    if (is.null(lenfile)) lenfile = 86400
-    obj = new("netcdf",
+    if (is.null(lenfile)) lenfile <- 86400
+    obj <- new("netcdf",
         file=file,dir=dir,
         start=start,end=end,
         lenfile=as.integer(lenfile),
@@ -50,10 +49,10 @@ netcdf = function(
         server=server,interval=interval,cdlfile=cdlfile)
 
     if (lenfile == 31 * 86400)
-        times = monthly(from=utime(start,time.zone="GMT"),to=end-1)
-    else times = seq(from=utime(floor(start/lenfile)*lenfile),to=end-1,by=lenfile)
+        times <- monthly(from=utime(start,time.zone="GMT"),to=end-1)
+    else times <- seq(from=utime(floor(start/lenfile)*lenfile),to=end-1,by=lenfile)
 
-    obj@file = unique(format(times,format=as(file,"character"),time.zone="GMT"))
+    obj@file <- unique(format(times,format=as(file,"character"),time.zone="GMT"))
 
     .Call("open_netcdf",obj,cdlfile,300,300,PACKAGE="eolts")
 }
@@ -61,7 +60,8 @@ netcdf = function(
 setClass("netcdfVariable",
     slots=c(name="character", mode="character",
         nctype="character", dimension="integer", attributes="list"),
-    prototype=list(name=character(),mode=character(),nctype=character(),dimension=integer(),
+    prototype=list(
+        name=character(),mode=character(),nctype=character(),dimension=integer(),
   	attributes=list())
 )
 
@@ -143,8 +143,8 @@ setMethod("readnc",
     signature(con="netcdf",variables="character",start="integer",count="integer"),
     function(con,variables,start,count,...)
     {
-        x = .Call("read_netcdf",con,variables,start,count,PACKAGE="eolts")
-        if (length(x) == 1) x = x[[1]]
+        x <- .Call("read_netcdf",con,variables,start,count,PACKAGE="eolts")
+        if (length(x) == 1) x <- x[[1]]
         x
     }
 )
@@ -162,7 +162,7 @@ setMethod("readnc",
     function(con,variables,start,count,...)
     {
         if (length(variables) > 0 && class(variables[[1]]) == "netcdfVariable") {
-            variables = sapply(variables,function(x)x@name)
+            variables <- sapply(variables,function(x)x@name)
             readnc(con,variables,start,count,...)
         }
         else stop("invalid \"variables\" argument")
@@ -196,23 +196,23 @@ setMethod("readts",
           stns <- dpar("stns")
 
         if (!hasArg(time.format) || is.null((time.format <- dots$time.format)))
-          time.format = options("time.out.format")[[1]]
+          time.format <- options("time.out.format")[[1]]
 
         if (!hasArg(time.zone) || is.null((time.zone <- dots$time.zone)))
-          time.zone = options("time.zone")[[1]]
+          time.zone <- options("time.zone")[[1]]
 
-        x = .External("read_netcdf_ts",con,variables,start,end,
+        x <- .External("read_netcdf_ts",con,variables,start,end,
             stns,timevar,basetime,time.zone,PACKAGE="eolts")
 
         # utime slot from read_netcdf_ts is a single utime, with
         # a vector of numeric values. Change it to a vector
         # of utimes, each with one numeric value.
-        positions(x) = utime(positions(x))
-        deltat(x) = deltat(x)
-        start(x) = start
-        end(x) = end
-        x@time.format = time.format
-        x@time.zone = time.zone
+        positions(x) <- utime(positions(x))
+        deltat(x) <- deltat(x)
+        start(x) <- start
+        end(x) <- end
+        x@time.format <- time.format
+        x@time.zone <- time.zone
         x
     }
 )
@@ -230,7 +230,7 @@ setMethod("readts",
     function(con,variables,start,end,...)
     {
         if (length(variables) > 0 && class(variables[[1]]) == "netcdfVariable") {
-            variables = sapply(variables,function(x)x@name)
+            variables <- sapply(variables,function(x)x@name)
             readts(con,variables,start,end,...)
         }
         else stop("invalid \"variables\" argument")
@@ -252,19 +252,19 @@ setMethod("variables",
     signature(con="netcdf"),
     function(con,...)
     {
-        args = list(...)
-        all = FALSE
-        if (hasArg(all)) all = args$all
+        args <- list(...)
+        all <- FALSE
+        if (hasArg(all)) all <- args$all
 
-        names.only = TRUE
-        if (hasArg(names.only)) names.only = args$names.only
+        names.only <- TRUE
+        if (hasArg(names.only)) names.only <- args$names.only
 
-        x = .Call("get_variables",con,all,PACKAGE="eolts")
+        x <- .Call("get_variables",con,all,PACKAGE="eolts")
         # browser()
         if (names.only) {
-            x = sapply(x,function(x)
+            x <- sapply(x,function(x)
             {
-               sn = x@attributes$"short_name"
+               sn <- x@attributes$"short_name"
                if (!is.null(sn)) sn
                else x@name
             })
@@ -277,12 +277,12 @@ setMethod("variables",
     signature(con="missing"),
     function(...)
     {
-        args = list(...)
-        all = FALSE
-        if (hasArg(all)) all = args$all
+        args <- list(...)
+        all <- FALSE
+        if (hasArg(all)) all <- args$all
 
-        if (all) vname = "variables.all"
-        else vname = "variables"
+        if (all) vname <- "variables.all"
+        else vname <- "variables"
 
         if (!check.cache(vname)) {
             iod <- netcdf()
@@ -294,41 +294,3 @@ setMethod("variables",
         get.cache.object(vname)
     }
 )
-
-
-if (FALSE) {
-setMethod("variables",
-    signature(con="netcdf"),
-    function(con,...)
-    {
-        invisible(.Call("get_variables",con,FALSE,PACKAGE="eolts"))
-    }
-)
-
-setMethod("variables",
-    signature(con="missing",all="logical"),
-    function(all)
-    {
-        if (all) vname = "variables.all"
-        else vname = "variables"
-
-        if (!check.cache(vname)) {
-            iod <- netcdf()
-            on.exit(close(iod))
-            vars <- variables(iod,all)
-
-            cache.object(vname,vars)
-        }
-        get.cache.object("variables")
-    }
-)
-
-setMethod("variables",
-    signature(con="missing",all="missing"),
-    function()
-    {
-        variables(all=FALSE)
-    }
-)
-}
-
