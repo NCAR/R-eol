@@ -26,7 +26,7 @@ protected:
     SEXP _obj;
     int _type;
     size_t _length;
-    int _pindx;
+    PROTECT_INDEX _pindx;
     SEXP _names;
 
 public:

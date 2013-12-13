@@ -18,8 +18,8 @@ R_utime::R_utime() : _obj(0),_length(1),_pindx(-1)
 {
 
     if (!classDef) classDef = R_do_MAKE_CLASS("utime");
-    _obj = R_do_new_object(classDef);
-    PROTECT_WITH_INDEX(_obj,&_pindx);
+
+    PROTECT_WITH_INDEX(_obj = R_do_new_object(classDef),&_pindx);
 
     SEXP cls = PROTECT(Rf_allocVector(STRSXP,1));
     SET_STRING_ELT(cls,0,Rf_mkChar("utime"));
@@ -59,9 +59,10 @@ R_utime::~R_utime()
 void R_utime::setLength(size_t val)
 {
     if (_length != val) {
-        _obj = Rf_lengthgets(_obj,val);
-        if (_pindx >= 0) UNPROTECT(1);
-        PROTECT_WITH_INDEX(_obj,&_pindx);
+        if (_pindx >= 0)
+            REPROTECT(_obj = Rf_lengthgets(_obj,val),_pindx);
+        else
+            PROTECT_WITH_INDEX(_obj = Rf_lengthgets(_obj,val),&_pindx);
         _length = val;
     }
 }
@@ -93,6 +94,12 @@ double R_utime::parse(const std::string& tstr,
         const std::string& format,const std::string& tz) throw(std::string)
 {
 
+    int nunprot;
+
+#ifdef DO_R_PARSE
+
+    // for future information, here's how to parse and evaluate
+    // an R expression in a string.
     string cmd = string("utime(\"" + tstr + "\",in.format=\"" + format +
         "\",time.zone=\"" + tz + "\")");
     SEXP cmdSexp = PROTECT(Rf_allocVector(STRSXP,1));
@@ -108,22 +115,45 @@ double R_utime::parse(const std::string& tstr,
         throw string("unexpected return from ") + cmd;
     }
 
-    SEXP ans = PROTECT(Rf_eval(VECTOR_ELT(cmdexpr,0),R_GlobalEnv));
+    SEXP res = PROTECT(Rf_eval(VECTOR_ELT(cmdexpr,0),R_GlobalEnv));
+    nunprot = 3;
+
+#else
+    // build an expression pairlist and evaluate it.
+    SEXP s, t;
+    t = s = PROTECT(Rf_allocList(4));
+    SET_TYPEOF(s, LANGSXP);
+
+    SETCAR(t, Rf_install("utime")); t = CDR(t);
+
+    SETCAR(t, Rf_mkString(tstr.c_str())); t = CDR(t);
+
+    SETCAR(t, Rf_mkString(format.c_str()));
+    SET_TAG(t, Rf_install("in.format")); t = CDR(t);
+
+    SETCAR(t, Rf_mkString(tz.c_str()));
+    SET_TAG(t, Rf_install("time.zone")); t = CDR(t);
+
+    SEXP res = PROTECT(Rf_eval(s, R_GlobalEnv));
+
+    nunprot = 2;
+#endif
 
 #ifdef DEBUG
-    Rprintf("ans %d, TYPEOF=%d,length=%d\n",
-        i,TYPEOF(ans),Rf_length(ans));
+    Rprintf("res %d, TYPEOF=%d,length=%d\n",
+        i,TYPEOF(res),Rf_length(res));
 #endif
 
     double val = NA_REAL;
-    if (TYPEOF(ans) == REALSXP && Rf_length(ans) == 1) {
-        val = REAL(ans)[0];
+    if (TYPEOF(res) == REALSXP && Rf_length(res) == 1) {
+        val = REAL(res)[0];
         if (ISNAN(val)) {
-            UNPROTECT(3);
-            throw string("cannot parse: ") + cmd;
+            UNPROTECT(nunprot);
+            throw string("cannot parse: \"") + tstr +
+                "\" with format \"" + format + "\", time zone=" + tz;
         }
     }
-    UNPROTECT(3);
+    UNPROTECT(nunprot);
     return val;
 }
 
@@ -131,7 +161,6 @@ double R_utime::parse(const std::string& tstr,
 string R_utime::format(double time,
         const std::string& format,const std::string& tz) throw(std::string)
 {
-
     R_utime utime;
     utime.setLength(1);
     utime.setTime(0,time);
@@ -142,21 +171,25 @@ string R_utime::format(double time,
 
     SET_TYPEOF(s, LANGSXP);
     SETCAR(t, Rf_install("format")); t = CDR(t);
+
     SETCAR(t, utime.getRObject()); t = CDR(t);
+
     SETCAR(t, Rf_mkString(format.c_str()));
     SET_TAG(t, Rf_install("format")); t = CDR(t);
+
     SETCAR(t, Rf_mkString(tz.c_str()));
     SET_TAG(t, Rf_install("time.zone")); t = CDR(t);
-    SEXP res = Rf_eval(s, R_GlobalEnv);
-    UNPROTECT(1);
+
+    SEXP res = PROTECT(Rf_eval(s, R_GlobalEnv));
 
     if (Rf_length(res) != 1 || TYPEOF(res) != STRSXP) {
         std::ostringstream ost;
         ost << "format result is not string of length 1, length=" << Rf_length(res);
+        UNPROTECT(2);
         throw(ost.str());
     }
 
     string str(CHAR(STRING_ELT(res,0)));
-    UNPROTECT(1);
+    UNPROTECT(2);
     return str;
 }

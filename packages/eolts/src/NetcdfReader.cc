@@ -258,6 +258,18 @@ namespace {
 
         double val = R_utime::parse(str,"%F %H:%M:%OS","UTC");
 
+#ifdef DEBUG
+        Rprintf("R_utime::parse, str=%s,val=%f\n",str.c_str(),val);
+        // test R_utime::format
+        try {
+            string tmpstr = R_utime::format(val,"%F %H:%M:%OS","UTC");
+            Rprintf("R_utime::format, val=%f, tmpstr=%s\n",val,tmpstr.c_str());
+        }
+        catch(const string& e) {
+            Rprintf("R_utime::format, exception=%s\n",e.c_str());
+        }
+#endif
+
         string::size_type bs = str.find(' ');     // space between date and time
         if (bs == string::npos)
             throw string("cannot parse: ") + str;
@@ -1537,6 +1549,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
         break;
     }
 
+    // note these asserts generally do nothing since -DNDEBUG is usually enabled
     assert(colNames.size() == ncols);
     assert(unitsNames.size() == ncols);
     assert(stationNames.size() == ncols);
@@ -1562,8 +1575,8 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
         }
 
         R_nts nts;
-        nts.setMatrix(matrix.get());
-        nts.setPositions(&positions);
+        nts.setMatrix(matrix->getRObject());
+        nts.setPositions(positions.getRObject());
 
         nts.setStations(stationNames,stationNumbers);
         nts.setUnits(unitsNames);
@@ -1575,9 +1588,10 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
 
         if (ncountsCols > 0) {
             NetcdfReader rdr(_connection); 
-            SEXP counts = rdr.read(countsGroupNames,
-                    startTime, endTime, stations,timeVarNames, baseTimeName,timezone,true);
-            nts.setWeights(counts);
+            SEXP cobj = PROTECT(rdr.read(countsGroupNames,
+                    startTime, endTime, stations,timeVarNames, baseTimeName,timezone,true));
+            nts.setWeights(cobj);
+            UNPROTECT(1);
             nts.setWeightMap(countsMap);
         }
         return nts.getRObject();

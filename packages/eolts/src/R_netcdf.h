@@ -36,9 +36,9 @@ extern "C" {
     SEXP read_netcdf_ts(SEXP args);
 
 #ifdef HAVE_NC_SERVER
-    SEXP write_ns_ts(SEXP args);
+    SEXP write_ts_ns(SEXP args);
 
-    SEXP write_history(SEXP obj,SEXP history);
+    SEXP write_history_ns(SEXP args);
 #endif
 
     SEXP get_variables(SEXP obj, SEXP all);
@@ -110,18 +110,28 @@ public:
 
     int nonBatchWrite(datarec_float *rec) throw(RPC_Exception);
 
+    /**
+     * How long to wait for a non-batch write, or a batch queue flush.
+     */
     void setRPCTimeoutSecs(int secs);
 
+    /**
+     * If the batch period is > 0 then RPC calls operate in a batch mode,
+     * and do not wait for a response on each request.
+     * After the batch period has elapsed, the batch queue
+     * of requests is flushed, and any error reported back.
+     */
     void setBatchPeriod(int secs);
 
+    /**
+     * The delta-T of the time variable in the NetCDF files.
+     */
     double getInterval(void) const { return _interval; }
-
 
     CLIENT *getRPCClient(void) const { return _clnt; }
 
     struct timeval& getRPCWriteTimeout(void) { return _rpcWriteTimeout; }
     struct timeval& getRPCOtherTimeout(void) { return _rpcOtherTimeout; }
-    struct timeval& getBatchTimeout(void) { return _batchTimeout; }
 
     void checkError() throw(RPC_Exception);
 
@@ -189,7 +199,7 @@ private:
         int open(void) throw(RPC_Exception);
 
         int write(double t,double *d,size_t nr, size_t nc,
-                size_t *start, size_t *count,int cnts) throw(RPC_Exception);
+                size_t *start, size_t *count,double cnts) throw(RPC_Exception);
 
         void addVariable(const std::string& name,const std::string& units);
 
@@ -241,8 +251,22 @@ private:
     int _id;
     
     int _rpcBatchPeriod;
+
+    /**
+     * RPC write timeout if _rpcBatchPeriod is 0, or when the batch
+     * queue is flushed every _rpcBatchPeriod seconds.
+     */
     struct timeval _rpcWriteTimeout;
+
+    /**
+     * RPC timeout value for opens and closes of connections.
+     */
     struct timeval _rpcOtherTimeout;
+
+    /**
+     * timeval of zeros, used to tell RPC not to wait for a response
+     * if _rpcBatchPeriod is > 0
+     */
     struct timeval _batchTimeout;
 
     int _ntry;

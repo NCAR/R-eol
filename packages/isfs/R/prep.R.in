@@ -165,7 +165,7 @@ setMethod("readts",
         # cat("sending SIGSTOP to prep\n")
         .Call("stop_sig_prep",con,PACKAGE="isfs")
 
-        invisible(x)
+        invisible(dat(x))
     }
 )
 

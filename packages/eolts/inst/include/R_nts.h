@@ -1,3 +1,5 @@
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
+// vim: set shiftwidth=4 softtabstop=4 expandtab:
 #ifndef R_NTS_H
 #define R_NTS_H
 
@@ -7,10 +9,6 @@
 namespace eolts {
 
 class R_nts {
-
-protected:
-
-    SEXP _obj;
 
 public:
 
@@ -31,12 +29,19 @@ public:
 
     SEXP getRObject() { return _obj; }
 
-    void setMatrix(R_MatrixBase *val);
-    R_Matrix<double> *getRealMatrix();
-    R_Matrix<int> *getIntMatrix();
+    /**
+     * Set the .Data slot.
+     */
+    void setMatrix(SEXP val);
 
-    void setPositions(R_utime *val);
-    R_utime *getPositions();
+    SEXP getMatrix();
+
+    /**
+     * Set the positions slot.
+     */
+    void setPositions(SEXP val);
+
+    SEXP getPositions();
 
     void setStations(const std::vector<std::string>& names,
         const std::vector<int>& numbers);
@@ -46,8 +51,12 @@ public:
     void setUnits(const std::vector<std::string>& names);
     std::vector<std::string> getUnits() const;
 
-    void setWeights(SEXP);
-    R_Matrix<int> *getWeights();
+    /**
+     * Set the weights slot.
+     */
+    void setWeights(SEXP val);
+
+    SEXP getWeights();
 
     void setWeightMap(std::vector<int>);
     std::vector<int> getWeightMap() const;
@@ -76,7 +85,9 @@ private:
     R_nts(const R_nts &);
     R_nts &operator=(const R_nts &) const;
 
-    int _pindx;
+    SEXP _obj;
+
+    PROTECT_INDEX _pindx;
 
 };
 

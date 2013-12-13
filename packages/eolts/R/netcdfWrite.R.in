@@ -33,12 +33,13 @@ setMethod("writets",
         if (!is.null(history) && nzchar(history)) {
             if (substring(history,nchar(history)) != "\n")
                 history <- paste(history,"\n",sep="")
-            .Call("write_history_ns", con,as.character(history),
+            .External("write_history_ns", con,as.character(history),
                 PACKAGE="eolts")
         }
 
         x[is.na(x)] <- fillvalue
 
+        # browser()
 
         if (!is.null(stns <- stations(x))) {
             if (length(stns) != ncol(x))
@@ -76,10 +77,7 @@ setMethod("writets",
                     for (wc in unique(wm)) {
                         ws <- wc == wm
                         xxxx <- xxx[,ws]
-                        if (storage.mode(xxxx@data) != "single")
-                            storage.mode(xxxx@data) <- "single"
-
-                        .Call("write_ts_ns",
+                        .External("write_ts_ns",
                             con,
                             xxxx,
                             "station",	# non-time dimension names
@@ -102,10 +100,7 @@ setMethod("writets",
             for (wc in unique(wm)) {
                 ws <- wc == wm
                 xx <- x[,ws]
-                if (storage.mode(xx@data) != "single")
-                    storage.mode(xx@data) <- "single"
-
-                .Call("write_ts_ns",
+                .External("write_ts_ns",
                     con,
                     xx,
                     character(0),	# non-time dimension names
@@ -114,6 +109,28 @@ setMethod("writets",
                     fillvalue,
                     PACKAGE="eolts")
             }
+        }
+        invisible(NULL)
+    }
+)
+
+setMethod("writets",
+    signature(con="netcdf",x="missing"),
+    function(con,x,...) {
+
+        # not supported on all architectures
+        if (!@HAVE_NC_SERVER@) stop("sorry, writets not available. No nc_server_rpc support")
+
+        if (!hasArg(history)) stop("history argument not found")
+            
+        dots <- list(...)
+        history <- dots$history
+
+        if (!is.null(history) && nzchar(history)) {
+            if (substring(history,nchar(history)) != "\n")
+                history <- paste(history,"\n",sep="")
+            .External("write_history_ns", con,as.character(history),
+                PACKAGE="eolts")
         }
         invisible(NULL)
     }

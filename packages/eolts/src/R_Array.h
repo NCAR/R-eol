@@ -53,11 +53,10 @@ void R_Array<T>::setDims(const std::vector<size_t>& dims)
     for (unsigned int i = 0; i < _dims.size(); i++) length *= _dims[i];
 
     if (length != _length) {
-        _obj = Rf_lengthgets(_obj,length);
         if (_pindx >= 0)
-            REPROTECT(_obj,_pindx);
+            REPROTECT(_obj = Rf_lengthgets(_obj,length), _pindx);
         else
-            PROTECT_WITH_INDEX(_obj,&_pindx);
+            PROTECT_WITH_INDEX(_obj = Rf_lengthgets(_obj,length),&_pindx);
         _length = length;
     }
 

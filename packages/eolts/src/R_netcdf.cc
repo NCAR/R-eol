@@ -14,7 +14,6 @@
 
 #include <set>
 #include <sstream>
-#include <memory>
 
 using std::string;
 using std::vector;
@@ -34,7 +33,6 @@ SEXP R_netcdf::cppSlotName;
 SEXP R_netcdf::serverSlotName;
 SEXP R_netcdf::intervalSlotName;
 SEXP R_netcdf::lenfileSlotName;
-
 
 /** Utility functions in anonymous namespace */
 namespace {
@@ -273,7 +271,7 @@ SEXP read_netcdf_ts(SEXP args)
 
 #ifdef HAVE_NC_SERVER
 
-SEXP write_ns_ts(SEXP args)
+SEXP write_ts_ns(SEXP args)
 {
     args = CDR(args);
 
@@ -365,9 +363,6 @@ SEXP write_history_ns(SEXP args)
     if (args != R_NilValue) {
         SEXP robj = CAR(args);
         size_t ndims = Rf_xlength(robj);
-        if (ndims == 0)
-            Rf_error("write_ts_ns error: length of non_time_dimension names argument is zero");
-
         for (size_t i = 0; i < ndims; i++) {
             SEXP dn = STRING_ELT(robj,i);
             history.push_back(CHAR(dn));
@@ -397,7 +392,7 @@ R_netcdf::R_netcdf(SEXP con, SEXP cdlfile,
 #ifdef HAVE_NC_SERVER
     ,_server(),_filenamefmt(),_outputdir(),_cdlfile(),
     _lenfile(0),_interval(0),_clnt(0),_id(-1),
-    _rpcBatchPeriod(0),_rpcWriteTimeout(),_rpcOtherTimeout(),
+    _rpcBatchPeriod(),_rpcWriteTimeout(),_rpcOtherTimeout(),
     _batchTimeout(),_ntry(0),_NTRY(10),
     _lastNonBatchWrite(::time(0)),_groups()
 #endif
@@ -421,15 +416,33 @@ R_netcdf::R_netcdf(SEXP con, SEXP cdlfile,
     *((R_netcdf **)RAW(slot)) = this;
 
 #ifdef HAVE_NC_SERVER
+    slot = Rf_getAttrib(con,serverSlotName);
+    if (TYPEOF(slot) != STRSXP || Rf_length(slot) != 1)
+        Rf_error("server slot of netcdf object is not string, length 1");
+    _server = string(CHAR(STRING_ELT(slot,0)));
+
     slot = Rf_getAttrib(con,intervalSlotName);
     if (TYPEOF(slot) != REALSXP || Rf_length(slot) != 1)
-        Rf_error("interval of object is not numeric, length 1");
+        Rf_error("interval slot of netcdf object is not numeric, length 1");
     _interval = REAL(slot)[0];
 
     slot = Rf_getAttrib(con,lenfileSlotName);
     if (TYPEOF(slot) != INTSXP || Rf_length(slot) != 1)
-        Rf_error("lenfile of object is not integer, length 1");
+        Rf_error("lenfile slot of netcdf object is not integer, length 1");
     _lenfile = INTEGER(slot)[0];
+
+    /*
+     * Set the RPC timeouts for open/close, and for writes when
+     * _rpcBatchPeriod is 0, or when the batch
+     * queue is flushed every _rpcBatchPeriod seconds.
+     */
+    if (TYPEOF(rpcTimeout) != INTSXP || Rf_length(rpcTimeout) != 1)
+        Rf_error("rpcTimeout is not integer, length 1");
+    setRPCTimeoutSecs(INTEGER(rpcTimeout)[0]);
+
+    if (TYPEOF(rpcBatchPeriod) != INTSXP || Rf_length(rpcBatchPeriod) != 1)
+        Rf_error("rpcBatchPeriod is not integer, length 1");
+    _rpcBatchPeriod = INTEGER(rpcBatchPeriod)[0];
 #endif
 
     addConnection(this);
@@ -519,6 +532,7 @@ void R_netcdf::openFileSet(SEXP obj)
         SEXP dn = STRING_ELT(slot,i);
         fnames.push_back(CHAR(dn));
     }
+    if (fnames.size() > 0) _filenamefmt = fnames[0];
 
     slot = Rf_getAttrib(obj,dirSlotName);
 #ifdef DEBUG
@@ -530,6 +544,7 @@ void R_netcdf::openFileSet(SEXP obj)
         SEXP dn = STRING_ELT(slot,i);
         dnames.push_back(CHAR(dn));
     }
+    if (dnames.size() > 0) _outputdir = dnames[0];
 
     vector<string> fullnames = makeFileNameList(fnames,dnames);
 
@@ -774,12 +789,14 @@ void R_netcdf::write(R_nts &nts,
     if (!_clnt) rpcopen();
 
     unsigned int i;
-    R_Matrix<double> *dmatrix = nts.getRealMatrix();
-    R_utime *times = nts.getPositions();
 
-    size_t nr = dmatrix->getNrows();
-    size_t nc = dmatrix->getNcols();
-    vector<string> vnames = dmatrix->getColumnNames();
+    R_Matrix<double> dmatrix(REALSXP,nts.getMatrix());
+
+    R_utime times(nts.getPositions());
+
+    size_t nr = dmatrix.getNrows();
+    size_t nc = dmatrix.getNcols();
+    vector<string> vnames = dmatrix.getColumnNames();
     vector<string> vunits = nts.getUnits();
 
     NSVarGroupFloat* g = getVarGroupFloat(
@@ -789,7 +806,7 @@ void R_netcdf::write(R_nts &nts,
             vnames[0].c_str(),g->toString().c_str());
 #endif
 
-    double *data = dmatrix->getDataPtr();
+    double *data = dmatrix.getDataPtr();
 
     int stn;
     vector<int> stations = nts.getStationNumbers();
@@ -811,7 +828,7 @@ void R_netcdf::write(R_nts &nts,
     start.push_back(stn);
     count.push_back(1);
 
-    R_Matrix<int>* wts = nts.getWeights();
+    R_Matrix<double> wts(REALSXP,nts.getWeights());
     vector<int> wm = nts.getWeightMap();
     int wc;
     if (wm.size() == 0) wc = -1;
@@ -824,6 +841,7 @@ void R_netcdf::write(R_nts &nts,
     }
     else wc = wm[0] - 1;
 
+    /* check that weightmap indices are all the same */
     for (i = 1; i < wm.size(); i++)
         if (wm[0] != wm[i]) {
             std::ostringstream ost;
@@ -831,16 +849,16 @@ void R_netcdf::write(R_nts &nts,
             Rf_error(ost.str().c_str());
         }
 
-    int *wtsArray = wts->getDataPtr();
-    int *wtsPtr = wtsArray + (wc * nr);
-    int dummyWts = -1;
+    double *wtsArray = wts.getDataPtr();
+    double *wtsPtr = wtsArray + (wc * nr);
+    double dummyWts = -1;
     if (wc < 0) wtsPtr = &dummyWts;
 
     for (i = 0; i < nr; i++) {
-        double tval = times->getTime(i);
+        double tval = times.getTime(i);
 #ifdef DEBUG
         Rprintf("i=%d,nr=%d,tval=%g,ts=%s\n",i,nr,tval,
-                formatTime(tval,"%Y %b %d %H%M%S %Z").c_str());
+                R_utime::format(tval,"%Y %b %d %H%M%S %Z","UTC").c_str());
 #endif
         g->write(tval,data,nr,nc,&start.front(),&count.front(),*wtsPtr);
         if (wc >= 0) wtsPtr++;
@@ -971,7 +989,7 @@ int R_netcdf::write(datarec_float *rec) throw(RPC_Exception)
 {
     enum clnt_stat clnt_stat;
 #ifdef DEBUG
-    Rprintf("in R_netcdf::write\n");
+    Rprintf("in R_netcdf::write(datarec_float)\n");
 #endif
 
     if (_rpcBatchPeriod == 0 || (time(0) - _lastNonBatchWrite > _rpcBatchPeriod))
@@ -1211,7 +1229,7 @@ int R_netcdf::NSVarGroupFloat::open() throw(RPC_Exception)
 
 int R_netcdf::NSVarGroupFloat::write(double t, double *d,
         size_t nr, size_t nc,
-        size_t *start, size_t *count,int cnts) throw(RPC_Exception)
+        size_t *start, size_t *count,double dcnts) throw(RPC_Exception)
 {
     vector<float> dout(nc);
 
@@ -1224,6 +1242,8 @@ int R_netcdf::NSVarGroupFloat::write(double t, double *d,
 
     _rec.cnts.cnts_val = 0;
     _rec.cnts.cnts_len = 0;
+    int cnts = (int)round(dcnts);
+
     if (cnts >= 0) {
         _rec.cnts.cnts_val = (int*)&cnts;
         _rec.cnts.cnts_len = 1;

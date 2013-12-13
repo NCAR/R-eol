@@ -626,8 +626,8 @@ SEXP R_prep::read(R_utime &begin, R_utime &end, size_t nrows)
     times.setLength(irow);
     R_nts nts;
 
-    nts.setMatrix(&matrix);
-    nts.setPositions(&times);
+    nts.setMatrix(matrix.getRObject());
+    nts.setPositions(times.getRObject());
 
     nts.setUnits(_units);
 

@@ -31,16 +31,17 @@ using namespace eolts;
 R_ArrayBase::R_ArrayBase(int type,const vector<size_t>& dims):
     _obj(0),_type(type),_dims(dims),_length(0),_pindx(-1),_dnobj(0)
 {
-    SEXP dimobj = PROTECT(Rf_allocVector(INTSXP,_dims.size()));
+    SEXP dimobj;
+    // first protect the dimobj
+    PROTECT_WITH_INDEX(dimobj = Rf_allocVector(INTSXP,_dims.size()),&_pindx);
     _length = 1;
     for (unsigned int i = 0; i < _dims.size(); i++) {
         INTEGER(dimobj)[i] = _dims[i];
         _length *= _dims[i];
     }
 
-    _obj = Rf_allocArray(type,dimobj);
-    UNPROTECT(1);
-    PROTECT_WITH_INDEX(_obj,&_pindx);
+    // then attach the dimobj to the array, and re-use the protection index
+    REPROTECT(_obj = Rf_allocArray(type,dimobj),_pindx);
 }
 
 /**
@@ -50,20 +51,15 @@ R_ArrayBase::R_ArrayBase(int type, SEXP obj) :
     _obj(obj),_type(type),_dims(),_length(0),_pindx(-1),_dnobj(0)
 {
     if (TYPEOF(obj) != type) {
-        _obj = Rf_coerceVector(_obj,type);
-        PROTECT_WITH_INDEX(_obj,&_pindx);
+        PROTECT_WITH_INDEX(_obj = Rf_coerceVector(_obj,type),&_pindx);
     }
     _length = LENGTH(_obj);
     SEXP dimobj = Rf_getAttrib(_obj,R_DimSymbol);
     if (Rf_isNull(dimobj)) {
         dimobj = PROTECT(Rf_allocVector(INTSXP,1));
         INTEGER(dimobj)[0] = _length;
-        _obj = Rf_setAttrib(_obj,R_DimSymbol,dimobj);
+        Rf_setAttrib(_obj,R_DimSymbol,dimobj);
         UNPROTECT(1);
-        if (_pindx >= 0)
-            REPROTECT(_obj,_pindx);
-        else
-            PROTECT_WITH_INDEX(_obj,&_pindx);
         _dims.push_back(_length);
     }
     else {

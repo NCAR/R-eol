@@ -23,8 +23,8 @@ public:
   NtsMath();
   ~NtsMath();
 
-  SEXP averageMean(R_nts *, double avgint, double outint, char useWeights);
-  SEXP averageMedian(R_nts *, double avgint, double outint, char useWeights);
+  SEXP averageMean(R_nts& , double avgint, double outint, char useWeights);
+  SEXP averageMedian(R_nts& , double avgint, double outint, char useWeights);
 
 };
 

@@ -54,7 +54,7 @@ netcdf <- function(
 
     obj@file <- unique(format(times,format=as(file,"character"),time.zone="GMT"))
 
-    .Call("open_netcdf",obj,cdlfile,300,300,PACKAGE="eolts")
+    .Call("open_netcdf",obj,cdlfile,300L,300L,PACKAGE="eolts")
 }
 
 setClass("netcdfVariable",

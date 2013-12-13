@@ -24,8 +24,7 @@ SEXP R_nts::timeZoneSlotName;
 R_nts::R_nts(): _obj(0),_pindx(-1)
 {
     if (!classDef) classDef = R_do_MAKE_CLASS("nts");
-    _obj = R_do_new_object(classDef);
-    PROTECT_WITH_INDEX(_obj,&_pindx);
+    PROTECT_WITH_INDEX(_obj = R_do_new_object(classDef),&_pindx);
 }
 
 R_nts::R_nts(SEXP obj):_obj(obj),_pindx(-1)
@@ -39,35 +38,24 @@ R_nts::~R_nts() {
     if (_pindx >= 0) UNPROTECT(1);
 }
 
-void R_nts::setMatrix(R_MatrixBase *val)
+void R_nts::setMatrix(SEXP val)
 {
-    Rf_setAttrib(_obj,dataSlotName,val->getRObject());
+    Rf_setAttrib(_obj,dataSlotName,val);
 }
 
-R_Matrix<double> *R_nts::getRealMatrix()
+SEXP R_nts::getMatrix()
 {
-    SEXP obj = Rf_getAttrib(_obj,dataSlotName);
-    R_Matrix<double> *mat = new R_Matrix<double>(REALSXP,obj);
-    return mat;		// owned by caller
+    return Rf_getAttrib(_obj,dataSlotName);
 }
 
-R_Matrix<int> *R_nts::getIntMatrix()
+void R_nts::setPositions(SEXP val)
 {
-    SEXP obj = Rf_getAttrib(_obj,dataSlotName);
-    R_Matrix<int> *mat = new R_Matrix<int>(INTSXP,obj);
-    return mat;		// owned by caller
+    Rf_setAttrib(_obj,posSlotName,val);
 }
 
-void R_nts::setPositions(R_utime *val)
+SEXP R_nts::getPositions()
 {
-    Rf_setAttrib(_obj,posSlotName,val->getRObject());
-}
-
-R_utime *R_nts::getPositions()
-{
-    SEXP obj = Rf_getAttrib(_obj,posSlotName);
-    R_utime *pos = new R_utime(obj);
-    return pos;		// owned by caller
+    return Rf_getAttrib(_obj,posSlotName);
 }
 
 void R_nts::setStations(const vector<string>& names,const vector<int>& numbers)
@@ -164,15 +152,14 @@ string R_nts::getTimeZone() const
     return CHAR(STRING_ELT(cobj,0));
 }
 
-void R_nts::setWeights(SEXP weights)
+void R_nts::setWeights(SEXP val)
 {
-    Rf_setAttrib(_obj,weightsSlotName,weights);
+    Rf_setAttrib(_obj,weightsSlotName,val);
 }
 
-R_Matrix<int> *R_nts::getWeights()
+SEXP R_nts::getWeights()
 {
-    SEXP obj = Rf_getAttrib(_obj,weightsSlotName);
-    return new R_Matrix<int>(INTSXP,obj);	// owned by caller
+    return Rf_getAttrib(_obj,weightsSlotName);
 }
 
 void R_nts::setWeightMap(vector<int> wmap)

@@ -27,8 +27,7 @@ using namespace eolts;
 R_NamedVectorBase::R_NamedVectorBase(int type, size_t length):
     _obj(0),_type(type),_length(length),_pindx(-1),_names(0)
 {
-    _obj = Rf_allocVector(type,_length);
-    PROTECT_WITH_INDEX(_obj,&_pindx);
+    PROTECT_WITH_INDEX(_obj = Rf_allocVector(type,_length),&_pindx);
     _names = Rf_allocVector(STRSXP,_length);
     Rf_setAttrib(_obj,R_NamesSymbol,_names);
 }
@@ -37,10 +36,8 @@ R_NamedVectorBase::R_NamedVectorBase(int type, SEXP obj):
     _obj(obj),_type(type),_length(0),_pindx(-1),_names(0)
 {
 
-    if (TYPEOF(obj) != type) {
-        _obj = Rf_coerceVector(_obj,type);
-        PROTECT_WITH_INDEX(_obj,&_pindx);
-    }
+    if (TYPEOF(obj) != type)
+        PROTECT_WITH_INDEX(_obj = Rf_coerceVector(_obj,type),&_pindx);
 
     _length = Rf_length(_obj);
     _names = Rf_getAttrib(_obj,R_NamesSymbol);
@@ -67,11 +64,10 @@ R_NamedVectorBase::~R_NamedVectorBase() {
 void R_NamedVectorBase::setLength(size_t length)
 {
     if (_length != length) {
-        _obj = Rf_lengthgets(_obj,length);
         if (_pindx >= 0)
-            REPROTECT(_obj,_pindx);
+            REPROTECT(_obj = Rf_lengthgets(_obj,length),_pindx);
         else
-            PROTECT_WITH_INDEX(_obj,&_pindx);
+            PROTECT_WITH_INDEX(_obj = Rf_lengthgets(_obj,length),&_pindx);
         _length = length;
 
         _names = Rf_lengthgets(_names,_length);

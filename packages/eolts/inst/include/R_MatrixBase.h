@@ -62,7 +62,7 @@ protected:
 
     size_t _length;
 
-    int _pindx;
+    PROTECT_INDEX _pindx;
 
     /**
      * Dim names.

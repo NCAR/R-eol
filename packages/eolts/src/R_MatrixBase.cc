@@ -34,8 +34,7 @@ R_MatrixBase::R_MatrixBase(int type,size_t nrow,size_t ncol) :
 {
     _dims[0] = nrow;
     _dims[1] = ncol;
-    _obj = Rf_allocMatrix(type,nrow,ncol);
-    PROTECT_WITH_INDEX(_obj,&_pindx);
+    PROTECT_WITH_INDEX(_obj = Rf_allocMatrix(type,nrow,ncol),&_pindx);
     _dnobj = Rf_getAttrib(_obj,R_DimNamesSymbol);
 }
 
@@ -46,10 +45,11 @@ R_MatrixBase::R_MatrixBase(int type, SEXP obj) :
     _obj(obj),_type(type),_dims(),_length(0),_pindx(-1),_dnobj(0)
 {
     if (TYPEOF(obj) != type) {
-        Rprintf("coercing R_MatrixBase, TYPEOF(obj)=%d,type=%d\n",
-                TYPEOF(obj),type);
-        _obj = Rf_coerceVector(_obj,type);
-        PROTECT_WITH_INDEX(_obj,&_pindx);
+#ifdef DEBUG
+        Rprintf("coercing R_MatrixBase from TYPEOF(obj)=%d to type=%d, _pindx=%d\n",
+                TYPEOF(obj),type,_pindx);
+#endif
+        PROTECT_WITH_INDEX(_obj = Rf_coerceVector(_obj,type),&_pindx);
     }
     SEXP dim = Rf_getAttrib(_obj,R_DimSymbol);
     if (Rf_isNull(dim)) {

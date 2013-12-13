@@ -62,7 +62,7 @@ SEXP ntsaverage(SEXP obj,SEXP avgperiod, SEXP outinterval, SEXP useWeights)
     double out = REAL(outinterval)[0];
     bool wts = LOGICAL(useWeights)[0];
 
-    return crunch.averageMean(&nts,avg,out,wts);
+    return crunch.averageMean(nts,avg,out,wts);
 }
 
 SEXP ntsaverage_median(SEXP obj,SEXP avgperiod, SEXP outinterval, SEXP outWeights) {
@@ -74,13 +74,13 @@ SEXP ntsaverage_median(SEXP obj,SEXP avgperiod, SEXP outinterval, SEXP outWeight
     double out = REAL(outinterval)[0];
     bool wts = LOGICAL(outWeights)[0];
 
-    return crunch.averageMedian(&nts,avg,out,wts);
+    return crunch.averageMedian(nts,avg,out,wts);
 }
 
 NtsMath::NtsMath() {}
 NtsMath::~NtsMath() {}
 
-SEXP NtsMath::averageMean(R_nts *ntsin, double avgint,
+SEXP NtsMath::averageMean(R_nts& ntsin, double avgint,
         double outint, char useWeights)
 {
 
@@ -95,25 +95,24 @@ SEXP NtsMath::averageMean(R_nts *ntsin, double avgint,
         Rf_error(ost.str().c_str());
     }
 
-    R_Matrix<double> *matin = ntsin->getRealMatrix();	// must be deleted
-    size_t nr = matin->getNrows();
-    size_t nc = matin->getNcols();
-    double *din = matin->getDataPtr();
-    vector<string> colNames = matin->getColumnNames();
-    delete matin;                                         // matin deleted
+    R_Matrix<double> matin(REALSXP,ntsin.getMatrix());
+    size_t nr = matin.getNrows();
+    size_t nc = matin.getNcols();
+    double *din = matin.getDataPtr();
+    vector<string> colNames = matin.getColumnNames();
 
-    std::auto_ptr<R_utime> posin(ntsin->getPositions());
+    R_utime posin(ntsin.getPositions());
 
     bool inWeights = useWeights;
 
-    vector<int> wmapin = ntsin->getWeightMap();
+    vector<int> wmapin = ntsin.getWeightMap();
     if (wmapin.size() == 0) inWeights = 0;
 
-    int *win = 0;
+    std::auto_ptr<R_Matrix<double> > wtsin;
+    double *win = 0;
     if (inWeights) {
-        R_Matrix<int> *wtsin = ntsin->getWeights();	// must be deleted
+        wtsin.reset(new R_Matrix<double>(REALSXP,ntsin.getWeights()));
         win = wtsin->getDataPtr();
-        delete wtsin;
     }
 
     int is=0,ns=0;
@@ -121,28 +120,28 @@ SEXP NtsMath::averageMean(R_nts *ntsin, double avgint,
 
     double tsum,tsum0;
     double sum;
-    int cnt;
+    double cnt;
 
     double tt;
     double d;
 
     bool inWeightCol;
-    int weight;
+    double weight;
 
-    double t0 = posin->getTime(0);
+    double t0 = posin.getTime(0);
     tsum0 = ceil(t0 / outint) * outint;
     if (tsum0 == t0) tsum0 += outint;
 
     vector<double> sums(nsum);
-    vector<int> nsums(nsum);
+    vector<double> nsums(nsum);
     for (k = 0; k < nsum; k++) {
         sums[k] = 0.;
         nsums[k] = 0;
     }
 
-    nout = (int) ceil((posin->getTime(nr-1) - tsum0) / outint) + 1;
+    nout = (int) ceil((posin.getTime(nr-1) - tsum0) / outint) + 1;
     if (nout < 1) {
-        double ttmp = posin->getTime(nr-1);
+        double ttmp = posin.getTime(nr-1);
         std::ostringstream ost;
         ost << "not enough data to average,nout=" << nout <<
             ",dt=" << ttmp-tsum0 <<
@@ -166,11 +165,11 @@ SEXP NtsMath::averageMean(R_nts *ntsin, double avgint,
     R_utime posout;
     posout.setLength(nout);
 
-    R_Matrix<int> wtsout(INTSXP,nout,nc);
+    R_Matrix<double> wtsout(REALSXP,nout,nc);
     vector<int> wmapout(nc);
 
-    int *wout0 = wtsout.getDataPtr();
-    int *wout;
+    double *wout0 = wtsout.getDataPtr();
+    double *wout;
 
     int sc,wc = 0;
 
@@ -194,7 +193,7 @@ SEXP NtsMath::averageMean(R_nts *ntsin, double avgint,
         /* fprintf(stderr,"useWeights=%d, ic=%d, wc=%d\n",(int)useWeights,ic,wc); */
 
         for (ir = 0; ir < nr; ir++) {
-            tt = posin->getTime(ir);
+            tt = posin.getTime(ir);
 
             while (tt > tsum) {       /* sum is finished */
                 ns++;
@@ -208,7 +207,7 @@ SEXP NtsMath::averageMean(R_nts *ntsin, double avgint,
 
                     // check for data overrun
                     if (navg == nout) {
-                        double ttmp = posin->getTime(nr-1);
+                        double ttmp = posin.getTime(nr-1);
                         std::ostringstream ost;
                         ost << "navg=" << navg << ",nout=" << nout <<
                             ", tdiff=" << ttmp-tsum0 << ", outint=" << outint <<
@@ -234,7 +233,7 @@ SEXP NtsMath::averageMean(R_nts *ntsin, double avgint,
             if (inWeightCol) weight = win[wc+ir];
 
             if (!ISNAN(d))
-                { sums[is] += (double)d * weight; nsums[is] += weight; }
+                { sums[is] += d * weight; nsums[is] += weight; }
         }
 
         for (int i = 0; i < (nsum-1)/2+1; i++) {
@@ -249,7 +248,7 @@ SEXP NtsMath::averageMean(R_nts *ntsin, double avgint,
             }
             // check for data overrun
             if (navg == nout) {
-                double ttmp = posin->getTime(nr-1);
+                double ttmp = posin.getTime(nr-1);
                 std::ostringstream ost;
                 ost << "navg=" << navg << ",nout=" << nout <<
                     ", tdiff=" << ttmp-tsum0 << ", outint=" << outint <<
@@ -279,19 +278,22 @@ SEXP NtsMath::averageMean(R_nts *ntsin, double avgint,
     }
     matout.setColumnNames(colNames);
     wtsout.setColumnNames(colNames);
-    ntsout.setMatrix(&matout);
-    ntsout.setPositions(&posout);
-    ntsout.setUnits(ntsin->getUnits());
-    ntsout.setStations(ntsin->getStationNames(),ntsin->getStationNumbers());
+
+    ntsout.setMatrix(matout.getRObject());
+
+    ntsout.setPositions(posout.getRObject());
+    ntsout.setUnits(ntsin.getUnits());
+
+    ntsout.setStations(ntsin.getStationNames(),ntsin.getStationNumbers());
     ntsout.setWeights(wtsout.getRObject());
     ntsout.setWeightMap(wmapout);
-    ntsout.setTimeFormat(ntsin->getTimeFormat());
-    ntsout.setTimeZone(ntsin->getTimeZone());
+    ntsout.setTimeFormat(ntsin.getTimeFormat());
+    ntsout.setTimeZone(ntsin.getTimeZone());
 
     return ntsout.getRObject();
 }
 
-SEXP NtsMath::averageMedian(R_nts *ntsin, double avgint,
+SEXP NtsMath::averageMedian(R_nts& ntsin, double avgint,
         double outint, char outWeights)
 {
 
@@ -306,14 +308,13 @@ SEXP NtsMath::averageMedian(R_nts *ntsin, double avgint,
         Rf_error(ost.str().c_str());
     }
 
-    R_Matrix<double> *matin = ntsin->getRealMatrix();	// must be deleted
-    size_t nr = matin->getNrows();
-    size_t nc = matin->getNcols();
-    double *din = matin->getDataPtr();
-    vector<string> colNames = matin->getColumnNames();
-    delete matin;                                         // matin deleted here
+    R_Matrix<double> matin(REALSXP,ntsin.getMatrix());
+    size_t nr = matin.getNrows();
+    size_t nc = matin.getNcols();
+    double *din = matin.getDataPtr();
+    vector<string> colNames = matin.getColumnNames();
 
-    std::auto_ptr<R_utime> posin(ntsin->getPositions());
+    R_utime posin(ntsin.getPositions());
 
     int is,ns=0;
     int nout,navg = 0;
@@ -323,19 +324,19 @@ SEXP NtsMath::averageMedian(R_nts *ntsin, double avgint,
     double tt;
     double d;
 
-    double t0 = posin->getTime(0);
+    double t0 = posin.getTime(0);
     tint0 = ceil(t0 / outint) * outint;
     if (tint0 == t0) tint0 += outint;
 
     double inputres = 0.;
-    if (nr > 1) inputres = posin->getTime(1) - posin->getTime(0);
+    if (nr > 1) inputres = posin.getTime(1) - posin.getTime(0);
     if (inputres <= 0.) inputres = 1.;
     int neachalloc = (int) (avgint / inputres);
     if (neachalloc < 5) neachalloc = 5;
 
-    nout = (int) ceil((posin->getTime(nr-1) - tint0) / outint) + 1;
+    nout = (int) ceil((posin.getTime(nr-1) - tint0) / outint) + 1;
     if (nout < 1) {
-        double ttmp = posin->getTime(nr-1);
+        double ttmp = posin.getTime(nr-1);
         std::ostringstream ost;
         ost << "not enough data to average,nout=" << nout <<
             ",dt=" << ttmp-tint0 <<
@@ -344,7 +345,6 @@ SEXP NtsMath::averageMedian(R_nts *ntsin, double avgint,
         Rf_error(ost.str().c_str());
     }
 
-    R_nts ntsout;
 
     R_Matrix<double> matout(REALSXP,nout,nc);
     double *dout0 = matout.getDataPtr();
@@ -353,12 +353,12 @@ SEXP NtsMath::averageMedian(R_nts *ntsin, double avgint,
     R_utime posout;
     posout.setLength(nout);
 
-    R_Matrix<int> wtsout(INTSXP,outWeights ? nout: 0,nc);
+    R_Matrix<double> wtsout(REALSXP,outWeights ? nout: 0,nc);
     vector<int> wmapout(nc);
 
-    int *wout0 = 0;
+    double *wout0 = 0;
     if (outWeights) wout0 = wtsout.getDataPtr();
-    int *wout;
+    double *wout;
 
     int sc;
     vector<int> npoints(nint);   /* how many points in each output interval */
@@ -381,14 +381,14 @@ SEXP NtsMath::averageMedian(R_nts *ntsin, double avgint,
             npoints[k] = 0;
 
         for (ir = 0; ir < nr; ir++) {
-            tt = posin->getTime(ir);
+            tt = posin.getTime(ir);
 
             while (tt > tint) {       /* at end of interval */
                 ns++;
                 if (ns >= (nint-1)/2+1) {
                     // check for data overrun
                     if (navg == nout) {
-                        double ttmp = posin->getTime(nr-1);
+                        double ttmp = posin.getTime(nr-1);
                         std::ostringstream ost;
                         ost << "navg=" << navg << ",nout=" << nout <<
                             ", tdiff=" << ttmp-tint0 << ", outint=" << outint <<
@@ -434,7 +434,7 @@ SEXP NtsMath::averageMedian(R_nts *ntsin, double avgint,
 
             // check for data overrun
             if (navg == nout) {
-                double ttmp = posin->getTime(nr-1);
+                double ttmp = posin.getTime(nr-1);
                 std::ostringstream ost;
                 ost << "navg=" << navg << ",nout=" << nout <<
                     ", tdiff=" << ttmp-tint0 << ", outint=" << outint <<
@@ -473,16 +473,21 @@ SEXP NtsMath::averageMedian(R_nts *ntsin, double avgint,
 
     matout.setColumnNames(colNames);
     if (outWeights) wtsout.setColumnNames(colNames);
-    ntsout.setMatrix(&matout);
-    ntsout.setPositions(&posout);
-    ntsout.setUnits(ntsin->getUnits());
-    ntsout.setStations(ntsin->getStationNames(),ntsin->getStationNumbers());
+
+    R_nts ntsout;
+
+    ntsout.setMatrix(matout.getRObject());
+
+    ntsout.setPositions(posout.getRObject());
+
+    ntsout.setUnits(ntsin.getUnits());
+    ntsout.setStations(ntsin.getStationNames(),ntsin.getStationNumbers());
     if (outWeights) {
         ntsout.setWeights(wtsout.getRObject());
         ntsout.setWeightMap(wmapout);
     }
-    ntsout.setTimeFormat(ntsin->getTimeFormat());
-    ntsout.setTimeZone(ntsin->getTimeZone());
+    ntsout.setTimeFormat(ntsin.getTimeFormat());
+    ntsout.setTimeZone(ntsin.getTimeZone());
 
     return ntsout.getRObject();
 }
