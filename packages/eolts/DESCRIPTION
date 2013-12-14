@@ -1,7 +1,7 @@
 Package: eolts
 Version: 0.0-1
 Date: 2013-09-13
-Title: Support for reading and manipulation of time series, developed at the NCAR EOL.
+Title: Support for reading, writing, and analysis and plotting of time series and spectra.
 Authors@R: person("Gordon","Maclean",role=c("aut","cre"),
             email="maclean@ucar.edu")
 Author: Gordon Maclean
@@ -10,8 +10,6 @@ Depends: R (>= 1.8.0), methods
 Imports: splusTimeDate,splusTimeSeries
 Suggests: RUnit
 Collate: onAttach.R cache.R utime.R nts.R netcdf.R dpar.R plot.R eoltsLdpath.R fftw.R spectra.R plot.spectra.R netcdfWrite.R
-Description: This package provides R functions to read time-series data
-  from NetCDF files containing data acquired by the Integrated Surface
-  Flux System (ISFS) of the NCAR Earth Observing Laboratory (EOL).
+Description: This package provides R functions to read, analyse, plot and write time series data, and support for generation and plotting of spectra from time series. Support includes reading time series from multiple NetCDF files. Developed at the National Center for Atmospheric Research, Earth Observing Laboratory (NCAR EOL), sponsored by the National Science Foundation.
 License: GPL (>= 2)
 URL: http://www.eol.ucar.edu/

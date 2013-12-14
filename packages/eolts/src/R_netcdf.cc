@@ -532,7 +532,9 @@ void R_netcdf::openFileSet(SEXP obj)
         SEXP dn = STRING_ELT(slot,i);
         fnames.push_back(CHAR(dn));
     }
+#ifdef HAVE_NC_SERVER
     if (fnames.size() > 0) _filenamefmt = fnames[0];
+#endif
 
     slot = Rf_getAttrib(obj,dirSlotName);
 #ifdef DEBUG
@@ -544,7 +546,9 @@ void R_netcdf::openFileSet(SEXP obj)
         SEXP dn = STRING_ELT(slot,i);
         dnames.push_back(CHAR(dn));
     }
+#ifdef HAVE_NC_SERVER
     if (dnames.size() > 0) _outputdir = dnames[0];
+#endif
 
     vector<string> fullnames = makeFileNameList(fnames,dnames);
 
