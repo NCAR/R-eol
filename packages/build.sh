@@ -1,31 +1,82 @@
 #!/bin/sh
 
-ver=$(R -q --version | sed -nr 's/^R version ([0-9]+\.[0-9]+).*$/\1/p')
-plat=$(R -q --version | sed -nr 's/^Platform: +([^ ]+).*$/\1/p')
+if [ $# -eq 0 ]; then
+    echo "Usage: ${0##*/} [-e] [-c] [-i] [-I]"
+    exit 1
+fi
 
-rlib=$HOME/R/${plat}-library/$ver
-echo "rlib=$rlib"
+do_eolts=false
+do_check=false
+do_isfs=false
+do_install=false
 
-[ -d $rlib ] | mkdir -p $rlib
+while [ $# -gt 0 ]; do
+    case $1 in
+    -e)
+        do_eolts=true
+        ;;
+    -c)
+        do_check=true
+        ;;
+    -i)
+        do_isfs=true
+        ;;
+    -I)
+        do_install=true
+        ;;
+    *)
+        echo "huh?"
+        exit 1
+        ;;
+    esac
+    shift
+done
 
+# ver=$(R -q --version | sed -nr 's/^R version ([0-9]+\.[0-9]+).*$/\1/p')
+# plat=$(R -q --version | sed -nr 's/^Platform: +([^ ]+).*$/\1/p')
+# rlib=$HOME/R/${plat}-library/$ver
+# [ -d $rlib ] | mkdir -p $rlib
 # rm -rf /home/maclean/R/x86_64-redhat-linux-gnu-library/3.0/eolts
 # rm -rf /home/maclean/R/x86_64-redhat-linux-gnu-library/3.0/isfs
 
-# build package tar ball
-# R CMD build eolts
+rlib=$(R RHOME)/site-library
 
-cd eolts
-autoconf
-cd -
+# --vanilla does --no-environ so we have to set R_LIBS_SITE ourselves
+# export R_LIBS_SITE=$rlib
+rargs="--vanilla"
 
-# build package tar ball and install it into $rlib
-# -l library
-# R --vanilla CMD INSTALL --preclean --build --configure-args=--with-netcdf-include=/tmp/bozo eolts || exit $?
-R --vanilla CMD INSTALL --preclean --build eolts || exit $?
-# R CMD INSTALL --clean eolts
+if $do_eolts; then
 
-# echo "building isfs"
-R --vanilla CMD INSTALL --preclean --build isfs || exit $?
+    cd eolts
+    autoreconf
+    cd -
 
-R --vanilla CMD build eolts || exit ?
-R --vanilla CMD build isfs || exit ?
+
+    R $rargs CMD build eolts || exit ?
+    R $rargs CMD INSTALL -l $rlib eolts_[0-9].[0-9]-[0-9].tar.gz || exit $?
+
+    if $do_check; then
+        R $rargs CMD check -o /tmp eolts_[0-9].[0-9]-[0-9].tar.gz || exit $?
+        # R --vanilla --environ CMD check --use-valgrind -o /tmp eolts_*.tar.gz || exit $?
+    fi
+fi
+
+if $do_isfs; then
+
+    cd isfs
+    autoreconf
+    cd -
+
+    R $rargs CMD build isfs || exit ?
+    R $rargs CMD INSTALL -l $rlib isfs_[0-9].[0-9]-[0-9].tar.gz || exit $?
+
+    if $do_check; then
+        R $rargs CMD check -o /tmp isfs_[0-9].[0-9]-[0-9].tar.gz || exit $?
+        # R --vanilla --environ CMD check --use-valgrind -o /tmp eolts_*.tar.gz || exit $?
+    fi
+fi
+
+if $do_install; then
+    scp eolts_0.0-1.tar.gz isfs_0.0-1.tar.gz porter2:/net/www/docs/software/R/src/contrib
+fi
+
