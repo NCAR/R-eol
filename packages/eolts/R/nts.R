@@ -1609,7 +1609,7 @@ setMethod("show",signature(object="nts"),
 
 # setGeneric("approx",function(x,...) standardGeneric("approx"))
 setMethod("approx",signature(x="nts"),
-    function(x,xout,method="linear",rule=1,f=0)
+    function(x,y=NULL,xout,method="linear",n=NA,yleft,yright,rule=1,f=0,ties=mean)
     {
         nc <- ncol(x)
         if (inherits(xout,"nts")) xout <- as.numeric(tspar(xout))

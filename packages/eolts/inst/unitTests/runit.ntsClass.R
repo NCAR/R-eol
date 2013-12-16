@@ -105,7 +105,16 @@ test.nts = function()
     checkEquals(x@data,xxx@data[,1:nc])
     checkEquals(xx@data,xxx@data[,(nc+1):(nc*2)])
 
+    # approx if x to txn times, which are earlier by 0.4 sec. So 
+    xx = approx(x,xout=txn,method="constant",f=0,rule=2)
+    checkEquals(dim(xx),c(nr,nc))
+    # first value of x will be in rows 1 and 2 of new timeseries
+    # last value of x won't exist in new timeseries. 
+    checkTrue(all(abs((x@data[-nr,]-xx@data[-1,])) < .00001))
+    checkTrue(all(abs((xx@data[1,]-xx@data[2,])) < .00001))
+
     # TODO: seriesMerge
+
 
     return()
 }
