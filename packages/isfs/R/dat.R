@@ -1054,27 +1054,6 @@ setMethod("average", signature="dat",
     }
 )
 
-if (FALSE) {
-setMethod("[<-",signature(x="dat",value="ANY"),
-    function(x,...,value)
-    {
-        class(x) <- "nts"
-        # x <- getMethod("[<-",signature(x="nts",value="ANY"))(x,...,value)
-        x[...] <- value
-        if (inherits(x,"nts")) class(x) <- "dat"
-        x
-    }
-)
-
-setMethod("approx",signature(x="dat"),
-    function(x,xout,...)
-    {
-        class(x) <- "nts"
-        dat(approx(x,xout,...))
-    }
-)
-}
-
 other.dat.func <- function(what,whine=T)
 {
     nd <- length(search())

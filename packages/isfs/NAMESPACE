@@ -45,7 +45,6 @@ exportMethods(
     "Rbind",
     "Cbind",
     "average",
-    "approx",
     "Compare",
     "Math",
     "Math2",

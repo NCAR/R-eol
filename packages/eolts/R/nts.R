@@ -1607,7 +1607,7 @@ setMethod("show",signature(object="nts"),
     }
 )
 
-# setGeneric("approx",function(x,...) standardGeneric("approx"))
+setGeneric("approx")
 setMethod("approx",signature(x="nts"),
     function(x,y=NULL,xout,method="linear",n=NA,yleft,yright,rule=1,f=0,ties=mean)
     {
@@ -1662,7 +1662,7 @@ setMethod("approx",signature(x="nts"),
                         y=x@data,xout=xout-xoff,method=method,rule=rule,f=f)$y
             }
         }
-        nts(yout,xout,units=dunits,stations=stns)
+        as(nts(yout,xout,units=dunits,stations=stns),class(x))
     }
 )
 
