@@ -742,7 +742,7 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
                 wmap.x <- x@weightmap
 
                 if (length(weights.x) > 0) {
-                    wmap.x[j] <- 0
+                    wmap.x[j] <- 0L
                     wm <- wmap.x != 0	# untouched columns with weights
                     if (length(weights.new) > 0 && nrow(weights.x) != nrow(weights.new)) {
                         # if (nr != nrow(value))
@@ -750,21 +750,21 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
                         # nrow(value),")",sep=""))
 
                         weights.new <- NULL
-                        wmap.new[] <- 0
+                        wmap.new[] <- 0L
                         wm.new[] <- F
                     }
                     if (any(wm)) {
                         uwm <- unique(wmap.x[wm])
                         weights.x <- weights.x[,uwm,drop=F]
-                        wmap.x <- match(wmap.x,uwm,nomatch=0)
+                        wmap.x <- match(wmap.x,uwm,nomatch=0L)
                     }
                     else weights.x <- NULL
                 }
-                else wmap.x <- rep(0,nc)
+                else wmap.x <- rep(0L,nc)
 
                 if (length(weights.new) > 0) {
                     weights.x <- cbind(weights.x,weights.new)
-                    wmap.new[wm.new] <- wmap.new[wm.new] + max(wmap.x)
+                    wmap.new[wm.new] <- wmap.new[wm.new] + as.integer(max(wmap.x))
                     wmap.x[j] <- wmap.new
                 }
 
