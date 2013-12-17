@@ -57,7 +57,7 @@ dat.u <- function(what,cache=F,...)
 
         # Flip the sign of vazimuth if rotating from geo to instrument
         if (dcoords == "geo") vazm = -vazm
-        if (inherits(vazm,"nts")) vazm <- conform(vazm,u)
+        vazm <- conform(vazm,u)
 
         # double check the above conform
         usfx = suffixes(u)
@@ -87,7 +87,7 @@ dat.u <- function(what,cache=F,...)
         if (any(is.na(vazm))) vazm <- replace.nas(vazm,warn=F)
 
         # count number of non-NAs in each column
-        vazm.ok <- as.vector(t(!is.na(vazm)) %*% rep(1,nrow(vazm))) > 0
+        vazm.ok <- as.vector(t(!is.na(vazm@data)) %*% rep(1,nrow(vazm))) > 0
         if (any(!vazm.ok)) {
             warning(paste("No sonic Vazimuth data available for stations",
                     paste(stations(u)[!vazm.ok],collapse=" "),"\nusing median from other stations"))
@@ -137,7 +137,7 @@ dat.v <- function(what,cache=F,...)
 
         # Flip the sign of vazimuth if rotating from geo to instrument
         if (dcoords == "geo") vazm = -vazm
-        if (inherits(vazm,"nts")) vazm <- conform(vazm,v)
+        vazm <- conform(vazm,v)
 
         # double check the above conform
         usfx = suffixes(u)
@@ -167,7 +167,7 @@ dat.v <- function(what,cache=F,...)
         if (any(is.na(vazm))) vazm <- replace.nas(vazm,warn=F)
 
         # count number of non-NAs in each column
-        vazm.ok <- as.vector(t(!is.na(vazm)) %*% rep(1,nrow(vazm))) > 0
+        vazm.ok <- as.vector(t(!is.na(vazm@data)) %*% rep(1,nrow(vazm))) > 0
         if (any(!vazm.ok)) {
             warning(paste("No sonic Vazimuth data available for stations",
                     paste(stations(u)[!vazm.ok],collapse=" "),"\nusing median from other stations"))
