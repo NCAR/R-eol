@@ -15,7 +15,7 @@ sonic_tilt_data <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
     if (rcoords != "instrument") {
         on.exit(dpar(coords=rcoords),add=T)
         dpar(coords="instrument")
-        if (missing(uvw))
+        if (is.null(uvw))
             warning("tilts will be computed in instrument coordinates")
         else
             warning("Make sure uvw data is in instrument coordinates")
@@ -323,11 +323,11 @@ plot_tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
     tfmt <- "%Y %b %d %H:%M"
     title(sub=paste(paste(format(start(u),format=tfmt),
                 format(end(u),format=paste(tfmt,"%Z")),sep="-"),
-            "; stn=",dpar("stns"),sep=""),cex=0.7)
+            "; stn=",stations(u),sep=""),cex=0.7)
 
     # notate dataset()
     if (exists(".projectEnv") && exists("dataset.which",envir=get(".projectEnv")))
-        mtext(paste("dataset =",get("dataset.which",envir=get(".projectEnv"))), 2.2, adj=1)
+        mtext(paste("dataset =",get("dataset.which",envir=get(".projectEnv"))),side=3, adj=1)
 
     # Plot fitted curve:
     az <- seq(-180,180,5)
