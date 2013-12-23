@@ -29,7 +29,8 @@
 #endif
 
 extern "C" {
-    SEXP open_netcdf(SEXP con,SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod);
+    SEXP open_netcdf(SEXP con,SEXP files, SEXP cdlfile, SEXP rpcTimeout,
+            SEXP rpcBatchPeriod);
 
     SEXP read_netcdf(SEXP obj,SEXP variables, SEXP start, SEXP count);
 
@@ -59,7 +60,7 @@ namespace eolts {
 class R_netcdf {
 public:
 
-    R_netcdf(SEXP obj, SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod);
+    R_netcdf(SEXP obj, SEXP files, SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod);
 
     virtual ~R_netcdf();
 
@@ -158,9 +159,15 @@ private:
 
     static std::set<R_netcdf*> _openSet;
 
+    /** Directory of NetCDF files */
+    std::string _dir;
+
+    /** file name, usually contains date format descriptors, see man cftime */
+    std::string _filenamefmt;
+
     NcFileSet* _fileset;
 
-    void openFileSet(SEXP obj);
+    void openFileSet(SEXP obj, SEXP files);
 
 #ifdef HAVE_NC_SERVER
 
@@ -236,15 +243,12 @@ private:
 
     void rpcopen(void) throw(RPC_Exception);
 
-
     std::string _server;
 
-    /** file name, usually contains date format descriptors, see man cftime */
-    std::string _filenamefmt;
-    std::string _outputdir;
     std::string _cdlfile;
 
     unsigned int _lenfile;
+
     double _interval;
 
     CLIENT *_clnt;

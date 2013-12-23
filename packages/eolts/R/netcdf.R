@@ -52,9 +52,9 @@ netcdf <- function(
         times <- monthly(from=utime(start,time.zone="GMT"),to=end-1)
     else times <- seq(from=utime(floor(start/lenfile)*lenfile),to=end-1,by=lenfile)
 
-    obj@file <- unique(format(times,format=as(file,"character"),time.zone="GMT"))
+    files <- unique(format(times,format=as(file,"character"),time.zone="GMT"))
 
-    .Call("open_netcdf",obj,cdlfile,300L,300L,PACKAGE="eolts")
+    .Call("open_netcdf",obj,files,cdlfile,300L,300L,PACKAGE="eolts")
 }
 
 setClass("netcdfVariable",
@@ -128,13 +128,6 @@ setMethod("stations",
         .Call("get_stations",x,PACKAGE="eolts")
     }
 )
-
-# We could make these methods instead of functions.
-# Calling them "read" would be using a common name, and might
-# conflict with future releases of S, or other extensions.
-# (As of Splus v6, read is not used.)
-# Since all methods must have the same signature (unless we use ...)
-# we probably shouldn't use the name "read" here.
 
 setGeneric("readnc",function(con,variables,start,count,...)
     standardGeneric("readnc"))

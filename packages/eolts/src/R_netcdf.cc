@@ -37,16 +37,13 @@ SEXP R_netcdf::lenfileSlotName;
 /** Utility functions in anonymous namespace */
 namespace {
 
-    vector<string> makeFileNameList(const vector<string>& fnames,
-            const vector<string>& dnames)
+    vector<string> makeFileNameList(const string& dir, const vector<string>& fnames)
     {
         vector<string> res;
         const char pathSeparator = '/';
         for (unsigned int i = 0; i < fnames.size(); i++) {
-            unsigned int nd = 0;
-            if (dnames.size() > 0) nd = i % dnames.size();
-            if (dnames[nd].size() > 0)
-                res.push_back(dnames[nd] + pathSeparator + fnames[i]);
+            if (dir.length() > 0)
+                res.push_back(dir + pathSeparator + fnames[i]);
             else
                 res.push_back(fnames[i]);
         }
@@ -55,7 +52,7 @@ namespace {
 
 }
 
-SEXP open_netcdf(SEXP con,SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod)
+SEXP open_netcdf(SEXP con,SEXP files, SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod)
 {
 
 #ifdef DEBUG
@@ -67,7 +64,7 @@ SEXP open_netcdf(SEXP con,SEXP cdlfile, SEXP rpcTimeout, SEXP rpcBatchPeriod)
         Rprintf("class=%s\n",classname.c_str());
     }
 #endif
-    new R_netcdf(con,cdlfile,rpcTimeout,rpcBatchPeriod);
+    new R_netcdf(con,files,cdlfile,rpcTimeout,rpcBatchPeriod);
     return con;
 }
 
@@ -386,11 +383,11 @@ SEXP write_history_ns(SEXP args)
 
 #endif
 
-R_netcdf::R_netcdf(SEXP con, SEXP cdlfile,
+R_netcdf::R_netcdf(SEXP con, SEXP files, SEXP cdlfile,
         SEXP rpcTimeout, SEXP rpcBatchPeriod):
-    _fileset(0)
+    _dir(),_filenamefmt(),_fileset(0)
 #ifdef HAVE_NC_SERVER
-    ,_server(),_filenamefmt(),_outputdir(),_cdlfile(),
+    ,_server(),_cdlfile(),
     _lenfile(0),_interval(0),_clnt(0),_id(-1),
     _rpcBatchPeriod(),_rpcWriteTimeout(),_rpcOtherTimeout(),
     _batchTimeout(),_ntry(0),_NTRY(10),
@@ -445,9 +442,19 @@ R_netcdf::R_netcdf(SEXP con, SEXP cdlfile,
     _rpcBatchPeriod = INTEGER(rpcBatchPeriod)[0];
 #endif
 
+    slot = Rf_getAttrib(con,fileSlotName);
+    if (TYPEOF(slot) != STRSXP || Rf_length(slot) != 1)
+        Rf_error("file slot of netcdf object is not string, length 1");
+    _filenamefmt = string(CHAR(STRING_ELT(slot,0)));
+
+    slot = Rf_getAttrib(con,dirSlotName);
+    if (TYPEOF(slot) != STRSXP || Rf_length(slot) != 1)
+        Rf_error("directory slot of netcdf object is not string, length 1");
+    _dir = string(CHAR(STRING_ELT(slot,0)));
+
     addConnection(this);
 
-    openFileSet(con);
+    openFileSet(con,files);
 }
 
 R_netcdf::~R_netcdf()
@@ -520,39 +527,21 @@ R_netcdf *R_netcdf::getR_netcdf(SEXP obj)
     return con;
 }
 
-void R_netcdf::openFileSet(SEXP obj)
+void R_netcdf::openFileSet(SEXP obj,SEXP files)
 {
-    SEXP slot = Rf_getAttrib(obj,fileSlotName);
 #ifdef DEBUG
     Rprintf("file slot length=%d, type=%d\n",Rf_length(slot),TYPEOF(slot));
 #endif
 
     vector<string> fnames;
-    for (size_t i = 0; i < (unsigned)Rf_length(slot); i++) {
-        SEXP dn = STRING_ELT(slot,i);
+    for (size_t i = 0; i < (unsigned)Rf_length(files); i++) {
+        SEXP dn = STRING_ELT(files,i);
         fnames.push_back(CHAR(dn));
     }
-#ifdef HAVE_NC_SERVER
-    if (fnames.size() > 0) _filenamefmt = fnames[0];
-#endif
 
-    slot = Rf_getAttrib(obj,dirSlotName);
-#ifdef DEBUG
-    Rprintf("dir slot length=%d, type=%d\n",Rf_length(slot),TYPEOF(slot));
-#endif
+    vector<string> fullnames = makeFileNameList(_dir,fnames);
 
-    vector<string> dnames;
-    for (size_t i = 0; i < (unsigned)Rf_length(slot); i++) {
-        SEXP dn = STRING_ELT(slot,i);
-        dnames.push_back(CHAR(dn));
-    }
-#ifdef HAVE_NC_SERVER
-    if (dnames.size() > 0) _outputdir = dnames[0];
-#endif
-
-    vector<string> fullnames = makeFileNameList(fnames,dnames);
-
-    slot = Rf_getAttrib(obj,timeNamesSlotName);
+    SEXP slot = Rf_getAttrib(obj,timeNamesSlotName);
 
     vector<string> tnames;
     for (size_t i = 0; i < (unsigned)Rf_length(slot); i++) {
@@ -731,20 +720,26 @@ void R_netcdf::rpcopen(void) throw(RPC_Exception)
     int result;
     enum clnt_stat clnt_stat;
 
+#ifdef DEBUG
+    Rprintf("rpcopen: _rpcBatchPeriod=%d,_rpcWriteTimeout=%d,%d,_rpcOtherTimeout=%d,%d\n",
+            _rpcBatchPeriod,
+            _rpcWriteTimeout.tv_sec, _rpcWriteTimeout.tv_usec,
+            _rpcOtherTimeout.tv_sec, _rpcOtherTimeout.tv_usec);
+#endif
+
     _clnt = clnt_create(_server.c_str(), NETCDFSERVERPROG, NETCDFSERVERVERS,"tcp");
     if (_clnt == (CLIENT *) NULL)
         throw RPC_Exception(clnt_spcreateerror(_server.c_str()));
 
     conn.filenamefmt = (char *)_filenamefmt.c_str();
-
-    conn.outputdir = (char *)_outputdir.c_str();
+    conn.outputdir = (char *)_dir.c_str();
     conn.cdlfile = (char *)_cdlfile.c_str();
     conn.filelength = _lenfile;
     conn.interval = _interval;
 
 #ifdef DEBUG
-    Rprintf("conn.filelength=%f,conn.interval=%f\n",
-            _lenfile,_interval);
+    Rprintf("conn: file=%s,dir=%s,cdlfile=%s,filelength=%d,interval=%f\n",
+            conn.filenamefmt,conn.outputdir,conn.cdlfile,_lenfile,_interval);
 #endif
 
     result = 0;
@@ -764,7 +759,7 @@ void R_netcdf::rpcopen(void) throw(RPC_Exception)
         clnt_destroy(_clnt);
         _clnt = 0;
         string msg("nc_server connection failed: perhaps ");
-        msg = msg + _outputdir + " does not exist on server";
+        msg = msg + _dir + " does not exist on server";
         throw RPC_Exception(msg);
     }
 
