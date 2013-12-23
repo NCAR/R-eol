@@ -702,7 +702,9 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
             if (nargs() == 4 && !identical(dim(i),dim(x))) j <- 1:nc
         }
 
+        if (is.logical(i) && any(is.na(i))) i[is.na(i)] <- FALSE
         if (is.character(j)) j <- match(j,dimnames(x)[[2]],nomatch=0)
+        if (is.logical(j) && any(is.na(j))) j[is.na(j)] <- FALSE
 
         # If updating all rows of x, then update detrend parameters, units
         # and weights
@@ -749,7 +751,7 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
                         # warning(paste("nrows of x (",nr,") are not equal to nrows of value (",
                         # nrow(value),")",sep=""))
 
-                        weights.new <- NULL
+                        weights.new <- matrix(0,ncol=0,nrow=0)
                         wmap.new[] <- 0L
                         wm.new[] <- F
                     }
@@ -758,7 +760,7 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
                         weights.x <- weights.x[,uwm,drop=F]
                         wmap.x <- match(wmap.x,uwm,nomatch=0L)
                     }
-                    else weights.x <- NULL
+                    else weights.x <- matrix(0,ncol=0,nrow=0)
                 }
                 else wmap.x <- rep(0L,nc)
 
@@ -855,7 +857,9 @@ setReplaceMethod("[",signature(x="nts",value="vector"),
             if (nargs() == 4 && !identical(dim(i),dim(x))) j <- 1:nc
         }
 
+        if (is.logical(i) && any(is.na(i))) i[is.na(i)] <- FALSE
         if (is.character(j)) j <- match(j,dimnames(x)[[2]],nomatch=0)
+        if (is.logical(j) && any(is.na(j))) j[is.na(j)] <- FALSE
 
         if (is.null(j)) x@data[i] <- value
         else x@data[i,j] <- value
