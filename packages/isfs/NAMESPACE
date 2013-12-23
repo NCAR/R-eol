@@ -25,7 +25,8 @@ export(
     select_sonic_tilt_data,
     fit_tilt,
     plot_tilt,
-    sonic_tilt_matrix
+    sonic_tilt_matrix,
+    sync
 )
 
 exportPattern("^dat\\.")
