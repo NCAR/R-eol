@@ -58,13 +58,13 @@ calc.Rlw <- function(Rpile,Tcase,Tdome=NULL,B=4,swcor=0,Rsw=NULL)
     Rpile
 }
 
-dat.Rlw.in <- function(what,B=dpar("pyrgeometer.B"),
+dat.Rlw.in <- function(what,derived=TRUE,B=dpar("pyrgeometer.B"),
     swcor=dpar("pyrgeometer.swcor"),robust=dpar("robust"),...)
 {
     dat.Rlw.either(what=what,B=B,swcor=swcor,robust=robust,...)
 }
 
-dat.Rlw.out <- function(what,B=dpar("pyrgeometer.B"),
+dat.Rlw.out <- function(what,derived=TRUE,B=dpar("pyrgeometer.B"),
     swcor=dpar("pyrgeometer.swcor"),robust=dpar("robust"),...)
 {
     dat.Rlw.either(what=what,B=B,swcor=swcor,robust=robust,...)
@@ -148,7 +148,7 @@ dat.Rlw.either <- function(what="Rlw.out",B=dpar("pyrgeometer.B"),
 
     # Check if Rlw is available without being derived.
     if (any(words(variables(),1,nwords(what,sep=".")) == what)) {
-        x2 = dat(what,...,derived=F)
+        x2 = dat(what,derived=F,...)
         if (is.null(x)) x = x2
         else if (!is.null(x2)) x = Cbind(x,x2)
     }
