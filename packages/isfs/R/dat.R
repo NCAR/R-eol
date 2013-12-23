@@ -123,10 +123,9 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
 
         # Look for a dat function  dat.what
         fcn <- paste("dat",what,sep=".")
+        if (fcn == "dat.heightSonic") browser()
         if (existsFunction(fcn,generic=FALSE)) {
-            # For some reason getFunction(...,generic=FALSE,mustFind = TRUE)
-            # doesn't find functions on an attached file.
-            f = get(fcn,mode="function")
+            f = getFunction(fcn,generic=FALSE,mustFind=TRUE,where=1)
             x = f(what=what,derived=derived,cache=cache,...)
             if (smooth || avg)
               x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
