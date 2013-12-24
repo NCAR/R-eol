@@ -270,7 +270,9 @@ SEXP NtsMath::averageMean(R_nts& ntsin, double avgint,
             nsums[is] = 0;
         }
     }
-    // fprintf(stderr,"navg=%d, nout=%d\n",navg,nout);
+#ifdef DEBUG
+    Rprintf("navg=%d, nout=%d\n",navg,nout);
+#endif
     if (navg != nout) {
         matout.setDims(navg,nc);
         wtsout.setDims(navg,nc);

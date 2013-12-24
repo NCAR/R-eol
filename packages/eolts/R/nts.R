@@ -275,6 +275,15 @@ setReplaceMethod("positions", signature(object="nts",value="utime"),
     }
     )
 
+setReplaceMethod("positions", signature(object="nts",value="ANY"),
+    function(object,value)
+    {
+        object@positions <- as(value,"utime")
+        object
+    }
+    )
+
+
 setMethod("dim", signature(x="nts"),
     function(x)
     {
@@ -1574,6 +1583,8 @@ setMethod("average", signature=(x="nts"),
                 outinterval,
                 use.weights,package="eolts")
         }
+        # positions comes out above C functions as "numeric"
+        positions(x) <- as(positions(x),"utime")
         start(x) <- t1
         end(x) <- t2
         x@deltat <- numeric(0)
@@ -1702,9 +1713,16 @@ setMethod("align",signature="nts",
             # result time series of interpolated values which are not
             # interpolated over more than tol.
             x <- splusTimeSeries::align(x,xpos,how="drop",error.how="drop",matchtol=tol/86400)
+            class(x) <- class.x
+            x@weights <- matrix(0,ncol=0,nrow=0)
+            x@weightmap <- integer(0)
         }
-        else x <- splusTimeSeries::align(x,pos,how=how,error.how=error.how,matchtol=tol/86400)
-        class(x) <- class.x
+        else {
+            x <- splusTimeSeries::align(x,pos,how=how,error.how=error.how,matchtol=tol/86400)
+            class(x) <- class.x
+            x@weights <- matrix(0,ncol=0,nrow=0)
+            x@weightmap <- integer(0)
+        }
         x@positions <- utime(x@positions)
         x@deltat <- numeric(0)
         deltat(x) <- deltat(x)
