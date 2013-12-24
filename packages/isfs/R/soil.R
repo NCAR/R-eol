@@ -128,7 +128,7 @@ dat.Ssoil = function(what,sum=T,dfill=F,doderiv=F,...)
                             # not extrapolated.
                             if (sgx > 1 && sgx < length(d)) approx(d[gx],x[gx],xout=d,method="linear",rule=2)$y
                             else x
-            },d=depths),ncol=length(depths),dimnames=dns,byrow=T)
+                    },d=depths),ncol=length(depths),dimnames=dns,byrow=T)
                 }
                 else if (FALSE) {
                     # interpolation over a grid of time and depth. Probably won't work to

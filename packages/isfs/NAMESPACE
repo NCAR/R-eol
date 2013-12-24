@@ -41,7 +41,8 @@ export(
     dat.Rsw.net, dat.Rlw.net, dat.albedo, dat.Tsfc, dat.Tsky, 
     dat.L, "dat.u*", dat.z0, dat.z0raw, dat.Draw, dat.heightSonic, 
     dat.rho.soil, dat.Csoil, dat.Ssoil, dat.Ssoilz, dat.Gsoilz, dat.Gsfc,
-    philip, dat.Gsoil, dat.satvp, dat.H2O, dat.MR, dat.mr, dat.Q, dat.Tc,
+    philip, dat.Gsoil, dat.Cvsoil, dat.asoil, Fat.tp01, dat.Lambdasoil,
+    dat.satvp, dat.H2O, dat.MR, dat.mr, dat.Q, dat.Tc,
     dat.u, dat.v, dat.spd, dat.spd.uvw, dat.dir, dat.Spd, dat.Dir,
     dat.elev.u, dat.elev.v, dat.us, dat.vs, "dat.us'us'", "dat.vs'vs'"
 )

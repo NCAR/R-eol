@@ -632,6 +632,8 @@ setMethod("Ops",signature(e1="dat",e2="ANY"),
         e1
     }
 )
+
+if (FALSE) {
 setMethod("Ops",signature(e1="timeSeries",e2="dat"),
     function(e1,e2)
     {
@@ -642,6 +644,7 @@ setMethod("Ops",signature(e1="timeSeries",e2="dat"),
         e2
     }
 )
+}
 setMethod("Ops",signature(e1="ANY",e2="dat"),
     function(e1,e2)
     {
@@ -652,6 +655,8 @@ setMethod("Ops",signature(e1="ANY",e2="dat"),
         e2
     }
 )
+
+if (FALSE) {
 setMethod("Ops",signature(e1="dat",e2="missing"),
     function(e1,e2)
     {
@@ -689,6 +694,7 @@ setMethod("atan2",signature(x="ANY",y="dat"),
         y
     }
 )
+}
 
 setMethod("is.na",signature="dat",
     function(x)
@@ -1103,7 +1109,7 @@ d.by.dt <- function(x,dtmax=NULL,lag=2,differences=1)
     dnames <- paste("d_",words(dimnames(x)[[2]],1,1),"_by_dt.",words(dimnames(x)[[2]],2),sep="")
 
     x <- dat(nts(matrix(as.vector(dx/dt),ncol=nc,dimnames=list(NULL,dnames)),
-            ts,units=dunits,stations=stns))
+            as(ts,"utime"),units=dunits,stations=stns))
     #
     # recursively call again if differences > 1
     if (differences > 1) x <- d.by.dt(x,dtmax=dtmax,lag=lag,differences=differences-1)
