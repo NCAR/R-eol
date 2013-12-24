@@ -1061,7 +1061,7 @@ other.dat.func <- function(what,whine=T)
 
     while (name != "dat") {
         for (i in 1:nd)
-          if (exists(name,where=i))
+          if (exists(name,where=i,inherits=FALSE))
             for (j in (i+1):nd) if (exists(name,where=j)) return(get(name,pos=j))
 
         nw = nwords(name,sep=".")
