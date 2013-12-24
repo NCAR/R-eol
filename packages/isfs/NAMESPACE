@@ -26,6 +26,7 @@ export(
     fit_tilt,
     plot_tilt,
     sonic_tilt_matrix,
+    philip,
     sync
 )
 
