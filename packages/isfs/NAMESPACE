@@ -4,6 +4,7 @@ useDynLib(isfs)
 
 # exported functions
 export(
+    sync,
     dat,
     smooth.avg.dat,
     d.by.dt,
@@ -26,8 +27,23 @@ export(
     fit_tilt,
     plot_tilt,
     sonic_tilt_matrix,
-    philip,
-    sync
+    dat.rho.air,dat.rhoDry,
+    dat.Cd,dat.Ct,"dat.sigma_w/u*","dat.sigma_u/u*","dat.us'tc'",
+    dat.sigma_dir,"dat.sigma_v/u*","dat.sigma_tc/tc*",
+    dat.r_uw, dat.r_wtc,dat.r_utc,dat.r_wh2o,dat.S_u,dat.S_w,dat.S_tc,dat.S_h2o,
+    dat.uw_tilt_err,dat.fastH2OSep,
+    "dat.u't'", "dat.v't'", "dat.w't'", "dat.u'mr'", "dat.v'mr'", "dat.w'mr'",
+    "dat.u'h2o'", "dat.v'h2o'", "dat.w'h2o'", dat.H, dat.H.dry, dat.LE, dat.Lv,
+    dat.BR, dat.Scorr, dat.TKE, 
+    dat.kryptonX, dat.kryptonKw, dat.kryptonKo, dat.kryptonSep, dat.o2corr,
+    dat.licor7500Sep, 
+    dat.Rlw.in, dat.Rlw.out, dat.Bpyrg, dat.Swcor, dat.Rlw, dat.Rsum,
+    dat.Rsw.net, dat.Rlw.net, dat.albedo, dat.Tsfc, dat.Tsky, 
+    dat.L, "dat.u*", dat.z0, dat.z0raw, dat.Draw, dat.heightSonic, 
+    dat.rho.soil, dat.Csoil, dat.Ssoil, dat.Ssoilz, dat.Gsoilz, dat.Gsfc,
+    philip, dat.Gsoil, dat.satvp, dat.H2O, dat.MR, dat.mr, dat.Q, dat.Tc,
+    dat.u, dat.v, dat.spd, dat.spd.uvw, dat.dir, dat.Spd, dat.Dir,
+    dat.elev.u, dat.elev.v, dat.us, dat.vs, "dat.us'us'", "dat.vs'vs'"
 )
 
 exportPattern("^dat\\.")
