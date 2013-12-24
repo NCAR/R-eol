@@ -347,7 +347,7 @@ setMethod("deltat", signature(x="utime"),
         # cat(paste("deltat of utime, length(x)=",length(x),"\n"))
         if (length(x) > 1) {
             dts <- diff(x)
-            rdt <- range(dts,na.rm=T)
+            rdt <- range(dts,na.rm=TRUE)
             mindt <- signif(rdt[1],6)
             maxdt <- signif(rdt[2],6)
             meddt <- signif(median(dts),6)
@@ -732,7 +732,7 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
                 if (is.null(detrend.x))
                     detrend.x <- matrix(0,nrow=2,ncol=nc,
                         dimnames=list(c("Intercept","X"),dimnames(x)[[2]]))
-                detrend.x[,j,drop=F] <- detrend.new
+                detrend.x[,j,drop=FALSE] <- detrend.new
             }
 
             # weights
@@ -757,7 +757,7 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
                     }
                     if (any(wm)) {
                         uwm <- unique(wmap.x[wm])
-                        weights.x <- weights.x[,uwm,drop=F]
+                        weights.x <- weights.x[,uwm,drop=FALSE]
                         wmap.x <- match(wmap.x,uwm,nomatch=0L)
                     }
                     else weights.x <- matrix(0,ncol=0,nrow=0)
@@ -1462,7 +1462,7 @@ setMethod("seriesConcat",signature(x1="nts",x2="nts"),
         wm2 <- x2@weightmap
         if (length(wm2) == 0) wm2 <- rep(0,ncol(x2))
 
-        weightmap <- matrix(c(wm1,wm2),nrow=2,byrow=T)
+        weightmap <- matrix(c(wm1,wm2),nrow=2,byrow=TRUE)
 
         # non-zeros in this result  are for columns that have at least
         # one weight
@@ -1554,7 +1554,7 @@ setMethod("Cbind",signature(x1="nts",x2="ANY"),
 setGeneric("average",function(x,...) standardGeneric("average"))
 
 setMethod("average", signature=(x="nts"),
-    function(x,avgperiod,outinterval,method="mean",use.weights=T,simple=T)
+    function(x,avgperiod,outinterval,method="mean",use.weights=TRUE,simple=TRUE)
     {
         if (!simple) stop("average on an nts cannot do non-simple averaging. Non-simple averaging must be done on a dat object")
         cat(paste("average x=",dimnames(x)[[2]],", period=",avgperiod,", outinterval=",outinterval," ,use.weights=",use.weights,"\n",sep=""))
@@ -1718,7 +1718,7 @@ setMethod("align",signature="nts",
 setGeneric("replace.nas",function(x,warn) standardGeneric("replace.nas"))
 
 setMethod("replace.nas",signature=signature("nts","logical"),
-    function(x,warn=T)
+    function(x,warn=TRUE)
     {
         if (any(is.na(x@data)))
             x@data <- replace.nas(x@data,warn=warn)
@@ -1734,7 +1734,7 @@ setMethod("replace.nas",signature=signature("nts","missing"),
     )
 
 setMethod("replace.nas",signature=signature(x="matrix",warn="logical"),
-    function(x,warn=F)
+    function(x,warn=FALSE)
     {
         if (any(is.na(x))) {
             nc <- ncol(x)
@@ -1753,7 +1753,7 @@ setMethod("replace.nas",signature=signature(x="matrix",warn="logical"),
     )
 
 setMethod("replace.nas",signature=signature(x="numeric",warn="logical"),
-    function(x,warn=F)
+    function(x,warn=FALSE)
     {
         n <- length(x)
         nax <- is.na(x)
@@ -1856,18 +1856,18 @@ setMethod("trend", signature(x="nts",use.lsfit="logical"),
                 # Don't use weights
                 x@weights <- matrix(ncol=0,nrow=0)
                 x@weightmap <- integer(0)
-                mean.x <- apply(x@data,2,mean,na.rm=T)
+                mean.x <- apply(x@data,2,mean,na.rm=TRUE)
 
                 mean.t <- rep(mean(times),nc)
                 mean.t2 <- rep(mean(times*times),nc)
 
-                mean.tx <- apply(x@data * matrix(rep(times,nc),ncol=nc),2,mean,na.rm=T)
+                mean.tx <- apply(x@data * matrix(rep(times,nc),ncol=nc),2,mean,na.rm=TRUE)
 
                 a <- (mean.tx - mean.t * mean.x) / (mean.t2 - mean.t^2)
                 b <- mean.x - a * mean.t
 
             }
-            matrix(c(b,a),nrow=2,byrow=T,
+            matrix(c(b,a),nrow=2,byrow=TRUE,
                 dimnames=list(c("Intercept","X"),dimnames(x)[[2]]))
         }
     }
@@ -1890,7 +1890,7 @@ setMethod("detrend", signature(x="nts",trnd="matrix"),
         times <- times - times[1]
 
         x <- x - ((times %o% as.vector(trnd["X",])) +
-            matrix(rep(trnd["Intercept",],nr),ncol=nc,byrow=T))
+            matrix(rep(trnd["Intercept",],nr),ncol=nc,byrow=TRUE))
 
         # attr(x,"detrend") <- trnd
         invisible(x)

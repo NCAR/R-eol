@@ -1,8 +1,7 @@
 #include "R_nts.h"
 #include "R_NamedVector.h"
 
-// #include <string.h>
-// #include <math.h>
+#include <sstream>
 
 using std::vector;
 using std::string;
@@ -117,18 +116,37 @@ vector<string> R_nts::getUnits() const
 void R_nts::setTimeFormat(const string& val)
 {
     SEXP cobj = Rf_getAttrib(_obj,timeFormatSlotName);
+    if (TYPEOF(cobj) != STRSXP) {
+#ifdef DEBUG
+        std::ostringstream ost;
+        ost << "time.format slot is " << Rf_type2char(TYPEOF(cobj)) << " not STRSXP";
+        Rf_warning(ost.str().c_str());
+#endif
+        cobj = PROTECT(Rf_allocVector(STRSXP,1));
+        Rf_setAttrib(_obj,timeFormatSlotName,cobj);
+        UNPROTECT(1);
+    }
     if (Rf_length(cobj) != 1) {
         cobj = PROTECT(Rf_lengthgets(cobj,1));
         Rf_setAttrib(_obj,timeFormatSlotName,cobj);
         UNPROTECT(1);
     }
     SET_STRING_ELT(cobj,0,Rf_mkChar(val.c_str()));
-    Rf_setAttrib(_obj,timeFormatSlotName,cobj);
 }
 
 string R_nts::getTimeFormat() const
 {
     SEXP cobj = Rf_getAttrib(_obj,timeFormatSlotName);
+    if (TYPEOF(cobj) != STRSXP) {
+#ifdef DEBUG
+        std::ostringstream ost;
+        ost << "time.format slot is " << Rf_type2char(TYPEOF(cobj)) << " not STRSXP";
+        Rf_warning(ost.str().c_str());
+#endif
+        cobj = PROTECT(Rf_allocVector(STRSXP,1));
+        Rf_setAttrib(_obj,timeFormatSlotName,cobj);
+        UNPROTECT(1);
+    }
     if (Rf_length(cobj) != 1) return "";
     return CHAR(STRING_ELT(cobj,0));
 }
@@ -136,18 +154,37 @@ string R_nts::getTimeFormat() const
 void R_nts::setTimeZone(const string& val)
 {
     SEXP cobj = Rf_getAttrib(_obj,timeZoneSlotName);
+    if (TYPEOF(cobj) != STRSXP) {
+#ifdef DEBUG
+        std::ostringstream ost;
+        ost << "time.zone slot is " << Rf_type2char(TYPEOF(cobj)) << " not STRSXP";
+        Rf_warning(ost.str().c_str());
+#endif
+        cobj = PROTECT(Rf_allocVector(STRSXP,1));
+        Rf_setAttrib(_obj,timeZoneSlotName,cobj);
+        UNPROTECT(1);
+    }
     if (Rf_length(cobj) != 1) {
         cobj = PROTECT(Rf_lengthgets(cobj,1));
         Rf_setAttrib(_obj,timeZoneSlotName,cobj);
         UNPROTECT(1);
     }
     SET_STRING_ELT(cobj,0,Rf_mkChar(val.c_str()));
-    Rf_setAttrib(_obj,timeZoneSlotName,cobj);
 }
 
 string R_nts::getTimeZone() const
 {
     SEXP cobj = Rf_getAttrib(_obj,timeZoneSlotName);
+    if (TYPEOF(cobj) != STRSXP) {
+#ifdef DEBUG
+        std::ostringstream ost;
+        ost << "time.zone slot is " << Rf_type2char(TYPEOF(cobj)) << " not STRSXP";
+        Rf_warning(ost.str().c_str());
+#endif
+        cobj = PROTECT(Rf_allocVector(STRSXP,1));
+        Rf_setAttrib(_obj,timeZoneSlotName,cobj);
+        UNPROTECT(1);
+    }
     if (Rf_length(cobj) != 1) return "";
     return CHAR(STRING_ELT(cobj,0));
 }
