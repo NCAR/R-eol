@@ -545,9 +545,9 @@ philip = function(lambda,Tp=3.93,Dp=38.56,lp=1.22)
     1 / ( 1 - 1.92 * Tp / Dp * (1 - lambda / lp))
 }
 
-dat.Gsoil = function(what,lc=0.906,Tp=3.93,Dp=38.56,lp=1.22,...)
+dat.Gsoil = function(what,lc=0.906,Tp=3.93,Dp=38.56,lp=1.22,derived=TRUE,...)
 {
-    G = dat(what,...,derived=F)
+    G = dat(what,derived=FALSE,...)
 
     if (!is.null(dpar("robust")) && !dpar("robust")) {
         # If we know the conductivity of the calibration medium,
