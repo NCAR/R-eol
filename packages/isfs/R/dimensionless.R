@@ -88,7 +88,7 @@ dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x
 }
 
-"dat.sigma_dir" <- function(what, cache=F,...)
+dat.sigma_dir <- function(what, cache=F,...)
 {
     # Calculate standard deviation of wind direction 
     # first want variance of cross-stream wind component 
@@ -148,7 +148,7 @@ dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x
 }
 
-"dat.r_uw" <- function(what, cache=F,...)
+dat.r_uw <- function(what, cache=F,...)
 {
     # correlation coefficient for u*^2
     uw = dat(expand("u*",what),avg=T,smooth=T)^2
@@ -163,7 +163,7 @@ dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x
 }
 
-"dat.r_wtc" <- function(what, cache=F,...)
+dat.r_wtc <- function(what, cache=F,...)
 {
     wtc = dat(expand("w'tc'",what),avg=T,smooth=T)
     ww = dat(expand("w'w'",what),avg=T,smooth=T)
@@ -176,7 +176,7 @@ dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x
 }
 
-"dat.r_utc" <- function(what, cache=F,...)
+dat.r_utc <- function(what, cache=F,...)
 {
     # streamwise temperature flux
     utc = dat(expand("us'tc'",what),avg=T,smooth=T)
@@ -191,7 +191,7 @@ dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x
 }
 
-"dat.r_wh2o" <- function(what, cache=F,...)
+dat.r_wh2o <- function(what, cache=F,...)
 {
     wh2o = dat(expand("w'h2o'",what),avg=T,smooth=T)
     ww = dat(expand("w'w'",what),avg=T,smooth=T)
@@ -204,7 +204,7 @@ dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x
 }
 
-"dat.S_u" <- function(what, cache=F,...)
+dat.S_u <- function(what, cache=F,...)
 {
     uuu = dat(expand("u'u'u'",what),avg=T,smooth=T)
     uu = dat(expand("u'u'",what),avg=T,smooth=T)
@@ -215,7 +215,7 @@ dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x
 }
 
-"dat.S_w" <- function(what, cache=F,...)
+dat.S_w <- function(what, cache=F,...)
 {
     www = dat(expand("w'w'w'",what),avg=T,smooth=T)
     ww = dat(expand("w'w'",what),avg=T,smooth=T)
@@ -226,7 +226,7 @@ dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x
 }
 
-"dat.S_tc" <- function(what, cache=F,...)
+dat.S_tc <- function(what, cache=F,...)
 {
     ccc = dat(expand("tc'tc'tc'",what),avg=T,smooth=T)
     cc = dat(expand("tc'tc'",what),avg=T,smooth=T)
@@ -237,7 +237,7 @@ dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x
 }
 
-"dat.S_h2o" <- function(what, cache=F,...)
+dat.S_h2o <- function(what, cache=F,...)
 {
     ccc = dat(expand("h2o'h2o'h2o'",what),avg=T,smooth=T)
     cc = dat(expand("h2o'h2o'",what),avg=T,smooth=T)
@@ -248,7 +248,7 @@ dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x
 }
 
-"dat.uw_tilt_err" <- function(what, cache=F,...)
+dat.uw_tilt_err <- function(what, cache=F,...)
 {
     # tilt error in uw per degree tilt, for small tilt angles
     # Kaimal and Haugen, JAM, 1969, V8, 460-462
