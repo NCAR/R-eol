@@ -9,7 +9,7 @@
 # NOTE that the following functions assume that dat("T"), dat("P"),
 # and dat("RH") produce equally-dimensioned arrays of data
 
-dat.satvp <- function(what,TC,frost=dpar("RH.ice"), enhancement=T,...)
+dat.satvp <- function(what,derived=TRUE,TC,frost=dpar("RH.ice"), enhancement=T,...)
 {
     #  S function to calculate the saturation vapor pressure (mb) 
     #  of pure water vapor over a plane surface of water or ice (frost=T)
@@ -44,7 +44,7 @@ dat.satvp <- function(what,TC,frost=dpar("RH.ice"), enhancement=T,...)
     satvp
 }
 
-dat.RH.ice <- function(what,...) {
+dat.RH.ice <- function(what,derived=TRUE,...) {
     # remove .ice from what
     ice = words(what,2,2,sep=".")
     if (ice == "ice") {
@@ -60,7 +60,7 @@ dat.RH.ice <- function(what,...) {
     RH
 }
 
-dat.H2O <- function(what,RH,...)
+dat.H2O <- function(what,derived=TRUE,RH,...)
 {
     # Water vapor density (g/m^3)
     Rm <- 0.4617		# joules/gr-degK
@@ -85,7 +85,7 @@ dat.H2O <- function(what,RH,...)
     x
 }
 
-dat.MR <- function(what,...)
+dat.MR <- function(what,derived=TRUE,...)
 {
     # Mixing ratio (g/kg)
     RH <- dat(expand("RH",what))
@@ -121,7 +121,7 @@ dat.MR <- function(what,...)
     x
 }
 
-dat.mr <- function(what,...)
+dat.mr <- function(what,derived=TRUE,...)
 {
     # Mixing ratio (g/kg) from fast h2o (g/m^3)
     #
@@ -154,7 +154,7 @@ dat.mr <- function(what,...)
     x@units <- rep("g/kg",ncol(x))
     x
 }
-dat.Q <- function(what,...)
+dat.Q <- function(what,derived=TRUE,...)
 {
     # Specific humidity (g/kg)
     RH <- dat(expand("RH",what))
@@ -185,7 +185,7 @@ dat.Q <- function(what,...)
     x@units <- rep("g/kg",ncol(x))
     x
 }
-dat.Tc <- function(what,...)
+dat.Tc <- function(what,derived=TRUE,...)
 {
     # sonic virtual temperature (deg C)
     Td <- dat(expand("T",what))
@@ -240,7 +240,8 @@ dat.Tc <- function(what,...)
     x
 }
 
-dat.Tdew = function(what,...) {
+dat.Tdew = function(what,derived=TRUE,...)
+{
     # For now, this calculation ignores frost/below 0 issues
     # and simply inverts the formula for satvp above:
     #  satvp <- 6.1121*exp(17.368*TC/(238.88+TC))
@@ -255,7 +256,8 @@ dat.Tdew = function(what,...) {
     x
 }
 
-dat.evap <- function(what,...) {
+dat.evap <- function(what,derived=TRUE,...)
+{
     wr <- clip(dat(expand("w'mr'",what)))
     wr[is.na(wr)] <- 0
 

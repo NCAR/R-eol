@@ -3,7 +3,7 @@
 #
 #               Copyright (C) by UCAR
 # 
-dat.kryptonX <- function(what,...)
+dat.kryptonX <- function(what,derived=TRUE,...)
 {
 
     # krypton pathlength, in cm
@@ -28,7 +28,7 @@ dat.kryptonX <- function(what,...)
             stations=stations(x)))
 }
 
-dat.kryptonKw <- function(what,...)
+dat.kryptonKw <- function(what,derived=TRUE,...)
 {
 
     # krypton Kw, water vapor absorption coefficient
@@ -53,7 +53,7 @@ dat.kryptonKw <- function(what,...)
             stations=stations(x)))
 }
 
-dat.kryptonKo <- function(what,...)
+dat.kryptonKo <- function(what,derived=TRUE,...)
 {
 
     # krypton Ko, oxygen absorption coefficient
@@ -71,7 +71,7 @@ dat.kryptonKo <- function(what,...)
     x
 }
 
-dat.kryptonSep <- function(what,...)
+dat.kryptonSep <- function(what,derived=TRUE,...)
 {
     # separation, in meters between krypton and sonic anemometer w axis
 
@@ -97,7 +97,7 @@ dat.kryptonSep <- function(what,...)
             stations=stations(x)))
 }
 
-dat.o2corr <- function(what,...)
+dat.o2corr <- function(what,derived=TRUE,...)
 {
     # compute oxygen correction for kryptons 
     # use ko from van Dijk, Kohsiek, and de Bruin, 2002, Table 2

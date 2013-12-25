@@ -17,7 +17,7 @@
 # - creates an dat-object
 #
 
-dat.lambdasoil = function(what, cache=F,...)
+dat.lambdasoil = function(what,derived=TRUE,cache=F,...)
 {
     #
     # The calibrations for all TP01 probes (by serial number):
@@ -110,7 +110,7 @@ dat.Cvsoil = function(what, cache=F,...) {
     Cv@units = rep("J/(m3 K)",ncol(Cv))
     Cv
 }
-dat.asoil = function(what, cache=F,...)
+dat.asoil = function(what,derived=TRUE,cache=F,...)
 {
     # TP01 manual suggests limits of 0.05e-6 and 1.0e-6 for
     # diffusivity.  The user should apply those limits

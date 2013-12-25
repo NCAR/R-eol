@@ -34,7 +34,7 @@ check.windcoords = function()
 }
 # Winds
 # -----
-dat.u <- function(what,cache=F,...)
+dat.u <- function(what,derived=TRUE,cache=F,...)
 {
     # dat("u",derived=F) forces reading "u" from NetCDF
     # otherwise calling dat("u") here would be an infinite loop
@@ -114,7 +114,7 @@ dat.u <- function(what,cache=F,...)
     }
     u
 }
-dat.v <- function(what,cache=F,...)
+dat.v <- function(what,derived=TRUE,cache=F,...)
 {
     # dat("v",derived=F) forces reading "v" from NetCDF
     # otherwise calling dat("v") here would be an infinite loop
@@ -194,7 +194,7 @@ dat.v <- function(what,cache=F,...)
     }
     v
 }
-dat.spd <- function(what,cache=F,...)
+dat.spd <- function(what,derived=TRUE,cache=F,...)
 {
     x <- sqrt(dat(expand("u",what),avg=TRUE,smooth=TRUE)^2 +
         dat(expand("v",what),avg=TRUE,smooth=TRUE)^2)
@@ -204,7 +204,7 @@ dat.spd <- function(what,cache=F,...)
     x@units <- rep("m/s",ncol(x))
     x
 }
-dat.spd.uvw <- function(what,cache=F,...)
+dat.spd.uvw <- function(what,derived=TRUE,cache=F,...)
 {
     x <- sqrt(dat(expand("u",what),avg=TRUE,smooth=TRUE)^2 +
         dat(expand("v",what),avg=TRUE,smooth=TRUE)^2 +
@@ -215,7 +215,7 @@ dat.spd.uvw <- function(what,cache=F,...)
     x@units <- rep("m/s",ncol(x))
     x
 }
-dat.dir <- function(what,cache=F,...)
+dat.dir <- function(what,derived=TRUE,cache=F,...)
 {
     x <- dat(expand("u",what),avg=TRUE,smooth=TRUE)
     if (length(x) == 0) return(NULL)
@@ -228,7 +228,7 @@ dat.dir <- function(what,cache=F,...)
     x@units <- rep("deg",ncol(x))
     x
 }
-dat.Spd <- function(what,cache=F,...)
+dat.Spd <- function(what,derived=TRUE,cache=F,...)
 {
     x <- sqrt(dat(expand("U",what),avg=TRUE,smooth=TRUE)^2 +
         dat(expand("V",what),avg=TRUE,smooth=TRUE)^2)
@@ -239,7 +239,7 @@ dat.Spd <- function(what,cache=F,...)
     x@units <- rep("m/s",ncol(x))
     x
 }
-dat.Dir <- function(cache=F,...)
+dat.Dir <- function(what,derived=TRUE,cache=F,...)
 {
     x <- dat("U",avg=TRUE,smooth=TRUE)
     if (length(x) == 0) return(NULL)
@@ -251,7 +251,7 @@ dat.Dir <- function(cache=F,...)
     x@units <- rep("deg",ncol(x))
     x
 }
-dat.elev.u <- function(cache=F,...)
+dat.elev.u <- function(what,derived=TRUE,cache=F,...)
 {
     x <- atan(dat("w")/dat("u"))*180/pi
     if (length(x) == 0) return(NULL)
@@ -260,7 +260,7 @@ dat.elev.u <- function(cache=F,...)
     x@units <- rep("deg",ncol(x))
     x
 }
-dat.elev.v <- function(cache=F,...)
+dat.elev.v <- function(what,derived=TRUE,cache=F,...)
 {
     x <- atan(dat("w")/dat("v"))*180/pi
     if (length(x) == 0) return(NULL)
@@ -272,7 +272,7 @@ dat.elev.v <- function(cache=F,...)
 
 # velocity variances in streamwise coordinates
 
-"dat.us" <- function(what,cache=F,...)
+"dat.us" <- function(what,derived=TRUE,cache=F,...)
 {
     # mean streamwise wind required to calculate non-simple average of
     # us'us'
@@ -285,7 +285,7 @@ dat.elev.v <- function(cache=F,...)
     x
 }
 
-"dat.vs" <- function(what,cache=F,...)
+"dat.vs" <- function(what,derived=TRUE,cache=F,...)
 {
     # mean cross-stream wind required to calculate non-simple average of
     # us'us'
@@ -295,7 +295,7 @@ dat.elev.v <- function(cache=F,...)
     x
 }
 
-"dat.us'us'" <- function(what,cache=F,...)
+"dat.us'us'" <- function(what,derived=TRUE,cache=F,...)
 {
     # calculate streamwise variance
     u <- dat(expand("u",what), avg=T,smooth=T, derived=F)
@@ -309,7 +309,7 @@ dat.elev.v <- function(cache=F,...)
     x
 }
 
-"dat.vs'vs'" <- function(what,cache=F,...)
+"dat.vs'vs'" <- function(what,derived=TRUE,cache=F,...)
 {
     # calculate cross-stream variance
     u <- dat(expand("u", what),avg=T,smooth=T, derived=F)

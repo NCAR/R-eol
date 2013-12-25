@@ -7,7 +7,7 @@
 # Monin-Obukhov scaling parameters
 # ----------------
 #
-dat.L <- function(what,cache=F,k=dpar("vonKarman"),g=dpar("accelgrav"),...)
+dat.L <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),g=dpar("accelgrav"),...)
 {
     # Monin_Obukhov length
     if (is.null(k)) k <- 0.4
@@ -22,7 +22,7 @@ dat.L <- function(what,cache=F,k=dpar("vonKarman"),g=dpar("accelgrav"),...)
     x@units <- rep("m",ncol(x))
     x
 }
-"dat.u*" <- function(what,cache=F,...)
+"dat.u*" <- function(what,derived=TRUE,cache=F,...)
 {
     # calculate streamwise value of ustar
     u <- dat(expand("u",what),avg=T,smooth=T, derived=F)
@@ -45,7 +45,7 @@ dat.L <- function(what,cache=F,k=dpar("vonKarman"),g=dpar("accelgrav"),...)
 #
 # neutral formulation of z0
 #
-dat.z0 <- function(what,cache=F,k=dpar("vonKarman"),...)
+dat.z0 <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),...)
 {
     if (is.null(k)) k <- 0.4
     x <- dat(expand("spd",what))
@@ -64,7 +64,7 @@ dat.z0 <- function(what,cache=F,k=dpar("vonKarman"),...)
     x@units <- rep("m",ncol(x))
     x
 }
-dat.z0raw <- function(what,cache=F,k=dpar("vonKarman"),...)
+dat.z0raw <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),...)
 {
     # Calculates zo for neutral stability using both prop and sonic winds,
     # eliminating the need to know the displacement height
@@ -98,7 +98,7 @@ dat.z0raw <- function(what,cache=F,k=dpar("vonKarman"),...)
 #
 # neutral formulation of displacement height
 #
-dat.Draw <- function(what,cache=F,k=dpar("vonKarman"),...)
+dat.Draw <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),...)
 {
     if (is.null(k)) k <- 0.4
     U1 <- dat(expand("spd",what))
@@ -134,7 +134,7 @@ dat.Draw <- function(what,cache=F,k=dpar("vonKarman"),...)
 #
 # Default function for heightSonic
 #
-dat.heightSonic <- function(what,...)
+dat.heightSonic <- function(what,derived=TRUE,...)
 {
 
     warning('project version of dat("heightSonic") not found, heightSonic is being determined from names of w variable')
@@ -161,7 +161,7 @@ dat.heightSonic <- function(what,...)
             stations=stations(x)))
 }
 
-dat.height.sonic <- function(what,...)
+dat.height.sonic <- function(what,derived=TRUE,...)
 {
     stop('dat("height.sonic") is obsolete. Use dat("heightSonic")')
 }
@@ -169,7 +169,7 @@ dat.height.sonic <- function(what,...)
 #
 # Default function for heightProp
 #
-dat.heightProp <- function(what,...) {
+dat.heightProp <- function(what,derived=TRUE,...) {
 
     warning("project version of dat.heightProp not found, heightProp is being determined from names of U variable")
 
@@ -195,7 +195,7 @@ dat.heightProp <- function(what,...) {
             stations=stations(x)))
 }
 
-dat.height.prop <- function(what,...)
+dat.height.prop <- function(what,derived=TRUE,...)
 {
     stop('dat("height.prop") is obsolete. Use dat("heightProp")')
 }
@@ -203,7 +203,7 @@ dat.height.prop <- function(what,...)
 #
 # Default function for displacement height
 #
-dat.D <- function(what,...) {
+dat.D <- function(what,derived=TRUE,...) {
 
     warning("project dat.D not found for displacement height. dat.D returning 0s")
     x <- dat(expand("u",what),derived=F)

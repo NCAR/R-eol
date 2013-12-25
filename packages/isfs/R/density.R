@@ -3,7 +3,7 @@
 #
 # Density of air
 # --------------
-dat.rho.air <- function(what,cache=F,robust=dpar("robust"),...)
+dat.rho.air <- function(what,derived=TRUE,cache=F,robust=dpar("robust"),...)
 {
     # density of (moist) air (kg/m^3)
     R <- 287		# J/kg-K
@@ -42,7 +42,7 @@ dat.rho.air <- function(what,cache=F,robust=dpar("robust"),...)
 
     x
 }
-dat.rhoDry <- function(what,cache=F,robust=dpar("robust"),pmatch=3,...)
+dat.rhoDry <- function(what,derived=TRUE,cache=F,robust=dpar("robust"),pmatch=3,...)
 {
     # density of dry air (kg/m^3)
     # pmatch determines which fields are used to expand data names
@@ -86,7 +86,7 @@ dat.rhoDry <- function(what,cache=F,robust=dpar("robust"),pmatch=3,...)
     x
 }
 
-dat.rho.dry <- function(what,cache=F,robust=dpar("robust"),...)
+dat.rho.dry <- function(what,derived=TRUE,cache=F,robust=dpar("robust"),...)
 {
     stop('dat("rho.dry") is obsolete. Use dat("rhoDry") instead.')
 }

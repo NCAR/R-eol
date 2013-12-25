@@ -2,7 +2,7 @@
 # vim: set shiftwidth=4 softtabstop=4 expandtab:
 # Several (mostly) dimensionless turbulence parameters
 # ----------------------------------------------------
-dat.Cd <- function(what,cache=F,speed=dpar("bulk.speed"),...)
+dat.Cd <- function(what,derived=TRUE,cache=F,speed=dpar("bulk.speed"),...)
 {
     # Drag coefficient
     if (is.null(speed))
@@ -16,7 +16,7 @@ dat.Cd <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x@units <- rep("",ncol(x))
     x
 }
-dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
+dat.Ct <- function(what,derived=TRUE,cache=F,speed=dpar("bulk.speed"),...)
 {
     # Transfer coefficient for temperature
     if (is.null(speed))
@@ -38,7 +38,7 @@ dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x@units <- rep("",ncol(x))
     x
 }
-"dat.sigma_w/u*" <- function(what,cache=F,...)
+"dat.sigma_w/u*" <- function(what,derived=TRUE,cache=F,...)
 {
     x <- dat(expand("w'w'",what),avg=TRUE,smooth=TRUE)^0.5 / 
     dat(expand("u*",what),avg=T,smooth=T)
@@ -48,7 +48,7 @@ dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x@units <- rep("",ncol(x))
     x
 }
-"dat.sigma_u/u*" <- function(what,cache=F,...)
+"dat.sigma_u/u*" <- function(what,derived=TRUE,cache=F,...)
 {
     # want variance of streamwise wind component
     # Do calculations in whatever coordinates the netcdf
@@ -75,7 +75,7 @@ dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x
 }
 
-"dat.us'tc'" <- function(what,cache=F,...)
+"dat.us'tc'" <- function(what,derived=TRUE,cache=F,...)
 {
     # calculate streamwise sonic temperature flux
     u <- dat(expand("u",what), avg=T,smooth=T, derived=F)
@@ -88,7 +88,7 @@ dat.Ct <- function(what,cache=F,speed=dpar("bulk.speed"),...)
     x
 }
 
-dat.sigma_dir <- function(what, cache=F,...)
+dat.sigma_dir <- function(what,derived=TRUE, cache=F,...)
 {
     # Calculate standard deviation of wind direction 
     # first want variance of cross-stream wind component 
@@ -104,7 +104,7 @@ dat.sigma_dir <- function(what, cache=F,...)
     x
 }
 
-"dat.sigma_v/u*" <- function(what, cache=F,...)
+"dat.sigma_v/u*" <- function(what,derived=TRUE, cache=F,...)
 {
     # want variance of cross-stream wind component
     # Do calculations in whatever coordinates the netcdf
@@ -135,7 +135,7 @@ dat.sigma_dir <- function(what, cache=F,...)
     x
 }
 
-"dat.sigma_tc/tc*" <- function(what, cache=F,...)
+"dat.sigma_tc/tc*" <- function(what,derived=TRUE, cache=F,...)
 {
     ustar = dat(expand("u*",what),avg=T,smooth=T)
     tc2 = dat(expand("tc'tc'",what),avg=T,smooth=T)
@@ -148,7 +148,7 @@ dat.sigma_dir <- function(what, cache=F,...)
     x
 }
 
-dat.r_uw <- function(what, cache=F,...)
+dat.r_uw <- function(what,derived=TRUE, cache=F,...)
 {
     # correlation coefficient for u*^2
     uw = dat(expand("u*",what),avg=T,smooth=T)^2
@@ -163,7 +163,7 @@ dat.r_uw <- function(what, cache=F,...)
     x
 }
 
-dat.r_wtc <- function(what, cache=F,...)
+dat.r_wtc <- function(what,derived=TRUE, cache=F,...)
 {
     wtc = dat(expand("w'tc'",what),avg=T,smooth=T)
     ww = dat(expand("w'w'",what),avg=T,smooth=T)
@@ -176,7 +176,7 @@ dat.r_wtc <- function(what, cache=F,...)
     x
 }
 
-dat.r_utc <- function(what, cache=F,...)
+dat.r_utc <- function(what,derived=TRUE, cache=F,...)
 {
     # streamwise temperature flux
     utc = dat(expand("us'tc'",what),avg=T,smooth=T)
@@ -191,7 +191,7 @@ dat.r_utc <- function(what, cache=F,...)
     x
 }
 
-dat.r_wh2o <- function(what, cache=F,...)
+dat.r_wh2o <- function(what,derived=TRUE, cache=F,...)
 {
     wh2o = dat(expand("w'h2o'",what),avg=T,smooth=T)
     ww = dat(expand("w'w'",what),avg=T,smooth=T)
@@ -204,7 +204,7 @@ dat.r_wh2o <- function(what, cache=F,...)
     x
 }
 
-dat.S_u <- function(what, cache=F,...)
+dat.S_u <- function(what,derived=TRUE, cache=F,...)
 {
     uuu = dat(expand("u'u'u'",what),avg=T,smooth=T)
     uu = dat(expand("u'u'",what),avg=T,smooth=T)
@@ -215,7 +215,7 @@ dat.S_u <- function(what, cache=F,...)
     x
 }
 
-dat.S_w <- function(what, cache=F,...)
+dat.S_w <- function(what,derived=TRUE, cache=F,...)
 {
     www = dat(expand("w'w'w'",what),avg=T,smooth=T)
     ww = dat(expand("w'w'",what),avg=T,smooth=T)
@@ -226,7 +226,7 @@ dat.S_w <- function(what, cache=F,...)
     x
 }
 
-dat.S_tc <- function(what, cache=F,...)
+dat.S_tc <- function(what,derived=TRUE, cache=F,...)
 {
     ccc = dat(expand("tc'tc'tc'",what),avg=T,smooth=T)
     cc = dat(expand("tc'tc'",what),avg=T,smooth=T)
@@ -237,7 +237,7 @@ dat.S_tc <- function(what, cache=F,...)
     x
 }
 
-dat.S_h2o <- function(what, cache=F,...)
+dat.S_h2o <- function(what,derived=TRUE, cache=F,...)
 {
     ccc = dat(expand("h2o'h2o'h2o'",what),avg=T,smooth=T)
     cc = dat(expand("h2o'h2o'",what),avg=T,smooth=T)
@@ -248,7 +248,7 @@ dat.S_h2o <- function(what, cache=F,...)
     x
 }
 
-dat.uw_tilt_err <- function(what, cache=F,...)
+dat.uw_tilt_err <- function(what,derived=TRUE, cache=F,...)
 {
     # tilt error in uw per degree tilt, for small tilt angles
     # Kaimal and Haugen, JAM, 1969, V8, 460-462

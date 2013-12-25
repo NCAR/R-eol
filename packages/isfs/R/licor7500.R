@@ -6,7 +6,7 @@
 #  Description:
 #    dat routines returning various variables concerning licor 7500 hygrometers
 #
-dat.licor7500Sep <- function(what,...) {
+dat.licor7500Sep <- function(what,derived=TRUE,...) {
     # separation, in meters between licor 7500 and sonic anemometer w axis
 
     default.val <- 0.3	# 30 centimeters
