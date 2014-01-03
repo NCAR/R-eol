@@ -157,18 +157,18 @@ dat.Rlw.either <- function(what="Rlw.out",B=dpar("pyrgeometer.B"),
 }
 
 # Default Bpyrg value
-dat.Bpyrg <- function(what,...) {
+dat.Bpyrg <- function(what,derived=TRUE,...) {
     warning(paste("project dat function for",what,"does not exist, setting Bpyrg=4.0"))
     4.0
 }
 
 # Default Swcor value
-dat.Swcor <- function(what,...) {
+dat.Swcor <- function(what,derived=TRUE,...) {
     warning(paste("project dat function for",what,"does not exist, setting swcor=0.0"))
     0.0
 }
 
-dat.Rlw <- function(what,...) 
+dat.Rlw <- function(what,derived=TRUE,...) 
 {
     which <- suffixes(what,3)
     Rlwin <- dat(paste("Rlw.in",which,sep=""),...)
@@ -189,7 +189,7 @@ dat.Rlw <- function(what,...)
     }
     Rlw
 }
-dat.Rsum <- function(what,...)
+dat.Rsum <- function(what,derived=TRUE,...)
 {
     # sign convention: positive Rsum and Rnet is
     # a downward energy flux
@@ -206,7 +206,7 @@ dat.Rsum <- function(what,...)
     x@units <- rep("W/m^2",ncol(x))
     x
 }
-dat.Rsw.net <- function(what,...)
+dat.Rsw.net <- function(what,derived=TRUE,...)
 {
     Rsw.in = dat(expand("Rsw.in",what,3),...) 
     Rsw.in[Rsw.in < 0] = 0
@@ -219,7 +219,7 @@ dat.Rsw.net <- function(what,...)
     x@units <- rep("W/m^2",ncol(x))
     x
 }
-dat.Rlw.net <- function(what,...)
+dat.Rlw.net <- function(what,derived=TRUE,...)
 {
     Rlw.in = dat(expand("Rlw.in",what,3),...) 
     Rlw.out = dat(expand("Rlw.out",what,3),...)
@@ -230,7 +230,7 @@ dat.Rlw.net <- function(what,...)
     x@units <- rep("W/m^2",ncol(x))
     x
 }
-dat.albedo <- function(what,...)
+dat.albedo <- function(what,derived=TRUE,...)
 {
     Rsw.in <- dat(expand("Rsw.in",what),...)
     Rsw.out <- dat(expand("Rsw.out",what),...)
@@ -241,7 +241,7 @@ dat.albedo <- function(what,...)
     x@units <- rep("",ncol(x))
     x
 }
-dat.Tsfc <- function(what,emissivity=dpar("emissivity.sfc"),...)
+dat.Tsfc <- function(what,derived=TRUE,emissivity=dpar("emissivity.sfc"),...)
 {
     if (is.null(emissivity))
         emissivity <- 0.98
@@ -275,7 +275,7 @@ dat.Tsfc <- function(what,emissivity=dpar("emissivity.sfc"),...)
     else x = tsfc
     x
 }
-dat.Tsky <- function(what,...)
+dat.Tsky <- function(what,derived=TRUE,...)
 {
     SB <- 5.67e-8	   # Stefan-Boltzmann constant, W/m^2-degK^4
 

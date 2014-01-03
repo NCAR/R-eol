@@ -1,5 +1,5 @@
 
-dat.fastH2OSep <- function(what,...)
+dat.fastH2OSep <- function(what,derived=TRUE,...)
 {
   # separation, in meters between the fast water vapor sensor and sonic anemometer w axis
 

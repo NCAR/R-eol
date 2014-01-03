@@ -134,22 +134,22 @@ calc.x.t <- function(what,robust=dpar("robust"))
     xt
 }
 
-"dat.u't'" <- function(what,robust=dpar("robust"),...)
+"dat.u't'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
 {
     calc.x.t(what,robust=robust)
 }
 
-"dat.v't'" <- function(what,robust=dpar("robust"),...)
+"dat.v't'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
 {
     calc.x.t(what,robust=robust)
 }
 
-"dat.w't'" <- function(what,robust=dpar("robust"),...)
+"dat.w't'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
 {
     calc.x.t(what,robust=robust)
 }
 
-calc.x.mr <- function(what,robust=dpar("robust"))
+calc.x.mr <- function(what,derived=TRUE,robust=dpar("robust"))
 {
     MH2O = 18
     xmr.name = words(what,1,1,sep=".")
@@ -265,17 +265,17 @@ calc.x.mr <- function(what,robust=dpar("robust"))
     xmr@units <- rep("m/s g/kg",ncol(xmr))
     xmr
 }
-"dat.u'mr'" <- function(what,robust=dpar("robust"),...)
+"dat.u'mr'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
 {
     calc.x.mr(what,robust=robust)
 }
 
-"dat.v'mr'" <- function(what,robust=dpar("robust"),...)
+"dat.v'mr'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
 {
     calc.x.mr(what,robust=robust)
 }
 
-"dat.w'mr'" <- function(what,robust=dpar("robust"),...)
+"dat.w'mr'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
 {
     calc.x.mr(what,robust=robust)
 }
@@ -393,17 +393,17 @@ calc.x.h2o <- function(what,robust=dpar("robust"))
     xh2o
 }
 
-"dat.u'h2o'" <- function(what,robust=dpar("robust"),...)
+"dat.u'h2o'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
 {
     calc.x.h2o(what,robust=robust)
 }
 
-"dat.v'h2o'" <- function(what,robust=dpar("robust"),...)
+"dat.v'h2o'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
 {
     calc.x.h2o(what,robust=robust)
 }
 
-"dat.w'h2o'" <- function(what,robust=dpar("robust"),...)
+"dat.w'h2o'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
 {
     calc.x.h2o(what,robust=robust)
 }
@@ -440,7 +440,7 @@ calc.H <- function(wt,wq,Td,Q,rho)
     }
     x
 }
-dat.H <- function(what,robust=dpar("robust"),...)
+dat.H <- function(what,derived=TRUE,robust=dpar("robust"),...)
 {
     # Turbulent sensible heat flux
     Td <- dat("T",avg=T,smooth=T)
@@ -454,7 +454,7 @@ dat.H <- function(what,robust=dpar("robust"),...)
     x <- calc.H(wt=wt,wq=wq,Td=Td,rho=dat("rho.air",avg=T,smooth=T))
     x
 }
-dat.H.dry <- function(what,robust=dpar("robust"),...)
+dat.H.dry <- function(what,derived=TRUE,robust=dpar("robust"),...)
 {
     # Turbulent sensible heat flux without contribution from varying Cp 
 
@@ -471,7 +471,7 @@ dat.H.dry <- function(what,robust=dpar("robust"),...)
 }
 
 
-dat.LE <- function(what,robust=dpar("robust"),...)
+dat.LE <- function(what,derived=TRUE,robust=dpar("robust"),...)
 {
     # Turbulent latent heat flux
     x <- dat(expand("w'mr'",what),avg=T,smooth=T)
@@ -484,7 +484,7 @@ dat.LE <- function(what,robust=dpar("robust"),...)
     x@units <- rep("W/m^2",ncol(x))
     x
 }
-dat.Lv <- function(what,robust=dpar("robust"),...)
+dat.Lv <- function(what,derived=TRUE,robust=dpar("robust"),...)
 {
     # Latent heat of vaporatizaton of water is a weak function of temperature
     # (varies by 1% in 10 C)
@@ -502,7 +502,7 @@ dat.Lv <- function(what,robust=dpar("robust"),...)
     else x <- 2.5e6
     x
 }
-dat.BR <- function(what,...)
+dat.BR <- function(what,.derived=TRUE,..)
 {
     # Bowen ratio
     x <- dat(expand("H",what),avg=T,smooth=T) / 
@@ -513,7 +513,7 @@ dat.BR <- function(what,...)
     x@units <- rep("",ncol(x))
     x
 }
-dat.Scorr <- function(what,which="krypton",robust=dpar("robust"),...)
+dat.Scorr <- function(what,derived=TRUE,which="krypton",robust=dpar("robust"),...)
 {
     # Correct covariance for spatial separation of sonic and scalar sensor
     # Assumes separation parallel to the sonic u axis and 
@@ -596,7 +596,7 @@ dat.Scorr <- function(what,which="krypton",robust=dpar("robust"),...)
     S
 }
 
-dat.TKE <- function(cache=F,...)
+dat.TKE <- function(what,derived=TRUE,cache=F,...)
 {
     x <- sqrt(dat("u'u'")^2 + dat("v'v'")^2 + dat("w'w'")^2)/2
 

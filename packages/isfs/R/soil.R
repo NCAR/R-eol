@@ -3,7 +3,7 @@
 #
 #               Copyright (C) by UCAR
 # 
-dat.rho.soil = function(x,...)
+dat.rho.soil = function(x,derived=TRUE,...)
 {
     # Use an average bulk density for this site (using 1.4)
     istns <- dpar("stns")
@@ -16,7 +16,7 @@ dat.rho.soil = function(x,...)
     x
 }
 
-dat.Csoil = function(what,...)
+dat.Csoil = function(what,derived=TRUE,...)
 {
     # Csoil = soil heat capacity
     #
@@ -73,7 +73,7 @@ dat.Csoil = function(what,...)
     x
 }
 
-dat.Ssoil = function(what,sum=T,dfill=F,doderiv=F,...)
+dat.Ssoil = function(what,derived=TRUE,sum=T,dfill=F,doderiv=F,...)
 {
     # Ssoil is the time-rate of change of the soil
     # heat storage per square meter, for each layer
@@ -216,7 +216,7 @@ dat.Ssoil = function(what,sum=T,dfill=F,doderiv=F,...)
     res
 }
 
-dat.Ssoilz = function(what,dfill=F,fit=3,sum=T,...)
+dat.Ssoilz = function(what,derived=TRUE,dfill=F,fit=3,sum=T,...)
 {
     # Like Ssoil, Ssoilz is the is the time-rate of change
     # of the soil heat storage per square meter. But it is
@@ -386,7 +386,7 @@ dat.Ssoilz = function(what,dfill=F,fit=3,sum=T,...)
     res
 }
 
-dat.Gsoilz <- function(what,fit=0,dfill=F,...)
+dat.Gsoilz <- function(what,derived=TRUE,fit=0,dfill=F,...)
 {
     # soil heat flux calculated from
     # lambda * dTsoil/dz
@@ -515,7 +515,7 @@ dat.Gsoilz <- function(what,fit=0,dfill=F,...)
     res
 }
 
-dat.Gsfc <- function(what,...)
+dat.Gsfc <- function(what,derived=TRUE,...)
 {
     # sign convention for Gsoil and Gsfc:
     # positive is upward energy flux
@@ -545,7 +545,7 @@ philip = function(lambda,Tp=3.93,Dp=38.56,lp=1.22)
     1 / ( 1 - 1.92 * Tp / Dp * (1 - lambda / lp))
 }
 
-dat.Gsoil = function(what,lc=0.906,Tp=3.93,Dp=38.56,lp=1.22,derived=TRUE,...)
+dat.Gsoil = function(what,derived=TRUE,lc=0.906,Tp=3.93,Dp=38.56,lp=1.22,...)
 {
     G = dat(what,derived=FALSE,...)
 
