@@ -33,6 +33,7 @@ export(
     check.cache,
     tlocator,
     horiz.legend,
+    label.times,
     is.complex.spectra,
     is.complex.fftw,
     plot.spectra,
