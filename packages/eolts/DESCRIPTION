@@ -6,7 +6,7 @@ Authors@R: person("Gordon","Maclean",role=c("aut","cre"),
             email="maclean@ucar.edu")
 Author: Gordon Maclean
 Maintainer: Gordon Maclean <maclean@ucar.edu>
-Depends: R (>= 3.0), methods
+Depends: R (>= 3.0), methods, stats
 Imports: splusTimeDate,splusTimeSeries
 Suggests: RUnit
 Collate: onAttach.R cache.R utime.R nts.R netcdf.R dpar.R plot.R eoltsLdpath.R fftw.R spectra.R plot.spectra.R netcdfWrite.R

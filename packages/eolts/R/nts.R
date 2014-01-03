@@ -892,8 +892,6 @@ setMethod("mean",signature(x="nts"),
     }
     )
 
-setGeneric("var")
-
 setMethod("var",signature(x="nts"),
     function(x,y=NULL,na.rm=TRUE,use)
     {
