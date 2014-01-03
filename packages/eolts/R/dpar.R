@@ -1,7 +1,8 @@
+# -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
+# vim: set shiftwidth=4 softtabstop=4 expandtab:
 #
 #               Copyright (C) by UCAR
 # 
-
 dpar <- function(...,save.cache=F)
 {
     # dpar function.  Argument handling stolen from par()
@@ -13,7 +14,7 @@ dpar <- function(...,save.cache=F)
                           robust=F,
                           accelgrav=9.81,
                           vonKarman=0.4,
-                          length=86400
+                          lensec=86400
                           )
         assign(".dpar",dpar.list,envir=.eoltsEnv)
     }
@@ -26,15 +27,12 @@ dpar <- function(...,save.cache=F)
     temp <- list(...)
 
     # Other members returned from or as.list.utime, which we'll ignore
-    ignore.names <- c("msec","dow","cmonth","isdst","zonediff")
 
     # or time can be set with start and end
-    time.names <- c("start","end")
-
-    # names that can be queried, they are ignored if setting
-    query.names <- c("length")
+    time.names <- c("start","end","lensec")
 
     time.len.names <- c("lenday","lenhr","lenmin")
+    all.time.len.names <- c("lenday","lenhr","lenmin","lensec")
 
     # Changing any of the data.selection.names or data.opt.names
     # will result in the cache being flushed.
@@ -80,8 +78,8 @@ dpar <- function(...,save.cache=F)
 
     set.names <- c(time.len.names,data.selection.names,data.opt.names,
                    deriv.opt.names,time.names)
-    ok.names <- c(set.names,ignore.names,query.names)
-    get.names <- c(set.names,query.names)
+    # can't fetch any of time.len.names. Can fetch "lensec" in time.names
+    get.names <- c(data.selection.names,data.opt.names,deriv.opt.names,time.names)
 
     # 
     if(is.null(names(temp))) {
@@ -95,13 +93,15 @@ dpar <- function(...,save.cache=F)
         amode <- mode(arg)
         if (amode == "list") temp <- arg
         else if (amode == "character") {
+            if (any((mn <- match(arg,get.names,nomatch=0))==0)) {
+                if (any(!is.na(match(arg,time.len.names)))) str <- 'Use "lensec" to query the time length'
+                else str <- ""
 
-            if (any((mn <- match(arg,get.names,nomatch=0))==0))
-                stop(paste(arg[mn==0][1],"is not a known dpar parameter"))
+                if (sum(nm==0) > 1) stop(paste(paste(arg[mn==0],collapse=","),"are not readable dpar parameters.",str))
+                else stop(paste(arg[mn==0],"is not a readable dpar parameter.",str))
+            }
             else if (length(arg) > 1) {
                 temp <- dpar.list[arg]
-                if (any(mn <- match(arg,names(dpar.list),nomatch=0) == 0)) 
-                    names(temp) <- arg
                 return(temp)
             }
             else return(dpar.list[[arg]])
@@ -129,12 +129,10 @@ dpar <- function(...,save.cache=F)
         inames <- names(temp)
     }
 
-    mn <- match(inames,ok.names,nomatch=0)
+    mn <- match(inames,set.names,nomatch=0)
     if (any(mn == 0)) 
         stop(paste(inames[mn==0][1],"is not a known dpar parameter"))
 
-    mn <- match(inames,set.names,nomatch=0)
-    if (all(mn==0)) return(NULL)
     inames <- unique(set.names[mn])
 
     dpar.list[inames] <- temp[inames]
@@ -150,26 +148,31 @@ dpar <- function(...,save.cache=F)
 
     # If any length parameter is specified,
     # zero out lengths not specified
-    if (any(match(time.len.names,inames,nomatch=0) != 0)) {
-        len.not <- time.len.names[match(time.len.names,inames,nomatch=0) == 0]
+    if (any(match(all.time.len.names,inames,nomatch=0) != 0)) {
+        len.not <- all.time.len.names[match(all.time.len.names,inames,nomatch=0) == 0]
         dpar.list[len.not] = 0
-        dpar.list$length = dpar.list$lenday * 86400 + dpar.list$lenhr * 3600 +
-            dpar.list$lenmin * 60
+        dpar.list$lensec = dpar.list$lenday * 86400 + dpar.list$lenhr * 3600 +
+            dpar.list$lenmin * 60 + dpar.list$lensec
         # length specified, overwrite end
-        if (!is.null(dpar.list$start)) dpar.list$end = dpar.list$start + dpar.list$length
+        if (!is.null(dpar.list$start)) dpar.list$end = dpar.list$start + dpar.list$lensec
+
+        # remove lenday,lenhr,lenmin from values to be returned
+        inames <- inames[is.na(match(inames,time.len.names))]
+        # add lensec
+        if (is.na(match("lensec",inames))) inames <- c(inames,"lensec")
     }
     else if (match("end",inames,nomatch=0) != 0) {
         # end specified, but not length
         # end may be a character string, convert to utime.
         dpar.list$end <- utime(dpar.list$end)
         if (!is.null(dpar.list$start)) {
-            dpar.list$length = as.numeric(dpar.list$end - dpar.list$start)
-            dpar.list$lenmin = 0
-            dpar.list$lenhr = 0
-            dpar.list$lenday = 0
+            dpar.list$lensec = as.numeric(dpar.list$end - dpar.list$start)
         }
     }
-    if (!is.null(dpar.list$start)) dpar.list$end = dpar.list$start + dpar.list$length
+    # remove lenday,lenhr,lenmin
+    dpar.list[time.len.names] <- NULL
+
+    if (!is.null(dpar.list$start)) dpar.list$end = dpar.list$start + dpar.list$lensec
 
     dpar.list$end <- utime(dpar.list$end)	# make sure it is a utime
 
@@ -204,7 +207,7 @@ dpar <- function(...,save.cache=F)
          any(match(inames,data.selection.names,nomatch=0) != 0) ||
          any(match(inames,data.opt.names,nomatch=0) != 0) ||
          !identical(dpar.list$start,dpar.list.orig$start) ||
-         !identical(dpar.list$length,dpar.list.orig$length) ||
+         !identical(dpar.list$lensec,dpar.list.orig$lensec) ||
          any(is.na(match(dpar.list$stns,dpar.list.orig$stns)))))
         clear.cache()
 
@@ -212,15 +215,13 @@ dpar <- function(...,save.cache=F)
     assign(".dpar",dpar.list,envir=.eoltsEnv)
 
     temp <- dpar.list.orig[inames]
-    if (any(mn <- match(inames,names(dpar.list.orig),nomatch=0) == 0)) 
-        names(temp) <- inames
     invisible(temp)
 }
 dpar.next <- function()
 {
     if (is.null(dpar("start"))) invisible(dpar.now())
     else {
-        t1 = dpar("start") + dpar("length")
+        t1 = dpar("start") + dpar("lensec")
         invisible(dpar(start=t1))
     }
 }
@@ -228,16 +229,16 @@ dpar.prev <- function()
 {
     if (is.null(dpar("start"))) invisible(dpar.now())
     else {
-        t1 = dpar("start") - dpar("length")
+        t1 = dpar("start") - dpar("lensec")
         invisible(dpar(start=t1))
     }
 }
 dpar.now <- function()
 {
 
-    if (is.null(dpar("length"))) dpar(lenday=1)
+    if (is.null(dpar("lensec"))) dpar(lenday=1)
 
-    len = dpar("length")
+    len = dpar("lensec")
 
     res <- 60
     if (len > 3600) res <- 300
