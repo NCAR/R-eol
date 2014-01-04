@@ -338,7 +338,7 @@ plot_tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
     el <- atan2(wrot,sqrt(urot^2 + vrot^2))*deg
     select <- el>=yrange[1] & el<=yrange[2]
 
-    if (dpar("length") < 5 * 86400) nlwd <- 1
+    if (dpar("lensec") < 5 * 86400) nlwd <- 1
     else                 nlwd <- 2
 
     lines(az[select]/180,el[select],lty=2,lwd=nlwd, col=color)
