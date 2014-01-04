@@ -728,8 +728,8 @@ label.times <- function(t1,t2, annotate, adj, col=1, year=T, print=T)
     # on the upper left of a plot (or as specified by 'adj')
     # t1 <- start(data)
     # t2 <- end(data)
-    t1.list <- as.list(t1)
-    t2.list <- as.list(t2)
+    t1.list <- as(t1,"list")
+    t2.list <- as(t2,"list")
     if (t1.list$mon != t2.list$mon | t1.list$day != t2.list$day |
         t1.list$year != t2.list$year) {
         if (year)
@@ -773,5 +773,18 @@ label.times <- function(t1,t2, annotate, adj, col=1, year=T, print=T)
         mtext(times, side = 3, adj = adj, line = 0.1)
     }
     invisible(times)
+}
+
+stamp <- function (string = date(), print = TRUE, plot = TRUE) 
+{
+    if (print) 
+        cat(string)
+    if (plot && .Device != "null device") {
+        mar <- par("mar")[[1]]
+        usr <- par("usr")
+        plt <- par("plt")
+        at <- usr[2] + (usr[2] - usr[1]) * (1 - plt[2]) / (plt[2] - plt[1])
+        mtext(string, side = 1, adj = 1, line = mar - 1, at = at)
+    }
 }
 

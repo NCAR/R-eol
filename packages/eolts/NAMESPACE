@@ -34,6 +34,7 @@ export(
     tlocator,
     horiz.legend,
     label.times,
+    stamp,
     is.complex.spectra,
     is.complex.fftw,
     plot.spectra,

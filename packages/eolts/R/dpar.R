@@ -97,7 +97,7 @@ dpar <- function(...,save.cache=F)
                 if (any(!is.na(match(arg,time.len.names)))) str <- 'Use "lensec" to query the time length'
                 else str <- ""
 
-                if (sum(nm==0) > 1) stop(paste(paste(arg[mn==0],collapse=","),"are not readable dpar parameters.",str))
+                if (sum(mn==0) > 1) stop(paste(paste(arg[mn==0],collapse=","),"are not readable dpar parameters.",str))
                 else stop(paste(arg[mn==0],"is not a readable dpar parameter.",str))
             }
             else if (length(arg) > 1) {
