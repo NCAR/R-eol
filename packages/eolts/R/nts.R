@@ -1511,7 +1511,7 @@ if (FALSE) {
         )
     setGeneric("cbind")
     setMethod("cbind",signature(x1="nts",x2="nts"),
-        function(x1,x2,...) seriesMerge(x1,x2,...,pos="union")
+        function(x1,x2,pos="union",...) seriesMerge(x1,x2,pos=pos,...)
         )
 
     setMethod("cbind",signature(x1="ANY",x2="nts"),
@@ -1539,7 +1539,7 @@ setMethod("Rbind",signature(x1="nts",x2="nts"),
 setGeneric("Cbind",function(x1,x2,...) standardGeneric("Cbind"))
 
 setMethod("Cbind",signature(x1="nts",x2="nts"),
-    function(x1,x2,...) seriesMerge(x1,x2,...,pos="union")
+    function(x1,x2,pos="union",...) seriesMerge(x1,x2,pos=pos,...)
     )
 
 setMethod("Cbind",signature(x1="ANY",x2="nts"),
