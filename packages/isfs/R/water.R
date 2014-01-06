@@ -187,6 +187,7 @@ dat.Q <- function(what,derived=TRUE,...)
 }
 dat.Tc <- function(what,derived=TRUE,...)
 {
+
     # sonic virtual temperature (deg C)
     Td <- dat(expand("T",what))
     RH <- dat(expand("RH",what))
@@ -237,6 +238,12 @@ dat.Tc <- function(what,derived=TRUE,...)
 
     dimnames(x) <- list(NULL,paste("Tc",suffixes(x,2),sep=""))
     x@units <- rep("degC",ncol(x))
+
+    # Look for any non-derived Tc, such as from a 2-d sonic
+    if (any(words(variables(),1,1) == "Tc")) {
+        x2 <- dat(expand("Tc",what),derived=F)
+        if (!is.null(x2)) x <- Cbind(x,x2)
+    }
     x
 }
 
