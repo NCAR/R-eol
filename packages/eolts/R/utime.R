@@ -13,29 +13,29 @@ setMethod("initialize",
     "utime",
     function(.Object,val=as.numeric(Sys.time()))
     {
-        .Object@.Data = val
+        .Object@.Data <- val
         .Object
     }
 )
 
 # constructor for utime, from character, POSIXct, timeDate or numeric
-utime = function(val=as.numeric(Sys.time()),
+utime <- function(val=as.numeric(Sys.time()),
     in.format=options("time.in.format")[[1]],
     time.zone=options("time.zone")[[1]])
 {
     # cat(paste("in utime(), class(val)=",class(val),", length(val)=",length(val),"\n"))
 
-    res = NULL
+    res <- NULL
     if (is(val,"numeric")) {
-        res = new("utime",val)
+        res <- new("utime",val)
     }
     else if (is.character(val)) {
-        if (length(val) == 1 && val == "now") res = as(Sys.time(),"utime")
+        if (length(val) == 1 && val == "now") res <- as(Sys.time(),"utime")
         else for (i in 1:length(in.format)) {
             # cat("trying format",in.format[[i]],"\n")
-            res = strptime(val,format=in.format[[i]],tz=time.zone)
+            res <- strptime(val,format=in.format[[i]],tz=time.zone)
             if (!any(is.na(res))) {
-                res = utime(as.numeric(res))
+                res <- utime(as.numeric(res))
                 break
             }
         }
@@ -46,19 +46,19 @@ utime = function(val=as.numeric(Sys.time()),
         }
     }
     else if (is(val,"POSIXct")) {
-        res = utime(as.numeric(val))
+        res <- utime(as.numeric(val))
     }
     else if (is(val,"timeDate")) {  # splusTimeDate::timeDate
-        res = as(val,"utime")
+        res <- as(val,"utime")
     }
     else if (is(val,"utime")) {
-        res = val
+        res <- val
     }
     else if (is.list(val)) {
-        res = as(val,"utime")
+        res <- as(val,"utime")
     }
     else if (is.null(val)) {
-        res = new("utime")
+        res <- new("utime")
     }
     res
 }
@@ -67,7 +67,7 @@ utime = function(val=as.numeric(Sys.time()),
 setAs("numeric","utime",
     function(from)
     {
-        res = new("utime",val=from)
+        res <- new("utime",val=from)
         res
     }
 )
@@ -76,8 +76,8 @@ setAs("numeric","utime",
 setAs("utime","POSIXct",
     function(from)
     {
-        time.zone = options("time.zone")[[1]]
-        if (time.zone == "") time.zone = "UTC"
+        time.zone <- options("time.zone")[[1]]
+        if (time.zone == "") time.zone <- "UTC"
 
         as.POSIXct(from@.Data,tz=time.zone,origin=structure(0,class="POSIXct"))
     }
@@ -103,21 +103,15 @@ setAs("timeDate","utime",
 setAs("utime","timeDate",
     function(from)
     {
-        # the timeDate constructor chokes if ms is NA, so set it to 0.
         if (any(bad <- is.na(from@.Data)))
-            splusTimeDate::timeDate(julian=floor(from@.Data/86400) + 3653,
-                ms=ifelse(bad,0,round((from@.Data %% 86400) * 1000,digits=3)),
-                format=options("time.out.format")[[1]],
-                zone=options("time.zone")[[1]])
-
+            splusTimeDate::timeDate(julian=as.integer(floor(from@.Data/86400) + 3653),
+                ms=as.integer(ifelse(bad,0,round((from@.Data %% 86400) * 1000,digits=3))))
         else {
             # cat("utime=",from@.Data[2],"\n")
             # cat("julian=",floor(from@.Data[2]/86400) + 3653,"\n")
             # cat("ms=",round((from@.Data[2] %% 86400.0) * 1000,digits=3),"\n")
-            splusTimeDate::timeDate(julian=floor(from@.Data/86400) + 3653,
-                ms=round((from@.Data %% 86400.0) * 1000,digits=3),
-                format=options("time.out.format")[[1]],
-                zone=options("time.zone")[[1]])
+            splusTimeDate::timeDate(julian=as.integer(floor(from@.Data/86400) + 3653),
+                ms=as.integer(round((from@.Data %% 86400.0) * 1000,digits=3)))
         }
     }
 )
@@ -126,9 +120,9 @@ setAs("utime","timeDate",
 setAs("utime","character",
     function(from) 
     {
-        time.zone = options("time.zone")[[1]]
-        from = as(from,"POSIXct")
-        attr(from,"tzone") = time.zone
+        time.zone <- options("time.zone")[[1]]
+        from <- as(from,"POSIXct")
+        attr(from,"tzone") <- time.zone
         as(from,"character")
     }
 )
@@ -137,7 +131,7 @@ setAs("utime","character",
 setAs("character","utime",
     function(from)
     {
-        time.zone = options("time.zone")[[1]]
+        time.zone <- options("time.zone")[[1]]
         as(as.POSIXct(from,tz=time.zone),"utime")
     }
 )
@@ -145,8 +139,8 @@ setAs("character","utime",
 setAs("utime","list",
     function(from)
     {
-        time.zone = options("time.zone")[[1]]
-        to = as.POSIXlt(as(from,"POSIXct"),tz=time.zone)
+        time.zone <- options("time.zone")[[1]]
+        to <- as.POSIXlt(as(from,"POSIXct"),tz=time.zone)
         list(year=to$year + 1900,
             mon=to$mon + 1,
             day=to$mday,
@@ -181,24 +175,24 @@ setAs("list","utime",
 setMethod("format","utime",
     function(x,...)
     {
-        if (hasArg(format)) format = list(...)$format
-        else format = options("time.out.format")[[1]]
+        if (hasArg(format)) format <- list(...)$format
+        else format <- options("time.out.format")[[1]]
 
-        if (hasArg(time.zone)) time.zone = list(...)$time.zone
-        else time.zone = options("time.zone")[[1]]
+        if (hasArg(time.zone)) time.zone <- list(...)$time.zone
+        else time.zone <- options("time.zone")[[1]]
 
-        if (is.list(time.zone)) time.zone = unlist(time.zone)
+        if (is.list(time.zone)) time.zone <- unlist(time.zone)
 
         if (FALSE) {
-            x = as(x,"timeDate")
+            x <- as(x,"timeDate")
 
-            x@format = format
-            x@time.zone = time.zone
+            x@format <- format
+            x@time.zone <- time.zone
             format(x)
         }
         else {
-            x = as(x,"POSIXct")
-            attr(x,"tzone") = time.zone
+            x <- as(x,"POSIXct")
+            attr(x,"tzone") <- time.zone
             format(x,format=format,tz=time.zone)
         }
     }
@@ -233,7 +227,7 @@ setMethod("monthly",signature(from="utime",to="utime"),
     }
 )
 
-diff.utime = function(x,...) diff(x@.Data)
+diff.utime <- function(x,...) diff(x@.Data)
 # setMethod("diff","utime",function(x,...) diff(x@.Data))
 
 setMethod( "c", signature(x="utime"),
@@ -249,9 +243,9 @@ setMethod( "c", signature(x="utime"),
         if(length(arglist) > 1)
             c(c(x, arglist[[1]]), do.call("c", arglist[-1]))
         else {
-            y = arglist[[1]]
-            if (class(y) != class(x)) y = as(y,class(x))
-            x@.Data = c(x@.Data,y@.Data)
+            y <- arglist[[1]]
+            if (class(y) != class(x)) y <- as(y,class(x))
+            x@.Data <- c(x@.Data,y@.Data)
             x
         }
     }
@@ -317,7 +311,7 @@ setMethod("Ops",signature(e1="utime",e2="numeric"),
         # a numeric, which must be converted back into a utime.
         # cat("Ops(utime,numeric): .Generic=",.Generic,"\n")
         if (.Generic == "+" || .Generic == "-") {
-            e1@.Data = callGeneric(e1@.Data,e2)
+            e1@.Data <- callGeneric(e1@.Data,e2)
             e1
         }
         else callGeneric(e1@.Data,e2)
@@ -332,7 +326,7 @@ setMethod("Ops",signature(e1="numeric",e2="utime"),
         # return a numeric.
         # cat("Ops(numeric,utime): .Generic=",.Generic,"\n")
         if (.Generic == "+") {
-            e2@.Data = callGeneric(e1,e2@.Data)
+            e2@.Data <- callGeneric(e1,e2@.Data)
             e2
         }
         else callGeneric(e1,e2@.Data)
@@ -347,7 +341,7 @@ setMethod("Math",signature(x="utime"),
         # where we'll return a utime
         # cat("Math(utime): .Generic=",.Generic,"\n")
 
-        x@.Data = callGeneric(x@.Data)
+        x@.Data <- callGeneric(x@.Data)
         x
     }
 )
@@ -395,7 +389,7 @@ setMethod("summary",signature(object="utime"),
         tmp <- as( object[!nas], "numeric")
         ret <- as( quantile( tmp, c( 0, .25, .5, .75, 1 )), "utime" )
         ret <- c( ret, as( tmp, "utime" ))
-        ret = format( ret, format=format,time.zone=time.zone)
+        ret <- format( ret, format=format,time.zone=time.zone)
         ret <- ret[c(1,2,3,6,4,5)]
         names( ret ) <- c( "Min", "1st Qu.", "Median", "Mean", "3rd Qu.", "Max" )
         if( any( nas ))
@@ -411,11 +405,11 @@ setMethod("summary",signature(object="utime"),
 seq.utime <- function(...)
 {
     # from,to,by=((to-from)/(length-1)),length=NULL)
-    if (hasArg(from)) from = list(...)$from
-    if (hasArg(to)) to = list(...)$to
-    if (hasArg(length)) length = list(...)$length
-    if (hasArg(by)) by = list(...)$by
-    else by = ((to - from) / (length - 1))
+    if (hasArg(from)) from <- list(...)$from
+    if (hasArg(to)) to <- list(...)$to
+    if (hasArg(length)) length <- list(...)$length
+    if (hasArg(by)) by <- list(...)$by
+    else by <- ((to - from) / (length - 1))
 
     if (!hasArg(to))
         utime(seq(from=as.numeric(from),by=by,length=length))

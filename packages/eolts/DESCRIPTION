@@ -6,8 +6,8 @@ Authors@R: person("Gordon","Maclean",role=c("aut","cre"),
             email="maclean@ucar.edu")
 Author: Gordon Maclean
 Maintainer: Gordon Maclean <maclean@ucar.edu>
-Depends: R (>= 3.0), methods, stats
-Imports: splusTimeDate,splusTimeSeries
+Depends: R (>= 3.0), methods, stats, splusTimeDate
+Imports: splusTimeSeries
 Suggests: RUnit
 Collate: onAttach.R cache.R utime.R nts.R netcdf.R dpar.R plot.R eoltsLdpath.R fftw.R spectra.R plot.spectra.R netcdfWrite.R
 Description: This package provides R functions to read, analyse, plot and write time series data, and support for generation and plotting of spectra from time series. Support includes reading time series from multiple NetCDF files. Developed at the National Center for Atmospheric Research, Earth Observing Laboratory (NCAR EOL), sponsored by the National Science Foundation.
