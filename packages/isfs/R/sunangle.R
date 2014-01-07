@@ -13,8 +13,8 @@ dat.azel.sun <- function(what,lat=dpar("lat"),lon=dpar("lon"),dt=dpar("avg"),
     found <- F
     if (check.cache(cacheName)) {
         x <- get.cache.object(cacheName)
-        xlat <- x@attributes$latitude
-        xlon <- x@attributes$longitude
+        xlat <- x@attributes["latitude"]
+        xlon <- x@attributes["longitude"]
         if (!is.null(xlat) && xlat == lat && !is.null(xlon) && xlon == lon &&
             deltat(x)[1] == dt) found <- T
     }
@@ -53,7 +53,7 @@ dat.az.sun <- function(what,lat=dpar("lat"),lon=dpar("lon"),dt=dpar("avg"),cache
 }
 dat.el.sun <- function(what,lat=dpar("lat"),lon=dpar("lon"),dt=dpar("avg"),cache=unlist(options("dcache")),derived=TRUE,...) {
 
-    x <- dat("azel.sun",...,lat=lat,lon=lon,dt=dt,cache=cache,derived=derived)
+    x <- dat("azel.sun",lat=lat,lon=lon,dt=dt,cache=cache,derived=derived,...)
     x[,"el.sun"]
 
 }
