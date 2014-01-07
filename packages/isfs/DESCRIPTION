@@ -8,7 +8,7 @@ Author: Gordon Maclean
 Maintainer: Gordon Maclean <maclean@ucar.edu>
 Depends: R (>= 1.8.0), methods, eolts
 Imports: quantreg
-Collate: onAttach.R dat.R prep.R words.R lookup.R set.mar.R label.times.R plot.dat.R plotdat.xy.R plotdat.ts.R plotprofile.R qctable.R conform.R density.R dimensionless.R fasth2o.R fluxes.R krypton.R licor7500.R rad.R rotate.R scaling.R soil.R tp01cal.R water.R winds.R tilt.R sonic_tilt_matrix.R util.R
+Collate: onAttach.R dat.R prep.R words.R lookup.R set.mar.R label.times.R plot.dat.R plotdat.xy.R plotdat.ts.R plotprofile.R qctable.R conform.R density.R dimensionless.R fasth2o.R fluxes.R krypton.R licor7500.R rad.R rotate.R scaling.R soil.R tp01cal.R water.R winds.R tilt.R sonic_tilt_matrix.R sunangle.R util.R
 Description: This package provides R functions to access and manipulate
     Integrated Surface Flux System time series.
 LinkingTo: eolts
