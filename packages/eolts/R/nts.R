@@ -40,7 +40,7 @@ nts <- function(data,positions,
 
     if(missing(positions) || missing(data)) return(ret)
 
-    ret@data <- asSeriesData(data)
+    ret@data <- data
     if (!is.matrix(ret@data)) ret@data <- matrix(ret@data,ncol=1)
     ret@positions <- as(positions,"utime")
 
@@ -880,7 +880,7 @@ setReplaceMethod("[",signature(x="nts",value="vector"),
 setMethod("Math",signature(x="nts"),
     function(x)
     {
-        x@data <- asSeriesData(callGeneric(x@data))
+        x@data <- callGeneric(x@data)
         x
     }
     )
@@ -980,14 +980,14 @@ setMethod("atan2",signature(y="nts",x="nts"),
 
         if (nr1 == nr2 && nc1 != nc2) {
             if ((nc1 %% nc2) == 0)		# nc2 divides evenly into nc1
-                y@data <- asSeriesData(atan2(y@data, as.vector(x@data)))
+                y@data <- atan2(y@data, as.vector(x@data))
             else if ((nc2 %% nc1) == 0)		# nc1 divides evenly into nc2
-                y@data <- asSeriesData(atan2(as.vector(y@data), x@data))
-            else y@data <- asSeriesData(atan2(y@data, x@data))
+                y@data <- atan2(as.vector(y@data), x@data)
+            else y@data <- atan2(y@data, x@data)
         }
-        else y@data <- asSeriesData(atan2(y@data, x@data))
+        else y@data <- atan2(y@data, x@data)
 
-        # remove weights when multiplying two nts together
+        # remove weights when computing atan2 of two nts
         y@weights <- matrix(ncol=0,nrow=0)
         y@weightmap <- integer(0)
         y
@@ -1102,12 +1102,12 @@ setMethod("Ops",sig=signature(e1="nts",e2="nts"),
 
         if (nr1 == nr2 && nc1 != nc2) {
             if ((nc1 %% nc2) == 0)		# nc2 divides evenly into nc1
-                e1@data <- asSeriesData(callGeneric(e1@data, as.vector(e2@data)))
+                e1@data <- callGeneric(e1@data, as.vector(e2@data))
             else if ((nc2 %% nc1) == 0)		# nc1 divides evenly into nc2
-                e1@data <- asSeriesData(callGeneric(as.vector(e1@data), e2@data))
-            else e1@data <- asSeriesData(callGeneric(e1@data, e2@data))
+                e1@data <- callGeneric(as.vector(e1@data), e2@data)
+            else e1@data <- callGeneric(e1@data, e2@data)
         }
-        else e1@data <- asSeriesData(callGeneric(e1@data, e2@data))
+        else e1@data <- callGeneric(e1@data, e2@data)
 
         # remove weights when multiplying two nts together
 
