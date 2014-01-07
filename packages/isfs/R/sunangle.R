@@ -45,15 +45,15 @@ dat.azel.sun <- function(what,lat=dpar("lat"),lon=dpar("lon"),dt=dpar("avg"),
     }
     x
 }
-dat.az.sun <- function(what,lat=dpar("lat"),lon=dpar("lon"),dt=dpar("avg"),cache=unlist(options("dcache")),...) {
+dat.az.sun <- function(what,lat=dpar("lat"),lon=dpar("lon"),dt=dpar("avg"),cache=unlist(options("dcache")),derived=TRUE,...) {
 
-    x <- dat("azel.sun",...,lat=lat,lon=lon,dt=dt,cache=cache,derived=T)
+    x <- dat("azel.sun",lat=lat,lon=lon,dt=dt,cache=cache,derived=derived,...)
     x[,"az.sun"]
 
 }
-dat.el.sun <- function(what,lat=dpar("lat"),lon=dpar("lon"),dt=dpar("avg"),cache=unlist(options("dcache")),...) {
+dat.el.sun <- function(what,lat=dpar("lat"),lon=dpar("lon"),dt=dpar("avg"),cache=unlist(options("dcache")),derived=TRUE,...) {
 
-    x <- dat("azel.sun",...,lat=lat,lon=lon,dt=dt,cache=cache,derived=T)
+    x <- dat("azel.sun",...,lat=lat,lon=lon,dt=dt,cache=cache,derived=derived)
     x[,"el.sun"]
 
 }
