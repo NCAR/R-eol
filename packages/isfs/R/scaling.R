@@ -27,16 +27,20 @@ dat.L <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),g=dpar("accelgra
     # calculate streamwise value of ustar
     u <- dat(expand("u",what),avg=T,smooth=T, derived=F)
     v <- dat(expand("v",what),avg=T,smooth=T, derived=F)
-    uw = dat(expand("u'w'",what),avg=T,smooth=T)
-    vw = dat(expand("v'w'",what),avg=T,smooth=T)
-    x <- sqrt(-(uw*u + vw*v)/sqrt(u^2+v^2))
+    uw <- dat(expand("u'w'",what),avg=T,smooth=T)
+    vw <- dat(expand("v'w'",what),avg=T,smooth=T)
+
+    # for negative values, sqrt generates a warning: NaNs produced
+    x <- -(uw*u + vw*v)/sqrt(u^2+v^2)
+    x[!is.na(x) & x < 0] <- NA_real_
+    x <- sqrt(x)
 
     # When the wind data is not tilt-corrected, one can see a higher frequency 
     # of times when the dot-product within the square root is negative.
     if (dpar("robust")) {
-        ib = is.na(x)
-        ustm = (uw*uw + vw*vw)^0.25
-        x[ib] = ustm[ib]
+        ib <- is.na(x)
+        ustm <- (uw*uw + vw*vw)^0.25
+        x[ib] <- ustm[ib]
     }
     dimnames(x) <- list(NULL,paste("u*",suffixes(x,2),sep=""))
     x@units <- rep("m/s",ncol(x))
