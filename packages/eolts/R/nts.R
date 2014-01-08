@@ -774,7 +774,8 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
                 else wmap.x <- rep(0L,nc)
 
                 if (length(weights.new) > 0) {
-                    weights.x <- cbind(weights.x,weights.new)
+                    if (length(weights.x) == 0) weights.x <- weights.new
+                    else  weights.x <- cbind(weights.x,weights.new)
                     wmap.new[wm.new] <- wmap.new[wm.new] + as.integer(max(wmap.x))
                     wmap.x[j] <- wmap.new
                 }
