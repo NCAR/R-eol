@@ -45,7 +45,8 @@ export(
     dat.satvp, dat.H2O, dat.MR, dat.mr, dat.Q, dat.Tc,
     dat.u, dat.v, dat.spd, dat.spd.uvw, dat.dir, dat.Spd, dat.Dir,
     dat.elev.u, dat.elev.v, dat.us, dat.vs, "dat.us'us'", "dat.vs'vs'",
-    dat.azel.sun,dat.az.sun,dat.el.sun,solar.lha.dec,solar.azm.elev
+    dat.azel.sun,dat.az.sun,dat.el.sun,solar.lha.dec,solar.azm.elev,
+    plot.sunangle, plot.sunshadow
 )
 
 exportPattern("^dat\\.")
