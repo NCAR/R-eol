@@ -7,31 +7,25 @@ setGeneric("plot")
 setMethod("plot",signature(x="nts",y="missing"),
     function(x,...)
     {
-        cat("in plot nts\n")
+        # cat("in plot nts\n")
         invisible(plot.nts(x, ...))
     }
 )
 
 setMethod("plot",signature(x="nts",y="nts"),
-    function(x,y,...)
+    function(x,y,xlab,ylab,...)
     {
-        dots <- list(...)
-        if (hasArg(xlab)) xlab <- dots$xlab
-        else xlab <- deparse(substitute(x))
-        if (hasArg(ylab)) ylab <- dots$ylab
-        else ylab <- deparse(substitute(y))
+        if (missing(xlab)) xlab <- deparse(substitute(x))
+        if (missing(ylab)) ylab <- deparse(substitute(y))
         invisible(plot(x@data, y@data,xlab=xlab,ylab=ylab, ...))
     }
 )
 
 setMethod("plot",signature(x="nts",y="numeric"),
-    function(x,y,...)
+    function(x,y,xlab,ylab,...)
     {
-        dots <- list(...)
-        if (hasArg(xlab)) xlab <- dots$xlab
-        else xlab <- deparse(substitute(x))
-        if (hasArg(ylab)) ylab <- dots$ylab
-        else ylab <- deparse(substitute(y))
+        if (missing(xlab)) xlab <- deparse(substitute(x))
+        if (missing(ylab)) ylab <- deparse(substitute(y))
         invisible(plot(x@data, y,xlab=xlab,ylab=ylab, ...))
     }
 )
@@ -425,9 +419,10 @@ timelabel <- function(side=1,outer=F,line=par("mgp")[1],cex=NULL,xlab=NULL)
 
 setGeneric("lines")
 setMethod("lines",signature(x="nts"),
-    function(x,...)
+    function(x,y,...)
     {
-        invisible(lines.nts(x,...))
+        if (!missing(y)) invisible(lines(x@data,y,...))
+        else invisible(lines.nts(x,...))
     }
 )
 
@@ -446,9 +441,10 @@ lines.nts <- function(x,...)
 
 setGeneric("points")
 setMethod("points",signature(x="nts"),
-    function(x,...)
+    function(x,y,...)
     {
-        invisible(points.nts(x,...))
+        if (!missing(y)) invisible(points(x@data,y,...))
+        else invisible(points.nts(x,...))
     }
 )
 
