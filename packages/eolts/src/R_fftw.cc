@@ -66,6 +66,9 @@ SEXP R_cfftw(SEXP nrp,SEXP ncp, SEXP cmatp, SEXP invp)
     fftw_complex* cpin = (fftw_complex*) cmat.getDataPtr();
 
     R_Matrix<Rcomplex> cmatout(CPLXSXP,nr,nc);
+
+    cmatout.setColumnNames(cmat.getColumnNames());
+
     fftw_complex* cpout = (fftw_complex*) cmatout.getDataPtr();
 
     /*
@@ -132,8 +135,10 @@ SEXP R_rfftw(SEXP nrp,SEXP ncp, SEXP dmatp, SEXP invp)
     // Rprintf("R_fftw: nr=%zu,nc=%zu,inverse=%d\n",nr,nc,inverse);
 
     R_Matrix<double> dmatout(REALSXP,nr,nc);
-    double* dpout = dmatout.getDataPtr();
 
+    dmatout.setColumnNames(dmat.getColumnNames());
+
+    double* dpout = dmatout.getDataPtr();
     double* dpin = dmat.getDataPtr();
 
     /*

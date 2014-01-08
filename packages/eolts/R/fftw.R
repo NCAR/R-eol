@@ -69,7 +69,9 @@ fftw.ctor <- function(data,type,units,stations,deltat,deltaf,start,end,wss)
         }
         else {
             data <- matrix(complex(real=data[1:mid,],
-                imaginary=apply(data[nr:(mid+1),],2,function(x) c(0,x))),nrow=mid)
+                imaginary=apply(data[nr:(mid+1),],2,function(x) c(0,x))),
+                nrow=mid,
+                dimnames=dimnames(data))
         }
         frequencies <- (0 : (mid-1)) / nr
     }
@@ -85,7 +87,9 @@ fftw.ctor <- function(data,type,units,stations,deltat,deltaf,start,end,wss)
             # matrix returned by fftw is stored as real, but the
             # upper half is the imaginary part in reverse order.
             data <- matrix(complex(real=data[1:mid,],
-                imaginary=apply(data[nr:(mid+1),,drop=F],2,function(x) c(0,x,0))),nrow=mid)
+                imaginary=apply(data[nr:(mid+1),,drop=F],2,function(x) c(0,x,0))),
+                nrow=mid,
+                dimnames=dimnames(data))
         }
         frequencies <- (0 : (mid-1)) / nr
     }
@@ -164,6 +168,8 @@ setMethod("fftw",signature(x="matrix",inverse="logical",use.mvfft="logical"),
                 x <- mvfft(x,inverse=inverse)
             else 
                 x <- .Call("R_rfftw", nr, nc, x, inverse, PACKAGE="eolts")
+
+            # cat("fftw x dimnames=",paste(dimnames(x)[[2]],collapse=","),"\n")
             fftw.ctor(x,type=restype)
         }
     }

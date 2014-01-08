@@ -29,11 +29,14 @@ do.test.fftw = function(use.mvfft)
     cat("\n---- testing fftw(x,inverse=FALSE) on sin((0:n-1) *",m,"/ n * 2 * pi) for n=",
         nr,"\n")
 
-    x <- matrix(sin((0:(nr-1)) * (m / nr) * 2 * pi),nrow=nr)
+    x <- matrix(sin((0:(nr-1)) * (m / nr) * 2 * pi),nrow=nr,
+        dimnames=list(NULL,paste("col",1,sep="")))
     fx <- fftw(x,inverse=F,use.mvfft=use.mvfft)
     mid <- trunc(nr / 2) + 1
 
     checkTrue(is.complex(fx@data) && length(dim(fx)) == 2 && all(dim(fx) == c(mid,1)))
+    # cat(paste("dimnames(fx)=",paste(dimnames(fx)[[2]],collapse=","),"\n"))
+    checkTrue(identical(dimnames(x),dimnames(fx)))
 
     m1 <- m + 1
 
