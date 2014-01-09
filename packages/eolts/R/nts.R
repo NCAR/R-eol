@@ -455,34 +455,17 @@ match.nts <- function(e1,e2,dt=options("dt.eps")[[1]],...)
     match.delta(e1,e2,dt)
 }
 
-# Unfortunately, this is half as fast as match().  Needs work, though
-# it is probably due to the double precision comparisons.
 match.delta <- function(e1,e2,delta,cond="nearest")
 {
-
-    mx <- match(e1,e2,nomatch=0)
-
-    # for those that don't match, do match within delta
-    if (any(mx == 0)) {
-        e1 <- e1[mx == 0]
-        l1 <- length(e1)
-        l2 <- length(e2)
-        ii <- integer(l1)
-        icond <- if (cond == "nearest") 1L else if (cond == "first") 0L 
+    icond <- if (cond == "nearest") 1L else if (cond == "first") 0L 
         else stop(paste("cond=",cond,"should be either nearest or first"))
-
-        mx2 <- .C("match_within",
-            e1,as.integer(l1),e2,as.integer(l2),delta,icond,match=ii,
-            PACKAGE="eolts")$match
-        mx[mx==0] <- mx2
-    }
-    mx
+    .Call("match_within",e1,e2,as.numeric(delta),icond,PACKAGE="eolts")
 }
 
 setMethod("[",signature(x="nts"),
     function(x,i,j,...)
     {
-        ## drop argument is ignored, defaults to FALSE
+        ## drop argument is ignored, forced to FALSE
 
         # cat(paste("in [ nts, nargs=",nargs(),
         #           ", missing(i)=",missing(i),
