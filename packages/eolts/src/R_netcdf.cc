@@ -192,7 +192,7 @@ SEXP read_netcdf_ts(SEXP args)
     if (args != R_NilValue) {
 #ifdef DEBUG
         Rprintf("read_netcdf_ts: arg #%d has name %s\n",
-                iarg++,isNull(TAG(args)) ? "none" : CHAR(PRINTNAME(TAG(args))));
+                iarg++,Rf_isNull(TAG(args)) ? "none" : CHAR(PRINTNAME(TAG(args))));
 #endif
         con = CAR(args);
         args = CDR(args);
@@ -530,7 +530,7 @@ R_netcdf *R_netcdf::getR_netcdf(SEXP obj)
 void R_netcdf::openFileSet(SEXP obj,SEXP files)
 {
 #ifdef DEBUG
-    Rprintf("file slot length=%d, type=%d\n",Rf_length(slot),TYPEOF(slot));
+    Rprintf("files slot length=%d, type=%d\n",Rf_length(files),TYPEOF(files));
 #endif
 
     vector<string> fnames;
@@ -914,7 +914,7 @@ R_netcdf::NSVarGroupFloat* R_netcdf::addVarGroupFloat(NS_rectype rectype,
 #endif
 
 #ifdef DEBUG
-    Fprintf("calling NSVarGroupFloat ctor\n");
+    Rprintf("calling NSVarGroupFloat ctor\n");
 #endif
 
     NSVarGroupFloat *g = new NSVarGroupFloat(this,rectype,dims,fillValue);
@@ -1162,7 +1162,7 @@ int R_netcdf::NSVarGroupFloat::open() throw(RPC_Exception)
 #endif
     for (i=0; i < n; i++) {
 #ifdef DEBUG
-        Rprintf("_open i=%d name=%s\n",i,_vars[i]->getName());
+        Rprintf("_open i=%d name=%s\n",i,_vars[i].getName().c_str());
 #endif
         ddef.fields.fields_val[i].name =  (char *) _vars[i].getName().c_str();
         ddef.fields.fields_val[i].units = (char *) _vars[i].getUnits().c_str();
