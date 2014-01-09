@@ -17,7 +17,7 @@ export(
     nwords,
     plot.dat,
     std.par,
-    fun.logo.stamp,
+    logo_stamp,
     plotprofile,
     plotdat.ts,
     plotdat.xy,

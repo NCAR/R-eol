@@ -384,7 +384,7 @@ plot_tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
     text(0.25,0.08,paste("b =",bf[1],bf[2],bf[3]))
     text(0.25,0.05,paste("lean=",lean,"deg, leanaz=",leanaz,"deg"))
 
-    fun.logo.stamp(print.motto=F)
+    logo_stamp(print.motto=F)
     cat(" b =",format(round(b,3)),"rms rsdl =", rms, "cm/s,",
         rms.el,"deg; lean=",lean,"leanaz=",leanaz,"deg\n")
     if (debug)

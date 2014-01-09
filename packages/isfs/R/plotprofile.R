@@ -199,6 +199,6 @@ plotprofile = function(x, every=3600, ntraces=6, smooth=deltat(x)[1],
     mtext(paste(format(t1,format="%Y %b %d %02H:%02M"),
                 format(t2,format="%b %d %02H:%02M %Z"),sep="-"),
       side=3,line=0,outer=T,cex=1.2)
-    fun.logo.stamp()
+    logo_stamp()
     NULL
 }

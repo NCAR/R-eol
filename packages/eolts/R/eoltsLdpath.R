@@ -6,8 +6,9 @@
 #
 
 ## make sure system.file returns an absolute path
-eolts.system.file <- function(...){
-    tools::file_path_as_absolute( base::system.file( ..., package = "eolts" ) )
+eolts.system.file <- function(...)
+{
+    tools::file_path_as_absolute(base::system.file(...,package="eolts" ) )
 }
 
 ## identifies if the default linking on the platform should be static

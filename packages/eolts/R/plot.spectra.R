@@ -251,8 +251,8 @@ plot.spectra <- function(x,log,multfreq=T,falloff,
     # lim <- par("usr")
     # cat("logarg=",logarg,"lim=",lim,"xaxt=",par("xaxt"),"yaxt=",par("yaxt"),"\n")
     plot_spectra_tics(lim[1:2],lim[3:4],grid=grid,logx,logy,col=1)
-    if (logo && last.plot && exists("fun_logo_stamp",mode="function")) {
-        fls <- get("fun_logo_stamp",mode="function")
+    if (logo && last.plot && exists("logo_stamp",mode="function")) {
+        fls <- get("logo_stamp",mode="function")
         fls()
     }
 
