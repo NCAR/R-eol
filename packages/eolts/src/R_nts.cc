@@ -230,12 +230,12 @@ extern "C" {
      */
     void match_within(
             double *t1,		/* vector of numeric values */
-            long *l1p,		/* length of t1 */
+            int *l1p,		/* length of t1 */
             double *t2,		/* look for t1 in t2 */
-            long *l2p,		/* length of t2 */
+            int *l2p,		/* length of t2 */
             double *dtp,	/* closeness */
-            long *matchType,	/* type: 1=nearest, 0=first */
-            long *match)	/* returned match */
+            int *matchType,	/* type: 1=nearest, 0=first */
+            int *match) 	/* returned match */
     {
 
         int i1,i2,j2;

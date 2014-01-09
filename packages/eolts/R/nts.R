@@ -468,12 +468,12 @@ match.delta <- function(e1,e2,delta,cond="nearest")
         l1 <- length(e1)
         l2 <- length(e2)
         ii <- integer(l1)
-        icond <- if (cond == "nearest") 1 else if (cond == "first") 0 
+        icond <- if (cond == "nearest") 1L else if (cond == "first") 0L 
         else stop(paste("cond=",cond,"should be either nearest or first"))
 
         mx2 <- .C("match_within",
-            e1,l1,e2,l2,delta,icond,match=ii,
-            package="eolts")
+            e1,as.integer(l1),e2,as.integer(l2),delta,icond,match=ii,
+            PACKAGE="eolts")$match
         mx[mx==0] <- mx2
     }
     mx
@@ -932,10 +932,10 @@ setMethod("atan2",signature(y="nts",x="nts"),
             # interpolation weights )
 
             # points in p1 which exceed deltat tolerance of p2
-            nuke.p1 <- .Call("utime_align", p1, p2, c("NA", "NA"), tol, package="eolts")
+            nuke.p1 <- .Call("utime_align", p1, p2, c("NA", "NA"), tol, PACKAGE="eolts")
 
             # points in p2 which exceed deltat tolerance of p1
-            nuke.p2 <- .Call("utime_align", p2, p1, c("NA", "NA"), tol, package="eolts")
+            nuke.p2 <- .Call("utime_align", p2, p1, c("NA", "NA"), tol, PACKAGE="eolts")
 
             # cat("length(p1) before nuke=",length(p1),"\n")
             # cat("length(p2) before nuke=",length(p2),"\n")
@@ -1053,10 +1053,10 @@ setMethod("Ops",sig=signature(e1="nts",e2="nts"),
             # interpolation weights )
 
             # points in p1 which exceed deltat tolerance of p2
-            nuke.p1 <- .Call("utime_align", p1, p2, c("NA", "NA"), tol, package="eolts")
+            nuke.p1 <- .Call("utime_align", p1, p2, c("NA", "NA"), tol, PACKAGE="eolts")
 
             # points in p2 which exceed deltat tolerance of p1
-            nuke.p2 <- .Call("utime_align", p2, p1, c("NA", "NA"), tol, package="eolts")
+            nuke.p2 <- .Call("utime_align", p2, p1, c("NA", "NA"), tol, PACKAGE="eolts")
 
             # cat("length(p1) before nuke=",length(p1),"\n")
             # cat("length(p2) before nuke=",length(p2),"\n")
@@ -1573,14 +1573,14 @@ setMethod("average", signature=(x="nts"),
                 x,
                 avgperiod,
                 outinterval,
-                use.weights,package="eolts")
+                use.weights,PACKAGE="eolts")
         }
         else if (method=="median") {
             x <- .Call("ntsaverage_median",
                 x,
                 avgperiod,
                 outinterval,
-                use.weights,package="eolts")
+                use.weights,PACKAGE="eolts")
         }
         # positions comes out above C functions as "numeric"
         positions(x) <- as(positions(x),"utime")
