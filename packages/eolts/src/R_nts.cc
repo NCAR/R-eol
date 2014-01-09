@@ -267,8 +267,8 @@ extern "C" {
         }
         int type = INTEGER(typep)[0];
 
-        double t1l = -std::numeric_limits<double>::min();
-        double t2l = -std::numeric_limits<double>::min();
+        double t1l = -std::numeric_limits<double>::max();
+        double t2l = -std::numeric_limits<double>::max();
 
         SEXP res = PROTECT(Rf_allocVector(INTSXP,l1));
         nprot++;
