@@ -236,9 +236,8 @@ plot.spectra <- function(x,log,multfreq=T,falloff,
     if (nc > 1) {
         if (is.null(args$cex)) cex <- par("cex")
         else cex <- args$cex
-        cxy <- par("cxy") * cex * 0.8
-        lx <- lim[1] + cxy[1] * 1.0
-        ly <- lim[4] - cxy[2] * .3
+        lx <- lim[1] + strheight("X") * 1.0
+        ly <- lim[4] - strwidth("X") * 1.0
         colv = col
         if (length(colv) < nc) colv = rep(colv,(nc/length(colv))+1)
         # browser()

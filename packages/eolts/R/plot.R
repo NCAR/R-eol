@@ -695,17 +695,20 @@ horiz.legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,cex=par("cex"),
     # Lay it out column by column (takes less vertical space)
     y0 <- y - 1.0 * cxy[2]
     ir <- 0
+    putx  <- if(par("xlog")) function(x){10^x} else function(x)x
+    puty  <- if(par("ylog")) function(x){10^x} else function(x)x
+
     for (i in 1:nl) {
         y <- y0 - ir * 1.0 * cxy[2]
         if (ptln.size > 0) {
             if (is.null(marks))
-              lines(c(x,x+ptln.size*2),c(y,y),col=col[i],lty=lty[i],
+              lines(putx(c(x,x+ptln.size*2)),puty(c(y,y)),col=col[i],lty=lty[i],
                       xaxt=xaxt,yaxt=yaxt)
             else
-              points(x+ptln.size,y,col=col[i],pch=marks[i],xaxt=xaxt,yaxt=yaxt)
+              points(putx(x+ptln.size),puty(y),col=col[i],pch=marks[i],xaxt=xaxt,yaxt=yaxt)
         }
 
-        text(x+2.5*ptln.size,y,legend[i],col=col[i],adj=0,cex=cex,
+        text(putx(x+2.5*ptln.size),puty(y),legend[i],col=col[i],adj=0,cex=cex,
             xaxt=xaxt,yaxt=yaxt)
         ir <- ir + 1
         if (ir == nr) {
