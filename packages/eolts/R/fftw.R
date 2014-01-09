@@ -46,7 +46,7 @@ setClass("fftw","spectra")
 # half of the output. (The frequency -k/n is the same as the frequency
 # (n-k)/n.)
 
-fftw.ctor <- function(data,type,units,stations,deltat,deltaf,start,end,wss)
+fftw.ctor <- function(data,type,units,deltat,deltaf,start,end,wss)
 {
 
     # if (!is.matrix(data)) data <- matrix(data,ncol=1)
@@ -107,10 +107,6 @@ fftw.ctor <- function(data,type,units,stations,deltat,deltaf,start,end,wss)
 
     if (!missing(units)) res@units <- units
     else res@units <- rep("",ncol(res@data))
-
-    if (missing(stations)) stations <- rep(0L,ncol(res@data))
-    if (!is(stations,"integer")) names(stations) <- rep("",length(stations))
-    res@stations <- stations
 
     if (!missing(deltat)) res@deltat <- deltat
     else res@deltat <- 1

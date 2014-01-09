@@ -2,6 +2,7 @@
 #include "R_NamedVector.h"
 
 #include <sstream>
+#include <limits>
 
 using std::vector;
 using std::string;
@@ -226,35 +227,76 @@ extern "C" {
 
     /* 
      * Do a match within a delta.
-     * This assumes that both sequences are ordered!
+     * Returns an error if it detects that the sequences are not ordered.
      */
-    void match_within(
-            double *t1,		/* vector of numeric values */
-            int *l1p,		/* length of t1 */
-            double *t2,		/* look for t1 in t2 */
-            int *l2p,		/* length of t2 */
-            double *dtp,	/* closeness */
-            int *matchType,	/* type: 1=nearest, 0=first */
-            int *match) 	/* returned match */
+    SEXP match_within(SEXP t1p, SEXP t2p, SEXP dtp, SEXP typep)
     {
+        int nprot = 0;
 
-        int i1,i2,j2;
-        int l1 = *l1p;
-        int l2 = *l2p;
-        double dt = *dtp;
-        double x1,xc;
-        int type = *matchType;
+        if (TYPEOF(t1p) != REALSXP) {
+            PROTECT(t1p = Rf_coerceVector(t1p,REALSXP));
+            nprot++;
+        }
+        double* t1 = REAL(t1p);
+        size_t l1 = Rf_length(t1p);
 
-        i2 = 0;
-        for (i1 = 0; i1 < l1; i1++) {
+        if (TYPEOF(t2p) != REALSXP) {
+            PROTECT(t2p = Rf_coerceVector(t2p,REALSXP));
+            nprot++;
+        }
+        double* t2 = REAL(t2p);
+        size_t l2 = Rf_length(t2p);
+
+        double dt;
+        if (Rf_length(dtp) != 1) {
+            UNPROTECT(nprot);
+            Rf_error("delta argument is not length 1");
+        }
+        if (TYPEOF(dtp) == REALSXP)
+            dt = REAL(dtp)[0];
+        else if (TYPEOF(dtp) == INTSXP)
+            dt = INTEGER(dtp)[0];
+        else {
+            UNPROTECT(nprot);
+            Rf_error("delta argument is not numeric");
+        }
+
+        if (TYPEOF(typep) != INTSXP || Rf_length(typep) != 1) {
+            UNPROTECT(nprot);
+            Rf_error("match type is not integer, length 1");
+        }
+        int type = INTEGER(typep)[0];
+
+        double t1l = -std::numeric_limits<double>::min();
+        double t2l = -std::numeric_limits<double>::min();
+
+        SEXP res = PROTECT(Rf_allocVector(INTSXP,l1));
+        nprot++;
+        int* match = INTEGER(res);
+
+        size_t i2 = 0;
+        for (size_t i1 = 0; i1 < l1; i1++) {
             match[i1] = 0;
 
-            x1 = t1[i1];
-            xc = x1 - dt;
+            double x1 = t1[i1];
+            if (x1 < t1l) {
+                UNPROTECT(nprot);
+                Rf_error("first series is not ordered");
+            }
+            t1l = x1;
+
+            double xc = x1 - dt;
             /*
              * Find first t2[i2] such that t2[i2] >= t1[i1]-dt
              */
-            for (; i2 < l2 && t2[i2] < xc; i2++);
+            for (; i2 < l2; i2++) {
+                if (t2[i2] < t2l) {
+                    UNPROTECT(nprot);
+                    Rf_error("second series is not ordered");
+                }
+                t2l = t2[i2];
+                if (t2l >= xc) break;
+            }
             /*
              * At this point:
              * if i2 == l2:
@@ -272,12 +314,21 @@ extern "C" {
                 if (type == 1) {
                     /* possibly more than one match, look for closest one */
                     double d,dmin;
+                    double t2lx = t2l;
                     dmin = fabs(t2[i2] - x1);
-                    for (j2 = i2 + 1; j2 < l2 && t2[j2] <= xc; j2++) {
+                    for (size_t j2 = i2 + 1; j2 < l2; j2++) {
+                        if (t2[j2] < t2lx) {
+                            UNPROTECT(nprot);
+                            Rf_error("second series is not ordered");
+                        }
+                        t2lx = t2[j2];
+                        if (t2lx > xc) break;
                         if ((d = fabs(t2[j2] - x1)) < dmin) {
                             dmin = d;
                             i2 = j2;
+                            t2l = t2lx;
                         }
+                        else break;
                     }
                 }
                 // assert(i1 >= 0);
@@ -286,5 +337,7 @@ extern "C" {
                 match[i1] = i2 + 1;	/* 1 based indexing */
             }
         }
+        UNPROTECT(nprot);
+        return res;
     }
 }
