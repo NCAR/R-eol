@@ -52,7 +52,7 @@ void NcFile::open() throw(NcException)
     if (_ncid < 0) {
         int status = nc_open(_name.c_str(),NC_SHARE,&_ncid);
         if (status != NC_NOERR) {
-            Rprintf("error on open, _ncid=%d\n",_ncid);
+            // Rprintf("error on open, _ncid=%d\n",_ncid);
             throw NcException("opening",_name,status);
         }
         readDimensions();
