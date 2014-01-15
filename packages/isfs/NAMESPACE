@@ -46,7 +46,8 @@ export(
     dat.u, dat.v, dat.spd, dat.spd.uvw, dat.dir, dat.Spd, dat.Dir,
     dat.elev.u, dat.elev.v, dat.us, dat.vs, "dat.us'us'", "dat.vs'vs'",
     dat.azel.sun,dat.az.sun,dat.el.sun,solar.lha.dec,solar.azm.elev,
-    plot.sunangle, plot.sunshadow
+    plot.sunangle, plot.sunshadow,
+    dataset
 )
 
 exportPattern("^dat\\.")
