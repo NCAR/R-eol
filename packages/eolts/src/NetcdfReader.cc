@@ -1028,7 +1028,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                         btvar->getFileName(),btvar->getName(),status);
             }
             const NcAttr* unitsAttr = btvar->getAttribute("units");
-            if (unitsAttr->getLength() == 1 && unitsAttr->getNcType() == NC_CHAR) {
+            if (unitsAttr && unitsAttr->getLength() == 1 && unitsAttr->getNcType() == NC_CHAR) {
                 const NcAttrT<string>* sattr;
                 if ((sattr = dynamic_cast<const NcAttrT<string>*>(unitsAttr))) {
                     string tunits = sattr->getValue(0);
@@ -1048,7 +1048,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
         double timemult = 1.0;
 
         const NcAttr* unitsAttr = tvar->getAttribute("units");
-        if (unitsAttr->getLength() == 1 && unitsAttr->getNcType() == NC_CHAR) {
+        if (unitsAttr && unitsAttr->getLength() == 1 && unitsAttr->getNcType() == NC_CHAR) {
             const NcAttrT<string>* sattr;
             if ((sattr = dynamic_cast<const NcAttrT<string>*>(unitsAttr))) {
                 string tunits = sattr->getValue(0);
