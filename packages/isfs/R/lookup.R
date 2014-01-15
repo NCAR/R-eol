@@ -7,6 +7,10 @@ lookup <- function(x,verbose=T)
 
     toc <- variables()
     nv <- length(toc)
+    if (nv == 0) {
+        warning("No variables found for times in netcdf files")
+        return(x)
+    }
 
     nw <- nwords(x,sep=".")
     prefixes <- words(toc,rep(1,nv),rep(nw,nv),sep=".")
