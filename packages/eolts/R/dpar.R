@@ -26,9 +26,7 @@ dpar <- function(...,save.cache=F)
 
     temp <- list(...)
 
-    # Other members returned from or as.list.utime, which we'll ignore
-
-    # or time can be set with start and end
+    # time can be set with start and end
     time.names <- c("start","end","lensec")
 
     time.len.names <- c("lenday","lenhr","lenmin")
@@ -36,7 +34,9 @@ dpar <- function(...,save.cache=F)
 
     # Changing any of the data.selection.names or data.opt.names
     # will result in the cache being flushed.
+    # TODO: check if "sonic","temp" or "h2o" are used and necessary to keep
     data.selection.names <- c("stns","sonic","h2o","temp","hts","sfxs","sites")
+    data.selection.modes <- c("numeric","character","character","character","numeric","character","character")
     data.opt.names <- c(
         "chksum",		# screen data by looking at associated checksums?
         "lat","lon",	# used by dat("az.sun"), dat("el.sun")
@@ -127,6 +127,17 @@ dpar <- function(...,save.cache=F)
     if (any((mn <- match(stn.alts,inames,nomatch=0))!=0)) {
         names(temp)[mn] <- "stns"
         inames <- names(temp)
+    }
+
+    imodes <- sapply(temp,function(x)mode(x))
+
+    mn <- match(inames,data.selection.names,nomatch=0)
+    if (any(mn != 0)) {
+        bad <- imodes[mn!=0] != "NULL" & imodes[mn!=0] != data.selection.modes[mn]
+        if (any(bad))
+            stop(paste("dpar ",paste(data.selection.names[mn][bad],collapse=","),
+                    "must be",
+                paste(data.selection.modes[mn][bad],collapse=","),", or NULL"))
     }
 
     mn <- match(inames,set.names,nomatch=0)
