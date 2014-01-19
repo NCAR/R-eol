@@ -9,7 +9,7 @@ lookup <- function(x,verbose=T)
     nv <- length(toc)
     if (nv == 0) {
         warning("No variables found for times in netcdf files")
-        return(x)
+        return(NULL)
     }
 
     nw <- nwords(x,sep=".")
