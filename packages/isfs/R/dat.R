@@ -285,10 +285,11 @@ setMethod("select",signature(x="dat"),
                 sm <- seq(along=sm)[sm!=0][sort.list(sm[sm!=0])]
                 if (length(sm) > 0) x <- x[,sm]
                 else {
-                    x <- NULL
-                    warning(paste("no selected stations (",paste(stns,collapse=","),
-                      ") found in stations(x)=c(",paste(xstns,collapse=","),
-                      "). select(x,stns) returning NULL"))
+                    warning(paste(paste(dimnames(x)[[2]],collapse=","),
+                        ": no selected stations (",paste(stns,collapse=","),
+                        ") found in stations(x)=c(",paste(xstns,collapse=","),
+                        "). select(x,stns) returning NULL"))
+                    return(NULL)
                 }
             }
         }
@@ -321,10 +322,11 @@ setMethod("select",signature(x="dat"),
                 sm <- seq(along=sm)[sm!=0][sort.list(sm[sm!=0])]
                 if (length(sm) > 0) x <- x[,sm]
                 else {
-                    x <- NULL
-                    warning(paste("no selected heights (",paste(hts,collapse=","),
-                      ") found in heights(x)=c(",paste(xhts,collapse=","),
-                      "). select(x,hts) returning NULL"))
+                    warning(paste(paste(dimnames(x)[[2]],collapse=","),
+                        ": no selected heights (",paste(hts,collapse=","),
+                        ") found in heights(x)=c(",paste(xhts,collapse=","),
+                        "). select(x,hts) returning NULL"))
+                    return(NULL)
                 }
             }
         }
@@ -359,7 +361,7 @@ setMethod("select",signature(x="dat"),
                 warning(paste("no selected suffixes (",paste(sfxs,collapse=","),
                   ") found in dimnames(x)[[2]]=c(",paste(dimnames(x)[[2]],collapse=","),
                   "). select(x,sfxs) returning NULL"))
-                x <- NULL
+                return(NULL)
             }
         }
         if (hasArg(sites) && !is.null(sites <- dots$sites)) {
