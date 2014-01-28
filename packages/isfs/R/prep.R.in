@@ -70,7 +70,7 @@ setMethod("readts",
 
             # If the user passes a non-zero rate, use it when exec'ing prep.
             # otherwise don't pass a -r option to prep.
-            if (con@rate > 0.) runargs <- c(runargs,"-r",con@rate)
+            if (con@rate > 0.) runargs <- c("-r",con@rate,runargs)
 
             prog <- "prep"
 
