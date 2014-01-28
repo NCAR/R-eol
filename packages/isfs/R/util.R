@@ -37,7 +37,8 @@ dataset <- function(which,verbose=F,datasets=NULL)
                     sapply(names(datasets),function(s) sprintf("%-12s",paste("\"",s,"\"",sep=""))),
                     sapply(datasets,function(s) sprintf("%s",s$desc)),
                     sep=" ",collapse="\n"),"\n",
-                "************************************************\n",sep=""),"\n")
+                "************************************************\n",
+                "current dataset is \"",current,"\"\n",sep=""))
         }
         return(current)
     }
@@ -62,10 +63,11 @@ dataset <- function(which,verbose=F,datasets=NULL)
 
     if (verbose) {
         cat(paste("************************************************\n"))
-        cat(paste("current dataset is \"", get("dataset.which",envir=.projectEnv),sep="","\"\n"))
+        cat(paste("current dataset is \"", get("dataset.which",envir=.projectEnv),"\"\n",sep=""))
 
-        cat(paste("netcdf file=",Sys.getenv("NETCDF_FILE"),"\n",
-                "netcdf dir=",Sys.getenv("NETCDF_DIR"),"\n",
+        cat(paste("NETCDF_FILE=",Sys.getenv("NETCDF_FILE"),"\n",
+                "NETCDF_DIR=",Sys.getenv("NETCDF_DIR"),"\n",
+                "dpar(\"lenfile\")=",dpar("lenfile")," sec\n",
                 "QC_DIR=",Sys.getenv("QC_DIR"), "\n",
                 "SONIC_DIR=",Sys.getenv("SONIC_DIR"),"\n",
                 "dpar(\"datacoords\")=\"", dpar("datacoords"),"\" (coordinates of netcdf data)\n", sep=""))
