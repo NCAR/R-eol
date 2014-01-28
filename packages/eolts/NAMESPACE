@@ -91,6 +91,7 @@ exportMethods(
     "mean",
     "var",
     "atan2",
+    "cumsum",
     "fftw",
     "deltaf","deltaf<-",
     "frequencies","frequencies<-",

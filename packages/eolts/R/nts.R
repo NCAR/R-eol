@@ -883,6 +883,14 @@ setMethod("var",signature(x="nts"),
     }
     )
 
+setMethod("cumsum",signature(x="nts"),
+    function(x)
+    {
+        x@data = matrix(apply(x@data,2,cumsum),ncol=ncol(x),dimnames=dimnames(x@data))
+        x
+    }
+    )
+
 setMethod("atan2",signature(y="nts",x="nts"),
     function(y,x)
     {
