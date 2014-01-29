@@ -774,7 +774,7 @@ label.times <- function(t1,t2, annotate, adj, col=1, year=T, print=T)
     invisible(times)
 }
 
-stamp <- function (string = date(), print = TRUE, plot = TRUE) 
+stamp <- function (string = date(), print = TRUE, plot = TRUE, cex=par("cex"),...) 
 {
     if (print) 
         cat(string)
@@ -782,8 +782,9 @@ stamp <- function (string = date(), print = TRUE, plot = TRUE)
         mar <- par("mar")[[1]]
         usr <- par("usr")
         plt <- par("plt")
-        at <- usr[2] + (usr[2] - usr[1]) * (1 - plt[2]) / (plt[2] - plt[1])
-        mtext(string, side = 1, adj = 1, line = mar - 1, at = at)
+        at <- usr[2] + (usr[2] - usr[1]) * (1 - plt[2]) / (plt[2] - plt[1]) -
+            0.6 * strwidth("m",cex=cex)
+        mtext(string, side = 1, adj = 1, line = mar - 1, at = at,cex=cex,...)
     }
 }
 
