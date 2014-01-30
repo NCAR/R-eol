@@ -178,7 +178,7 @@ plotprofile = function(x, every=3600, ntraces=6, smooth=deltat(x)[1],
         if (dx > 0)
             lgnd = paste(lgnd,"(",offset[ip,],")",sep="")
 
-        horiz.legend(lx,ly, lgnd, col=2:(ntraces+1),bty="n",cex=1.1)
+        horiz_legend(lx,ly, lgnd, col=2:(ntraces+1),bty="n",cex=1.1)
     }
 
     if (smooth == 1800) ptitle = "1/2 Hour Average"

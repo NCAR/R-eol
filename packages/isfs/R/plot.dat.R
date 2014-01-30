@@ -373,10 +373,10 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
             ly <- usr[4] - cxy[2] * .3
 
             if (type == "l")
-              horiz.legend(lx,ly,legv,col=colv,lty=rep(1,length(colv)),
+              horiz_legend(lx,ly,legv,col=colv,lty=rep(1,length(colv)),
                   bty="n",cex=cex*1.0)
             else
-              horiz.legend(lx,ly,legv,col=colv,marks=colv,
+              horiz_legend(lx,ly,legv,col=colv,marks=colv,
                   bty="n", cex=cex*1.0)
         }
     }

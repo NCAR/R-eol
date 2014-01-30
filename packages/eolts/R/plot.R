@@ -664,7 +664,7 @@ tlocator <- function(n=1,type="n",...)
     times
 }
 
-horiz.legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,cex=par("cex"),bty,xaxt="s",yaxt="s")
+horiz_legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,cex=par("cex"),bty,xaxt="s",yaxt="s")
 {
     # this makes a more compact legend than legend()
     uxy <- par("usr")
@@ -721,9 +721,9 @@ horiz.legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,cex=par("cex"),
     NULL
 }
 
-label.times <- function(t1,t2, annotate, adj, col=1, year=T, print=T)
+label_times <- function(t1,t2, annotate, adj, col=1, year=T, print=T,cex=par("cex"),...)
 {
-    # S function to print start (t1) and end (t2) times of data
+    # function to print start (t1) and end (t2) times of data
     # on the upper left of a plot (or as specified by 'adj')
     # t1 <- start(data)
     # t2 <- end(data)
@@ -769,7 +769,7 @@ label.times <- function(t1,t2, annotate, adj, col=1, year=T, print=T)
             adj=0
         par.old = par(col=col)
         on.exit(par(par.old))
-        mtext(times, side = 3, adj = adj, line = 0.1)
+        mtext(times, side = 3, adj = adj, line = 0.1,cex=cex,...)
     }
     invisible(times)
 }
