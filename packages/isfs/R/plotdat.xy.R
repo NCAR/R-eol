@@ -1,7 +1,7 @@
 plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth, 
                        plot=T, derived=T, method.smth="mean", 
                        lfit=F, intercept=T,
-                       chksum=F, logxy, annotate=T, browse=F, ...)
+                       chksum=F, logxy, annotate=T, browse=F, type="p", ...)
 {
     # Generic function for xy plot of dat objects, per twh.
     #   e.g. plotdat.xy("P","RH")
@@ -146,12 +146,14 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
         plot.default(xdata[,1]@data, ydata[,1]@data, type="n", log=logxy,
                  xlab=xlab, ylab=ylab, ...)
 
-        if (ncol(xdata)==1)
-            for (i in 1:ncol(ydata)) 
-                points(x[,1],y[,i], pch=8, col=i, cex=0.5)
-        else
-            for (i in 1:ncol(ydata)) 
-                points(x[,i],y[,i], pch=8, col=i, cex=0.5)
+	if (type!="n") {
+          if (ncol(xdata)==1)
+              for (i in 1:ncol(ydata)) 
+                  points(x[,1],y[,i], pch=8, col=i, cex=0.5)
+          else
+              for (i in 1:ncol(ydata)) 
+                  points(x[,i],y[,i], pch=8, col=i, cex=0.5)
+        }
     }
     if (lfit) {
         fit.coeff <- matrix(nrow=2,ncol=ncol(ydata))
@@ -191,7 +193,7 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
                       sqrt(var(y[select,i])) 
             fit.coeff[,i] <- fit$coefficients
             rms = sqrt(var(fit$residuals))
-            if (plot)
+            if (plot & type!="n")
               abline(fit, col=i)
             # test yfit
             # points(x[select,i], yfit, pch=3)
