@@ -1,11 +1,13 @@
 nwords <- function(s,sep=".")
 {
+    if (is.null(s)) return(0)
     sapply(strsplit(s,split=sep,fixed=TRUE),length)
 }
 
 words <- function(x,first=1,last=1000000,sep=".")
 {
 
+    if (is.null(x)) return(NULL)
     if (length(first) == 1) first = rep(first,length(x))
     if (length(last) == 1) last = rep(last,length(x))
     sapply(1:length(first),
