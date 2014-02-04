@@ -96,5 +96,6 @@ exportMethods(
     "deltaf","deltaf<-",
     "frequencies","frequencies<-",
     "pspectra","xspectra","cospectra","quadspectra",
-    "phase","coherence","autocorr","crosscorr","specsmooth"
+    "phase","coherence","autocorr","crosscorr","specsmooth",
+    "abline"
 )

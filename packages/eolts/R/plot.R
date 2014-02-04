@@ -631,19 +631,19 @@ setGeneric("abline")
 setMethod("abline",signature(a="missing",b="missing",h="missing",v="utime"),
     function(v,...)
     {
-        cat("in abline, v=utime\n")
+        # cat("in abline, v=utime\n")
         if (! exists(".plot.nts.scale",envir=.eoltsEnv))
             sc <- list(scale=1.,off=0.)
         else sc = get(".plot.nts.scale",envir=.eoltsEnv)
         v <- (as.numeric(v) - sc$off) / sc$scale
-        abline(v=v,...)
+        graphics::abline(v=v,...)
     }
 )
 
-setMethod("abline",signature(a="missing",b="missing",h="numeric",v="missing"),
-    function(h,...)
+setMethod("abline",signature(a="ANY",b="ANY",h="ANY",v="ANY"),
+    function(a=NULL,b=NULL,h=NULL,v=NULL,...)
     {
-        abline(h=h,...)
+        graphics::abline(a=a,b=b,h=h,v=v,...)
     }
 )
 
