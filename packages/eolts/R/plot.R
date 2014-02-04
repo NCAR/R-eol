@@ -635,8 +635,9 @@ setMethod("abline",signature(a="missing",b="missing",h="missing",v="utime"),
         if (! exists(".plot.nts.scale",envir=.eoltsEnv))
             sc <- list(scale=1.,off=0.)
         else sc = get(".plot.nts.scale",envir=.eoltsEnv)
-        v <- (as.numeric(v) - sc$off) / sc$scale
-        graphics::abline(v=v,...)
+        vx <- (as.numeric(v) - sc$off) / sc$scale
+        graphics::abline(v=vx,...)
+        v
     }
 )
 
