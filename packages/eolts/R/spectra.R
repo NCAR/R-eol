@@ -609,15 +609,13 @@ specsmooth.spectra = function(x,type,...)
             }
         }
 
-        x@data = sapply(1:length(lbinz),
+        x@data = matrix(sapply(1:length(lbinz),
             function(i,d,lb,ub) {
                 apply(d[lb[i]:ub[i],,drop=FALSE],2,mean,na.rm=TRUE)
-            }, x@data,lbinz,ubinz)
-        if (nc > 1) x@data = t(x@data)
+            }, x@data,lbinz,ubinz),byrow=TRUE,ncol=nc,dimnames=list(NULL,dns))
 
         x@frequencies = 10 ^ (lbounds + 1 / bpd / 2)
         deltaf(x) <- numeric(0)
-        dimnames(x) = list(NULL,dns)
     }
     else stop("Current version only supports BPD smoothing")
     class(x) = class.x
