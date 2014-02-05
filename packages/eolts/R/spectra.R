@@ -208,20 +208,14 @@ subscript.op.xspectra = function(x,i,j,k,...,drop=FALSE)
         # with only one indice, x[i] is no longer a spectra
         else return(x@data[i])
     }
-    has.j <- !missing(j)
-    has.k <- !missing(k)
 
     if(!has.i) i <- NULL
 
+    has.j <- !missing(j)
     if(!has.j) j <- NULL
 
-    if (!is.null(args$k)) {
-        k <- eval(args$k, sys.parent(1))
-        if(is.null(k)) k <- 0
-    }
-    else k <- NULL
-
-    if (has.k) {
+    has.k <- !missing(k)
+    if(has.k) {
         if (is.null(j)) j = x@combinations[,k]
         else {
             dns <- dimnames(x@combinations)[[1]]
