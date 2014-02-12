@@ -1,6 +1,6 @@
 plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth, 
                        plot=T, derived=T, method.smth="mean", 
-                       lfit=F, intercept=T,
+                       lfit=F, intercept=T, cex.pts=0.5,
                        chksum=F, logxy, annotate=T, browse=F, type="p", ...)
 {
     # Generic function for xy plot of dat objects, per twh.
@@ -149,10 +149,10 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
 	if (type!="n") {
           if (ncol(xdata)==1)
               for (i in 1:ncol(ydata)) 
-                  points(x[,1],y[,i], pch=8, col=i, cex=0.5)
+                  points(x[,1],y[,i], pch=8, col=i, cex=cex.pts)
           else
               for (i in 1:ncol(ydata)) 
-                  points(x[,i],y[,i], pch=8, col=i, cex=0.5)
+                  points(x[,i],y[,i], pch=8, col=i, cex=cex.pts)
         }
     }
     if (lfit) {
