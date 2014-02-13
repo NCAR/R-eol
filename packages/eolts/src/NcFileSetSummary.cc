@@ -67,6 +67,10 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
 
     _stationStart = minStation;
     if (maxStation >= minStation) _stationCount = maxStation - minStation + 1;
+
+    // If stations.empty() or only non-station asked for,
+    // set _stationStart to other than std::numeric_limits<int>::max()
+    if (_stationCount == 0) _stationStart = 0;
     
 #ifdef DEBUG
     Rprintf("_stationCount=%d\n",_stationCount);
@@ -200,10 +204,9 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
 
             const NcDim* stationDim = var->getDimension("station");
             if (stationDim) {
-                if (stations.empty() && _stationStart != 0) {
-                    _stationStart = 0;
+                if (stations.empty() && _stationCount == 0)
                     _stationCount = stationDim->getLength();
-                }
+
                 stationid = stationDim->getId();
                 if (_stationCount > 0) {
                     if (stationDim->getLength() < _stationStart + _stationCount) {
@@ -216,16 +219,13 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                         _dims[ivar].resize(0);
                         continue;
                     }
-                    _stationDims[ivar] = _stationCount;
-                    _stationVar[ivar] = true;
 #ifdef DEBUG
                     Rprintf("var=%s, ivar=%d,_stationCount=%u,_stationDims=%u,_ncolOut=%d\n",
                             var->getName().c_str(),ivar,_stationCount,_stationDims[ivar],_ncolOut);
 #endif
                 }
-                // didn't ask for variables with a station dim and this
-                // variable doesn't have one. Set virtual dimension to 1.
-                else _stationDims[ivar] = 1;
+                _stationVar[ivar] = true;
+                _stationDims[ivar] = _stationCount;
             }
             else {
                 // This variable doesn't have a station dimension, and user
