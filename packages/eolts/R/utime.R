@@ -405,18 +405,24 @@ setMethod("summary",signature(object="utime"),
 seq.utime <- function(...)
 {
     # from,to,by=((to-from)/(length-1)),length=NULL)
+    length <- NULL
     if (hasArg(from)) from <- list(...)$from
     if (hasArg(to)) to <- list(...)$to
     if (hasArg(length)) length <- list(...)$length
+    else if (hasArg(along)) length <- length(list(...)$along)
+
     if (hasArg(by)) by <- list(...)$by
-    else by <- ((to - from) / (length - 1))
 
-    if (!hasArg(to))
-        utime(seq(from=as.numeric(from),by=by,length=length))
-    else if (!hasArg(length)) 
-        utime(seq(from=as.numeric(from),to=as.numeric(to),by=by))
-    else if (!hasArg(by))
-        utime(seq(from=as.numeric(from),to=as.numeric(to),length=length))
-    else NULL
+    if (hasArg(from)) {
+        if (!hasArg(to))
+            utime(seq(from=as.numeric(from),by=by,length=length))
+        else if (is.null(length))
+            utime(seq(from=as.numeric(from),to=as.numeric(to),by=by))
+        else
+            utime(seq(from=as.numeric(from),to=as.numeric(to),length=length))
+    }
+    else if (hasArg(to)) {
+        utime(seq(to=as.numeric(to),by=by,length=length))
+    }
+    else 1:length
 }
-
