@@ -294,7 +294,7 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
 
             # Try to make major tic marks noticeable
             axis(1,at=(xtics-x0)/scalef,labels=tlabels,tck=mtck,cex=cex,xaxt="s",
-              outer=outer,line=line,hadj=0.5,padj=0)
+              outer=outer,line=line,hadj=0.5,padj=c(0.6,rep(0,length(tlabels)-1)))
             axis(3,at=(xtics-x0)/scalef,labels=F,tck=mtck,xaxt="s")
 
             if (mtck < 1) {
