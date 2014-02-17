@@ -1,7 +1,7 @@
 # -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
 # vim: set shiftwidth=4 softtabstop=4 expandtab:
 plotdat.ts <- function(data,data2, select, rfrnc, nsmth, ylim, yaxt, logy=F, 
-    type="l", plot.clipped=T, chksum=F, 
+    type="l", plot.clipped=T, chksum=F, cex.pts=0.5,
     derived=T, method.smth="mean", lwd=1, first.color=1,
     axes=T, browse=F, ...)
 {
@@ -236,18 +236,20 @@ plotdat.ts <- function(data,data2, select, rfrnc, nsmth, ylim, yaxt, logy=F,
             if (type=="l" | type=="b") 
                 lines(data[,i], lty=1, col=colors[i])
             if (type=="p" | type=="b") 
-                points(data[,i], pch=8, col=colors[i], cex=0.5)
+                points(data[,i], pch=8, col=colors[i], cex=cex.pts)
             if (clipped & plot.clipped) {
                 # error when clip.min is not a 2d matrix??
                 clip.times <- as.vector(clip.min[,i])
                 if (any(clip.times, na.rm=T)) {
                     times[clip.times] <- ylim[1]
-                    points(times[clip.times,], pch=4, col=colors[i], cex=1)
+                    points(times[clip.times,], pch=4, col=colors[i], 
+                                                               cex=cex.pts)
                 }
                 clip.times <- as.vector(clip.max[,i])
                 if (any(clip.times, na.rm=T)) {
                     times[clip.times] <- ylim[2]
-                    points(times[clip.times,], pch=4, col=colors[i], cex=1)
+                    points(times[clip.times,], pch=4, col=colors[i],
+                                                              cex=cex.pts)
                 }
             }
         }
