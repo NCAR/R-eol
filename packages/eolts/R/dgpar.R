@@ -133,17 +133,43 @@ dgpar <- function(visible=TRUE,debug=FALSE)
             # browser()
             if (debug) cat("dend, svalue(h$obj)=",svalue(h$obj,drop=FALSE),"\n")
             dend <<- svalue(h$obj,drop=TRUE)
-            dpar(end=utime(paste(dend,paste(tend,collapse=" ")),in.format=infmt))
-            set_dlen()
+            t2 <- utime(paste(dend,paste(tend,collapse=" ")),in.format=infmt)
 
-            blockHandlers(len_type_widget)
-            blockHandlers(len_val_widget)
+            if (t2 <= dpar("start")) {
+                # adjust start time widgets
+                t1 <- t2 - dpar("lensec")
+                dpar(start=t1,end=t2)
+                dstart <<- format(t1,format=dfmt)
+                tstart <<- format_hms(t1)
 
-            svalue(len_type_widget) <- dlen_type
-            svalue(len_val_widget) <- dlen_value
+                blockHandlers(dstart_widget)
+                blockHandlers(tstart_hr)
+                blockHandlers(tstart_min)
+                blockHandlers(tstart_sec)
 
-            unblockHandlers(len_type_widget)
-            unblockHandlers(len_val_widget)
+                svalue(dstart_widget) <- dstart
+                svalue(tstart_hr) <- tstart[1]
+                svalue(tstart_min) <- tstart[2]
+                svalue(tstart_sec) <- tstart[3]
+
+                unblockHandlers(dstart_widget)
+                unblockHandlers(tstart_hr)
+                unblockHandlers(tstart_min)
+                unblockHandlers(tstart_sec)
+            }
+            else {
+                dpar(end=t2)
+                set_dlen()
+
+                blockHandlers(len_type_widget)
+                blockHandlers(len_val_widget)
+
+                svalue(len_type_widget) <- dlen_type
+                svalue(len_val_widget) <- dlen_value
+
+                unblockHandlers(len_type_widget)
+                unblockHandlers(len_val_widget)
+            }
             NULL
         }
 
@@ -153,18 +179,43 @@ dgpar <- function(visible=TRUE,debug=FALSE)
             if (debug) cat("tend, svalue(h$obj)=",svalue(h$obj),",h$action=",h$action,"\n")
             tend[h$action] <<- as.character(svalue(h$obj))
             # if (debug) cat("tend=",paste(dend,paste(tend,collapse=" ")),"\n")
-            dpar(end=utime(paste(dend,paste(tend,collapse=" ")),in.format=infmt))
+            t2 <- utime(paste(dend,paste(tend,collapse=" ")),in.format=infmt)
 
-            set_dlen()
+            if (t2 <= dpar("start")) {
+                # adjust start time widgets
+                t1 <- t2 - dpar("lensec")
+                dpar(start=t1,end=t2)
+                dstart <<- format(t1,format=dfmt)
+                tstart <<- format_hms(t1)
 
-            blockHandlers(len_type_widget)
-            blockHandlers(len_val_widget)
+                blockHandlers(dstart_widget)
+                blockHandlers(tstart_hr)
+                blockHandlers(tstart_min)
+                blockHandlers(tstart_sec)
 
-            svalue(len_type_widget) <- dlen_type
-            svalue(len_val_widget) <- dlen_value
+                svalue(dstart_widget) <- dstart
+                svalue(tstart_hr) <- tstart[1]
+                svalue(tstart_min) <- tstart[2]
+                svalue(tstart_sec) <- tstart[3]
 
-            unblockHandlers(len_type_widget)
-            unblockHandlers(len_val_widget)
+                unblockHandlers(dstart_widget)
+                unblockHandlers(tstart_hr)
+                unblockHandlers(tstart_min)
+                unblockHandlers(tstart_sec)
+            }
+            else {
+                dpar(end=t2)
+                set_dlen()
+
+                blockHandlers(len_type_widget)
+                blockHandlers(len_val_widget)
+
+                svalue(len_type_widget) <- dlen_type
+                svalue(len_val_widget) <- dlen_value
+
+                unblockHandlers(len_type_widget)
+                unblockHandlers(len_val_widget)
+            }
             NULL
         }
         hrs <- sprintf("%02d",0L:23L)
