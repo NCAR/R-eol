@@ -69,7 +69,7 @@ fftw.ctor <- function(data,type,units,deltat,deltaf,start,end,wss)
         }
         else {
             data <- matrix(complex(real=data[1:mid,],
-                imaginary=apply(data[nr:(mid+1),],2,function(x) c(0,x))),
+                imaginary=apply(data[nr:(mid+1),,drop=FALSE],2,function(x) c(0,x))),
                 nrow=mid,
                 dimnames=dimnames(data))
         }
@@ -87,7 +87,7 @@ fftw.ctor <- function(data,type,units,deltat,deltaf,start,end,wss)
             # matrix returned by fftw is stored as real, but the
             # upper half is the imaginary part in reverse order.
             data <- matrix(complex(real=data[1:mid,],
-                imaginary=apply(data[nr:(mid+1),,drop=F],2,function(x) c(0,x,0))),
+                imaginary=apply(data[nr:(mid+1),,drop=FALSE],2,function(x) c(0,x,0))),
                 nrow=mid,
                 dimnames=dimnames(data))
         }
