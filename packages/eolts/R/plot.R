@@ -31,7 +31,7 @@ setMethod("plot",signature(x="nts",y="numeric"),
 )
 
 plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
-	xaxs=par("xaxs"),xaxt,yaxt,
+	xaxs="i",xaxt,yaxt,
 	tck=par("tck"),
         col,pch,lty,time.zone=x@time.zone,axes=T,log="",...)
 {
@@ -133,16 +133,16 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
     #	r	default, plot limits are data limits extended by 4%
     #		  on each end, plots limits are not necessarily
     #		  nice numbers
-    #	s	standard axis.  Extend axes to nice numbers
+    #	s	standard axis.  Extend axes to nice numbers (not implemented in R)
     #	e	extended axis.  Extend axes to nice numbers, with
-    #		  axis at least 1 character width from data limits
+    #		  axis at least 1 character width from data limits (not implemented in R)
     #	i	internal labels, don't extend axes, label at nice numbers
     #		internal labels means first label is probably to right of
     #		first plotted point
-    #	d	don't change from previous value
+    #	d	don't change from previous value (not implemented in R, but implemented here)
     #	
-    if (xaxs == "d") {
-        tmp.xaxs <- "d"
+
+    if (xaxs == "d") {      # don't rescale
         if (! exists(".plot.nts.scale",envir=.eoltsEnv)) {
             stop("plot.nts.scale does not exist. Cannot plot with xaxs='d'")
         }
@@ -153,7 +153,6 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
         xrange <- xlim.scaled * scalef + x0
     }
     else {
-        tmp.xaxs <- "i"
         if (missing(xlim)) xrange <- range(tx)
         else {
             xrange <- xlim
@@ -161,6 +160,8 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
             tx <- x@positions
         }
     }
+
+    xaxs <- "i"
 
     cwidth <- par("cin")[1]	# character width in inches
     pwidth <- par("pin")[1]	# plot width in inches 
@@ -233,15 +234,15 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
     }
 
     if (all.is.na) plot.nas(type=type,axes=plotaxes,xlim=xlim.scaled,xlab="",
-          ylim=ylim,ylab=ylab,xaxs=tmp.xaxs,xaxt="n",yaxt=yaxt,tck=tck,
+          ylim=ylim,ylab=ylab,xaxs=xaxs,xaxt="n",yaxt=yaxt,tck=tck,
           col=col[1],pch=pch[1],lty=lty[1],...)
     else if (nc > 1) 
         plot((tx-x0)/scalef,x@data[,1],type=type,axes=plotaxes,
-            xlim=xlim.scaled,xlab="",ylim=ylim,ylab=ylab,xaxs=tmp.xaxs,
+            xlim=xlim.scaled,xlab="",ylim=ylim,ylab=ylab,xaxs=xaxs,
             xaxt="n",yaxt=yaxt,tck=tck,col=col[1],pch=pch[1],lty=lty[1],log=log,...)
     else
         plot((tx-x0)/scalef,x@data,type=type,axes=plotaxes,
-            xlim=xlim.scaled,xlab="",ylim=ylim,ylab=ylab,xaxs=tmp.xaxs,
+            xlim=xlim.scaled,xlab="",ylim=ylim,ylab=ylab,xaxs=xaxs,
             xaxt="n",yaxt=yaxt,tck=tck,col=col[1],pch=pch[1],lty=lty[1],log=log,...)
 
     if (plotaxes) {

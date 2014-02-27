@@ -46,6 +46,9 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
     last.plot <- nplotted == nplot - 1
     bottom.row <- nplotted >= nplot - mfg[4] 
 
+    if (first.plot) xaxs <- "i"
+    else xaxs <- "d"                # don't rescale
+
     # unique loses the station names
     plot.stns <- stations(x)
     if (!is.null(plot.stns)) {
@@ -193,7 +196,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
 
         # First trace, create scale, box and xaxis label
         if (! xaxes.done) {
-            plot.nts(datacol,xlim=xlim,type="n",col=1,
+            plot.nts(datacol,xlim=xlim,type="n",col=1,xaxs=xaxs,
               xaxt=xaxt.tmp,yaxt="n",ylim=ylim1,axes=T,ylab="",xlab=xlab,
                       err=-1,cex=cex,log=log,...)
             if (!bottom.row && xaxt != "n") timeaxis(1,labels=F,tick=T,time.zone=x@time.zone)
@@ -229,7 +232,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
 
         # plot traces
         cat("plot.nts, varname=",varname," ylim1=",signif(ylim1,4),"\n")
-        plot.nts(datacol,xlim=xlim,ylim=ylim1,type=type,
+        plot.nts(datacol,xlim=xlim,ylim=ylim1,type=type,xaxs=xaxs,
               col=col,pch=col,lty=1,ylab="",
               axes=F,err=-1,log=log,lwd=tlwd,...)
 
