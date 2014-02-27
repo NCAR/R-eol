@@ -8,12 +8,22 @@
 #   dpar("all.sites") read from netcdf.
 # heights gcheckboxgroup:
 #   Gather from variables.
-# variables:
+# variables: gcheckboxgroup
+#   don't want them to pop up until dates are right.
+#   user clicks "Variables", popup happens
+#   gtable?
+#  variables window:  read button, + combobox for output R variable name
+#                           x, x1, x2, y, y1, y2, other
 #
 
 dgpar <- function(visible=TRUE,debug=FALSE)
 {
+    outvar <- "x"
     if (!exists(".dgpar.w",envir=eolts:::.eoltsEnv)) {
+        selected_vars <- NULL
+        all_variables <- NULL
+        var_layout <- NULL
+        var_group <- NULL
         format_hms <- function(tx)
         {
             c(format(tx,format="%H"),format(tx,format="%M"),format(tx,format="%OS"))
@@ -66,6 +76,45 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         w <- gwindow("dgpar", visible=FALSE)
         # g <- ggroup(cont=w, horizontal=TRUE)
         g <- ggroup(cont=w, horizontal=FALSE)
+
+        netcdf_dir_handler <- function(h,...)
+        {
+            Sys.setenv(NETCDF_DIR=svalue(h$obj))
+            clear.cache()
+        }
+
+        g1 <- gframe("NETCDF_DIR",cont=g, horizontal=TRUE)
+        ncd <- gedit(Sys.getenv("NETCDF_DIR"),cont=g1)
+        addHandlerChanged(ncd,netcdf_dir_handler)
+
+        button_dir_handler <- function(h,...)
+        {
+            dir <- gfile("select NETCDF_DIR",type="selectdir",
+                initial.dir=Sys.getenv("NETCDF_DIR"))
+            Sys.setenv(NETCDF_DIR=dir)
+            svalue(h$action) <- dir
+        }
+        gbutton("select",cont=g1,handler=button_dir_handler,action=ncd)
+
+        netcdf_file_handler <- function(h,...)
+        {
+            Sys.setenv(NETCDF_FILE=svalue(h$obj))
+            clear.cache()
+        }
+
+        g1 <- gframe("NETCDF_FILE",cont=g, horizontal=TRUE)
+        ncf <- gedit(Sys.getenv("NETCDF_FILE"),cont=g1)
+        addHandlerChanged(ncf,netcdf_file_handler)
+
+        button_file_handler <- function(h,...)
+        {
+            file <- gfile("select NETCDF_FILE",type="save",
+                initial.file=Sys.getenv("NETCDF_FILE"))
+            Sys.setenv(NETCDF_FILE=file)
+            svalue(h$action) <- file
+        }
+        
+        gbutton("select",cont=g1,handler=button_file_handler,action=ncd)
 
         dstarthandler <- function(h,...)
         {
@@ -323,8 +372,8 @@ dgpar <- function(visible=TRUE,debug=FALSE)
             NULL
         }
 
-        g1 <- gframe("",cont=g, horizontal=TRUE)
-        g2 <- gframe("time length",cont=g1, horizontal=TRUE)
+        g1 <- gframe("time",cont=g, horizontal=TRUE)
+        g2 <- gframe("period length",cont=g1, horizontal=TRUE)
 
         types <- c("day","hour","minute","second")
         selected <- match(dlen_type,types,nomatch=1)
@@ -424,6 +473,101 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         g2 <- gframe("time zone",cont=g1, horizontal=TRUE)
         gradio(c(localtz,"UTC"),cont=g2,horizontal=TRUE,handler=time_zone_handler)
 
+        variable_handler <- function(h,...)
+        {
+            # cat("var=",svalue(h$obj)," selected\n")
+            if (svalue(h$obj)) {
+                cat("var=",h$action," selected\n")
+                selected_vars <<- c(selected_vars,h$action)
+            }
+            else {
+                cat("var=",h$action," unselected\n")
+                mx <- match(h$action,selected_vars)
+                if (!is.na(mx))
+                selected_vars <<- selected_vars[-mx]
+            }
+            NULL
+        }
+        variables_handler <- function(h,...)
+        {
+            selected_vars <<- NULL
+            v1 <- variables()
+            if (length(v1) > 0) {
+                v1 <- sort(unique(words(v1,1,1,sep=".")))
+                cnts <- words(v1,1,1,sep="_") == "counts"
+                if (any(cnts)) v1 <- v1[!cnts]
+                cat(paste(v1,collapse=","),"\n")
+
+                if (length(h$action) > 0) dispose(h$action)
+                # cat("disposed\n")
+                # g1 <- ggroup(cont=h$action, horizontal=FALSE,label="variables")
+                # var_group <<- ggroup(horizontal=TRUE,use.scrollwindow=FALSE,cont=h$action,label="variables")
+                var_layout <<- glayout(cont=h$action, homogeneous=TRUE,label="variables")
+                nc <- 10
+                i <- 0
+                for (var in v1) {
+                    ic <- (i %% nc) + 1
+                    ir <- (i %/% nc) + 1
+                    cb <- gcheckbox(text=var,action=var,
+                        handler=variable_handler)
+                    var_layout[ir,ic] <<- cb
+                    i <- i + 1
+                }
+                # cat("done\n")
+                all_variables <<- v1
+
+                if (FALSE) {
+                    sz <- size(var_layout)
+                    cat("layout size =",paste(sz,collapse=","),"\n")
+                    sz[2] <- as.integer(max(length(v1)/5,5) * sz[1])
+
+                    cat("setting layout size to",paste(sz,collapse=","),"\n")
+                    size(var_layout) <- c(1,50)
+
+                    sz <- size(var_group)
+                    cat("group size =",paste(sz,collapse=","),"\n")
+                    sz[2] <- as.integer(max(length(v1)/5,5) * sz[1])
+
+                    cat("setting group size to",paste(sz,collapse=","),"\n")
+                    size(var_group) <- c(1,50)
+                }
+                else {
+                    sz <- size(var_layout)
+                    cat("layout size =",paste(sz,collapse=","),"\n")
+                }
+            }
+            NULL
+        }
+
+        g1 <- ggroup(cont=g, horizontal=TRUE)
+
+        g2 <- gnotebook(cont=g, tab.pos=3)
+        gbutton("list variables",cont=g1,handler=variables_handler,action=g2)
+
+        read_handler <- function(h,...)
+        {
+            cat("reading ",paste(selected_vars,collapse=","),"\n")
+            x <- dat(selected_vars)
+            assign(outvar,x,envir=globalenv())
+        }
+        g1 <- ggroup(cont=g, horizontal=TRUE)
+        gbutton("read variables into",cont=g1,handler=read_handler)
+
+        outvar_handler <- function(h,...)
+        {
+            outvar <<- as.character(svalue(h$obj))
+        }
+
+        gcombobox(c("x","x1","x2","y","y1","y2"),
+            cont=g1,action=2L, editable=TRUE, handler=outvar_handler)
+
+        plot_handler <- function(h,...)
+        {
+            plot(get(outvar,envir=globalenv()))
+        }
+
+        gbutton("plot",cont=g1,handler=plot_handler)
+
         assign(".dgpar.w",w,envir=eolts:::.eoltsEnv)
 
         tag(w,"ltsz") <- NULL
@@ -438,6 +582,13 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         w <- get(".dgpar.w",envir=eolts:::.eoltsEnv)
     }
     visible(w) <- visible
+    if (FALSE) {
+        if (exists(".dgpar.wv",envir=eolts:::.eoltsEnv)) {
+            wv <- get(".dgpar.wv",envir=eolts:::.eoltsEnv)
+            visible(wv) <- visible
+            cat("making wv visible\n")
+        }
+    }
 
     if (guiToolkit()@toolkit != "tcltk" && visible) {
         # now that the window is visible with known widget sizes,
@@ -458,7 +609,6 @@ dgpar <- function(visible=TRUE,debug=FALSE)
             size(tag(w,"tend_sec")) <- as.integer(c(sz[1]*1.3,sz[2]))
         }
     }
-
     invisible(w)
 }
 
