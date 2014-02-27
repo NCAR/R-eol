@@ -147,8 +147,10 @@ dat.heightSonic <- function(what,derived=TRUE,...)
     z <- heights(x)
     if (any(is.na(z))) {
         noz <- is.na(z)
-        stop(paste("sonic height not available for",
-                paste(dimnames(x[,noz])[[2]],"(stn",stations(x[,noz]),")",collapse=",",sep="")))
+        warning(paste("sonic height not available for",
+            paste(dimnames(x[,noz])[[2]],"(stn",stations(x[,noz]),")",collapse=",",sep=""),
+            ". Setting to 2 meters"))
+        z[noz] <- 2
     }
 
     sfxs <- suffixes(x,2)
