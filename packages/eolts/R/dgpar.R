@@ -8,13 +8,6 @@
 #   dpar("all.sites") read from netcdf.
 # heights gcheckboxgroup:
 #   Gather from variables.
-# variables: gcheckboxgroup
-#   don't want them to pop up until dates are right.
-#   user clicks "Variables", popup happens
-#   gtable?
-#  variables window:  read button, + combobox for output R variable name
-#                           x, x1, x2, y, y1, y2, other
-#
 
 dgpar <- function(visible=TRUE,debug=FALSE)
 {
@@ -24,6 +17,7 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         all_variables <- NULL
         var_layout <- NULL
         var_group <- NULL
+        dset_combo <- NULL
         format_hms <- function(tx)
         {
             c(format(tx,format="%H"),format(tx,format="%M"),format(tx,format="%OS"))
@@ -77,6 +71,20 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         # g <- ggroup(cont=w, horizontal=TRUE)
         g <- ggroup(cont=w, horizontal=FALSE)
 
+        if (exists(".datasets") && length(.datasets) > 0) {
+            dataset_handler <- function(h,...) 
+            {
+                dset <- svalue(h$obj)
+                dataset(dset)
+                svalue(ncd) <- Sys.getenv("NETCDF_DIR")
+                svalue(ncf) <- Sys.getenv("NETCDF_FILE")
+            }
+
+            g1 <- gframe("dataset",cont=g, horizontal=TRUE)
+            dset_combo <- gcombobox(names(.datasets),cont=g1,handler=dataset_handler,
+                size=c(100,25))
+        }
+
         netcdf_dir_handler <- function(h,...)
         {
             Sys.setenv(NETCDF_DIR=svalue(h$obj))
@@ -86,6 +94,7 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         g1 <- gframe("NETCDF_DIR",cont=g, horizontal=TRUE)
         ncd <- gedit(Sys.getenv("NETCDF_DIR"),cont=g1)
         addHandlerChanged(ncd,netcdf_dir_handler)
+        size(ncd) <- c(400,25)
 
         button_dir_handler <- function(h,...)
         {
@@ -105,6 +114,7 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         g1 <- gframe("NETCDF_FILE",cont=g, horizontal=TRUE)
         ncf <- gedit(Sys.getenv("NETCDF_FILE"),cont=g1)
         addHandlerChanged(ncf,netcdf_file_handler)
+        size(ncf) <- c(400,25)
 
         button_file_handler <- function(h,...)
         {
@@ -491,12 +501,12 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         variables_handler <- function(h,...)
         {
             selected_vars <<- NULL
-            v1 <- variables()
-            if (length(v1) > 0) {
-                v1 <- sort(unique(words(v1,1,1,sep=".")))
-                cnts <- words(v1,1,1,sep="_") == "counts"
-                if (any(cnts)) v1 <- v1[!cnts]
-                cat(paste(v1,collapse=","),"\n")
+            all_variables <<- variables()
+            if (length(all_variables) > 0) {
+                w1vars <- sort(unique(words(all_variables,1,1,sep=".")))
+                cnts <- words(w1vars,1,1,sep="_") == "counts"
+                if (any(cnts)) w1vars <- w1vars[!cnts]
+                cat(paste(w1vars,collapse=","),"\n")
 
                 if (length(h$action) > 0) dispose(h$action)
                 # cat("disposed\n")
@@ -505,7 +515,7 @@ dgpar <- function(visible=TRUE,debug=FALSE)
                 var_layout <<- glayout(cont=h$action, homogeneous=TRUE,label="variables")
                 nc <- 10
                 i <- 0
-                for (var in v1) {
+                for (var in w1vars) {
                     ic <- (i %% nc) + 1
                     ir <- (i %/% nc) + 1
                     cb <- gcheckbox(text=var,action=var,
@@ -514,19 +524,18 @@ dgpar <- function(visible=TRUE,debug=FALSE)
                     i <- i + 1
                 }
                 # cat("done\n")
-                all_variables <<- v1
 
                 if (FALSE) {
                     sz <- size(var_layout)
                     cat("layout size =",paste(sz,collapse=","),"\n")
-                    sz[2] <- as.integer(max(length(v1)/5,5) * sz[1])
+                    sz[2] <- as.integer(max(length(w1vars)/5,5) * sz[1])
 
                     cat("setting layout size to",paste(sz,collapse=","),"\n")
                     size(var_layout) <- c(1,50)
 
                     sz <- size(var_group)
                     cat("group size =",paste(sz,collapse=","),"\n")
-                    sz[2] <- as.integer(max(length(v1)/5,5) * sz[1])
+                    sz[2] <- as.integer(max(length(w1vars)/5,5) * sz[1])
 
                     cat("setting group size to",paste(sz,collapse=","),"\n")
                     size(var_group) <- c(1,50)
@@ -542,12 +551,30 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         g1 <- ggroup(cont=g, horizontal=TRUE)
 
         g2 <- gnotebook(cont=g, tab.pos=3)
-        gbutton("list variables",cont=g1,handler=variables_handler,action=g2)
+        gbutton("show variables",cont=g1,handler=variables_handler,action=g2)
 
         read_handler <- function(h,...)
         {
             cat("reading ",paste(selected_vars,collapse=","),"\n")
-            x <- dat(selected_vars)
+            w1vars <- words(all_variables,1,1,sep=".")
+            mx <- match(w1vars,selected_vars)
+            if (any(!is.na(mx))) {
+                vars <- all_variables[!is.na(mx)]
+
+                if (FALSE) {
+                    lenfile <- dpar("lenfile")
+                    if (is.null(lenfile)) 
+                        iod <- netcdf()
+                    else iod <- netcdf(lenfile = lenfile)
+                    x <- readts(iod, variables = vars)
+                    close(iod)
+                }
+                else {
+                    x <- dat(vars)
+                }
+            }
+
+            # x <- dat(selected_vars)
             assign(outvar,x,envir=globalenv())
         }
         g1 <- ggroup(cont=g, horizontal=TRUE)
@@ -607,6 +634,8 @@ dgpar <- function(visible=TRUE,debug=FALSE)
             size(tag(w,"tstart_sec")) <- as.integer(c(sz[1]*1.3,sz[2]))
             size(tag(w,"tend_min")) <- as.integer(c(sz[1]*1.3,sz[2]))
             size(tag(w,"tend_sec")) <- as.integer(c(sz[1]*1.3,sz[2]))
+
+            size(dset_combo) <- c(100,25)
         }
     }
     invisible(w)
