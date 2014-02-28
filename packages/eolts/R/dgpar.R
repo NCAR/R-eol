@@ -18,6 +18,7 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         var_layout <- NULL
         var_group <- NULL
         dset_combo <- NULL
+        tzradio <- NULL
         format_hms <- function(tx)
         {
             c(format(tx,format="%H"),format(tx,format="%M"),format(tx,format="%OS"))
@@ -481,7 +482,7 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         if (nchar(localtz) == 0) localtz <- "local"
 
         g2 <- gframe("time zone",cont=g1, horizontal=TRUE)
-        gradio(c(localtz,"UTC"),cont=g2,horizontal=TRUE,handler=time_zone_handler)
+        tzradio <<- gradio(c(localtz,"UTC"),cont=g2,horizontal=TRUE,handler=time_zone_handler)
 
         variable_handler <- function(h,...)
         {
@@ -512,7 +513,8 @@ dgpar <- function(visible=TRUE,debug=FALSE)
                 # cat("disposed\n")
                 # g1 <- ggroup(cont=h$action, horizontal=FALSE,label="variables")
                 # var_group <<- ggroup(horizontal=TRUE,use.scrollwindow=FALSE,cont=h$action,label="variables")
-                var_layout <<- glayout(cont=h$action, homogeneous=TRUE,label="variables")
+                var_layout <<- glayout(cont=h$action, homogeneous=TRUE,
+                    label="variables",spacing=0)
                 nc <- 10
                 i <- 0
                 for (var in w1vars) {
@@ -521,6 +523,10 @@ dgpar <- function(visible=TRUE,debug=FALSE)
                     cb <- gcheckbox(text=var,action=var,
                         handler=variable_handler)
                     var_layout[ir,ic] <<- cb
+                    if (i == 0) {
+                        sz <- size(cb)
+                        cat("cb size =",paste(sz,collapse=","),"\n")
+                    }
                     i <- i + 1
                 }
                 # cat("done\n")
@@ -543,15 +549,20 @@ dgpar <- function(visible=TRUE,debug=FALSE)
                 else {
                     sz <- size(var_layout)
                     cat("layout size =",paste(sz,collapse=","),"\n")
+                    # size(var_layout) <- c(800,600)
                 }
             }
             NULL
         }
 
-        g1 <- ggroup(cont=g, horizontal=TRUE)
+        gb1 <- ggroup(cont=g, horizontal=TRUE)
+        gn1 <- ggroup(cont=g, horizontal=TRUE,use.scrollbar=TRUE)
 
-        g2 <- gnotebook(cont=g, tab.pos=3)
-        gbutton("show variables",cont=g1,handler=variables_handler,action=g2)
+        g2 <- gnotebook(cont=gn1, tab.pos=3)
+
+        gbutton("show variables",cont=gb1,handler=variables_handler,action=g2)
+
+        # size(gn1) <- c(800,600)
 
         read_handler <- function(h,...)
         {
@@ -636,6 +647,7 @@ dgpar <- function(visible=TRUE,debug=FALSE)
             size(tag(w,"tend_sec")) <- as.integer(c(sz[1]*1.3,sz[2]))
 
             size(dset_combo) <- c(100,25)
+            size(tzradio) <- c(150,25)
         }
     }
     invisible(w)
