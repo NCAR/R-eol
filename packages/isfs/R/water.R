@@ -46,10 +46,10 @@ dat.satvp <- function(what,derived=TRUE,TC,frost=dpar("RH.ice"), enhancement=T,.
 
 dat.RH.ice <- function(what,derived=TRUE,...) {
     # remove .ice from what
-    ice = words(what,2,2,sep=".")
+    ice <- words(what,2,2,sep=".")
     if (ice == "ice") {
-        if (nwords(what,sep=".") < 3) what = "RH"
-        else what = paste(words(what,1,1,sep="."),words(what,3,sep="."),sep=".")
+        if (nwords(what,sep=".") < 3) what <- "RH"
+        else what <- paste(words(what,1,1,sep="."),words(what,3,sep="."),sep=".")
     }
 
     RH <- dat(expand("RH",what))
@@ -67,7 +67,7 @@ dat.H2O <- function(what,derived=TRUE,RH,...)
     if (missing(RH)) RH <- dat(expand("RH",what))
     if (is.null(RH)) return(NULL)
 
-    Td = conform(dat("T"),RH)
+    Td <- conform(dat("T"),RH)
 
     # eliminate super-saturation w.r.t. water
     check <- !is.na(RH) & RH > 100 
@@ -99,7 +99,7 @@ dat.MR <- function(what,derived=TRUE,...)
         RH[check] <- 100
     }
 
-    Td = conform(dat("T"),RH)
+    Td <- conform(dat("T"),RH)
 
     Pv <- dat("satvp",TC=Td) * RH / 100
     P <- dat("P")
@@ -111,7 +111,7 @@ dat.MR <- function(what,derived=TRUE,...)
                 names=paste("P",suffixes(Pv))))
     }
 
-    if (ncol(P) > 1) P = conform(P,Pv)
+    if (ncol(P) > 1) P <- conform(P,Pv)
 
     x <- 622*Pv/(P - Pv)
     x[is.infinite(x)] <- NA_real_
@@ -131,11 +131,11 @@ dat.mr <- function(what,derived=TRUE,...)
     # location as h2o.
 
     Rm <- 0.4617		# joules/gr-degK
-    h2o = dat(expand("h2o",what),...)
+    h2o <- dat(expand("h2o",what),...)
 
-    Td = conform(dat("T"),h2o)
+    Td <- conform(dat("T"),h2o)
 
-    Pv = h2o * (Td + 273.15) * Rm / 100 # millibars
+    Pv <- h2o * (Td + 273.15) * Rm / 100 # millibars
     P <- dat("P")
 
     if (is.null(P)) {
@@ -145,7 +145,7 @@ dat.mr <- function(what,derived=TRUE,...)
                 names=paste("P",suffixes(Pv))))
     }
 
-    if (ncol(P) > 1) P = conform(P,Pv)
+    if (ncol(P) > 1) P <- conform(P,Pv)
 
     x <- 622*Pv/(P - Pv)
     x[is.infinite(x)] <- NA_real_
@@ -176,7 +176,7 @@ dat.Q <- function(what,derived=TRUE,...)
                 Pv@positions,stations=stations(Pv),
                 names=paste("P",suffixes(Pv),sep="")))
     }
-    if (ncol(P) > 1) P = conform(P,Pv)
+    if (ncol(P) > 1) P <- conform(P,Pv)
 
     x <- 622*Pv/(P - 0.378*Pv)
     x[is.infinite(x)] <- NA_real_
@@ -202,35 +202,35 @@ dat.Tc <- function(what,derived=TRUE,...)
 
 
     Pv <- dat("satvp",TC=Td) * RH / 100	# mb
-    P = dat("P")
+    P <- dat("P")
 
-    P = conform(P,Pv)
+    P <- conform(P,Pv)
 
     # We're simply going to match suffixes and stations, ignoring height.
     # If any columns aren't matched, fill in with median of others...
     # Don't know what happens if more than one P per stn/sfx...
-    sf = suffixes(P)
-    nw = nwords(sf,sep=".")
-    st = stations(P)
-    pp = as.character(st)
-    pp[st==0] = words(sf,nw,nw)[st==0]
-    sf = suffixes(Pv)
-    nw = nwords(sf,sep=".")
-    st = stations(Pv)
-    vp = as.character(st)
-    vp[st==0] = words(sf,nw,nw)[st==0]
-    im = match(vp,pp,nomatch=0)
-    i0 = im==0
-    im[i0] = 1
-    P = P[,im]
+    sf <- suffixes(P)
+    nw <- nwords(sf,sep=".")
+    st <- stations(P)
+    pp <- as.character(st)
+    pp[st==0] <- words(sf,nw,nw)[st==0]
+    sf <- suffixes(Pv)
+    nw <- nwords(sf,sep=".")
+    st <- stations(Pv)
+    vp <- as.character(st)
+    vp[st==0] <- words(sf,nw,nw)[st==0]
+    im <- match(vp,pp,nomatch=0)
+    i0 <- im==0
+    im[i0] <- 1
+    P <- P[,im]
 
     if (any(i0)) {
         warning(paste("Creating P at stations",
                 paste(unique(stations(Pv)[im==0]),collapse=","),
                 "from mean P of other stations"))
-        Pa = apply(P@data,1,mean,na.rm=T)
-        P[,i0] = Pa
-        stations(P) = stations(Pv)
+        Pa <- apply(P@data,1,mean,na.rm=T)
+        P[,i0] <- Pa
+        stations(P) <- stations(Pv)
     }
 
     x <- (Td + 273.15)*(1 + 0.32*Pv/P) - 273.15
@@ -247,15 +247,15 @@ dat.Tc <- function(what,derived=TRUE,...)
     x
 }
 
-dat.Tdew = function(what,derived=TRUE,...)
+dat.Tdew <- function(what,derived=TRUE,...)
 {
     # For now, this calculation ignores frost/below 0 issues
     # and simply inverts the formula for satvp above:
     #  satvp <- 6.1121*exp(17.368*TC/(238.88+TC))
-    RH = dat(expand("RH",what))
-    Td = conform(dat("T"),RH)
-    vp = dat("satvp",TC=Td) * RH / 100
-    x = 238.88/( (17.368/log(vp/6.1121))-1 )	
+    RH <- dat(expand("RH",what))
+    Td <- conform(dat("T"),RH)
+    vp <- dat("satvp",TC=Td) * RH / 100
+    x <- 238.88/( (17.368/log(vp/6.1121))-1 )	
     x[is.infinite(x)] <- NA_real_
 
     dimnames(x) <- list(NULL,paste("Tdew",suffixes(x,2),sep=""))
