@@ -69,8 +69,8 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         # "previous", "next" buttons shift both start and end time.
 
         w <- gwindow("dgpar", visible=FALSE)
-        # g <- ggroup(cont=w, horizontal=TRUE)
-        g <- ggroup(cont=w, horizontal=FALSE)
+        # g <- ggroup(container=w, horizontal=TRUE)
+        g <- ggroup(container=w, horizontal=FALSE)
 
         if (exists(".datasets") && length(.datasets) > 0) {
             dataset_handler <- function(h,...) 
@@ -79,10 +79,11 @@ dgpar <- function(visible=TRUE,debug=FALSE)
                 dataset(dset)
                 svalue(ncd) <- Sys.getenv("NETCDF_DIR")
                 svalue(ncf) <- Sys.getenv("NETCDF_FILE")
+                NULL
             }
 
-            g1 <- gframe("dataset",cont=g, horizontal=TRUE)
-            dset_combo <- gcombobox(names(.datasets),cont=g1,handler=dataset_handler,
+            g1 <- gframe("dataset",container=g, horizontal=TRUE)
+            dset_combo <- gcombobox(names(.datasets),container=g1,handler=dataset_handler,
                 size=c(100,25))
         }
 
@@ -90,10 +91,11 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         {
             Sys.setenv(NETCDF_DIR=svalue(h$obj))
             clear.cache()
+            NULL
         }
 
-        g1 <- gframe("NETCDF_DIR",cont=g, horizontal=TRUE)
-        ncd <- gedit(Sys.getenv("NETCDF_DIR"),cont=g1)
+        g1 <- gframe("NETCDF_DIR",container=g, horizontal=TRUE)
+        ncd <- gedit(Sys.getenv("NETCDF_DIR"),container=g1)
         addHandlerChanged(ncd,netcdf_dir_handler)
         size(ncd) <- c(400,25)
 
@@ -103,17 +105,19 @@ dgpar <- function(visible=TRUE,debug=FALSE)
                 initial.dir=Sys.getenv("NETCDF_DIR"))
             Sys.setenv(NETCDF_DIR=dir)
             svalue(h$action) <- dir
+            NULL
         }
-        gbutton("select",cont=g1,handler=button_dir_handler,action=ncd)
+        gbutton("select",container=g1,handler=button_dir_handler,action=ncd)
 
         netcdf_file_handler <- function(h,...)
         {
             Sys.setenv(NETCDF_FILE=svalue(h$obj))
             clear.cache()
+            NULL
         }
 
-        g1 <- gframe("NETCDF_FILE",cont=g, horizontal=TRUE)
-        ncf <- gedit(Sys.getenv("NETCDF_FILE"),cont=g1)
+        g1 <- gframe("NETCDF_FILE",container=g, horizontal=TRUE)
+        ncf <- gedit(Sys.getenv("NETCDF_FILE"),container=g1)
         addHandlerChanged(ncf,netcdf_file_handler)
         size(ncf) <- c(400,25)
 
@@ -123,9 +127,10 @@ dgpar <- function(visible=TRUE,debug=FALSE)
                 initial.file=Sys.getenv("NETCDF_FILE"))
             Sys.setenv(NETCDF_FILE=file)
             svalue(h$action) <- file
+            NULL
         }
         
-        gbutton("select",cont=g1,handler=button_file_handler,action=ncd)
+        gbutton("select",container=g1,handler=button_file_handler,action=ncd)
 
         dstarthandler <- function(h,...)
         {
@@ -281,32 +286,32 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         hrs <- sprintf("%02d",0L:23L)
         minsecs <- sprintf("%02d",seq(from=0L,to=55L,by=5L))
 
-        g1 <- gframe("data start",cont=g, horizontal=TRUE)
+        g1 <- gframe("data start",container=g, horizontal=TRUE)
 
-        g2 <- gframe("date",cont=g1, horizontal=TRUE)
-        dstart_widget <- gcalendar(text=dstart,format=dfmt,cont=g2,handler=dstarthandler)
+        g2 <- gframe("date",container=g1, horizontal=TRUE)
+        dstart_widget <- gcalendar(text=dstart,format=dfmt,container=g2,handler=dstarthandler)
 
-        g2 <- gframe("hour",cont=g1, horizontal=TRUE)
-        tstart_hr <- gcombobox(hrs,cont=g2,action=1L,handler=tstarthandler)
-        g2 <- gframe("minute",cont=g1, horizontal=TRUE)
-        tstart_min <- gcombobox(minsecs,cont=g2,action=2L, editable=TRUE,
+        g2 <- gframe("hour",container=g1, horizontal=TRUE)
+        tstart_hr <- gcombobox(hrs,container=g2,action=1L,handler=tstarthandler)
+        g2 <- gframe("minute",container=g1, horizontal=TRUE)
+        tstart_min <- gcombobox(minsecs,container=g2,action=2L, editable=TRUE,
             handler=tstarthandler)
-        g2 <- gframe("sec",cont=g1, horizontal=TRUE)
-        tstart_sec <- gcombobox(minsecs, cont=g2,action=3L, editable=TRUE,
+        g2 <- gframe("sec",container=g1, horizontal=TRUE)
+        tstart_sec <- gcombobox(minsecs, container=g2,action=3L, editable=TRUE,
             handler=tstarthandler)
 
-        g1 <- gframe("data end",cont=g, horizontal=TRUE)
+        g1 <- gframe("data end",container=g, horizontal=TRUE)
 
-        g2 <- gframe("date",cont=g1, horizontal=TRUE)
-        dend_widget <- gcalendar(text=dend,format=dfmt,cont=g2,handler=dendhandler)
+        g2 <- gframe("date",container=g1, horizontal=TRUE)
+        dend_widget <- gcalendar(text=dend,format=dfmt,container=g2,handler=dendhandler)
 
-        g2 <- gframe("hour",cont=g1, horizontal=TRUE)
-        tend_hr <- gcombobox(hrs,cont=g2,action=1L,handler=tendhandler)
-        g2 <- gframe("minute",cont=g1, horizontal=TRUE)
-        tend_min <- gcombobox(minsecs, cont=g2, action=2L, editable=TRUE,
+        g2 <- gframe("hour",container=g1, horizontal=TRUE)
+        tend_hr <- gcombobox(hrs,container=g2,action=1L,handler=tendhandler)
+        g2 <- gframe("minute",container=g1, horizontal=TRUE)
+        tend_min <- gcombobox(minsecs, container=g2, action=2L, editable=TRUE,
             handler=tendhandler)
-        g2 <- gframe("sec",cont=g1, horizontal=TRUE)
-        tend_sec <- gcombobox(minsecs, cont=g2, action=3L,  editable=TRUE,
+        g2 <- gframe("sec",container=g1, horizontal=TRUE)
+        tend_sec <- gcombobox(minsecs, container=g2, action=3L,  editable=TRUE,
             handler=tendhandler)
 
         len_type_handler <- function(h,...)
@@ -383,18 +388,18 @@ dgpar <- function(visible=TRUE,debug=FALSE)
             NULL
         }
 
-        g1 <- gframe("time",cont=g, horizontal=TRUE)
-        g2 <- gframe("period length",cont=g1, horizontal=TRUE)
+        g1 <- gframe("time",container=g, horizontal=TRUE)
+        g2 <- gframe("period length",container=g1, horizontal=TRUE)
 
         types <- c("day","hour","minute","second")
         selected <- match(dlen_type,types,nomatch=1)
-        len_type_widget <- gcombobox(types,selected=selected,cont=g2,
+        len_type_widget <- gcombobox(types,selected=selected,container=g2,
             hander=len_type_handler)
 
         # size(len_type_widget) is 1,1 at this point
         addHandlerChanged(len_type_widget,len_type_handler)
 
-        len_val_widget <- gedit(as.character(dlen_value),width=6,cont=g2)
+        len_val_widget <- gedit(as.character(dlen_value),width=6,container=g2)
         # Had to use this method, rather than handler= in the constructor
         addHandlerChanged(len_val_widget,len_val_handler)
 
@@ -447,9 +452,9 @@ dgpar <- function(visible=TRUE,debug=FALSE)
             NULL
         }
 
-        g2 <- gframe("time shift",cont=g1, horizontal=TRUE)
-        gbutton("previous",cont=g2,handler=back_forward_handler,action=-1L)
-        gbutton("next",cont=g2,handler=back_forward_handler,action=1L)
+        g2 <- gframe("time shift",container=g1, horizontal=TRUE)
+        gbutton("previous",container=g2,handler=back_forward_handler,action=-1L)
+        gbutton("next",container=g2,handler=back_forward_handler,action=1L)
 
         time_zone_handler <- function(h,...)
         {
@@ -481,8 +486,8 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         }
         if (nchar(localtz) == 0) localtz <- "local"
 
-        g2 <- gframe("time zone",cont=g1, horizontal=TRUE)
-        tzradio <<- gradio(c(localtz,"UTC"),cont=g2,horizontal=TRUE,handler=time_zone_handler)
+        g2 <- gframe("time zone",container=g1, horizontal=TRUE)
+        tzradio <<- gradio(c(localtz,"UTC"),container=g2,horizontal=TRUE,handler=time_zone_handler)
 
         variable_handler <- function(h,...)
         {
@@ -511,9 +516,9 @@ dgpar <- function(visible=TRUE,debug=FALSE)
 
                 if (length(h$action) > 0) dispose(h$action)
                 # cat("disposed\n")
-                # g1 <- ggroup(cont=h$action, horizontal=FALSE,label="variables")
-                # var_group <<- ggroup(horizontal=TRUE,use.scrollwindow=FALSE,cont=h$action,label="variables")
-                var_layout <<- glayout(cont=h$action, homogeneous=TRUE,
+                # g1 <- ggroup(container=h$action, horizontal=FALSE,label="variables")
+                # var_group <<- ggroup(horizontal=TRUE,use.scrollwindow=FALSE,container=h$action,label="variables")
+                var_layout <<- glayout(container=h$action, homogeneous=TRUE,
                     label="variables",spacing=0)
                 nc <- 10
                 i <- 0
@@ -555,12 +560,12 @@ dgpar <- function(visible=TRUE,debug=FALSE)
             NULL
         }
 
-        gb1 <- ggroup(cont=g, horizontal=TRUE)
-        gn1 <- ggroup(cont=g, horizontal=TRUE,use.scrollbar=TRUE)
+        gb1 <- ggroup(container=g, horizontal=TRUE)
+        gn1 <- ggroup(container=g, horizontal=TRUE,use.scrollbar=TRUE)
 
-        g2 <- gnotebook(cont=gn1, tab.pos=3)
+        g2 <- gnotebook(container=gn1, tab.pos=3)
 
-        gbutton("show variables",cont=gb1,handler=variables_handler,action=g2)
+        gbutton("show variables",container=gb1,handler=variables_handler,action=g2)
 
         # size(gn1) <- c(800,600)
 
@@ -587,24 +592,27 @@ dgpar <- function(visible=TRUE,debug=FALSE)
 
             # x <- dat(selected_vars)
             assign(outvar,x,envir=globalenv())
+            NULL
         }
-        g1 <- ggroup(cont=g, horizontal=TRUE)
-        gbutton("read variables into",cont=g1,handler=read_handler)
+        g1 <- ggroup(container=g, horizontal=TRUE)
+        gbutton("read variables into",container=g1,handler=read_handler)
 
         outvar_handler <- function(h,...)
         {
             outvar <<- as.character(svalue(h$obj))
+            NULL
         }
 
         gcombobox(c("x","x1","x2","y","y1","y2"),
-            cont=g1,action=2L, editable=TRUE, handler=outvar_handler)
+            container=g1,action=2L, editable=TRUE, handler=outvar_handler)
 
         plot_handler <- function(h,...)
         {
-            plot(get(outvar,envir=globalenv()))
+            tryCatch(plot(get(outvar,envir=globalenv())))
+            NULL
         }
 
-        gbutton("plot",cont=g1,handler=plot_handler)
+        gbutton("plot",container=g1,handler=plot_handler)
 
         assign(".dgpar.w",w,envir=eolts:::.eoltsEnv)
 
