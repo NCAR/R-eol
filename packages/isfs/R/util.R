@@ -19,7 +19,7 @@ dataset <- function(which,verbose=F,datasets=NULL)
     #           environment variable SONIC_DIR
     #   f       an arbitrary function which can perform any extra settings
     if (is.null(datasets)) {
-        if (!exists(".datasets")) stop(".datasets object for project not found")
+        if (!exists(".datasets")) return(NULL)
         datasets <- .datasets
     }
     current <- "unknown"

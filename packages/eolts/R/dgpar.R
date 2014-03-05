@@ -8,12 +8,17 @@
 #   dpar("all.sites") read from netcdf.
 # heights gcheckboxgroup:
 #   Gather from variables.
-# variables:
-#
 
 dgpar <- function(visible=TRUE,debug=FALSE)
 {
+    outvar <- "x"
     if (!exists(".dgpar.w",envir=eolts:::.eoltsEnv)) {
+        selected_vars <- NULL
+        all_variables <- NULL
+        var_layout <- NULL
+        var_group <- NULL
+        dset_combo <- NULL
+        tzradio <- NULL
         format_hms <- function(tx)
         {
             c(format(tx,format="%H"),format(tx,format="%M"),format(tx,format="%OS"))
@@ -64,8 +69,68 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         # "previous", "next" buttons shift both start and end time.
 
         w <- gwindow("dgpar", visible=FALSE)
-        # g <- ggroup(cont=w, horizontal=TRUE)
-        g <- ggroup(cont=w, horizontal=FALSE)
+        # g <- ggroup(container=w, horizontal=TRUE)
+        g <- ggroup(container=w, horizontal=FALSE)
+
+        if (exists(".datasets") && length(.datasets) > 0) {
+            dataset_handler <- function(h,...) 
+            {
+                dset <- svalue(h$obj)
+                dataset(dset)
+                svalue(ncd) <- Sys.getenv("NETCDF_DIR")
+                svalue(ncf) <- Sys.getenv("NETCDF_FILE")
+                NULL
+            }
+
+            g1 <- gframe("dataset",container=g, horizontal=TRUE)
+            dset_combo <- gcombobox(names(.datasets),container=g1,handler=dataset_handler,
+                size=c(100,25))
+        }
+
+        netcdf_dir_handler <- function(h,...)
+        {
+            Sys.setenv(NETCDF_DIR=svalue(h$obj))
+            clear.cache()
+            NULL
+        }
+
+        g1 <- gframe("NETCDF_DIR",container=g, horizontal=TRUE)
+        ncd <- gedit(Sys.getenv("NETCDF_DIR"),container=g1)
+        addHandlerChanged(ncd,netcdf_dir_handler)
+        size(ncd) <- c(400,25)
+
+        button_dir_handler <- function(h,...)
+        {
+            dir <- gfile("select NETCDF_DIR",type="selectdir",
+                initial.dir=Sys.getenv("NETCDF_DIR"))
+            Sys.setenv(NETCDF_DIR=dir)
+            svalue(h$action) <- dir
+            NULL
+        }
+        gbutton("select",container=g1,handler=button_dir_handler,action=ncd)
+
+        netcdf_file_handler <- function(h,...)
+        {
+            Sys.setenv(NETCDF_FILE=svalue(h$obj))
+            clear.cache()
+            NULL
+        }
+
+        g1 <- gframe("NETCDF_FILE",container=g, horizontal=TRUE)
+        ncf <- gedit(Sys.getenv("NETCDF_FILE"),container=g1)
+        addHandlerChanged(ncf,netcdf_file_handler)
+        size(ncf) <- c(400,25)
+
+        button_file_handler <- function(h,...)
+        {
+            file <- gfile("select NETCDF_FILE",type="save",
+                initial.file=Sys.getenv("NETCDF_FILE"))
+            Sys.setenv(NETCDF_FILE=file)
+            svalue(h$action) <- file
+            NULL
+        }
+        
+        gbutton("select",container=g1,handler=button_file_handler,action=ncd)
 
         dstarthandler <- function(h,...)
         {
@@ -221,32 +286,32 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         hrs <- sprintf("%02d",0L:23L)
         minsecs <- sprintf("%02d",seq(from=0L,to=55L,by=5L))
 
-        g1 <- gframe("data start",cont=g, horizontal=TRUE)
+        g1 <- gframe("data start",container=g, horizontal=TRUE)
 
-        g2 <- gframe("date",cont=g1, horizontal=TRUE)
-        dstart_widget <- gcalendar(text=dstart,format=dfmt,cont=g2,handler=dstarthandler)
+        g2 <- gframe("date",container=g1, horizontal=TRUE)
+        dstart_widget <- gcalendar(text=dstart,format=dfmt,container=g2,handler=dstarthandler)
 
-        g2 <- gframe("hour",cont=g1, horizontal=TRUE)
-        tstart_hr <- gcombobox(hrs,cont=g2,action=1L,handler=tstarthandler)
-        g2 <- gframe("minute",cont=g1, horizontal=TRUE)
-        tstart_min <- gcombobox(minsecs,cont=g2,action=2L, editable=TRUE,
+        g2 <- gframe("hour",container=g1, horizontal=TRUE)
+        tstart_hr <- gcombobox(hrs,container=g2,action=1L,handler=tstarthandler)
+        g2 <- gframe("minute",container=g1, horizontal=TRUE)
+        tstart_min <- gcombobox(minsecs,container=g2,action=2L, editable=TRUE,
             handler=tstarthandler)
-        g2 <- gframe("sec",cont=g1, horizontal=TRUE)
-        tstart_sec <- gcombobox(minsecs, cont=g2,action=3L, editable=TRUE,
+        g2 <- gframe("sec",container=g1, horizontal=TRUE)
+        tstart_sec <- gcombobox(minsecs, container=g2,action=3L, editable=TRUE,
             handler=tstarthandler)
 
-        g1 <- gframe("data end",cont=g, horizontal=TRUE)
+        g1 <- gframe("data end",container=g, horizontal=TRUE)
 
-        g2 <- gframe("date",cont=g1, horizontal=TRUE)
-        dend_widget <- gcalendar(text=dend,format=dfmt,cont=g2,handler=dendhandler)
+        g2 <- gframe("date",container=g1, horizontal=TRUE)
+        dend_widget <- gcalendar(text=dend,format=dfmt,container=g2,handler=dendhandler)
 
-        g2 <- gframe("hour",cont=g1, horizontal=TRUE)
-        tend_hr <- gcombobox(hrs,cont=g2,action=1L,handler=tendhandler)
-        g2 <- gframe("minute",cont=g1, horizontal=TRUE)
-        tend_min <- gcombobox(minsecs, cont=g2, action=2L, editable=TRUE,
+        g2 <- gframe("hour",container=g1, horizontal=TRUE)
+        tend_hr <- gcombobox(hrs,container=g2,action=1L,handler=tendhandler)
+        g2 <- gframe("minute",container=g1, horizontal=TRUE)
+        tend_min <- gcombobox(minsecs, container=g2, action=2L, editable=TRUE,
             handler=tendhandler)
-        g2 <- gframe("sec",cont=g1, horizontal=TRUE)
-        tend_sec <- gcombobox(minsecs, cont=g2, action=3L,  editable=TRUE,
+        g2 <- gframe("sec",container=g1, horizontal=TRUE)
+        tend_sec <- gcombobox(minsecs, container=g2, action=3L,  editable=TRUE,
             handler=tendhandler)
 
         len_type_handler <- function(h,...)
@@ -323,18 +388,18 @@ dgpar <- function(visible=TRUE,debug=FALSE)
             NULL
         }
 
-        g1 <- gframe("",cont=g, horizontal=TRUE)
-        g2 <- gframe("time length",cont=g1, horizontal=TRUE)
+        g1 <- gframe("time",container=g, horizontal=TRUE)
+        g2 <- gframe("period length",container=g1, horizontal=TRUE)
 
         types <- c("day","hour","minute","second")
         selected <- match(dlen_type,types,nomatch=1)
-        len_type_widget <- gcombobox(types,selected=selected,cont=g2,
+        len_type_widget <- gcombobox(types,selected=selected,container=g2,
             hander=len_type_handler)
 
         # size(len_type_widget) is 1,1 at this point
         addHandlerChanged(len_type_widget,len_type_handler)
 
-        len_val_widget <- gedit(as.character(dlen_value),width=6,cont=g2)
+        len_val_widget <- gedit(as.character(dlen_value),width=6,container=g2)
         # Had to use this method, rather than handler= in the constructor
         addHandlerChanged(len_val_widget,len_val_handler)
 
@@ -387,9 +452,9 @@ dgpar <- function(visible=TRUE,debug=FALSE)
             NULL
         }
 
-        g2 <- gframe("time shift",cont=g1, horizontal=TRUE)
-        gbutton("previous",cont=g2,handler=back_forward_handler,action=-1L)
-        gbutton("next",cont=g2,handler=back_forward_handler,action=1L)
+        g2 <- gframe("time shift",container=g1, horizontal=TRUE)
+        gbutton("previous",container=g2,handler=back_forward_handler,action=-1L)
+        gbutton("next",container=g2,handler=back_forward_handler,action=1L)
 
         time_zone_handler <- function(h,...)
         {
@@ -421,8 +486,133 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         }
         if (nchar(localtz) == 0) localtz <- "local"
 
-        g2 <- gframe("time zone",cont=g1, horizontal=TRUE)
-        gradio(c(localtz,"UTC"),cont=g2,horizontal=TRUE,handler=time_zone_handler)
+        g2 <- gframe("time zone",container=g1, horizontal=TRUE)
+        tzradio <<- gradio(c(localtz,"UTC"),container=g2,horizontal=TRUE,handler=time_zone_handler)
+
+        variable_handler <- function(h,...)
+        {
+            # cat("var=",svalue(h$obj)," selected\n")
+            if (svalue(h$obj)) {
+                cat("var=",h$action," selected\n")
+                selected_vars <<- c(selected_vars,h$action)
+            }
+            else {
+                cat("var=",h$action," unselected\n")
+                mx <- match(h$action,selected_vars)
+                if (!is.na(mx))
+                selected_vars <<- selected_vars[-mx]
+            }
+            NULL
+        }
+        variables_handler <- function(h,...)
+        {
+            selected_vars <<- NULL
+            all_variables <<- variables()
+            if (length(all_variables) > 0) {
+                w1vars <- sort(unique(words(all_variables,1,1,sep=".")))
+                cnts <- words(w1vars,1,1,sep="_") == "counts"
+                if (any(cnts)) w1vars <- w1vars[!cnts]
+                cat(paste(w1vars,collapse=","),"\n")
+
+                if (length(h$action) > 0) dispose(h$action)
+                # cat("disposed\n")
+                # g1 <- ggroup(container=h$action, horizontal=FALSE,label="variables")
+                # var_group <<- ggroup(horizontal=TRUE,use.scrollwindow=FALSE,container=h$action,label="variables")
+                var_layout <<- glayout(container=h$action, homogeneous=TRUE,
+                    label="variables",spacing=0)
+                nc <- 10
+                i <- 0
+                for (var in w1vars) {
+                    ic <- (i %% nc) + 1
+                    ir <- (i %/% nc) + 1
+                    cb <- gcheckbox(text=var,action=var,
+                        handler=variable_handler)
+                    var_layout[ir,ic] <<- cb
+                    if (i == 0) {
+                        sz <- size(cb)
+                        cat("cb size =",paste(sz,collapse=","),"\n")
+                    }
+                    i <- i + 1
+                }
+                # cat("done\n")
+
+                if (FALSE) {
+                    sz <- size(var_layout)
+                    cat("layout size =",paste(sz,collapse=","),"\n")
+                    sz[2] <- as.integer(max(length(w1vars)/5,5) * sz[1])
+
+                    cat("setting layout size to",paste(sz,collapse=","),"\n")
+                    size(var_layout) <- c(1,50)
+
+                    sz <- size(var_group)
+                    cat("group size =",paste(sz,collapse=","),"\n")
+                    sz[2] <- as.integer(max(length(w1vars)/5,5) * sz[1])
+
+                    cat("setting group size to",paste(sz,collapse=","),"\n")
+                    size(var_group) <- c(1,50)
+                }
+                else {
+                    sz <- size(var_layout)
+                    cat("layout size =",paste(sz,collapse=","),"\n")
+                    # size(var_layout) <- c(800,600)
+                }
+            }
+            NULL
+        }
+
+        gb1 <- ggroup(container=g, horizontal=TRUE)
+        gn1 <- ggroup(container=g, horizontal=TRUE,use.scrollbar=TRUE)
+
+        g2 <- gnotebook(container=gn1, tab.pos=3)
+
+        gbutton("show variables",container=gb1,handler=variables_handler,action=g2)
+
+        # size(gn1) <- c(800,600)
+
+        read_handler <- function(h,...)
+        {
+            cat("reading ",paste(selected_vars,collapse=","),"\n")
+            w1vars <- words(all_variables,1,1,sep=".")
+            mx <- match(w1vars,selected_vars)
+            if (any(!is.na(mx))) {
+                vars <- all_variables[!is.na(mx)]
+
+                if (FALSE) {
+                    lenfile <- dpar("lenfile")
+                    if (is.null(lenfile)) 
+                        iod <- netcdf()
+                    else iod <- netcdf(lenfile = lenfile)
+                    x <- readts(iod, variables = vars)
+                    close(iod)
+                }
+                else {
+                    x <- dat(vars)
+                }
+            }
+
+            # x <- dat(selected_vars)
+            assign(outvar,x,envir=globalenv())
+            NULL
+        }
+        g1 <- ggroup(container=g, horizontal=TRUE)
+        gbutton("read variables into",container=g1,handler=read_handler)
+
+        outvar_handler <- function(h,...)
+        {
+            outvar <<- as.character(svalue(h$obj))
+            NULL
+        }
+
+        gcombobox(c("x","x1","x2","y","y1","y2"),
+            container=g1,action=2L, editable=TRUE, handler=outvar_handler)
+
+        plot_handler <- function(h,...)
+        {
+            tryCatch(plot(get(outvar,envir=globalenv())))
+            NULL
+        }
+
+        gbutton("plot",container=g1,handler=plot_handler)
 
         assign(".dgpar.w",w,envir=eolts:::.eoltsEnv)
 
@@ -438,6 +628,13 @@ dgpar <- function(visible=TRUE,debug=FALSE)
         w <- get(".dgpar.w",envir=eolts:::.eoltsEnv)
     }
     visible(w) <- visible
+    if (FALSE) {
+        if (exists(".dgpar.wv",envir=eolts:::.eoltsEnv)) {
+            wv <- get(".dgpar.wv",envir=eolts:::.eoltsEnv)
+            visible(wv) <- visible
+            cat("making wv visible\n")
+        }
+    }
 
     if (guiToolkit()@toolkit != "tcltk" && visible) {
         # now that the window is visible with known widget sizes,
@@ -456,9 +653,11 @@ dgpar <- function(visible=TRUE,debug=FALSE)
             size(tag(w,"tstart_sec")) <- as.integer(c(sz[1]*1.3,sz[2]))
             size(tag(w,"tend_min")) <- as.integer(c(sz[1]*1.3,sz[2]))
             size(tag(w,"tend_sec")) <- as.integer(c(sz[1]*1.3,sz[2]))
+
+            size(dset_combo) <- c(100,25)
+            size(tzradio) <- c(150,25)
         }
     }
-
     invisible(w)
 }
 

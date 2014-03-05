@@ -13,9 +13,9 @@ dat.L <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),g=dpar("accelgra
     if (is.null(k)) k <- 0.4
     if (is.null(g)) g <- 9.81	# m/s^2
 
-    x <- -(dat(expand("tc",what),avg=T,smooth=T)+273.15)*
-    dat("u*",avg=T,smooth=T)^3/k/g/
-    dat(expand("w'tc'",what),avg=T,smooth=T)
+    x <- -(dat(expand("tc",what),avg=T,smooth=T)+273.15) *
+        dat("u*",avg=T,smooth=T)^3/k/g /
+        dat(expand("w'tc'",what),avg=T,smooth=T)
     x[is.infinite(x)] <- NA_real_
 
     dimnames(x) <- list(NULL,paste("L",suffixes(x,2),sep=""))
@@ -25,8 +25,8 @@ dat.L <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),g=dpar("accelgra
 "dat.u*" <- function(what,derived=TRUE,cache=F,...)
 {
     # calculate streamwise value of ustar
-    u <- dat(expand("u",what),avg=T,smooth=T, derived=F)
-    v <- dat(expand("v",what),avg=T,smooth=T, derived=F)
+    u <- dat(expand("u",what),avg=T,smooth=T)
+    v <- dat(expand("v",what),avg=T,smooth=T)
     uw <- dat(expand("u'w'",what),avg=T,smooth=T)
     vw <- dat(expand("v'w'",what),avg=T,smooth=T)
 
