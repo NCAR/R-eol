@@ -26,6 +26,8 @@ utime <- function(val=as.numeric(Sys.time()),
     # cat(paste("in utime(), class(val)=",class(val),", length(val)=",length(val),"\n"))
 
     res <- NULL
+    if (is.null(val) || length(val) == 0) return(res)
+
     if (is(val,"numeric")) {
         res <- new("utime",val)
     }
@@ -57,8 +59,8 @@ utime <- function(val=as.numeric(Sys.time()),
     else if (is.list(val)) {
         res <- as(val,"utime")
     }
-    else if (is.null(val)) {
-        res <- new("utime")
+    else {
+        res <- new("utime",as.numeric(val))
     }
     res
 }

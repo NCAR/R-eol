@@ -40,7 +40,7 @@ netcdf <- function(
     interval=300,
     cdlfile="")
 {
-    if (is.null(lenfile)) lenfile <- 86400
+    if (is.null(lenfile)) lenfile <- 0
     obj <- new("netcdf",
         file=file,dir=dir,
         start=start,end=end,
@@ -48,11 +48,55 @@ netcdf <- function(
         timeNames=timeNames,
         server=server,interval=interval,cdlfile=cdlfile)
 
-    if (lenfile == 31 * 86400)
-        times <- monthly(from=utime(start,time.zone="GMT"),to=end-1)
-    else times <- seq(from=utime(floor(start/lenfile)*lenfile),to=end-1,by=lenfile)
+    # If file length is unknown, scan directory for files, then
+    # if file contains any time descriptors, parse the presumed start
+    # times from the file names
+    if (lenfile == 0) {
+        hastimefmt <- any(sapply(c("%Y","%m","%d","%b","%H","%M","%S"),
+                function(x,str){grepl(x,str,fixed=TRUE)},str=file))
 
-    files <- unique(format(times,format=as(file,"character"),time.zone="GMT"))
+        if (hastimefmt) {
+            nmformat <- gsub("%Y","[12][0-9]{3}",file)
+            nmformat <- gsub("%m","[01][0-9]",nmformat)
+            nmformat <- gsub("%d","[0-3][0-9]",nmformat)
+            nmformat <- gsub("%H","[0-2][0-9]",nmformat)
+            nmformat <- gsub("%M","[0-5][0-9]",nmformat)
+            nmformat <- gsub("%S","[0-5][0-9]",nmformat)
+            files <- list.files(dir,nmformat)
+
+            # Parse file names to get start times
+            # Any that fail to parse return NA, and we'll ignore them.
+            ftimes <- as.numeric(strptime(files,file,tz="GMT"))
+            files <- files[!is.na(ftimes)]
+            ftimes <- ftimes[!is.na(ftimes)]
+            ftimes <- utime(ftimes)
+            fi <- order(ftimes)
+            ftimes <- ftimes[fi]
+            files <- files[fi]
+
+            fwithin <- ftimes >= start & ftimes <= end
+            # determine last file whose time is less than start
+            before <- ftimes < start
+            if (any(before)) {
+                before <- max(seq(along=files)[before])
+                fwithin[before] <- TRUE
+            }
+            if (any(fwithin)) files <- files[fwithin]
+            else warning(paste("no files found in",dir,"between ",
+                    format(start,format="%Y %b %d %H:%M:%S",time.zone="GMT"),"and",
+                    format(end,format="%Y %b %d %H:%M:%S %Z",time.zone="GMT")))
+        }
+        else {
+            files <- list.files(dir,file)
+            if (length(files) == 0) warning(paste("no files found in",dir,"matching",file))
+        }
+    }
+    else {
+        if (lenfile == 31 * 86400)
+            times <- monthly(from=utime(start,time.zone="GMT"),to=end-1)
+        else times <- seq(from=utime(floor(start/lenfile)*lenfile),to=end-1,by=lenfile)
+        files <- unique(format(times,format=as(file,"character"),time.zone="GMT"))
+    }
 
     .Call("open_netcdf",obj,files,cdlfile,300L,300L,PACKAGE="eolts")
 }
