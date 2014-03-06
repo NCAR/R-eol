@@ -38,19 +38,19 @@ public:
 
     virtual void setDims(size_t,size_t) = 0;
 
-    std::vector<std::string> getDimNames(unsigned int idim);
+    std::vector<std::string> getDimNames(size_t idim);
     std::vector<std::string> getRowNames();
     std::vector<std::string> getColumnNames();
 
-    void setDimNames(unsigned int idim, const std::vector<std::string>& names);
+    void setDimNames(size_t idim, const std::vector<std::string>& names);
     void setRowNames(const std::vector<std::string>& names);
     void setColumnNames(const std::vector<std::string>& names);
 
-    size_t getNrows() { return _dims[0]; }
-    size_t getNcols() { return _dims[1]; }
-    size_t getLength() { return _length; }
+    size_t getNrows() const { return _dims[0]; }
+    size_t getNcols() const { return _dims[1]; }
+    size_t getLength() const { return _length; }
 
-    virtual int getSizeOfT() = 0;
+    virtual unsigned int getSizeOfT() const = 0;
 
 protected:
 

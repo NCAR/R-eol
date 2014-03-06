@@ -34,6 +34,7 @@ R_MatrixBase::R_MatrixBase(int type,size_t nrow,size_t ncol) :
 {
     _dims[0] = nrow;
     _dims[1] = ncol;
+    // NOTE: dimension args to Rf_allocMatrix are 32 bit integer
     PROTECT_WITH_INDEX(_obj = Rf_allocMatrix(type,nrow,ncol),&_pindx);
     _dnobj = Rf_getAttrib(_obj,R_DimNamesSymbol);
 }
@@ -53,8 +54,9 @@ R_MatrixBase::R_MatrixBase(int type, SEXP obj) :
     }
     SEXP dim = Rf_getAttrib(_obj,R_DimSymbol);
     if (Rf_isNull(dim)) {
-        _dims[0] = LENGTH(_obj);
+        _dims[0] = Rf_xlength(_obj);
         _dims[1] = 1;
+        // NOTE: matrix dimensions are 32 bit integer
         dim = PROTECT(Rf_allocVector(INTSXP,2));
         INTEGER(dim)[0] = _dims[0];
         INTEGER(dim)[1] = _dims[1];
@@ -65,7 +67,7 @@ R_MatrixBase::R_MatrixBase(int type, SEXP obj) :
         _dims[0] = INTEGER(dim)[0];
         _dims[1] = INTEGER(dim)[1];
     }
-    _length = _dims[0] * _dims[1];
+    _length = (size_t)_dims[0] * _dims[1];
     _dnobj = Rf_getAttrib(_obj,R_DimNamesSymbol);
 }
 
@@ -76,7 +78,7 @@ R_MatrixBase::~R_MatrixBase() {
     if (_pindx >= 0) UNPROTECT(1);
 }
 
-vector<string> R_MatrixBase::getDimNames(unsigned int idim)
+vector<string> R_MatrixBase::getDimNames(size_t idim)
 {
     const size_t ndims = sizeof(_dims)/sizeof(_dims[0]);
     if (idim >= ndims) {
@@ -86,7 +88,7 @@ vector<string> R_MatrixBase::getDimNames(unsigned int idim)
 
     vector<string> names;
 
-    if (!_dnobj || Rf_length(_dnobj) == 0) return names;
+    if (!_dnobj || Rf_xlength(_dnobj) == 0) return names;
 
     if (!Rf_isNewList(_dnobj)) {
         // Rf_warning("dimnames is not a new list");
@@ -96,18 +98,18 @@ vector<string> R_MatrixBase::getDimNames(unsigned int idim)
         return names;
     }
 
-    if ((unsigned)Rf_length(_dnobj) != ndims) {
+    if ((size_t)Rf_xlength(_dnobj) != ndims) {
         Rprintf("R_ArrayBase::getDimNames: length of dimnames list, %u, is not equal to number of dimensions, %zu\n",
-                (unsigned)Rf_length(_dnobj),ndims);
+                (size_t)Rf_xlength(_dnobj),ndims);
         Rf_error("internal error: bad length of dimnames list");
     }
 
     SEXP dobj = VECTOR_ELT(_dnobj,idim);
-    if (!Rf_isString(dobj) || Rf_length(dobj) == 0) return names;
+    if (!Rf_isString(dobj) || Rf_xlength(dobj) == 0) return names;
 
-    if ((unsigned) Rf_length(dobj) != _dims[idim]) {
+    if ((size_t) Rf_xlength(dobj) != _dims[idim]) {
         Rprintf("R_MatrixBase::getDimNames: length of dimnames for dimension %d is %u, and not equal to dimension length %zu\n",
-                idim,(unsigned)Rf_length(dobj),_dims[idim]);
+                idim,(size_t)Rf_xlength(dobj),_dims[idim]);
         Rf_error("wrong length for dimnames");
     }
 
@@ -127,7 +129,7 @@ vector<string> R_MatrixBase::getColumnNames()
     return getDimNames(1);
 }
 
-void R_MatrixBase::setDimNames(unsigned int idim, const vector<string>& names)
+void R_MatrixBase::setDimNames(size_t idim, const vector<string>& names)
 {
     const size_t ndims = sizeof(_dims)/sizeof(_dims[0]);
     if (idim >= ndims) {
@@ -135,7 +137,7 @@ void R_MatrixBase::setDimNames(unsigned int idim, const vector<string>& names)
         Rf_error("invalid idim argument");
     }
 
-    if (!_dnobj || !Rf_isNewList(_dnobj) || (unsigned) Rf_length(_dnobj) != ndims) {
+    if (!_dnobj || !Rf_isNewList(_dnobj) || (size_t) Rf_xlength(_dnobj) != ndims) {
         _dnobj = PROTECT(Rf_allocVector(VECSXP,ndims));
         Rf_setAttrib(_obj,R_DimNamesSymbol,_dnobj);
         UNPROTECT(1);
@@ -148,7 +150,7 @@ void R_MatrixBase::setDimNames(unsigned int idim, const vector<string>& names)
     }
 
     SEXP dobj = VECTOR_ELT(_dnobj,idim);
-    if (!dobj || (unsigned)Rf_length(dobj) != names.size()) {
+    if (!dobj || (size_t)Rf_xlength(dobj) != names.size()) {
         dobj = PROTECT(Rf_allocVector(STRSXP,names.size()));
         SET_VECTOR_ELT(_dnobj,idim,dobj);
         UNPROTECT(1);

@@ -154,7 +154,7 @@ SEXP read_netcdf(SEXP obj,SEXP variables, SEXP startreq, SEXP countreq)
         Rf_error("netcdf read error: length of variables argument is zero");
 
     vector<string> vnames;
-    for (size_t i = 0; i < (unsigned)Rf_length(variables); i++) {
+    for (size_t i = 0; i < (size_t)Rf_length(variables); i++) {
         SEXP dn = STRING_ELT(variables,i);
         vnames.push_back(CHAR(dn));
     }
@@ -199,7 +199,7 @@ SEXP read_netcdf_ts(SEXP args)
     }
     if (args != R_NilValue) {
         SEXP vars = CAR(args);
-        unsigned int nvars = Rf_length(vars);
+        size_t nvars = Rf_xlength(vars);
         if (nvars == 0)
             Rf_error("netcdf read error: length of variables argument is zero");
 
@@ -237,7 +237,7 @@ SEXP read_netcdf_ts(SEXP args)
     }
     if (args != R_NilValue) {
         SEXP obj = CAR(args);
-        for (int i = 0; i < Rf_length(obj); i++)
+        for (size_t i = 0; i < (size_t)Rf_xlength(obj); i++)
             tnames.push_back(CHAR(STRING_ELT(obj,i)));
         args = CDR(args);
     }
@@ -291,7 +291,7 @@ SEXP write_ts_ns(SEXP args)
     vector<string> nonTimeDimNames;
     if (args != R_NilValue) {
         SEXP robj = CAR(args);
-        size_t ndims = Rf_xlength(robj);
+        size_t ndims = (size_t)Rf_xlength(robj);
         for (size_t i = 0; i < ndims; i++) {
             SEXP dn = STRING_ELT(robj,i);
             nonTimeDimNames.push_back(CHAR(dn));
@@ -315,7 +315,7 @@ SEXP write_ts_ns(SEXP args)
     double dt = 0.0;
     if (args != R_NilValue) {
         SEXP robj = CAR(args);
-        if (Rf_xlength(robj) != 1)
+        if (Rf_length(robj) != 1)
             Rf_error("write_ts_ns error: length of dt argument is not one");
         dt = REAL(robj)[0];
         args = CDR(args);
@@ -324,7 +324,7 @@ SEXP write_ts_ns(SEXP args)
     double fill = 1.e37;
     if (args != R_NilValue) {
         SEXP robj = CAR(args);
-        if (Rf_xlength(robj) != 1)
+        if (Rf_length(robj) != 1)
             Rf_error("write_ts_ns error: length of fill_value argument is not one");
         fill = REAL(robj)[0];
         args = CDR(args);
@@ -534,7 +534,7 @@ void R_netcdf::openFileSet(SEXP obj,SEXP files)
 #endif
 
     vector<string> fnames;
-    for (size_t i = 0; i < (unsigned)Rf_length(files); i++) {
+    for (size_t i = 0; i < (size_t)Rf_xlength(files); i++) {
         SEXP dn = STRING_ELT(files,i);
         fnames.push_back(CHAR(dn));
     }
@@ -544,7 +544,7 @@ void R_netcdf::openFileSet(SEXP obj,SEXP files)
     SEXP slot = Rf_getAttrib(obj,timeNamesSlotName);
 
     vector<string> tnames;
-    for (size_t i = 0; i < (unsigned)Rf_length(slot); i++) {
+    for (size_t i = 0; i < (size_t)Rf_xlength(slot); i++) {
         SEXP dn = STRING_ELT(slot,i);
         tnames.push_back(CHAR(dn));
     }
@@ -595,7 +595,7 @@ SEXP R_netcdf::getVariables() throw(NcException)
     SEXP resnames = Rf_getAttrib(result,R_NamesSymbol);
 
     if (!resnames || TYPEOF(resnames) != STRSXP ||
-            (unsigned) Rf_length(resnames) != vars.size()) {
+            (size_t)Rf_xlength(resnames) != vars.size()) {
 #ifdef DEBUG
         Rprintf("allocating R_NamesSymbol for variables\n");
 #endif
@@ -604,10 +604,10 @@ SEXP R_netcdf::getVariables() throw(NcException)
         UNPROTECT(1);   // resnames
     }
 #ifdef DEBUG
-    Rprintf("resnames length=%d\n",Rf_length(resnames));
+    Rprintf("resnames length=%ld\n",Rf_xlength(resnames));
 #endif
 
-    for (unsigned int i = 0; i < vars.size(); i++) {
+    for (size_t i = 0; i < vars.size(); i++) {
         R_NetcdfVariable rvar(this,vars[i]);
         SET_STRING_ELT(resnames,i,Rf_mkChar(rvar.getName().c_str()));
         SET_VECTOR_ELT(result,i,rvar.getRObject());
@@ -647,7 +647,7 @@ SEXP R_netcdf::getTimeSeriesVariables() throw(NcException)
     SEXP resnames = Rf_getAttrib(result,R_NamesSymbol);
 
     if (!resnames || TYPEOF(resnames) != STRSXP ||
-            (unsigned) Rf_length(resnames) != tvars.size()) {
+            (size_t) Rf_length(resnames) != tvars.size()) {
 #ifdef DEBUG
         Rprintf("allocating R_NamesSymbol for variables\n");
 #endif

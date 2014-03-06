@@ -39,16 +39,16 @@ R_NamedVectorBase::R_NamedVectorBase(int type, SEXP obj):
     if (TYPEOF(obj) != type)
         PROTECT_WITH_INDEX(_obj = Rf_coerceVector(_obj,type),&_pindx);
 
-    _length = Rf_length(_obj);
+    _length = Rf_xlength(_obj);
     _names = Rf_getAttrib(_obj,R_NamesSymbol);
     if (!_names || !Rf_isString(_names)) {
         _names = Rf_allocVector(STRSXP,_length);
         Rf_setAttrib(_obj,R_NamesSymbol,_names);
     }
 
-    if ((unsigned)Rf_length(_names) != _length) {
+    if ((size_t)Rf_xlength(_names) != _length) {
         Rf_warning("length of names of R_NamedVector is not equal to length of vector");
-        _names = Rf_lengthgets(_names,_length);
+        _names = Rf_xlengthgets(_names,_length);
         Rf_setAttrib(_obj,R_NamesSymbol,_names);
     }
 }
@@ -65,12 +65,12 @@ void R_NamedVectorBase::setLength(size_t length)
 {
     if (_length != length) {
         if (_pindx >= 0)
-            REPROTECT(_obj = Rf_lengthgets(_obj,length),_pindx);
+            REPROTECT(_obj = Rf_xlengthgets(_obj,length),_pindx);
         else
-            PROTECT_WITH_INDEX(_obj = Rf_lengthgets(_obj,length),&_pindx);
+            PROTECT_WITH_INDEX(_obj = Rf_xlengthgets(_obj,length),&_pindx);
         _length = length;
 
-        _names = Rf_lengthgets(_names,_length);
+        _names = Rf_xlengthgets(_names,_length);
         Rf_setAttrib(_obj,R_NamesSymbol,_names);
     }
 }
@@ -78,7 +78,7 @@ void R_NamedVectorBase::setLength(size_t length)
 vector<string> R_NamedVectorBase::getNames()
 {
     vector<string> names;
-    for (size_t i = 0; i < (unsigned)Rf_length(_names); i++) {
+    for (size_t i = 0; i < (size_t)Rf_xlength(_names); i++) {
         SEXP dn = STRING_ELT(_names,i);
         names.push_back(CHAR(dn));
     }
@@ -86,9 +86,9 @@ vector<string> R_NamedVectorBase::getNames()
 }
 void R_NamedVectorBase::setNames(const vector<string>& names)
 {
-    if ((unsigned)Rf_length(_names) != _length) {
-        Rprintf("Rf_length(_names)=%d, _length=%d\n",
-                (unsigned)Rf_length(_names),_length);
+    if ((size_t)Rf_xlength(_names) != _length) {
+        Rprintf("Rf_xlength(_names)=%td, _length=%zd\n",
+                Rf_xlength(_names),_length);
         Rf_error("bad length in R_NamedVectorBase::setNames");
     }
 

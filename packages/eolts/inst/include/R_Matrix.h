@@ -25,7 +25,7 @@ public:
     R_Matrix(int type, SEXP);
 
     T *getDataPtr();
-    int getSizeOfT() { return sizeof(T); }
+    unsigned int getSizeOfT() const { return sizeof(T); }
 
     T naValue() const;
 

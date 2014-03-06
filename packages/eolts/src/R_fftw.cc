@@ -17,8 +17,8 @@
 using eolts::R_Matrix;
 
 extern "C" {
-    SEXP R_cfftw(SEXP nrp,SEXP ncp, SEXP cmatp, SEXP invp);
-    SEXP R_rfftw(SEXP nrp,SEXP ncp, SEXP dmatp, SEXP invp);
+    SEXP R_cfftw(SEXP cmatp, SEXP invp);
+    SEXP R_rfftw(SEXP dmatp, SEXP invp);
 }
 
 /*
@@ -33,7 +33,7 @@ extern "C" {
  * (n-k)/n.)
  */
 
-SEXP R_cfftw(SEXP nrp,SEXP ncp, SEXP cmatp, SEXP invp)
+SEXP R_cfftw(SEXP cmatp, SEXP invp)
 {
 
     /*
@@ -45,23 +45,16 @@ SEXP R_cfftw(SEXP nrp,SEXP ncp, SEXP cmatp, SEXP invp)
     if (sizeof(Rcomplex) != sizeof(fftw_complex))
         Rf_error("incompatible complex types");
 
-    if (TYPEOF(nrp) != INTSXP || Rf_length(nrp) != 1)
-        Rf_error("nrow parameter is object is not type integer, length 1");
-    int nr = INTEGER(nrp)[0];
-
-    if (TYPEOF(ncp) != INTSXP || Rf_length(ncp) != 1)
-        Rf_error("ncol parameter is object is not type integer, length 1");
-    size_t nc = (size_t)INTEGER(ncp)[0];
-
     if (TYPEOF(cmatp) != CPLXSXP)
         Rf_error("data parameter is not of type complex");
     R_Matrix<Rcomplex> cmat(CPLXSXP,cmatp);
 
+    size_t nr = cmat.getNrows();
+    size_t nc = cmat.getNcols();
+
     if (TYPEOF(invp) != LGLSXP || Rf_length(invp) != 1)
         Rf_error("inverse parameter is object is not type logical, length 1");
     bool inverse = (bool)LOGICAL(invp)[0];
-
-    int sign = (inverse ? FFTW_BACKWARD :  FFTW_FORWARD);
 
     fftw_complex* cpin = (fftw_complex*) cmat.getDataPtr();
 
@@ -87,7 +80,10 @@ SEXP R_cfftw(SEXP nrp,SEXP ncp, SEXP cmatp, SEXP invp)
      * overwritten during planning, which is important.
      * We don't want to change the input array, dpin.
      */
-    fftw_plan plan = fftw_plan_many_dft(1,&nr,nc,
+    int nri = (int) nr;
+    int sign = (inverse ? FFTW_BACKWARD :  FFTW_FORWARD);
+
+    fftw_plan plan = fftw_plan_many_dft(1,&nri,nc,
             cpin,NULL,1,nr,
             cpout,NULL,1,nr,
             sign,FFTW_ESTIMATE);
@@ -113,26 +109,18 @@ SEXP R_cfftw(SEXP nrp,SEXP ncp, SEXP cmatp, SEXP invp)
  * imaginary part is zero due to symmetries of the real-complex transform,
  * and is not stored. 
  */
-SEXP R_rfftw(SEXP nrp,SEXP ncp, SEXP dmatp, SEXP invp)
+SEXP R_rfftw(SEXP dmatp, SEXP invp)
 {
-    if (TYPEOF(nrp) != INTSXP || Rf_length(nrp) != 1)
-        Rf_error("nrow parameter is object is not type integer, length 1");
-    int nr = INTEGER(nrp)[0];
-
-    if (TYPEOF(ncp) != INTSXP || Rf_length(ncp) != 1)
-        Rf_error("ncol parameter is object is not type integer, length 1");
-    size_t nc = (size_t)INTEGER(ncp)[0];
-
     if (TYPEOF(dmatp) != REALSXP)
         Rf_error("data parameter is not of type real");
     R_Matrix<double> dmat(REALSXP,dmatp);
 
+    size_t nr = dmat.getNrows();
+    size_t nc = dmat.getNcols();
+
     if (TYPEOF(invp) != LGLSXP || Rf_length(invp) != 1)
         Rf_error("inverse parameter is object is not type logical, length 1");
     bool inverse = (bool)LOGICAL(invp)[0];
-
-    fftw_r2r_kind kind = (inverse ? FFTW_HC2R :  FFTW_R2HC);
-    // Rprintf("R_fftw: nr=%zu,nc=%zu,inverse=%d\n",nr,nc,inverse);
 
     R_Matrix<double> dmatout(REALSXP,nr,nc);
 
@@ -157,7 +145,12 @@ SEXP R_rfftw(SEXP nrp,SEXP ncp, SEXP dmatp, SEXP invp)
      * overwritten during planning, which is important.
      * We don't want to change the input array, dpin.
      */
-    fftw_plan plan = fftw_plan_many_r2r(1,&nr,nc,
+
+    fftw_r2r_kind kind = (inverse ? FFTW_HC2R :  FFTW_R2HC);
+    // Rprintf("R_fftw: nr=%zu,nc=%zu,inverse=%d\n",nr,nc,inverse);
+
+    int nri = (int) nr;
+    fftw_plan plan = fftw_plan_many_r2r(1,&nri,nc,
             dpin,NULL,1,nr,
             dpout,NULL,1,nr,
             &kind,FFTW_ESTIMATE);

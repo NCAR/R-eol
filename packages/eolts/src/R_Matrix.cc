@@ -173,10 +173,10 @@ SEXP set_dimnames(SEXP x, SEXP names)
     if (!Rf_isNewList(names))
         Rf_error("names is not a list");
     vector<vector<string> > dimnames;
-    for (unsigned int i = 0; i < (unsigned) Rf_length(names); i++) {
+    for (size_t i = 0; i < (size_t) Rf_xlength(names); i++) {
         vector<string> dnames;
         SEXP dns = VECTOR_ELT(names,i);
-        for (size_t j = 0; j < (unsigned)Rf_length(dns); j++) {
+        for (size_t j = 0; j < (size_t)Rf_xlength(dns); j++) {
             SEXP dn = STRING_ELT(dns,j);
             dnames.push_back(CHAR(dn));
         }
@@ -185,19 +185,19 @@ SEXP set_dimnames(SEXP x, SEXP names)
     
     if (Rf_isReal(x)) {
         R_Matrix<double> mat(REALSXP,x);
-        for (unsigned int i = 0; i < dimnames.size(); i++) 
+        for (size_t i = 0; i < dimnames.size(); i++) 
             mat.setDimNames(i,dimnames[i]);
         ans = mat.getRObject();
     }
     else if (Rf_isInteger(x)) {
         R_Matrix<int> mat(INTSXP,x);
-        for (unsigned int i = 0; i < dimnames.size(); i++) 
+        for (size_t i = 0; i < dimnames.size(); i++) 
             mat.setDimNames(i,dimnames[i]);
         ans = mat.getRObject();
     }
     else if (Rf_isLogical(x)) {
         R_Matrix<int> mat(LGLSXP,x);
-        for (unsigned int i = 0; i < dimnames.size(); i++) 
+        for (size_t i = 0; i < dimnames.size(); i++) 
             mat.setDimNames(i,dimnames[i]);
         ans = mat.getRObject();
     }

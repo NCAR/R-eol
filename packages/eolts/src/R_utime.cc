@@ -31,7 +31,7 @@ R_utime::R_utime() : _obj(0),_length(1),_pindx(-1)
     Rprintf("R_utime::R_utime(), IS_S4_OBJECT(_obj)=%d\n",IS_S4_OBJECT(_obj));
 #endif
 
-    _length = Rf_length(_obj);
+    _length = Rf_xlength(_obj);
 }
 
 R_utime::R_utime(SEXP obj) : _obj(obj),_length(0),_pindx(-1)
@@ -40,7 +40,7 @@ R_utime::R_utime(SEXP obj) : _obj(obj),_length(0),_pindx(-1)
     Rprintf("R_utime::R_utime(SEXP), TYPEOF(obj)=%d\n",TYPEOF(obj));
 #endif
 
-    _length = Rf_length(_obj);
+    _length = Rf_xlength(_obj);
 
 #ifdef DEBUG
     Rprintf("R_utime::R_utime(SEXP), _length=%d, val[0]=%f\n",
@@ -60,9 +60,9 @@ void R_utime::setLength(size_t val)
 {
     if (_length != val) {
         if (_pindx >= 0)
-            REPROTECT(_obj = Rf_lengthgets(_obj,val),_pindx);
+            REPROTECT(_obj = Rf_xlengthgets(_obj,val),_pindx);
         else
-            PROTECT_WITH_INDEX(_obj = Rf_lengthgets(_obj,val),&_pindx);
+            PROTECT_WITH_INDEX(_obj = Rf_xlengthgets(_obj,val),&_pindx);
         _length = val;
     }
 }

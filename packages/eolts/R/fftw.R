@@ -127,10 +127,8 @@ setGeneric("fftw",function(x,inverse,use.mvfft) standardGeneric("fftw"))
 setMethod("fftw",signature(x="matrix",inverse="logical",use.mvfft="logical"),
     function(x,inverse,use.mvfft)
     {
-        nr <- dim(x)[1]
-        nc <- dim(x)[2]
 
-        # cat("fftw: inverse=",inverse,", use.mvfft=",use.mvfft,", nr=",nr,", nc=",nc, ", is.complex(x)=",is.complex(x),"\n")
+        # cat("fftw: inverse=",inverse,", use.mvfft=",use.mvfft,", nr=",nrow(x),", nc=",ncol(x), ", is.complex(x)=",is.complex(x),"\n")
 
         # browser()
 
@@ -146,11 +144,13 @@ setMethod("fftw",signature(x="matrix",inverse="logical",use.mvfft="logical"),
             if (use.mvfft || .Platform$OS.type == "windows")
                 x <- mvfft(x,inverse=inverse)
             else
-                x <- .Call("R_cfftw", nr, nc, x, inverse, PACKAGE="eolts")
+                x <- .Call("R_cfftw", x, inverse, PACKAGE="eolts")
             fftw.ctor(x,type=restype)
         }
         else {
             if (any(is.na(x))) x <- replace.nas(x,warn=TRUE)
+
+            nr <- dim(x)[1]
 
             # compute an fft for each column of a real matrix
             #     fft[1] is for frequency 0 (DC)
@@ -163,7 +163,7 @@ setMethod("fftw",signature(x="matrix",inverse="logical",use.mvfft="logical"),
             if (use.mvfft || .Platform$OS.type == "windows")
                 x <- mvfft(x,inverse=inverse)
             else 
-                x <- .Call("R_rfftw", nr, nc, x, inverse, PACKAGE="eolts")
+                x <- .Call("R_rfftw", x, inverse, PACKAGE="eolts")
 
             # cat("fftw x dimnames=",paste(dimnames(x)[[2]],collapse=","),"\n")
             fftw.ctor(x,type=restype)

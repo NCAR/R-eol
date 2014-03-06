@@ -148,7 +148,7 @@ SEXP start_prep(SEXP con, SEXP prog,SEXP argsp, SEXP envp, SEXP unitsp)
         Rf_error("error: args argument is not a character vector");
 
     vector<string> args;
-    for (size_t i = 0; i < (unsigned)Rf_length(argsp); i++) {
+    for (size_t i = 0; i < (size_t)Rf_xlength(argsp); i++) {
         SEXP str = STRING_ELT(argsp,i);
         args.push_back(CHAR(str));
     }
@@ -157,7 +157,7 @@ SEXP start_prep(SEXP con, SEXP prog,SEXP argsp, SEXP envp, SEXP unitsp)
         Rf_error("error: env argument is not a character vector");
 
     vector<string> env;
-    for (size_t i = 0; i < (unsigned)Rf_length(envp); i++) {
+    for (size_t i = 0; i < (size_t)Rf_xlength(envp); i++) {
         SEXP str = STRING_ELT(envp,i);
         env.push_back(CHAR(str));
     }
@@ -166,7 +166,7 @@ SEXP start_prep(SEXP con, SEXP prog,SEXP argsp, SEXP envp, SEXP unitsp)
         Rf_error("error: units argument is not a character vector");
 
     vector<string> units;
-    for (size_t i = 0; i < (unsigned)Rf_length(unitsp); i++) {
+    for (size_t i = 0; i < (size_t)Rf_xlength(unitsp); i++) {
         SEXP str = STRING_ELT(unitsp,i);
         units.push_back(CHAR(str));
     }
@@ -272,7 +272,7 @@ R_prep::R_prep(SEXP obj): _obj(obj), _pid(-1),_inputfp(0),
 
     slot = Rf_getAttrib(obj,variablesSlotName);
 
-    for (size_t i = 0; i < (unsigned)Rf_length(slot); i++) {
+    for (size_t i = 0; i < (size_t)Rf_xlength(slot); i++) {
         SEXP str = STRING_ELT(slot,i);
         _variables.push_back(CHAR(str));
     }
@@ -538,7 +538,7 @@ SEXP R_prep::read(R_utime &begin, R_utime &end, size_t nrows)
     Rprintf("beginTime=%f, endtime=%f, nrows=%zu\n",beginTime,endTime,nrows);
 #endif
 
-    int nc = _variables.size();
+    size_t nc = _variables.size();
 
     R_Matrix<double> matrix(REALSXP,0,nc);
     double *dptr = matrix.getDataPtr();
@@ -606,7 +606,7 @@ SEXP R_prep::read(R_utime &begin, R_utime &end, size_t nrows)
             break;
         }
 
-        if ((res = ::fread((char *)&drec.front(),sizeof(float),nc,_inputfp)) != (unsigned)nc)
+        if ((res = ::fread((char *)&drec.front(),sizeof(float),nc,_inputfp)) != nc)
         {
             if (ferror(_inputfp)) Rf_error(strerror(errno));
             break;
@@ -614,7 +614,7 @@ SEXP R_prep::read(R_utime &begin, R_utime &end, size_t nrows)
 
         if (trec >= beginTime) {
             times.setTime(irow,trec);
-            for (int i = 0; i < nc; i++) dptr[i * n + irow] = drec[i];
+            for (size_t i = 0; i < nc; i++) dptr[i * n + irow] = drec[i];
             irow++;
         }
 #ifdef DEBUG

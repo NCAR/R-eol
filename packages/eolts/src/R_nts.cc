@@ -238,14 +238,14 @@ extern "C" {
             nprot++;
         }
         double* t1 = REAL(t1p);
-        size_t l1 = Rf_length(t1p);
+        size_t l1 = Rf_xlength(t1p);
 
         if (TYPEOF(t2p) != REALSXP) {
             PROTECT(t2p = Rf_coerceVector(t2p,REALSXP));
             nprot++;
         }
         double* t2 = REAL(t2p);
-        size_t l2 = Rf_length(t2p);
+        size_t l2 = Rf_xlength(t2p);
 
         double dt;
         if (Rf_length(dtp) != 1) {
