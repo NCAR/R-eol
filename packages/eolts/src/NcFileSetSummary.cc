@@ -112,7 +112,7 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                     ifile,ivar,ncf->getName().c_str(),_vnames[ivar].c_str(),getCounts);
 #endif
             NcVar* var = 0;
-            vname = _vnames[ivar];
+            string vname = _vnames[ivar];
             try {
                 var = ncf->getTimeSeriesVariable(vname,timeDimension);
                 if (!var) {
