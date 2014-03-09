@@ -1257,12 +1257,12 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
 
             size_t sampleDim = vs.getSampleDimension(ivar);
 
-            NcVar* var = 0;
+            NcVar* var = ncf->getTimeSeriesVariable(vnames[ivar],timeDim);
 
-            if (readCountsOnly)
-                var = ncf->getTimeSeriesCountsVariable(vnames[ivar],timeDim);
-            else
-                var = ncf->getTimeSeriesVariable(vnames[ivar],timeDim);
+            if (readCountsOnly && var) {
+                string countsName = var->getCharAttribute("counts");
+                var = ncf->getTimeSeriesVariable(countsName,timeDim);
+            }
 
             // found this variable in this file
             if (var) {

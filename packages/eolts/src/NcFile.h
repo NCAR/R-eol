@@ -86,9 +86,6 @@ public:
     NcVar* getTimeSeriesVariable(const std::string& name,
             const NcDim* tdim) throw(NcException);
 
-    NcVar* getTimeSeriesCountsVariable(const std::string& name,
-            const NcDim* tdim) throw(NcException);
-
     std::vector<NcVar*> getTimeSeriesVariables(const NcDim* dim)
         throw(NcException);
 

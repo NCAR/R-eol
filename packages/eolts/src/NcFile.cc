@@ -130,7 +130,7 @@ void NcFile::clearMaps(void)
 /**
  * Get number of variables in a netcdf file.
  * This value is not cached, it is read from the file,
- * so don't put in in a loop, like so:
+ * so don't put in a loop, like so:
  *   for (i = 0; i < getNumVariables(); i++)
  * instead, get it once:
  *   int nv = getNumVariables();
@@ -315,16 +315,6 @@ NcVar* NcFile::getTimeSeriesVariable(const string& name,const NcDim* tdim)
         }
     }
     return 0;   // variable exists, but doesn't have time dimension
-}
-
-NcVar* NcFile::getTimeSeriesCountsVariable(const string& name,const NcDim* tdim)
-    throw(NcException)
-{
-    NcVar* var = getTimeSeriesVariable(name,tdim);
-    if (!var) return var;
-    string countsName = var->getCharAttribute("counts");
-    if (countsName.length() == 0) return 0;
-    return getTimeSeriesVariable(countsName,tdim);
 }
 
 vector<NcVar*> NcFile::getTimeSeriesVariables(const NcDim* tdim)

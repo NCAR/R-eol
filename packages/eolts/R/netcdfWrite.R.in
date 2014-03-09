@@ -41,7 +41,7 @@ setMethod("writets",
 
         # browser()
 
-        if (!is.null(stns <- stations(x))) {
+        if (!is.null(stns <- stations(x)) && length(stns) > 0) {
             if (length(stns) != ncol(x))
                 stop(paste("length of stations(x)=(",length(stns),") not equal to ncol(x)=",ncol(x),sep=""))
 
@@ -61,6 +61,7 @@ setMethod("writets",
                             assign(".all_stations",all_stations,envir=get(".projectEnv"))
                     }
                     max.station <- max(all_stations)
+                    # cat("max.station=",max.station,"\n")
                 }
 
                 xx <- x[,sv]		# variables with station dimension
@@ -77,6 +78,9 @@ setMethod("writets",
                     for (wc in unique(wm)) {
                         ws <- wc == wm
                         xxxx <- xxx[,ws]
+                        # cat("dimnames(xxxx)=",paste(dimnames(xxxx)[[2]],collapse=","),
+                        #     ", stations(xxxx)=",paste(stations(xxxx),collapse=","),
+                        #     ",wm=",paste(xxxx@weightmap,collapse=","),"\n")
                         .External("write_ts_ns",
                             con,
                             xxxx,

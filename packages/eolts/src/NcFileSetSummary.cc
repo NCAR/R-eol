@@ -112,22 +112,40 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                     ifile,ivar,ncf->getName().c_str(),_vnames[ivar].c_str(),getCounts);
 #endif
             NcVar* var = 0;
+            vname = _vnames[ivar];
             try {
-                if (getCounts)
-                    var = ncf->getTimeSeriesCountsVariable(_vnames[ivar],timeDimension);
-                else
-                    var = ncf->getTimeSeriesVariable(_vnames[ivar],timeDimension);
+                var = ncf->getTimeSeriesVariable(vname,timeDimension);
                 if (!var) {
                     std::ostringstream ost;
-                    ost << "variable \"" << _vnames[ivar] <<
-                        "\" is not a time series variable in in file " << ncf->getName();
+                    ost << "variable \"" << vname <<
+                        "\" is not a time series variable in file " << ncf->getName();
                     Rprintf("%s\n",ost.str().c_str());
                     continue;
+                }
+
+                if (getCounts) {
+                    string vname = var->getCharAttribute("counts");
+                    if (vname.length() == 0) {
+                        std::ostringstream ost;
+                        ost << "no counts attribute for variable \"" << _vnames[ivar] <<
+                            "\" in file " << ncf->getName();
+                        Rprintf("%s\n",ost.str().c_str());
+                        continue;
+                    }
+                    var = ncf->getTimeSeriesVariable(vname,timeDimension);
+                    if (!var) {
+                        std::ostringstream ost;
+                        ost << "counts attribute for \"" << _vnames[ivar] <<
+                            "\" is \"" << vname <<
+                            "\" but counts variable is not found in file " << ncf->getName();
+                        Rprintf("%s\n",ost.str().c_str());
+                        continue;
+                    }
                 }
             }
             catch(const NcException& nce) {
                 std::ostringstream ost;
-                ost << "time series variable \"" << _vnames[ivar] <<
+                ost << "time series variable \"" << vname <<
                     "\" not found in file " << ncf->getName();
                 // Rf_warning(ost.str().c_str());
                 Rprintf("%s\n",ost.str().c_str());

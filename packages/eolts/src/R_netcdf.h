@@ -177,7 +177,11 @@ private:
         std::string _units;
         std::vector<NcAttrT<std::string> > _attrs;
     public:
-        NSVar(const std::string& n, const std::string& u) :_name(n),_units(u),_attrs() {}
+        NSVar(const std::string& n, const std::string& u,const std::string& c) :
+            _name(n),_units(u),_attrs()
+        {
+            if (c.length() > 0) addAttribute("counts",c);
+        }
 
         NSVar() :_name(),_units(),_attrs() {}
 
@@ -193,7 +197,8 @@ private:
     class NSVarGroupFloat {
     public:
         NSVarGroupFloat(R_netcdf *conn,NS_rectype,
-                const std::vector<NcDim>& dims,double fillValue);
+                const std::vector<NcDim>& dims,double fillValue,
+                const std::string& cntsName);
         // NSVarGroupFloat() {}
         ~NSVarGroupFloat(void);
 
@@ -216,6 +221,8 @@ private:
         unsigned int getNumDimensions() const { return _dims.size(); }
         NcDim &getDimension(int i) { return _dims[i]; }
 
+        const std::string& getCountsName() const { return _cntsName; }
+
         std::string toString();
 
     protected:
@@ -230,16 +237,17 @@ private:
         NS_rectype _rectype;
         float _fillValue;
         datarec_float _rec;
+        std::string _cntsName;
     };
 
     NSVarGroupFloat *getVarGroupFloat(const std::vector<std::string>& vnames,
         const std::vector<std::string>& vunits, NS_rectype rectype,
         double interval, const std::vector<NcDim>& dims,
-        double fillvalue) throw(RPC_Exception);
+        double fillvalue,const std::string& cntsName) throw(RPC_Exception);
 
     NSVarGroupFloat *addVarGroupFloat(NS_rectype rectype,
         double interval, const std::vector<NcDim>& dims,
-        double fillvalue);
+        double fillvalue, const std::string& cntsName);
 
     void rpcopen(void) throw(RPC_Exception);
 

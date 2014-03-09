@@ -463,6 +463,15 @@ R_netcdf::~R_netcdf()
     if (_clnt) {
         int result = 0;
         enum clnt_stat clnt_stat;
+
+        if ((clnt_stat = clnt_call (_clnt, SYNCFILES,
+                (xdrproc_t) xdr_void, (caddr_t) NULL,
+                (xdrproc_t) xdr_int, (caddr_t) &result,
+                _rpcOtherTimeout)) != RPC_SUCCESS)
+        {
+            Rf_warning(clnt_sperror(_clnt,"nc_server sync failed"));
+        }
+
         if ((clnt_stat = clnt_call(_clnt, CLOSECONNECTION,
                         (xdrproc_t) xdr_int, (caddr_t) &_id,
                         (xdrproc_t) xdr_int, (caddr_t) &result,
@@ -798,13 +807,6 @@ void R_netcdf::write(R_nts &nts,
     vector<string> vnames = dmatrix.getColumnNames();
     vector<string> vunits = nts.getUnits();
 
-    NSVarGroupFloat* g = getVarGroupFloat(
-            vnames,vunits,NS_TIMESERIES,dt,dims,fillvalue);
-#ifdef DEBUG
-    Rprintf("getVarGroupFloat for vnames[0]=%s: %s\n",
-            vnames[0].c_str(),g->toString().c_str());
-#endif
-
     double *data = dmatrix.getDataPtr();
 
     int stn;
@@ -840,7 +842,10 @@ void R_netcdf::write(R_nts &nts,
     }
     else wc = wm[0] - 1;
 
-    /* check that weightmap indices are all the same */
+    /* Check that weightmap indices are all the same. This should have been
+     * caught in the writets R function, which would then call this
+     * in a loop, each time with columns from the time series with the same weights.
+     */
     for (i = 1; i < wm.size(); i++)
         if (wm[0] != wm[i]) {
             std::ostringstream ost;
@@ -851,7 +856,24 @@ void R_netcdf::write(R_nts &nts,
     double *wtsArray = wts.getDataPtr();
     double *wtsPtr = wtsArray + (wc * nr);
     double dummyWts = -1;
+    string cntsName;
     if (wc < 0) wtsPtr = &dummyWts;
+    else {
+        cntsName = "counts_" + vnames[0];
+        // convert dots, tics, commas, parens to underscores so that
+        // it is a legal NetCDL name
+        string::size_type ic;
+        while((ic = cntsName.find_first_of(".'(),*",0)) != string::npos)
+            cntsName[ic] = '_';
+        Rprintf("wc=%d, cntsName=%s\n",wc,cntsName.c_str());
+    }
+
+    NSVarGroupFloat* vg = getVarGroupFloat(
+            vnames,vunits,NS_TIMESERIES,dt,dims,fillvalue,cntsName);
+#ifdef DEBUG
+    Rprintf("getVarGroupFloat for vnames[0]=%s: %s\n",
+            vnames[0].c_str(),vg->toString().c_str());
+#endif
 
     for (i = 0; i < nr; i++) {
         double tval = times.getTime(i);
@@ -859,7 +881,7 @@ void R_netcdf::write(R_nts &nts,
         Rprintf("i=%d,nr=%d,tval=%g,ts=%s\n",i,nr,tval,
                 R_utime::format(tval,"%Y %b %d %H%M%S %Z","UTC").c_str());
 #endif
-        g->write(tval,data,nr,nc,&start.front(),&count.front(),*wtsPtr);
+        vg->write(tval,data,nr,nc,&start.front(),&count.front(),*wtsPtr);
         if (wc >= 0) wtsPtr++;
         data++;
     }
@@ -905,7 +927,7 @@ int R_netcdf::writeHistory(const string& hist) throw(RPC_Exception)
 }
 
 R_netcdf::NSVarGroupFloat* R_netcdf::addVarGroupFloat(NS_rectype rectype,
-        double interval,const vector<NcDim>& dims,double fillValue)
+        double interval,const vector<NcDim>& dims,double fillValue,const string& cntsName)
 {
 
 #ifdef DEBUG
@@ -917,12 +939,12 @@ R_netcdf::NSVarGroupFloat* R_netcdf::addVarGroupFloat(NS_rectype rectype,
     Rprintf("calling NSVarGroupFloat ctor\n");
 #endif
 
-    NSVarGroupFloat *g = new NSVarGroupFloat(this,rectype,dims,fillValue);
+    NSVarGroupFloat *g = new NSVarGroupFloat(this,rectype,dims,fillValue,cntsName);
 
     _groups.push_back(g);
 
 #ifdef DEBUG
-    Rprintf("exiting add_var_group_float, ngroups=%d ndims=%d, g=0x%x\n",_groups.size(),dims.size(),g);
+    Rprintf("exiting addVarGroupFloat, ngroups=%d ndims=%d, g=0x%x\n",_groups.size(),dims.size(),g);
 #endif
     return g;
 }
@@ -933,7 +955,7 @@ R_netcdf::NSVarGroupFloat* R_netcdf::getVarGroupFloat(
         NS_rectype rectype,
         double interval,
         const vector<NcDim>& dims,
-        double fillValue) throw(RPC_Exception)
+        double fillValue,const string& cntsName) throw(RPC_Exception)
 {
     size_t ndims = dims.size();
     size_t nvars = vnames.size();
@@ -944,44 +966,42 @@ R_netcdf::NSVarGroupFloat* R_netcdf::getVarGroupFloat(
 #endif
 
     for (size_t i = 0; i < _groups.size(); i++) {
-        NSVarGroupFloat *g = _groups[i];
+        NSVarGroupFloat *vg = _groups[i];
 #ifdef DEBUG
         Rprintf("getVarGroupFloat, gp=0x%x, i=%d, ndims=%d,nvars=%d\n",
-                g,i,g->getNumDimensions(),g->getNumVariables());
+                vg,i,vg->getNumDimensions(),vg->getNumVariables());
 #endif
-        if (g->getNumDimensions() != ndims) continue;
+        if (vg->getNumDimensions() != ndims) continue;
         size_t j;
         for (j = 0; j < ndims; j++) {
-            if (g->getDimension(j).getName().compare(dims[j].getName())) break;
-            if (g->getDimension(j).getLength() != dims[j].getLength()) break;
+            if (vg->getDimension(j).getName() != dims[j].getName()) break;
+            if (vg->getDimension(j).getLength() != dims[j].getLength()) break;
         }
         if (j < ndims) continue;	/* not identical dimensions */
 
-        if (g->getNumVariables() != nvars) continue;
+        if (vg->getNumVariables() != nvars) continue;
         for (j = 0; j < nvars; j++) {
-            if (g->getVariable(j).getName().compare(vnames[j])) break;
+            if (vg->getVariable(j).getName() != vnames[j]) break;
+            if (vg->getVariable(j).getUnits() != vunits[j]) break;
         }
         if (j < nvars) continue;	/* not identical variables */
-        /* Same variables, same dimension */
-        return g;
+
+        if (cntsName != vg->getCountsName()) continue;
+
+        /* NOTE: other attributes are not checked. */
+
+        /* Same variables, same dimension, same counts */
+        return vg;
     }
 
-    NSVarGroupFloat *g = addVarGroupFloat(rectype,interval,dims,fillValue);
+    NSVarGroupFloat *vg = addVarGroupFloat(rectype,interval,dims,fillValue,cntsName);
 
-    for (size_t j = 0; j < vnames.size(); j++) {
-        g->addVariable(vnames[j], vunits[j]);
-    }
+    for (size_t j = 0; j < vnames.size(); j++)
+        vg->addVariable(vnames[j], vunits[j]);
 
-#ifdef DEBUG
-    Rprintf("opening\n");
-#endif
+    vg->open();
 
-    g->open();
-
-#ifdef DEBUG
-    Rprintf("opened\n");
-#endif
-    return g;
+    return vg;
 }
 
 int R_netcdf::write(datarec_float *rec) throw(RPC_Exception)
@@ -1091,10 +1111,10 @@ void R_netcdf::NSVar::addAttribute(const string& name, const string& val)
 }
 
 R_netcdf::NSVarGroupFloat::NSVarGroupFloat(R_netcdf *conn,NS_rectype rectype,
-        const vector<NcDim>& dims, double fillValue) :
+        const vector<NcDim>& dims, double fillValue,const string& cntsName) :
     _interval(conn->getInterval()), _conn(conn),_id(-1),
     _vars(), _dims(dims),_rectype(rectype),
-    _fillValue(fillValue),_rec()
+    _fillValue(fillValue),_rec(),_cntsName(cntsName)
 
 {
     _rec.connectionId = _conn->getId();
@@ -1118,7 +1138,7 @@ R_netcdf::NSVarGroupFloat::~NSVarGroupFloat()
 
 void R_netcdf::NSVarGroupFloat::addVariable(const string& name, const string& units)
 {
-    _vars.push_back(NSVar(name,units));
+    _vars.push_back(NSVar(name,units,_cntsName));
 }
 
 int R_netcdf::NSVarGroupFloat::open() throw(RPC_Exception)
