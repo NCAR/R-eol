@@ -40,23 +40,16 @@ setMethod("conform",signature(x="dat",y="dat"),
 setMethod("conform",signature(x="numeric",y="dat"),
     function(x,y)
     {
-        if (length(x) != 1) {
-            if (length(x) == ncol(y)) {
-                # to be complete we should use the passed arg name of x for dimnames
-                x <- dat(nts(matrix(rep(x,nrow(y)),ncol=ncol(y),byrow=T),tspar(y)),
-                    stations=stations(y))
-            }
-            else if (length(x) == nrow(y)) {
-                if (ncol(y) > 1)
-                    warning(paste("repeating x",ncol(y),"times. length(x)=",length(x),
-                            "dim(y)=",paste(dim(y),collapse=",",sep="")))
-                x <- dat(nts(matrix(rep(x,ncol(y)),ncol=ncol(y),byrow=T),tspar(y)),
-                    stations=stations(y))
-            }
-            else {
-                stop(paste("x is not conformable to y. length(x)=",length(x),
-                        "dim(y)=",paste(dim(y),collapse=",",sep="")))
-            }
+        if ((ncol(y) %% length(x)) == 0) {
+            nrep <- ncol(y) %/% length(x)
+            x <- dat(nts(matrix(rep(rep(x,nrep),nrow(y)),ncol=ncol(y),byrow=T),
+                positions(y)),
+                names=rep(deparse(substitute(x)),nrep),
+                stations=stations(y))
+        }
+        else {
+            stop(paste("x is not conformable to y. length(x)=",length(x),
+                    "dim(y)=",paste(dim(y),collapse=",",sep="")))
         }
         x
     }
