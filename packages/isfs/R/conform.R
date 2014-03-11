@@ -43,9 +43,9 @@ setMethod("conform",signature(x="numeric",y="dat"),
         if ((ncol(y) %% length(x)) == 0) {
             nrep <- ncol(y) %/% length(x)
             x <- dat(nts(matrix(rep(rep(x,nrep),nrow(y)),ncol=ncol(y),byrow=T),
-                positions(y)),
+                positions(y),
                 names=rep(deparse(substitute(x)),nrep),
-                stations=stations(y))
+                stations=stations(y)))
         }
         else {
             stop(paste("x is not conformable to y. length(x)=",length(x),
