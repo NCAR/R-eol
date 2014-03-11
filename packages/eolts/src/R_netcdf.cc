@@ -865,7 +865,9 @@ void R_netcdf::write(R_nts &nts,
         string::size_type ic;
         while((ic = cntsName.find_first_of(".'(),*",0)) != string::npos)
             cntsName[ic] = '_';
+#ifdef DEBUG
         Rprintf("wc=%d, cntsName=%s\n",wc,cntsName.c_str());
+#endif
     }
 
     NSVarGroupFloat* vg = getVarGroupFloat(
