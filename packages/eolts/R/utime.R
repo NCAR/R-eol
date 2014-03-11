@@ -43,8 +43,9 @@ utime <- function(val=as.numeric(Sys.time()),
         }
         if (any(is.na(res))) {
             if (length(val) == 1) warning(paste(val,"not parsable with any in.format=",
-                    unlist(in.format)))
-            else warning(paste("some dates not parsable with in.format=",in.format))
+                    paste("\"",unlist(in.format),"\"",sep="",collapse=", ")))
+            else warning(paste("some dates not parsable with any in.format=",
+                    paste("\"",unlist(in.format),"\"",sep="",collapse=", ")))
         }
     }
     else if (is(val,"POSIXct")) {
