@@ -69,7 +69,7 @@ calc.x.t <- function(what,robust=dpar("robust"))
                 lo2corr <- xh2o*0
                 units(lo2corr) <- rep("",ncol(xh2o))
 
-                lscorr <- dat(expend("Scorr",what),which="other",avg=T,smooth=T)
+                lscorr <- dat(expand("Scorr",what),which="other",avg=T,smooth=T)
                 if(!is.null(lscorr)) {
                     lscorr <- conform(lscorr,xh2o)
                     xh2o <- xh2o * lscorr

@@ -98,8 +98,12 @@ dat.Rlw.either <- function(what="Rlw.out",B=dpar("pyrgeometer.B"),
 
     if (is.null(robust) || robust) x <- calc.Rlw(x,tcase)
     else {
+        nwarn <- getOption("warn")
+        options(warn=-1)
+        tdome <- dat(Tdome.name,...)
+        options(warn=nwarn)
 
-        if (!is.null(tdome <- dat(Tdome.name,...))) {
+        if (!is.null(tdome)) {
             degC <- apply(tdome@data,2,mean,trim=0.1,na.rm=T) < 150
             degC[is.na(degC)] <- F
             if (any(degC)) tdome[,degC] <- tdome[,degC] + 273.15
@@ -116,7 +120,11 @@ dat.Rlw.either <- function(what="Rlw.out",B=dpar("pyrgeometer.B"),
         # Short wave correction
         sw <- NULL
         if (is.null(swcor)) {
+
+            options(warn=-1)
             swcor <- dat(Swcor.name,...)
+            options(warn=nwarn)
+
             if (any(!is.na(swcor) & swcor != 0) && inherits(swcor,"dat")) {
                 sw <- dat(Rsw.name,...)
                 while (is.null(sw) && nwords(Rsw.name,sep=".") > 2) {
