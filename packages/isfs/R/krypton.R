@@ -23,8 +23,8 @@ dat.kryptonX <- function(what,derived=TRUE,...)
         z <- matrix(rep(default.val,ncol(x)),nrow=1,byrow=T)
     }
     dat(nts(z,tz,
-            paste("kryptonX",sfxs,sep=""),
-            rep("cm",ncol(x)),
+            names=paste("kryptonX",sfxs,sep=""),
+            units=rep("cm",ncol(x)),
             stations=stations(x)))
 }
 
@@ -48,8 +48,8 @@ dat.kryptonKw <- function(what,derived=TRUE,...)
         z <- matrix(rep(default.val,ncol(x)),nrow=1,byrow=T)
     }
     dat(nts(z,tz,
-            paste("kryptonKw",sfxs,sep=""),
-            rep("cm",ncol(x)),
+            names=paste("kryptonKw",sfxs,sep=""),
+            units=rep("cm",ncol(x)),
             stations=stations(x)))
 }
 
@@ -92,8 +92,8 @@ dat.kryptonSep <- function(what,derived=TRUE,...)
         z <- matrix(rep(default.val,ncol(x)),nrow=1,byrow=T)
     }
     dat(nts(z,tz,
-            paste("kryptonSep",sfxs,sep=""),
-            rep("m",ncol(x)),
+            names=paste("kryptonSep",sfxs,sep=""),
+            units=rep("m",ncol(x)),
             stations=stations(x)))
 }
 

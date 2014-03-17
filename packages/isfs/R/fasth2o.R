@@ -20,8 +20,8 @@ dat.fastH2OSep <- function(what,derived=TRUE,...)
     z <- matrix(rep(default.val,ncol(x)),nrow=1,byrow=T)
   }
   dat(nts(z,tz,
-      paste("fastH2OSep",sfxs,sep=""),
-      rep("m",ncol(x)),
+      names=paste("fastH2OSep",sfxs,sep=""),
+      units=rep("m",ncol(x)),
       stations=stations(x)))
 }
 

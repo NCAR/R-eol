@@ -162,8 +162,8 @@ dat.heightSonic <- function(what,derived=TRUE,...)
         tz <- tspar(x)[1]
     }
     dat(nts(z,tz,
-            paste("heightSonic",sfxs,sep=""),
-            rep("m",ncol(x)),
+            names=paste("heightSonic",sfxs,sep=""),
+            units=rep("m",ncol(x)),
             stations=stations(x)))
 }
 
@@ -196,8 +196,8 @@ dat.heightProp <- function(what,derived=TRUE,...) {
         tz <- tspar(x)[1]
     }
     dat(nts(z,tz,
-            paste("heightProp",sfxs,sep=""),
-            rep("m",ncol(x)),
+            names=paste("heightProp",sfxs,sep=""),
+            units=rep("m",ncol(x)),
             stations=stations(x)))
 }
 
@@ -224,7 +224,7 @@ dat.D <- function(what,derived=TRUE,...) {
         z <- rep(0,ncol(x))
     }
     dat(nts(z,tz,
-            paste("D",sfxs,sep=""),
-            rep("m",ncol(x)),
+            names=paste("D",sfxs,sep=""),
+            units=rep("m",ncol(x)),
             stations=stations(x)))
 }
