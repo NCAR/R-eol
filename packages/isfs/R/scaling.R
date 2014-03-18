@@ -141,9 +141,9 @@ dat.Draw <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),...)
 dat.heightSonic <- function(what,derived=TRUE,...)
 {
 
-    warning('project version of dat("heightSonic") not found, heightSonic is being determined from names of w variable')
+    warning('project version of dat("heightSonic") not found, heightSonic is being determined from names of u variable')
 
-    x <- dat(expand("u",what,first=3),derived=F)
+    x <- dat(expand("u",what),derived=F)
     z <- heights(x)
     if (any(is.na(z))) {
         noz <- is.na(z)
