@@ -26,7 +26,7 @@ dataset <- function(which,verbose=F,datasets=NULL)
     if(exists("dataset.which",envir=.projectEnv)) current <- get("dataset.which",envir=.projectEnv)
 
     # discard datasets that are not enabled.
-    datasets <- datasets[sapply(datasets,function(x) { x$enable })]
+    datasets <- datasets[sapply(datasets,function(x) { ifelse (is.null(x$enable),FALSE,x$enable) })]
 
     if (missing(which)) {
         if (verbose) {
