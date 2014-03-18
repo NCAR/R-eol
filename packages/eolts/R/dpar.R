@@ -15,6 +15,10 @@ dpar <- function(...,save.cache=F)
                           accelgrav=9.81,
                           vonKarman=0.4,
                           lensec=86400
+                          # sites=character(0),
+                          # sfxs=character(0),
+                          # stns=integer(0),
+                          # hts=numeric(0)
                           )
         assign(".dpar",dpar.list,envir=.eoltsEnv)
     }
@@ -87,7 +91,7 @@ dpar <- function(...,save.cache=F)
         # therefore we are setting values using a list:
         #	dpar(list(a=99,b=12))
         # or it is a query:
-        #  dpar("a")
+        #  dpar(c("a","b"))
         arg <- temp[[1]]
 
         amode <- mode(arg)
@@ -100,11 +104,12 @@ dpar <- function(...,save.cache=F)
                 if (sum(mn==0) > 1) stop(paste(paste(arg[mn==0],collapse=","),"are not readable dpar parameters.",str))
                 else stop(paste(arg[mn==0],"is not a readable dpar parameter.",str))
             }
-            else if (length(arg) > 1) {
-                temp <- dpar.list[arg]
-                return(temp)
+            if (length(arg) > 1) {
+                # return NULL for those values not found
+                mn <- !is.na(match(arg,names(dpar.list)))
+                return(c(dpar.list[arg[mn]],sapply(arg[!mn],function(x){NULL})))
             }
-            else return(dpar.list[[arg]])
+            return(dpar.list[[arg]])
         }
         else  stop(paste("invalid argument:", arg))
     }
