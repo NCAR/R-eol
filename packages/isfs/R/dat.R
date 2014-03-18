@@ -293,7 +293,7 @@ setMethod("select",signature(x="dat"),
                 }
             }
         }
-        if (hasArg(hts) && !is.null((hts <- dots$hts))) {
+        if (hasArg(hts) && length((hts <- dots$hts)) > 0) {
             # Select heights (exactly)
             hts <- dots$hts
             if (!is.null(xhts <- heights(x)) && length(xhts) == ncol(x)) {
@@ -330,7 +330,7 @@ setMethod("select",signature(x="dat"),
                 }
             }
         }
-        if (hasArg(sfxs) && !is.null(sfxs <- dots$sfxs)) {
+        if (hasArg(sfxs) && length((sfxs <- dots$sfxs)) > 0) {
             # Select sfxs
             # remove leading dots
             ldots <- substring(sfxs,1,1) == "."
@@ -364,7 +364,7 @@ setMethod("select",signature(x="dat"),
                 return(NULL)
             }
         }
-        if (hasArg(sites) && !is.null(sites <- dots$sites)) {
+        if (hasArg(sites) && length((sites <- dots$sites)) > 0) {
             # Select sites
             dsites <- sites(dimnames(x)[[2]])
 
