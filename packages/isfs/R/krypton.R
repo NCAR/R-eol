@@ -49,7 +49,7 @@ dat.kryptonKw <- function(what,derived=TRUE,...)
     }
     dat(nts(z,tz,
             names=paste("kryptonKw",sfxs,sep=""),
-            units=rep("cm",ncol(x)),
+            units=rep("",ncol(x)),
             stations=stations(x)))
 }
 
