@@ -913,7 +913,7 @@ setMethod("average", signature="dat",
             xa <- average(xa,...,simple=T)
             wts <- matrix(0,ncol=ncol(x),nrow=nrow(xa))
             xa <- dat(nts(matrix(NA_real_,ncol=ncol(x),nrow=nrow(xa),dimnames=list(NULL,dns)),
-              tspar(xa), units=x@units,weightmap=1:ncol(x),
+                tspar(xa), units=x@units,weightmap=1:ncol(x),
                 weights=wts,stations=stations(x)))
 
             for (dn in unique(dns)) {
@@ -938,7 +938,8 @@ setMethod("average", signature="dat",
                     # Multiply the individual component means by this time series before
                     # re-computing the covariance. This corrects errors if there
                     # is different data coverage in the components.
-                    fx <- xx / xx
+                    fx <- xx
+                    fx@data[!is.na(fx@data)] <- 1.0
 
                     # Second-order moment, add in variation of first-order moments
 
@@ -978,7 +979,8 @@ setMethod("average", signature="dat",
                 else if (nw == 3) {
                     # Third-order moment, this gets complicated!
                     xx <- x[,xcol]
-                    fx <- xx / xx
+                    fx <- xx
+                    fx@data[!is.na(fx@data)] <- 1.0
 
                     if (any(mx <- (dns == dnames[1]))) x1 <- x[,mx]
                     else x1 <- dat(dnames[1])
