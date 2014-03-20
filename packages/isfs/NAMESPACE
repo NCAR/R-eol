@@ -33,7 +33,7 @@ export(
     dat.r_uw, dat.r_wtc,dat.r_utc,dat.r_wh2o,dat.S_u,dat.S_w,dat.S_tc,dat.S_h2o,
     dat.uw_tilt_err,dat.fastH2OSep,
     "dat.u't'", "dat.v't'", "dat.w't'", "dat.u'mr'", "dat.v'mr'", "dat.w'mr'",
-    "dat.u'h2o'", "dat.v'h2o'", "dat.w'h2o'", dat.H, dat.H.dry, dat.LE, dat.Lv,
+    "dat.u'h2o'", "dat.v'h2o'", "dat.w'h2o'", "dat.w'co2'", dat.H, dat.H.dry, dat.LE, dat.Lv,
     dat.BR, dat.Scorr, dat.TKE, 
     dat.kryptonX, dat.kryptonKw, dat.kryptonKo, dat.kryptonSep, dat.o2corr,
     dat.licor7500Sep, 

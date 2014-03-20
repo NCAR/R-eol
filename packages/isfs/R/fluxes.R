@@ -686,7 +686,7 @@ dat.TKE <- function(what,derived=TRUE,cache=F,...)
         wt <- conform(dat("w't'",avg=T,smooth=T),wc)
         # we're now using h2o from the IRGA itself, which should be fine
         wh2o <- 0.001*conform(dat("w'h2o'",avg=T,smooth=T),wc)
-        scorr <- conform(dat("Scorr",avg=T,smooth=T),wc)
+        scorr <- conform(dat(expand("Scorr",what),which="other",avg=T,smooth=T),wc)
         # now the correction
         wc <- wc*scorr + mu*(rhoc/rhoa)*wh2o + (1 + mu*rhov/rhoa)*(rhoc/TK)*wt    
         # convert back to original units (do we really want to do this?)
