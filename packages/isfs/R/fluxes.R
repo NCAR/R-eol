@@ -7,7 +7,7 @@
 # Turbulent fluxes
 # ----------------
 #
-calc.x.t <- function(what,robust=dpar("robust"))
+calc.x.t <- function(what)
 {
     MH2O <- 18
     # compute u't', v't', or w't', as specified by the what argument
@@ -18,6 +18,7 @@ calc.x.t <- function(what,robust=dpar("robust"))
     xt <- dat(xtc.name,avg=T,smooth=T)
     sfxs <- suffixes(xt,2)
 
+    robust <- dpar("robust")
     if (!is.null(robust) && !robust) {
 
         xkh2o=NULL
@@ -150,23 +151,24 @@ calc.x.t <- function(what,robust=dpar("robust"))
     xt
 }
 
-"dat.u't'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
+"dat.u't'" <- function(what,derived=TRUE,...)
 {
-    calc.x.t(what,robust=robust)
+    calc.x.t(what)
 }
 
-"dat.v't'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
+"dat.v't'" <- function(what,derived=TRUE,...)
 {
-    calc.x.t(what,robust=robust)
+    calc.x.t(what)
 }
 
-"dat.w't'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
+"dat.w't'" <- function(what,derived=TRUE,...)
 {
-    calc.x.t(what,robust=robust)
+    calc.x.t(what)
 }
 
-calc.x.mr <- function(what,derived=TRUE,robust=dpar("robust"))
+calc.x.mr <- function(what,derived=TRUE)
 {
+    robust <- dpar("robust")
     MH2O <- 18
     xmr.name <- words(what,1,1,sep=".")
     comp <- words(xmr.name,1,1,sep="'")
@@ -296,23 +298,24 @@ calc.x.mr <- function(what,derived=TRUE,robust=dpar("robust"))
     xmr@units <- rep("m/s g/kg",ncol(xmr))
     xmr
 }
-"dat.u'mr'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
+"dat.u'mr'" <- function(what,derived=TRUE,...)
 {
-    calc.x.mr(what,robust=robust)
+    calc.x.mr(what)
 }
 
-"dat.v'mr'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
+"dat.v'mr'" <- function(what,derived=TRUE,...)
 {
-    calc.x.mr(what,robust=robust)
+    calc.x.mr(what)
 }
 
-"dat.w'mr'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
+"dat.w'mr'" <- function(what,derived=TRUE,...)
 {
-    calc.x.mr(what,robust=robust)
+    calc.x.mr(what)
 }
 
-calc.x.h2o <- function(what,robust=dpar("robust"))
+calc.x.h2o <- function(what)
 {
+    robust <- dpar("robust")
     MH2O <- 18
     xh2o.name <- words(what,1,1,sep=".")
     comp <- words(xh2o.name,1,1,sep="'")
@@ -434,19 +437,19 @@ calc.x.h2o <- function(what,robust=dpar("robust"))
     xh2o
 }
 
-"dat.u'h2o'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
+"dat.u'h2o'" <- function(what,derived=TRUE,...)
 {
-    calc.x.h2o(what,robust=robust)
+    calc.x.h2o(what)
 }
 
-"dat.v'h2o'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
+"dat.v'h2o'" <- function(what,derived=TRUE,...)
 {
-    calc.x.h2o(what,robust=robust)
+    calc.x.h2o(what)
 }
 
-"dat.w'h2o'" <- function(what,derived=TRUE,robust=dpar("robust"),...)
+"dat.w'h2o'" <- function(what,derived=TRUE,...)
 {
-    calc.x.h2o(what,robust=robust)
+    calc.x.h2o(what)
 }
 
 
@@ -481,8 +484,9 @@ calc.H <- function(wt,wq,Td,Q,rho)
     }
     x
 }
-dat.H <- function(what,derived=TRUE,robust=dpar("robust"),...)
+dat.H <- function(what,derived=TRUE,...)
 {
+    robust <- dpar("robust")
     # Turbulent sensible heat flux
     Td <- dat("T",avg=T,smooth=T)
 
@@ -495,7 +499,7 @@ dat.H <- function(what,derived=TRUE,robust=dpar("robust"),...)
     x <- calc.H(wt=wt,wq=wq,Td=Td,rho=dat("rho.air",avg=T,smooth=T))
     x
 }
-dat.H.dry <- function(what,derived=TRUE,robust=dpar("robust"),...)
+dat.H.dry <- function(what,derived=TRUE,...)
 {
     # Turbulent sensible heat flux without contribution from varying Cp 
 
@@ -512,7 +516,7 @@ dat.H.dry <- function(what,derived=TRUE,robust=dpar("robust"),...)
 }
 
 
-dat.LE <- function(what,derived=TRUE,robust=dpar("robust"),...)
+dat.LE <- function(what,derived=TRUE,...)
 {
     # Turbulent latent heat flux
     x <- dat(expand("w'mr'",what),avg=T,smooth=T)
@@ -525,7 +529,7 @@ dat.LE <- function(what,derived=TRUE,robust=dpar("robust"),...)
     x@units <- rep("W/m^2",ncol(x))
     x
 }
-dat.Lv <- function(what,derived=TRUE,robust=dpar("robust"),...)
+dat.Lv <- function(what,derived=TRUE,...)
 {
     # Latent heat of vaporatizaton of water is a weak function of temperature
     # (varies by 1% in 10 C)
@@ -535,6 +539,7 @@ dat.Lv <- function(what,derived=TRUE,robust=dpar("robust"),...)
     # were used previously, but conversion from calories gave slightly different
     # numerical values
 
+    robust <- dpar("robust")
     if (!is.null(robust) && !robust) {
         x <- 2501000 - 2361 * dat(expand("T",what))
         dimnames(x) <- list(NULL,paste("Lv",suffixes(x,2),sep=""))
@@ -554,7 +559,7 @@ dat.BR <- function(what,.derived=TRUE,..)
     x@units <- rep("",ncol(x))
     x
 }
-dat.Scorr <- function(what,derived=TRUE,which="krypton",robust=dpar("robust"),...)
+dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
 {
     # Correct covariance for spatial separation of sonic and scalar sensor
     # Assumes separation parallel to the sonic u axis and 
@@ -567,6 +572,7 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",robust=dpar("robust"),..
     # n_m <- dimensionless frequency of peak of flux cospectrum
     #     <- function of z/L from Horst, BLM, projected 2008
 
+    robust <- dpar("robust")
     if (is.null(robust) || robust) {
         S <- dat("heightSonic")
         sfxs <- suffixes(S, 2)
@@ -645,4 +651,46 @@ dat.TKE <- function(what,derived=TRUE,cache=F,...)
     dimnames(x) <- list(NULL,paste("TKE",suffixes(x,2),sep=""))
     x@units <- rep("(m/s)^2",ncol(x))
     x
+}
+
+"dat.w'co2'" <- function(what,cache=F,...)
+{
+    #
+    robust <- dpar("robust")
+    wc <- dat("w'co2'",avg=T,smooth=T,derived=F)
+
+    # Correct, if desired
+    if (!is.null(robust) && !robust) {
+
+        # Directly from Webb, Pearman, Leuning, 1980, QJRMS, 106, 85-100.
+        #
+        MCO2 <- 44.01 # Ref: Wikipedia
+        mu <- 28.97/18
+
+        # Get data and convert to kg/m^3 (haven't put in ppmV yet, but open-paths don't use)
+        rhoc <- dat(expand("co2",what),...)
+        uc <- units(rhoc)
+        cf <- rep(NA,length(uc))
+        cf[uc=="kg/m^3"] <- 1
+        cf[uc=="g/m^3"] <- 1e-3
+        cf[uc=="mmol/m^3"] <- 1e-6*MCO2
+        rhoc@data <- t(t(rhoc@data)*cf)
+
+        wc <- conform(wc,rhoc)
+        wc@data <- t(t(wc@data)*cf)
+
+        TK <- conform(dat("T",avg=T,smooth=T),wc) + 273.15
+        rhoa <- conform(dat("rhoDry",avg=T,smooth=T),wc)
+        rhov <- 0.001*conform(dat("H2O",avg=T,smooth=T),wc)
+        # the following will pick up Webb, spatial sep, etc. corrections for w't' and w'h2o'
+        wt <- conform(dat("w't'",avg=T,smooth=T),wc)
+        # we're now using h2o from the IRGA itself, which should be fine
+        wh2o <- 0.001*conform(dat("w'h2o'",avg=T,smooth=T),wc)
+        scorr <- conform(dat("Scorr",avg=T,smooth=T),wc)
+        # now the correction
+        wc <- wc*scorr + mu*(rhoc/rhoa)*wh2o + (1 + mu*rhov/rhoa)*(rhoc/TK)*wt    
+        # convert back to original units (do we really want to do this?)
+        wc@data <- t(t(wc@data)/cf)
+    }
+    wc
 }
