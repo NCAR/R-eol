@@ -59,21 +59,22 @@ calc.Rlw <- function(Rpile,Tcase,Tdome=NULL,B=4,swcor=0,Rsw=NULL)
 }
 
 dat.Rlw.in <- function(what,derived=TRUE,B=dpar("pyrgeometer.B"),
-    swcor=dpar("pyrgeometer.swcor"),robust=dpar("robust"),...)
+    swcor=dpar("pyrgeometer.swcor"),...)
 {
-    dat.Rlw.either(what=what,B=B,swcor=swcor,robust=robust,...)
+    dat.Rlw.either(what=what,B=B,swcor=swcor,...)
 }
 
 dat.Rlw.out <- function(what,derived=TRUE,B=dpar("pyrgeometer.B"),
-    swcor=dpar("pyrgeometer.swcor"),robust=dpar("robust"),...)
+    swcor=dpar("pyrgeometer.swcor"),...)
 {
-    dat.Rlw.either(what=what,B=B,swcor=swcor,robust=robust,...)
+    dat.Rlw.either(what=what,B=B,swcor=swcor,...)
 }
 
 dat.Rlw.either <- function(what="Rlw.out",B=dpar("pyrgeometer.B"),
-    swcor=dpar("pyrgeometer.swcor"),robust=dpar("robust"),...)
+    swcor=dpar("pyrgeometer.swcor"),...)
 
 {
+    robust <- dat("robust")
     which <- suffixes(what,2)
     Rpile.name <- paste("Rpile",which,sep="")
     Tcase.name <- paste("Tcase",which,sep="")
