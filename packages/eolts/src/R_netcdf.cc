@@ -182,6 +182,7 @@ SEXP read_netcdf_ts(SEXP args)
     std::vector<std::string> tnames;
     std::string btname;
     std::string timezone;
+    int verbose = 0;
     SEXP con=0;
 
 #ifdef DEBUG
@@ -251,6 +252,11 @@ SEXP read_netcdf_ts(SEXP args)
         timezone = string(CHAR(STRING_ELT(obj,0)));
         args = CDR(args);
     }
+    if (args != R_NilValue) {
+        SEXP obj = CAR(args);
+        if (Rf_length(obj) > 0) verbose = INTEGER(obj)[0];
+        args = CDR(args);
+    }
 
     R_netcdf *nccon = R_netcdf::getR_netcdf(con);
     if (!nccon) {
@@ -258,7 +264,7 @@ SEXP read_netcdf_ts(SEXP args)
     }
 
     try {
-        return nccon->read(vnames,startTime,endTime,stations,tnames,btname,timezone);
+        return nccon->read(vnames,startTime,endTime,stations,tnames,btname,timezone,verbose);
     }
     catch (const NcException& nce) {
         Rf_error(nce.toString().c_str());
@@ -714,11 +720,12 @@ SEXP R_netcdf::read(const vector<string> &vnames,
         const vector<int> &stations,
         const vector<string> &tnames,
         const string &btname,
-        const string& timezone)
+        const string& timezone,
+        int verbose)
 throw(NcException)
 {
     NetcdfReader reader(this);
-    return reader.read(vnames,start,end,stations,tnames,btname,timezone);
+    return reader.read(vnames,start,end,stations,tnames,btname,timezone,verbose);
 }
 
 #ifdef HAVE_NC_SERVER

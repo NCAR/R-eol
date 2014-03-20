@@ -874,7 +874,9 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
         const vector<int> &stations,
         const vector<string> &timeVarNames,
         const string &baseTimeName,
-        const string& timezone,bool readCountsOnly) throw(NcException)
+        const string& timezone,
+        int verbose,
+        bool readCountsOnly) throw(NcException)
 {
 
     int ifile,ivar;
@@ -984,6 +986,16 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
     vector <string> countsGroupNames;
 
     const set<string>& timeDimensionNames = fileset->getTimeDimensionNames();
+
+    if (verbose > 0) {
+        string t1 = R_utime::format(startTime,"%F %H:%M:%OS",timezone);
+        string t2 = R_utime::format(endTime,"%F %H:%M:%OS %Z",timezone);
+        string cntsStr = (readCountsOnly ? "(counts)" : "");
+        if (vnames.size() > 1) Rprintf("Reading %zu vars: %s%s,..., from=%s, to=%s\n",
+                vnames.size(),vnames[0].c_str(),cntsStr.c_str(),t1.c_str(),t2.c_str());
+        else Rprintf("Reading: %s%s, from=%s, to=%s\n",
+                vnames[0].c_str(),cntsStr.c_str(),t1.c_str(),t2.c_str());
+    }
 
     for (ifile = 0; ifile < nfiles; ifile++) {
 
@@ -1333,12 +1345,11 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                     }
                 }
 
-                Rprintf("Reading %s, %s, start=(%s), count=(%s)\n",
+                if (verbose > 1) Rprintf("Reading %s, %s, start=(%s), count=(%s)\n",
                     ncf->getShortName().c_str(),
                     var->getName().c_str(),
                     dimToString(&start.front(),varDims.size()).c_str(),
                     dimToString(&count.front(),varDims.size()).c_str());
-
 
                 int varid = var->getId();
                 const NcAttr* attr;
@@ -1589,7 +1600,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
         if (ncountsCols > 0) {
             NetcdfReader rdr(_connection); 
             SEXP cobj = PROTECT(rdr.read(countsGroupNames,
-                    startTime, endTime, stations,timeVarNames, baseTimeName,timezone,true));
+                    startTime, endTime, stations,timeVarNames, baseTimeName,timezone,verbose,true));
             nts.setWeights(cobj);
             UNPROTECT(1);
             nts.setWeightMap(countsMap);

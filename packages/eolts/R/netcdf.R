@@ -238,8 +238,11 @@ setMethod("readts",
         if (!hasArg(time.zone) || is.null((time.zone <- dots$time.zone)))
           time.zone <- options("time.zone")[[1]]
 
+        ncverbose <- dpar("ncverbose")
+
         x <- .External("read_netcdf_ts",con,variables,start,end,
-            stns,timevar,basetime,time.zone,PACKAGE="eolts")
+            stns,timevar,basetime,as.character(time.zone),
+            as.integer(ncverbose),PACKAGE="eolts")
 
         # utime slot from read_netcdf_ts is a single utime, with
         # a vector of numeric values. Change it to a vector

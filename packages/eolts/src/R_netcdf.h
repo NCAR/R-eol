@@ -96,7 +96,8 @@ public:
             const std::vector<int>& stations,
             const std::vector<std::string>& tnames,
             const std::string& btname,
-            const std::string& timezone) throw(NcException);
+            const std::string& timezone,
+            int verbose) throw(NcException);
 
 #ifdef HAVE_NC_SERVER
 

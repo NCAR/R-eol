@@ -14,7 +14,8 @@ dpar <- function(...,save.cache=F)
                           robust=F,
                           accelgrav=9.81,
                           vonKarman=0.4,
-                          lensec=86400
+                          lensec=86400,
+                          ncverbose=1
                           # sites=character(0),
                           # sfxs=character(0),
                           # stns=integer(0),
@@ -42,14 +43,14 @@ dpar <- function(...,save.cache=F)
     data.selection.names <- c("stns","sonic","h2o","temp","hts","sfxs","sites")
     data.selection.modes <- c("numeric","character","character","character","numeric","character","character")
     data.opt.names <- c(
-        "chksum",		# screen data by looking at associated checksums?
-        "lat","lon",	# used by dat("az.sun"), dat("el.sun")
-        "avg",		# for simple averages,
-        #     one value, average interval in seconds
-        # for non-simple averages,
-        #     two values, non-simple interval, simple interval
-        "smooth"		# smoothing period, in seconds
-        )
+        "chksum",   # screen data by looking at associated checksums?
+        "lat","lon",# used by dat("az.sun"), dat("el.sun")
+        "avg",      # for simple averages, one value, average interval in seconds
+                    # for non-simple averages, two values, non-simple interval, simple interval
+        "smooth",   # smoothing period, in seconds
+        "ncverbose" # verbosity level when reading NetCDF variables
+                    # 0=quiet, 1=show variable names and times, 2=show vars, filenames, start, count indices
+    )
 
     # Changing any deriv.opt.names does not result in the cache being
     # flushed, since derived variables are not kept in the cache.

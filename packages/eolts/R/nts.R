@@ -1553,10 +1553,14 @@ setMethod("Cbind",signature(x1="nts",x2="ANY"),
 setGeneric("average",function(x,...) standardGeneric("average"))
 
 setMethod("average", signature=(x="nts"),
-    function(x,avgperiod,outinterval,method="mean",use.weights=TRUE,simple=TRUE)
+    function(x,avgperiod,outinterval,
+        method="mean",use.weights=TRUE,simple=TRUE)
     {
         if (!simple) stop("average on an nts cannot do non-simple averaging. Non-simple averaging must be done on a dat object")
-        cat(paste("average x=",dimnames(x)[[2]],", period=",avgperiod,", outinterval=",outinterval," ,use.weights=",use.weights,"\n",sep=""))
+        cat(paste("average x=",dimnames(x)[[2]],
+                ", period=",avgperiod,
+                ", outinterval=",outinterval,
+                ", use.weights=",use.weights,"\n",sep=""))
         t1 <- start(x)
         t2 <- end(x)
         if (method=="mean") {
@@ -1573,7 +1577,7 @@ setMethod("average", signature=(x="nts"),
                 outinterval,
                 use.weights,PACKAGE="eolts")
         }
-        # positions comes out above C functions as "numeric"
+        # positions slot from above C functions is "numeric"
         positions(x) <- as(positions(x),"utime")
         start(x) <- t1
         end(x) <- t2
