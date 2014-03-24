@@ -320,12 +320,12 @@ calc.x.h2o <- function(what)
     xh2o.name <- words(what,1,1,sep=".")
     comp <- words(xh2o.name,1,1,sep="'")
 
-    xkh2o=NULL
-    xh2o=NULL
-    o2corr=NULL
-    lo2corr=NULL
-    scorr=NULL
-    lscorr=NULL
+    xkh2o <- NULL
+    xh2o <- NULL
+    o2corr <- NULL
+    lo2corr <- NULL
+    scorr <- NULL
+    lscorr <- NULL
     wvb <- words(variables(),1,1)
     # read krypton data
     if (sum(wvb=="kh2o")>0) {
@@ -357,6 +357,7 @@ calc.x.h2o <- function(what)
                 units(xh2o) <- xunits
             }
             lo2corr <- xh2o*0
+            dimnames(lo2corr)[[2]] <- paste("o2corr",words(dimnames(lo2corr)[[2]],2),sep=".")
             units(lo2corr) <- rep("",ncol(xh2o))
 
             lscorr <- dat(expand("Scorr",what),which="other",avg=T,smooth=T)
@@ -378,7 +379,7 @@ calc.x.h2o <- function(what)
     else if (!is.null(lscorr)) scorr <- lscorr
     scorr <- conform(scorr,xh2o)
 
-    if (TRUE) {
+    if (FALSE) {
         allna <- apply(xh2o,2,function(x)all(is.na(x)))
         if (!all(allna)) {
             xh2o <- xh2o[,!allna]
