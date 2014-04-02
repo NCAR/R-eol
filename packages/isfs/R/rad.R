@@ -207,8 +207,8 @@ dat.Rsum <- function(what,derived=TRUE,...)
     Rsw.out = dat(expand("Rsw.out",what),...)
     Rsw.out[Rsw.out < 0] = 0
     x <- Rsw.in - conform(Rsw.out,Rsw.in) +
-    conform(dat(expand("Rlw.in",what),...),Rsw.in) -
-    conform(dat(expand("Rlw.out",what),...),Rsw.in)
+        conform(dat(expand("Rlw.in",what),...),Rsw.in) -
+        conform(dat(expand("Rlw.out",what),...),Rsw.in)
 
     if (is.null(x)) return(x)
     dimnames(x) <- list(NULL,paste("Rsum",suffixes(x,3),sep=""))
