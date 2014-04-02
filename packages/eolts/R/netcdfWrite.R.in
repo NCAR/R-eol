@@ -31,8 +31,11 @@ setMethod("writets",
         }
 
         if (!is.null(history) && nzchar(history)) {
+            if (length(history) > 1)
+                history <- paste(paste(history,collapse="\n"),"\n",sep="")
             if (substring(history,nchar(history)) != "\n")
                 history <- paste(history,"\n",sep="")
+
             .External("write_history_ns", con,as.character(history),
                 PACKAGE="eolts")
         }
