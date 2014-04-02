@@ -365,13 +365,18 @@ setMethod("select",signature(x="dat"),
             }
         }
         if (hasArg(sites) && length((sites <- dots$sites)) > 0) {
-            # Select sites
+            # Select sites for station 0 variables
             dsites <- sites(dimnames(x)[[2]])
+            stns <- stations(x)
 
             sm <- match(dsites,sites)
-            if (any(!is.na(sm))) {
-                # return variables in same sequence as sites, station variables first
-                sl <- sort.list(sm,na.last=T)[!is.na(sort(sm,na.last=T))]
+            sm[stns > 0] <- NA  # remove wrong matches if a variable is from a station
+            if (any(!is.na(sm) | (stns > 0))) {
+                # variables are already in station order
+                # return station 0 variables in same sequence as sites
+                sl <- sort.list(sm,na.last=TRUE)
+                sl <- sl[!is.na(sort(sm,na.last=TRUE))]
+                sl <- c(sl,(1:ncol(x))[stns > 0])
                 x <- x[,sl]
             }
             else {
