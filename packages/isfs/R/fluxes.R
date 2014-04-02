@@ -101,7 +101,7 @@ calc.x.t <- function(what)
         if (!is.null(o2corr)) o2corr <- conform(o2corr,xh2o)
 
         # toss columns of all NA
-        if (TRUE) {
+        if (FALSE) {
             allna <- apply(xh2o,2,function(x)all(is.na(x)))
             if (!all(allna)) {
                 xh2o <- xh2o[,!allna]
