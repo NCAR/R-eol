@@ -43,13 +43,12 @@ dat.rho.air <- function(what,derived=TRUE,cache=F,...)
 
     x
 }
-dat.rhoDry <- function(what,derived=TRUE,cache=F,pmatch=3,...)
+dat.rhoDry <- function(what,derived=TRUE,cache=F,...)
 {
     robust <- dpar("robust")
     # density of dry air (kg/m^3)
-    # pmatch determines which fields are used to expand data names
     R <- 287		# J/kg-K
-    mr <- dat(expand("MR",what,pmatch))
+    mr <- dat(expand("MR",what))
 
     P = dat("P")
     # convert to pascals
@@ -76,7 +75,7 @@ dat.rhoDry <- function(what,derived=TRUE,cache=F,pmatch=3,...)
     else P <- P[, im]
 
     P <- P/(1 + mr/622)		# P - Pv, pascals
-    Td <- dat(expand("T",what,pmatch))
+    Td <- dat(expand("T",what))
     Td <- conform(Td,mr)
     TK <- 273.15 + Td
     x <- P/R/TK		
