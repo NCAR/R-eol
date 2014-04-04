@@ -7,7 +7,7 @@
 setClass("dat",contains="nts")
 
 dat <- function(what,derived=T,cache=unlist(options("dcache")),
-	avg,smooth=F,...)
+    avg,smooth=F,...)
 {
 
     if (inherits(what,"nts")) return(as(what,"dat"))
@@ -85,7 +85,7 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
     }
     avgper <- dpar("avg")
     if (is.null(avgper) || identical(avgper,NA_real_) || identical(avgper,FALSE))
-          avg <- FALSE
+        avg <- FALSE
     simple.avg <- FALSE
     if (avg && length(avgper) == 1) {
         avgper <- c(avgper,avgper)
@@ -94,7 +94,7 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
 
     smoothper <- dpar("smooth")
     if (is.null(smoothper) || identical(smoothper,NA_real_) ||
-          identical(smoothper,FALSE)) smooth <- FALSE
+        identical(smoothper,FALSE)) smooth <- FALSE
 
     if (derived) {
         # if passed more than one name, returns a list
@@ -102,13 +102,13 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
             names(what) <- what
             # average/smooth these variables before the Cbind
             x <- lapply(what,
-              function(what,derived,cache,avg,smooth,smoothper,simple.avg,avgper,...) {
-                x <- dat(what,derived=derived,cache=cache,...)
-                if (smooth || avg)
-                  x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
-                x
-              },derived=derived,cache=cache,avg=avg,smooth=smooth,
-                      smoothper=smoothper,simple.avg=simple.avg,avgper=avgper,...)
+                function(what,derived,cache,avg,smooth,smoothper,simple.avg,avgper,...) {
+                    x <- dat(what,derived=derived,cache=cache,...)
+                    if (smooth || avg)
+                        x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
+                    x
+                },derived=derived,cache=cache,avg=avg,smooth=smooth,
+                smoothper=smoothper,simple.avg=simple.avg,avgper=avgper,...)
             x <- x[!unlist(lapply(x,is.null))]
             if (length(x) == 0) return(NULL)
             else if (length(x) == 1) x <- x[[1]]
@@ -123,12 +123,13 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
 
         # Look for a dat function  dat.what
         fcn <- paste("dat",what,sep=".")
-        # if (fcn == "dat.heightSonic") browser()
         if (existsFunction(fcn,generic=FALSE)) {
             f <- getFunction(fcn,generic=FALSE,mustFind=TRUE,where=1)
             x <- f(what=what,derived=derived,cache=cache,...)
+            x <- select(x,stns=dpar("stns"),hts=dpar("hts"),sfxs=dpar("sfxs"),
+                sites=dpar("sites"))
             if (smooth || avg)
-              x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
+                x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
             return(x)
         }
         else {
@@ -146,22 +147,24 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
                     x <- f(what=what,derived=derived,cache=cache,...)
 
                     if (inherits(x,"nts")) {
-                      sfx <- words(what,2,sep=".")
-                      dn <- dimnames(x)[[2]]
-                      mx <- words(dn,2,nw) == sfx
-                      if (!any(mx)) {
-                        warning(
-                            paste("No dimnames matching",sfx,"in",
-                            paste(dn,collapse=",")))
-                        return(NULL)
-                      }
-                      x <- x[,mx]
-                      if (smooth || avg)
-                        x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
-                  }
-                  return(x)
-              }
-              iw <- iw - 1
+                        sfx <- words(what,2,sep=".")
+                        dn <- dimnames(x)[[2]]
+                        mx <- words(dn,2,nw) == sfx
+                        if (!any(mx)) {
+                            warning(
+                                paste("No dimnames matching",sfx,"in",
+                                    paste(dn,collapse=",")))
+                            return(NULL)
+                        }
+                        x <- x[,mx]
+                        x <- select(x,stns=dpar("stns"),hts=dpar("hts"),sfxs=dpar("sfxs"),
+                            sites=dpar("sites"))
+                        if (smooth || avg)
+                            x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
+                    }
+                    return(x)
+                }
+                iw <- iw - 1
             }
         }
     }
@@ -169,8 +172,8 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
     if (length(what) == 1) {
         if (check.cache(what)) {
             if (avg || smooth) return(smooth.avg.dat(get.cache.object(what),
-                      smooth,smoothper,avg,simple.avg,avgper))
-            else return(get.cache.object(what))
+                    smooth,smoothper,avg,simple.avg,avgper))
+        else return(get.cache.object(what))
         }
     }
 
@@ -185,8 +188,8 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
     if (nnames == 1) {
         if (check.cache(dnames)) {
             if (smooth || avg) return(smooth.avg.dat(get.cache.object(dnames),
-                      smooth,smoothper,avg,simple.avg,avgper))
-            else return(get.cache.object(dnames))
+                    smooth,smoothper,avg,simple.avg,avgper))
+        else return(get.cache.object(dnames))
         }
     }
 
@@ -205,7 +208,7 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
     # cat("class(x)=",class(x),"\n")
     if (FALSE) {
         if (nnames == 1 && existsClass(dnames) && extends(dnames,"dat",maybe=F))
-              class(x) <- dnames
+            class(x) <- dnames
         else class(x) <- "dat"
     }
     else {
@@ -219,10 +222,10 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
     # if (!is.null(dpar("chksum")) && dpar("chksum")) x <- chksumck(x)
 
     if (length(what) == 1 && !is.null(x) &&
-          (is.null(cache) || cache)) cache.object(what,x)
+        (is.null(cache) || cache)) cache.object(what,x)
 
     if (smooth || avg)
-      x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
+        x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
 
     x
 }
@@ -242,7 +245,7 @@ smooth.avg.dat <- function(x,smooth,smoothper,avg,simple.avg,avgper)
         }
         if (!is.na(dt) && dt < avgper[2])
             x <- average(x,avgper[2],avgper[2],method="mean",simple=TRUE)
-      }
+    }
     x
 }
 
@@ -255,7 +258,7 @@ derived <- function()
     # look through attached packages and objects for "package.isfs" and
     # one containing "file:" and "projects".
     mtch <- (grepl("file:",attchd,fixed=TRUE) & grepl("projects",attchd,fixed=TRUE)) |
-            grepl("package:isfs",attchd,fixed=TRUE)
+    grepl("package:isfs",attchd,fixed=TRUE)
 
     x <- NULL
     for (pos in seq(along=mtch)[mtch]) {
@@ -286,9 +289,9 @@ setMethod("select",signature(x="dat"),
                 if (length(sm) > 0) x <- x[,sm]
                 else {
                     warning(paste(paste(dimnames(x)[[2]],collapse=","),
-                        ": no selected stations (",paste(stns,collapse=","),
-                        ") found in stations(x)=c(",paste(xstns,collapse=","),
-                        "). select(x,stns) returning NULL"))
+                            ": no selected stations (",paste(stns,collapse=","),
+                            ") found in stations(x)=c(",paste(xstns,collapse=","),
+                            "). select(x,stns) returning NULL"))
                     return(NULL)
                 }
             }
@@ -307,9 +310,9 @@ setMethod("select",signature(x="dat"),
                 hdiff <- outer(xhts,hts,function(x,y) abs(x-y))
                 hdiff <- !is.na(hdiff) & hdiff < 1.e-5
                 htsmatch <-
-                  matrix(1:length(hts),nrow=length(xhts),ncol=length(hts),byrow=T)[hdiff]
+                    matrix(1:length(hts),nrow=length(xhts),ncol=length(hts),byrow=T)[hdiff]
                 xhtsmatch <-
-                  matrix(1:length(xhts),nrow=length(xhts),ncol=length(hts))[hdiff]
+                    matrix(1:length(xhts),nrow=length(xhts),ncol=length(hts))[hdiff]
 
                 # exact match.  The only reason to do this is to get the
                 # NA matches.
@@ -323,9 +326,9 @@ setMethod("select",signature(x="dat"),
                 if (length(sm) > 0) x <- x[,sm]
                 else {
                     warning(paste(paste(dimnames(x)[[2]],collapse=","),
-                        ": no selected heights (",paste(hts,collapse=","),
-                        ") found in heights(x)=c(",paste(xhts,collapse=","),
-                        "). select(x,hts) returning NULL"))
+                            ": no selected heights (",paste(hts,collapse=","),
+                            ") found in heights(x)=c(",paste(xhts,collapse=","),
+                            "). select(x,hts) returning NULL"))
                     return(NULL)
                 }
             }
@@ -359,8 +362,8 @@ setMethod("select",signature(x="dat"),
             if (length(sm) > 0) x <- x[,sm]
             else {
                 warning(paste("no selected suffixes (",paste(sfxs,collapse=","),
-                  ") found in dimnames(x)[[2]]=c(",paste(dimnames(x)[[2]],collapse=","),
-                  "). select(x,sfxs) returning NULL"))
+                        ") found in dimnames(x)[[2]]=c(",paste(dimnames(x)[[2]],collapse=","),
+                        "). select(x,sfxs) returning NULL"))
                 return(NULL)
             }
         }
@@ -381,14 +384,14 @@ setMethod("select",signature(x="dat"),
             }
             else {
                 warning(paste("no selected sites (",paste(sites,collapse=","),
-                  ") found in dimnames(x)[[2]]=c(",paste(dimnames(x)[[2]],collapse=","),
-                  "). select(x,sites) returning NULL"))
+                        ") found in dimnames(x)[[2]]=c(",paste(dimnames(x)[[2]],collapse=","),
+                        "). select(x,sites) returning NULL"))
                 x <- NULL
             }
         }
         x
     }
-)
+    )
 
 setGeneric("suffixes",function(x,...) standardGeneric("suffixes"))
 
@@ -402,7 +405,7 @@ setMethod("suffixes",signature="dat",
         x <- dimnames(x)[[2]]
         suffixes(x,first=first,leadch=leadch)
     }
-)
+    )
 setMethod("suffixes",signature="character",
     function(x,first=2,leadch=".")
     {
@@ -411,7 +414,7 @@ setMethod("suffixes",signature="character",
         x[x!=""] <- paste(leadch, x[x!=""], sep="")
         x
     }
-)
+    )
 
 expand <- function(x,y,first=2)
 {
@@ -436,7 +439,7 @@ setMethod("clip",signature(x1="dat"),
         }
         x1
     }
-)
+    )
 
 
 setMethod("clip",signature(x1="character"),
@@ -451,30 +454,30 @@ setMethod("clip",signature(x1="character"),
 
         if (nargs() == 1) {
 
-          # list indexing [[]] operator will match partial strings
-          # we want exact matches over the number of words in x
-          # If x is a.b.c.d, this code will first try to find clip limits for
-          # a.b.c.d, then a.b.c, a.b, then a, returning NULL if a is not found
+            # list indexing [[]] operator will match partial strings
+            # we want exact matches over the number of words in x
+            # If x is a.b.c.d, this code will first try to find clip limits for
+            # a.b.c.d, then a.b.c, a.b, then a, returning NULL if a is not found
 
-          if (length(x1) > 1) {
-              names(x) <- x1
-              cl <- lapply(x1,clip)
-          }
-          else {
-              if (length(clip.limits) == 0) return(NULL)
-              nw <- nwords(x1,sep=".")
-              lc <- length(clip.limits)
-              cl <- F
-              for (iw in nw:1) {
-                  cl <- words(names(clip.limits),rep(1,lc),rep(iw,lc),sep=".")
-                  cl <- cl == words(x1,1,iw,sep=".")
-                  if (any(cl)) break
-              }
-              if (!any(cl)) return(NULL)
-              cl <- clip.limits[cl]
-              if (length(cl) > 1)
-                  warning(paste("multiple clip limits found for \"",x1,"\": \"", paste(names(cl),collapse="\",\""),"\". Using \"",names(cl[1]),"\"",sep=""))
-              cl <- cl[[1]]
+            if (length(x1) > 1) {
+                names(x) <- x1
+                cl <- lapply(x1,clip)
+            }
+            else {
+                if (length(clip.limits) == 0) return(NULL)
+                nw <- nwords(x1,sep=".")
+                lc <- length(clip.limits)
+                cl <- F
+                for (iw in nw:1) {
+                    cl <- words(names(clip.limits),rep(1,lc),rep(iw,lc),sep=".")
+                    cl <- cl == words(x1,1,iw,sep=".")
+                    if (any(cl)) break
+                }
+                if (!any(cl)) return(NULL)
+                cl <- clip.limits[cl]
+                if (length(cl) > 1)
+                    warning(paste("multiple clip limits found for \"",x1,"\": \"", paste(names(cl),collapse="\",\""),"\". Using \"",names(cl[1]),"\"",sep=""))
+                cl <- cl[[1]]
 
             }
             return(cl)
@@ -526,7 +529,7 @@ setMethod("clip",signature(x1="character"),
         assign(".clip.limits",clip.limits,envir=.isfsEnv)
         oldclip
     }
-)
+    )
 
 setMethod("clip",signature(x1="missing"),
     function(x1,...)
@@ -534,7 +537,7 @@ setMethod("clip",signature(x1="missing"),
         if (!exists(".clip.limits",envir=.isfsEnv)) list()
         else get(".clip.limits",envir=.isfsEnv)
     }
-)
+    )
 
 if (FALSE) {
 setMethod("[",signature(x="dat"),
@@ -553,7 +556,7 @@ setMethod("[",signature(x="dat"),
             as(callGeneric(as(x,"nts"),...,drop=FALSE),"dat")
         }
     }
-)
+    )
 
 setMethod("Math","dat",
     function(x)
@@ -568,7 +571,7 @@ setMethod("Math","dat",
             as(callGeneric(as(x,"nts")),"dat")
         }
     }
-)
+    )
 
 setMethod("Ops",signature(e1="dat",e2="dat"),
     function(e1,e2)
@@ -583,9 +586,9 @@ setMethod("Ops",signature(e1="dat",e2="dat"),
         else {
             as(callGeneric(as(e1,"nts"),as(e2,"nts")),"dat")
         }
-        
+
     }
-)
+    )
 
 setMethod("Ops",signature(e1="dat",e2="nts"),
     function(e1,e2)
@@ -598,9 +601,9 @@ setMethod("Ops",signature(e1="dat",e2="nts"),
         else {
             callGeneric(e1,as(e2,"dat"))
         }
-        
+
     }
-)
+    )
 
 setMethod("Ops",signature(e1="nts",e2="dat"),
     function(e1,e2)
@@ -613,7 +616,7 @@ setMethod("Ops",signature(e1="nts",e2="dat"),
             callGeneric(as(e1,"dat"),e2)
         }
     }
-)
+    )
 
 setMethod("Ops",signature(e1="dat",e2="timeSeries"),
     function(e1,e2)
@@ -628,7 +631,7 @@ setMethod("Ops",signature(e1="dat",e2="timeSeries"),
             callGeneric(e1,as(e2,"nts"))
         }
     }
-)
+    )
 setMethod("Ops",signature(e1="dat",e2="ANY"),
     function(e1,e2)
     {
@@ -638,19 +641,19 @@ setMethod("Ops",signature(e1="dat",e2="ANY"),
         if (length(e1@data) == 0) e1 <- NULL
         e1
     }
-)
+    )
 
 if (FALSE) {
-setMethod("Ops",signature(e1="timeSeries",e2="dat"),
-    function(e1,e2)
-    {
-        # cat(".Generic=",.Generic," .Signature=",.Signature,"\n")
-        class(e2) <- "nts"
-        e2 <- callGeneric(e1,e2)
-        class(e2) <- "dat"
-        e2
-    }
-)
+    setMethod("Ops",signature(e1="timeSeries",e2="dat"),
+        function(e1,e2)
+        {
+            # cat(".Generic=",.Generic," .Signature=",.Signature,"\n")
+            class(e2) <- "nts"
+            e2 <- callGeneric(e1,e2)
+            class(e2) <- "dat"
+            e2
+        }
+        )
 }
 setMethod("Ops",signature(e1="ANY",e2="dat"),
     function(e1,e2)
@@ -661,46 +664,46 @@ setMethod("Ops",signature(e1="ANY",e2="dat"),
         if (length(e2@data) == 0) e2 <- NULL
         e2
     }
-)
+    )
 
 if (FALSE) {
-setMethod("Ops",signature(e1="dat",e2="missing"),
-    function(e1,e2)
-    {
-        # cat(".Generic=",.Generic," .Signature=",.Signature,"\n")
-        class(e1) <- "nts"
-        e1 <- callGeneric(e1)
-        class(e1) <- "dat"
-        e1
-    }
-)
+    setMethod("Ops",signature(e1="dat",e2="missing"),
+        function(e1,e2)
+        {
+            # cat(".Generic=",.Generic," .Signature=",.Signature,"\n")
+            class(e1) <- "nts"
+            e1 <- callGeneric(e1)
+            class(e1) <- "dat"
+            e1
+        }
+        )
 
-setMethod("atan2",signature(y="dat",x="dat"),
-    function(y,x)
-    {
-        class(x) <- "nts"
-        class(y) <- "nts"
-        x <- atan2(y,x)
-        class(x) <- "dat"
-        x
-    }
-)
+    setMethod("atan2",signature(y="dat",x="dat"),
+        function(y,x)
+        {
+            class(x) <- "nts"
+            class(y) <- "nts"
+            x <- atan2(y,x)
+            class(x) <- "dat"
+            x
+        }
+        )
 
-setMethod("atan2",signature(y="dat",x="ANY"),
-    function(y,x)
-    {
-        y@data <- atan2(y@data,x)
-        y
-    }
-)
+    setMethod("atan2",signature(y="dat",x="ANY"),
+        function(y,x)
+        {
+            y@data <- atan2(y@data,x)
+            y
+        }
+        )
 
-setMethod("atan2",signature(x="ANY",y="dat"),
-    function(x,y)
-    {
-        y@data <- atan(x,y@data)
-        y
-    }
-)
+    setMethod("atan2",signature(x="ANY",y="dat"),
+        function(x,y)
+        {
+            y@data <- atan(x,y@data)
+            y
+        }
+        )
 }
 
 setMethod("is.na",signature="dat",
@@ -709,7 +712,7 @@ setMethod("is.na",signature="dat",
         x@data <- is.na(x@data)
         x
     }
-)
+    )
 }
 
 setGeneric("heights",function(x) standardGeneric("heights"))
@@ -730,16 +733,16 @@ setMethod("heights","ANY",
                 if (mc == "cm") ht <- ht / 100.
                 ht
             }
-        )
+            )
     }
-)
+    )
 
 setMethod("heights","dat",
     function(x)
     {
         heights(dimnames(x)[[2]])
     }
-)
+    )
 
 setGeneric("sites",function(x) standardGeneric("sites"))
 
@@ -755,16 +758,16 @@ setMethod("sites","ANY",
                 if (length(m) < 4 || m[1] == -1) return("")
                 substr(x,m[4]+1,m[4]+attr(m,"match.length")[4]-1)
             }
-        )
+            )
     }
-)
+    )
 
 setMethod("sites","dat",
     function(x)
     {
         sites(dimnames(x)[[2]])
     }
-)
+    )
 
 # The following dimnames replacement function is critical.  Without it,
 # these statements will cause a Splus crash (happens in
@@ -784,7 +787,7 @@ setReplaceMethod("dimnames", signature(x="dat",value="list"),
         dimnames(as(x,"nts")) <- value
         x
     }
-)
+    )
 
 if (FALSE) {
 setReplaceMethod("start",signature(x="dat",value="utime"),
@@ -794,15 +797,15 @@ setReplaceMethod("start",signature(x="dat",value="utime"),
         start(as(x,"nts")) <- value
         x
     }
-)
+    )
 
 setReplaceMethod("end", signature(x="dat",value="utime"),
     function(x,value)
     {
         end(as(x,"nts")) <- value
         x
-  }
-)
+    }
+    )
 
 setReplaceMethod("stations", signature(x="dat",value="integer"),
     function(x,value)
@@ -810,11 +813,11 @@ setReplaceMethod("stations", signature(x="dat",value="integer"),
         stations(as(x,"nts")) <- value
         x
     }
-)
+    )
 }
 
 setGeneric("crack",function(x,tbreak)
-	standardGeneric("crack"))
+    standardGeneric("crack"))
 
 setMethod("crack",signature(x="dat"),
     function(x,tbreak=900)
@@ -828,16 +831,16 @@ setMethod("crack",signature(x="dat"),
         insert.rec[1,] <- NA_real_
 
         for (i in seq(along=brks)) {
-          j <- brks[i]
-          k <- brks2[i]
-          positions(insert.rec) <- ts[j] + tbreak / 2
-          x <- Rbind(x[1:k,],insert.rec,x[(k+1):nrow(x),])
-          brks2 <- brks2 + 1
-          T
+            j <- brks[i]
+            k <- brks2[i]
+            positions(insert.rec) <- ts[j] + tbreak / 2
+            x <- Rbind(x[1:k,],insert.rec,x[(k+1):nrow(x),])
+            brks2 <- brks2 + 1
+            T
         }
         x
     }
-)
+    )
 
 setMethod("seriesConcat",signature(x1="dat",x2="dat"),
     function(x1,x2,...)
@@ -848,16 +851,16 @@ setMethod("seriesConcat",signature(x1="dat",x2="dat"),
         class(x1) <- "dat"
         x1
     }
-)
+    )
 
 if (FALSE) {
 setMethod("Rbind",signature(x1="dat",x2="dat"),
     function(x1,x2,...) seriesConcat(x1,x2,...)
-)
+    )
 
 setMethod("Cbind",signature(x1="dat",x2="dat"),
     function(x1,x2,...) seriesMerge(x1,x2,...,pos="union")
-)
+    )
 
 setMethod("Cbind",signature(x1="nts",x2="dat"),
     function(x1,x2,...)
@@ -865,7 +868,7 @@ setMethod("Cbind",signature(x1="nts",x2="dat"),
         x1 <- dat(x1)
         Cbind(x1,x2,...)
     }
-)
+    )
 
 setMethod("Cbind",signature(x1="dat",x2="nts"),
     function(x1,x2,...)
@@ -873,7 +876,7 @@ setMethod("Cbind",signature(x1="dat",x2="nts"),
         x2 <- dat(x2)
         Cbind(x1,x2,...)
     }
-)
+    )
 
 setMethod("Cbind",signature(x1="ANY",x2="dat"),
     function(x1,x2,...)
@@ -881,7 +884,7 @@ setMethod("Cbind",signature(x1="ANY",x2="dat"),
         if (is.null(x1)) x2
         else stop("unsupported argument type x1")
     }
-)
+    )
 
 setMethod("Cbind",signature(x1="dat",x2="ANY"),
     function(x1,x2,...)
@@ -889,7 +892,7 @@ setMethod("Cbind",signature(x1="dat",x2="ANY"),
         if (is.null(x2)) x1
         else stop("unsupported argument type x2")
     }
-)
+    )
 }
 
 setMethod("average", signature="dat",
@@ -918,8 +921,8 @@ setMethod("average", signature="dat",
             xa <- average(xa,...,simple=T)
             wts <- matrix(0,ncol=ncol(x),nrow=nrow(xa))
             xa <- dat(nts(matrix(NA_real_,ncol=ncol(x),nrow=nrow(xa),dimnames=list(NULL,dns)),
-                tspar(xa), units=x@units,weightmap=1:ncol(x),
-                weights=wts,stations=stations(x)))
+                    tspar(xa), units=x@units,weightmap=1:ncol(x),
+                    weights=wts,stations=stations(x)))
 
             for (dn in unique(dns)) {
                 xcol <- !is.na(match(dns,dn))
@@ -978,7 +981,7 @@ setMethod("average", signature="dat",
                     class(xx) <- "nts"
 
                     av <- average(xx + x1 * x2,...,simple=T) - 
-                               average(x1,...,simple=T) * average(x2,...,simple=T)
+                    average(x1,...,simple=T) * average(x2,...,simple=T)
                     xa[,xcol] <- av
                 }
                 else if (nw == 3) {
@@ -1030,7 +1033,7 @@ setMethod("average", signature="dat",
                     vsuffixes <- unique(words(dnames,first=2,sep='.'))
 
                     if (length(vsuffixes) != 1) {
-                      stop(paste("multiple suffixes of variables=",paste(vsuffixes,collapse=','),"Cannot compute 3rd order moments",sep=" "))
+                        stop(paste("multiple suffixes of variables=",paste(vsuffixes,collapse=','),"Cannot compute 3rd order moments",sep=" "))
                     }
 
                     dx1x2 <- paste(vnames[1],"'",vnames[2],"'",".",vsuffixes,sep="")
@@ -1049,15 +1052,15 @@ setMethod("average", signature="dat",
                     # browser()
 
                     av <- average(xx + x1*x2x3 + x2*x1x3 + x3*x1x2 + x1*x2*x3,...,simple=T) - 
-                            x1a * average(x2x3,...,simple=T) -
-                            x2a * average(x1x3,...,simple=T) -
-                            x3a * average(x1x2,...,simple=T) -
-                            x1a * x2a * x3a
+                    x1a * average(x2x3,...,simple=T) -
+                    x2a * average(x1x3,...,simple=T) -
+                    x3a * average(x1x2,...,simple=T) -
+                    x1a * x2a * x3a
                     xa[,xcol] <- av
                     # wts[,xcol] <- attr(av,"weights")
                     # attr(xa,"weights") <- wts
-                  }
-                  else 
+                }
+                else 
                     stop("Give me a break! I can't yet average higher than 3rd order moments!\n")
             }
 
@@ -1066,7 +1069,7 @@ setMethod("average", signature="dat",
         class(x) <- "dat"
         x
     }
-)
+    )
 
 other.dat.func <- function(what,whine=T)
 {
@@ -1076,8 +1079,8 @@ other.dat.func <- function(what,whine=T)
 
     while (name != "dat") {
         for (i in 1:nd)
-          if (exists(name,where=i,inherits=FALSE))
-            for (j in (i+1):nd) if (exists(name,where=j)) return(get(name,pos=j))
+            if (exists(name,where=i,inherits=FALSE))
+                for (j in (i+1):nd) if (exists(name,where=j)) return(get(name,pos=j))
 
         nw <- nwords(name,sep=".")
         if (nw == 1) break
