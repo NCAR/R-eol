@@ -126,10 +126,12 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
         if (existsFunction(fcn,generic=FALSE)) {
             f <- getFunction(fcn,generic=FALSE,mustFind=TRUE,where=1)
             x <- f(what=what,derived=derived,cache=cache,...)
-            x <- select(x,stns=dpar("stns"),hts=dpar("hts"),sfxs=dpar("sfxs"),
-                sites=dpar("sites"))
-            if (smooth || avg)
-                x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
+            if (inherits(x,"nts")) {
+                x <- select(x,stns=dpar("stns"),hts=dpar("hts"),sfxs=dpar("sfxs"),
+                    sites=dpar("sites"))
+                if (smooth || avg)
+                    x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
+            }
             return(x)
         }
         else {
