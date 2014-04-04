@@ -74,7 +74,7 @@ dat.Rlw.either <- function(what="Rlw.out",B=dpar("pyrgeometer.B"),
     swcor=dpar("pyrgeometer.swcor"),...)
 
 {
-    robust <- dat("robust")
+    robust <- dpar("robust")
     which <- suffixes(what,2)
     Rpile.name <- paste("Rpile",which,sep="")
     Tcase.name <- paste("Tcase",which,sep="")
