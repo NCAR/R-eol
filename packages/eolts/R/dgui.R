@@ -957,3 +957,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
     invisible(mainWidget)
 }
 
+dgpar <- function(visible=TRUE,debug=FALSE)
+{
+    stop("dgpar is now called dgui")
+}
