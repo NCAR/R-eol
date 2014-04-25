@@ -37,7 +37,7 @@ utime <- function(val=as.numeric(Sys.time()),
             # cat("trying format",in.format[[i]],"\n")
             res <- strptime(val,format=in.format[[i]],tz=time.zone)
             if (!any(is.na(res))) {
-                res <- utime(as.numeric(res))
+                res <- new("utime",as.numeric(res))
                 break
             }
         }
