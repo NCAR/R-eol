@@ -25,7 +25,7 @@ export(
     dpar.now,
     dpar.prev,
     dpar.next,
-    dgpar,
+    dgui,
     cache.name,
     clear.cache,
     cache.object,
