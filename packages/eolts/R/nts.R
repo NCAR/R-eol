@@ -40,8 +40,12 @@ nts <- function(data,positions,
 
     if(missing(positions) || missing(data)) return(ret)
 
-    ret@data <- data
-    if (!is.matrix(ret@data)) ret@data <- matrix(ret@data,ncol=1)
+    # The only requirement for the data slot in splusTimeSeries 
+    # is that splusTimeSeries::is.rectangular(data) return TRUE
+    # We'll convert vectors to 1 column matrices
+    if (is.vector(data)) ret@data <- matrix(data,ncol=1)
+    else ret@data <- data
+
     ret@positions <- as(positions,"utime")
 
     # ret@positions@format <- unlist(options("time.out.format"))
