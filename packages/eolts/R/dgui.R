@@ -910,7 +910,9 @@ dgui <- function(visible=TRUE,debug=FALSE)
     plotHandler <- function(h,...)
     {
         ov <- thisGet("outVarName")
-        tryCatch(plot(get(ov,envir=globalenv())))
+        x <- get(ov,envir=globalenv())
+        if (!is.null(x)) tryCatch(plot(x))
+        else cat("output variable",ov,"is NULL.\n")
         NULL
     }
 
