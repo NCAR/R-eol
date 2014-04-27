@@ -477,7 +477,6 @@ dgui <- function(visible=TRUE,debug=FALSE)
 
         thisSet("endDate",endDate)
         thisSet("endTime",endTime)
-        thisSet("zoomTimes",pairlist())
 
         blockHandlers(endDateWidget)
         blockHandlers(endHourWidget)
@@ -910,8 +909,6 @@ dgui <- function(visible=TRUE,debug=FALSE)
             }
             assign(thisGet("outVarName"),x,envir=globalenv())
         }
-
-        # x <- dat(thisGet("selectedVars"))
         NULL
     }
     g1 <- ggroup(container=mainContainer, horizontal=TRUE)
@@ -978,13 +975,17 @@ dgui <- function(visible=TRUE,debug=FALSE)
 
     plotHandler <- function(h,...)
     {
-        plotIt()
+        zoom <- thisGet("zoomTimes")
+        if (length(zoom) > 0) plotIt(zoom[[length(zoom)]])
+        else {
+            plotIt()
 
-        if (!thisGet("plotZoom")) {
-            gbutton("zoom in",container=h$action,handler=zoomInHandler)
-            gbutton("zoom out",container=h$action,handler=zoomOutHandler)
-            gbutton("no zoom",container=h$action,handler=noZoomHandler)
-            thisSet("plotZoom",TRUE)
+            if (!thisGet("plotZoom")) {
+                gbutton("zoom in",container=h$action,handler=zoomInHandler)
+                gbutton("zoom out",container=h$action,handler=zoomOutHandler)
+                gbutton("no zoom",container=h$action,handler=noZoomHandler)
+                thisSet("plotZoom",TRUE)
+            }
         }
         NULL
     }
