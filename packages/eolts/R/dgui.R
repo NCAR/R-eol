@@ -64,7 +64,8 @@ thisSet("datasetCombo",NULL)
 # save reference because we may need to change the size
 thisSet("tzradio",NULL)
 
-thisSet("outVarName","x")
+thisSet("outVarName",NULL)
+thisSet(".tmpData",NULL)
 
 thisSet("timeLengthType","")
 thisSet("startDate","")
@@ -154,6 +155,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
     thisSet("endTime",formatHMS(t2))
 
     setTimePeriodLength()
+
 
     # primary setting is the start time
     # changing start time results in new end time, using length
@@ -880,7 +882,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         horizontal=TRUE,handler=sitesHandler,container=g1)
     thisSet("sitesCheckBoxWidget",sitesCheckBoxWidget)
 
-    readVariablesHandler <- function(h,...)
+    readDataHandler <- function(h,...)
     {
         sv <- thisGet("selectedVars")
         cat("reading ",paste(sv,collapse=","),"\n")
@@ -907,31 +909,31 @@ dgui <- function(visible=TRUE,debug=FALSE)
                 x <- dat(vars,derived=FALSE)
                 options(wl)
             }
-            assign(thisGet("outVarName"),x,envir=globalenv())
+            ovar <- thisGet("outVarName")
+            if (!is.null(ovar)) assign(ovar,x,envir=globalenv())
+            else thisSet(".tmpData",x)
         }
         NULL
     }
     g1 <- ggroup(container=mainContainer, horizontal=TRUE)
-    gbutton("read variables into",container=g1,handler=readVariablesHandler)
-
     outputVariableHandler <- function(h,...)
     {
-        thisSet("outVarName",as.character(svalue(h$obj)))
+        var <- as.character(svalue(h$obj))
+        if (var == "<none>") thisSet("outVarName",NULL)
+        else thisSet("outVarName",var)
         NULL
     }
 
-    gcombobox(c("x","x1","x2","y","y1","y2"),
-        container=g1,action=2L, editable=TRUE, handler=outputVariableHandler)
-
     plotIt <- function(tz=NULL)
     {
-        ov <- thisGet("outVarName")
-        x <- get(ov,envir=globalenv())
+        ovar <- thisGet("outVarName")
+        if (!is.null(ovar)) x <- get(ovar,envir=globalenv())
+        else x <- thisGet(".tmpData")
         if (!is.null(x)) {
             if (is.null(tz)) tryCatch(plot(x))
             else tryCatch(plot(x[tz,]))
         }
-        else cat("output variable",ov,"is NULL.\n")
+        else cat("output variable",ovar,"is NULL.\n")
         NULL
     }
     zoomInHandler <- function(h,...)
@@ -973,8 +975,10 @@ dgui <- function(visible=TRUE,debug=FALSE)
         plotIt(NULL)
     }
 
-    plotHandler <- function(h,...)
+    readAndPlotHandler <- function(h,...)
     {
+        readDataHandler()
+
         zoom <- thisGet("zoomTimes")
         if (length(zoom) > 0) plotIt(zoom[[length(zoom)]])
         else {
@@ -990,9 +994,14 @@ dgui <- function(visible=TRUE,debug=FALSE)
         NULL
     }
 
-    gbutton("plot",container=g1,handler=plotHandler,action=g1)
+    gbutton("read data",container=g1,handler=readDataHandler)
 
-    # buttons: zoom in, zoom out, unzoom
+    gbutton("read and plot",container=g1,handler=readAndPlotHandler,action=g1)
+
+    glabel("output variable=",container=g1)
+    gcombobox(c("<none>","x","x1","x2","y","y1","y2"),
+        container=g1, editable=TRUE, handler=outputVariableHandler)
+
 
     thisSet("mainWidget",mainWidget)
 
