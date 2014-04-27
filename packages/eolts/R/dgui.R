@@ -1,17 +1,9 @@
 # -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
 # vim: set shiftwidth=4 softtabstop=4 expandtab:
 
-# stations gcheckboxgroup, with an "all" button.
-#   dpar("all.stations") set in project.init?  Or read from netcdf?
-#   read from netcdf. Augment with all.stations?
-# sites radiobox
-#   dpar("all.sites") read from netcdf.
-# heights gcheckboxgroup:
-#   Gather from variables.
-
 .this <- new.env(parent=emptyenv())
 
-mytest <- 2
+# mytest <- 2
 
 thisExists <- function(name) 
 {
@@ -55,7 +47,7 @@ that_put <- function(name,val)
 dfmt <- "%Y-%m-%d"
 infmt <- "%Y-%m-%d%H%M%OS"
 
-that_put("mytest",0)
+# that_put("mytest",0)
 
 thisSet("mainWidget",NULL)
 thisSet("selectedVars",NULL)
@@ -81,6 +73,10 @@ thisSet("endDate","")
 thisSet("endTime","")
 
 thisSet("heightsCheckBoxWidget",NULL)
+
+thisSet("plotZoom",FALSE)
+
+thisSet("zoomTimes",pairlist())
     
 formatHMS <- function(tx)
 {
@@ -110,10 +106,12 @@ setTimePeriodLength <- function()
 
 dgui <- function(visible=TRUE,debug=FALSE)
 {
-    cat("mytest exists=",that_exists("mytest"),"\n")
-    cat("mytest=",that_get("mytest"),"\n")
-    that_put("mytest",20)
-    cat("mytest=",that_get("mytest"),"\n")
+    if (FALSE) {
+        cat("mytest exists=",that_exists("mytest"),"\n")
+        cat("mytest=",that_get("mytest"),"\n")
+        that_put("mytest",20)
+        cat("mytest=",that_get("mytest"),"\n")
+    }
 
     mainWidget <- thisGet("mainWidget")
     if (!is.null(mainWidget)) {
@@ -149,6 +147,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
     t1 <- dpar("start")
     thisSet("startDate",format(t1,format=dfmt))
     thisSet("startTime",formatHMS(t1))
+    thisSet("zoomTimes",pairlist())
 
     t2 <- dpar("end")
     thisSet("endDate",format(t2,format=dfmt))
@@ -177,7 +176,10 @@ dgui <- function(visible=TRUE,debug=FALSE)
         }
 
         g1 <- gframe("Dataset",container=mainContainer, horizontal=TRUE)
-        combo <- gcombobox(names(.datasets),container=g1,handler=datasetHandler,
+
+        # enabled datasets
+        mx <- sapply(.datasets,function(x){x$enable})
+        combo <- gcombobox(names(.datasets)[mx],container=g1,handler=datasetHandler,
             size=c(100,25))
         thisSet("datasetCombo",combo)
     }
@@ -246,8 +248,9 @@ dgui <- function(visible=TRUE,debug=FALSE)
         t1 <- utime(paste(startDate,paste(thisGet("startTime"),collapse=" ")),in.format=infmt)
         dpar(start=t1)
         thisSet("startDate",startDate)
+        thisSet("zoomTimes",pairlist())
 
-        # adjust end time widgets
+        # adjust end time widgets to new end time
         t2 <- dpar("end")
         endDate <- format(t2,format=dfmt)
         endTime <- formatHMS(t2)
@@ -281,6 +284,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         t1 <- utime(paste(thisGet("startDate"),paste(startTime,collapse=" ")),in.format=infmt)
         dpar(start=t1)
         thisSet("startTime",startTime)
+        thisSet("zoomTimes",pairlist())
 
         # adjust end time widgets
         t2 <- dpar("end")
@@ -312,9 +316,11 @@ dgui <- function(visible=TRUE,debug=FALSE)
         # browser()
         if (debug) cat("endDateHandler, svalue(h$obj)=",svalue(h$obj,drop=FALSE),"\n")
         endDate <- svalue(h$obj,drop=TRUE)
-        t2 <- utime(paste(endDate,paste(thisGet("endTime"),collapse=" ")),in.format=infmt)
+        t2 <- utime(paste(endDate,paste(thisGet("endTime"),collapse=" ")),
+            in.format=infmt)
 
         thisSet("endDate",endDate)
+        thisSet("zoomTimes",pairlist())
 
         if (t2 <= dpar("start")) {
             # adjust start time widgets
@@ -343,6 +349,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         }
         else {
             dpar(end=t2)
+
             setTimePeriodLength()
 
             blockHandlers(timeLengthTypeWidget)
@@ -365,6 +372,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         endTime <- thisGet("endTime")
         endTime[h$action] <- as.character(svalue(h$obj))
         thisSet("endTime",endTime)
+        thisSet("zoomTimes",pairlist())
 
         t2 <- utime(paste(thisGet("endDate"),paste(endTime,collapse=" ")),in.format=infmt)
 
@@ -452,6 +460,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
             second=dpar(lensec=dv))
 
         thisSet("timeLengthType",dt)
+        thisSet("zoomTimes",pairlist())
 
         # by default, font is not initialized, all NULL
         if (FALSE) {
@@ -468,6 +477,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
 
         thisSet("endDate",endDate)
         thisSet("endTime",endTime)
+        thisSet("zoomTimes",pairlist())
 
         blockHandlers(endDateWidget)
         blockHandlers(endHourWidget)
@@ -499,6 +509,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
                 second=dpar(lensec=dv))
 
             thisSet("timeLengthValue",dv)
+            thisSet("zoomTimes",pairlist())
 
             # adjust end time widgets
             t2 <- dpar("end")
@@ -555,6 +566,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
 
         thisSet("startDate",startDate)
         thisSet("startTime",startTime)
+        thisSet("zoomTimes",pairlist())
 
         blockHandlers(startDateWidget)
         blockHandlers(startHourWidget)
@@ -613,6 +625,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
             in.format=infmt)
 
         dpar(start=t1,end=t2)
+        thisSet("zoomTimes",pairlist())
 
         setTimePeriodLength()
 
@@ -644,11 +657,11 @@ dgui <- function(visible=TRUE,debug=FALSE)
         # cat("var=",svalue(h$obj)," selected\n")
         sv <- thisGet("selectedVars")
         if (svalue(h$obj)) {
-            cat("var=",h$action," selected\n")
+            # cat("var=",h$action," selected\n")
             thisSet("selectedVars",c(sv,h$action))
         }
         else {
-            cat("var=",h$action," unselected\n")
+            # cat("var=",h$action," unselected\n")
             mx <- match(h$action,sv)
             if (!is.na(mx)) thisSet("selectedVars", sv[-mx])
         }
@@ -716,7 +729,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
                 cb <- gcheckbox(text=var,action=var,
                     handler=toggleVariableHandler)
                 layout[ir,ic] <- cb
-                if (i == 0) {
+                if (FALSE && i == 0) {
                     sz <- size(cb)
                     cat("cb size =",paste(sz,collapse=","),"\n")
                 }
@@ -736,13 +749,13 @@ dgui <- function(visible=TRUE,debug=FALSE)
                     cb <- gcheckbox(text=var,action=var,
                         handler=toggleVariableHandler)
                     layout[ir,ic] <- cb
-                    if (i == 0) {
+                    if (FALSE && i == 0) {
                         sz <- size(cb)
                         cat("cb size =",paste(sz,collapse=","),"\n")
                     }
                     i <- i + 1
                 }
-                svalue(h$action) <- i
+                svalue(h$action) <- 1
             }
             thisSet("var2MomLayout",layout)
 
@@ -761,7 +774,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
                 cat("setting group size to",paste(sz,collapse=","),"\n")
                 size(var_group) <- c(1,50)
             }
-            else {
+            else if (FALSE) {
                 sz <- size(layout)
                 cat("layout size =",paste(sz,collapse=","),"\n")
                 # size(layout) <- c(800,600)
@@ -887,7 +900,13 @@ dgui <- function(visible=TRUE,debug=FALSE)
                 close(iod)
             }
             else {
+                # warn=1, print warnings as they occur.
+                # Under the default warn=0, warnings are printed
+                # when the top-level function returns, which in the
+                # case of dgui is just before exiting R.
+                wl <- options(warn=1)
                 x <- dat(vars,derived=FALSE)
+                options(wl)
             }
             assign(thisGet("outVarName"),x,envir=globalenv())
         }
@@ -907,16 +926,72 @@ dgui <- function(visible=TRUE,debug=FALSE)
     gcombobox(c("x","x1","x2","y","y1","y2"),
         container=g1,action=2L, editable=TRUE, handler=outputVariableHandler)
 
-    plotHandler <- function(h,...)
+    plotIt <- function(tz=NULL)
     {
         ov <- thisGet("outVarName")
         x <- get(ov,envir=globalenv())
-        if (!is.null(x)) tryCatch(plot(x))
+        if (!is.null(x)) {
+            if (is.null(tz)) tryCatch(plot(x))
+            else tryCatch(plot(x[tz,]))
+        }
         else cat("output variable",ov,"is NULL.\n")
         NULL
     }
+    zoomInHandler <- function(h,...)
+    {
+        # cat("zoomInHandler\n")
+        tz <- tlocator(2)
+        if (!is.null(tz)) {
+            zoom <- thisGet("zoomTimes")
+            zoom[[length(zoom)+1]] <- tz
+            thisSet("zoomTimes",zoom)
+            cat("zoom level=",length(zoom),"\n")
+            plotIt(tz)
+        }
 
-    gbutton("plot",container=g1,handler=plotHandler)
+    }
+    zoomOutHandler <- function(h,...)
+    {
+        # cat("zoomOutHandler\n")
+        zoom <- thisGet("zoomTimes")
+        # cat("zoomInHandler\n")
+        if (length(zoom) > 0) {
+            zoom[[length(zoom)]] <- NULL
+            thisSet("zoomTimes",zoom)
+        }
+        cat("zoom level=",length(zoom),"\n")
+
+        if (length(zoom) == 0) plotIt(NULL)
+        else plotIt(zoom[[length(zoom)]])
+    }
+    noZoomHandler <- function(h,...)
+    {
+        # cat("noZoomHandler\n")
+        zoom <- thisGet("zoomTimes")
+        length(zoom) <- 0
+        thisSet("zoomTimes",zoom)
+
+        cat("zoom level=",length(zoom),"\n")
+
+        plotIt(NULL)
+    }
+
+    plotHandler <- function(h,...)
+    {
+        plotIt()
+
+        if (!thisGet("plotZoom")) {
+            gbutton("zoom in",container=h$action,handler=zoomInHandler)
+            gbutton("zoom out",container=h$action,handler=zoomOutHandler)
+            gbutton("no zoom",container=h$action,handler=noZoomHandler)
+            thisSet("plotZoom",TRUE)
+        }
+        NULL
+    }
+
+    gbutton("plot",container=g1,handler=plotHandler,action=g1)
+
+    # buttons: zoom in, zoom out, unzoom
 
     thisSet("mainWidget",mainWidget)
 
