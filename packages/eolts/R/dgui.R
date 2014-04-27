@@ -930,8 +930,10 @@ dgui <- function(visible=TRUE,debug=FALSE)
         if (!is.null(ovar)) x <- get(ovar,envir=globalenv())
         else x <- thisGet(".tmpData")
         if (!is.null(x)) {
+            wl <- options(warn=1)
             if (is.null(tz)) tryCatch(plot(x))
             else tryCatch(plot(x[tz,]))
+            options(wl)
         }
         else cat("output variable",ovar,"is NULL.\n")
         NULL
@@ -941,12 +943,19 @@ dgui <- function(visible=TRUE,debug=FALSE)
         # cat("zoomInHandler\n")
         tz <- tlocator(2)
         if (!is.null(tz)) {
-            zoom <- thisGet("zoomTimes")
-            zoom[[length(zoom)+1]] <- tz
-            thisSet("zoomTimes",zoom)
-            cat("zoom level=",length(zoom),"\n")
-            plotIt(tz)
+            if (tz[2] <= tz[1]) {
+                cat("bad time selection: ",format(tz[1],format="%Y %b %d %H:%M:%OS"),
+                    "-", format(tz[2],format="%Y %b %d %H:%M:%OS"),"\n")
+            }
+            else {
+                zoom <- thisGet("zoomTimes")
+                zoom[[length(zoom)+1]] <- tz
+                thisSet("zoomTimes",zoom)
+                cat("zoom level=",length(zoom),"\n")
+                plotIt(tz)
+            }
         }
+        NULL
 
     }
     zoomOutHandler <- function(h,...)
@@ -962,6 +971,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
 
         if (length(zoom) == 0) plotIt(NULL)
         else plotIt(zoom[[length(zoom)]])
+        NULL
     }
     noZoomHandler <- function(h,...)
     {
@@ -973,6 +983,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         cat("zoom level=",length(zoom),"\n")
 
         plotIt(NULL)
+        NULL
     }
 
     readAndPlotHandler <- function(h,...)
