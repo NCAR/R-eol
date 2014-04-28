@@ -2,14 +2,19 @@
 # vim: set shiftwidth=4 softtabstop=4 expandtab:
 
 # TODO:
+#   dataset menu is not wide enough
+#   automatically do "show variables" when times change, and on first rendering
+#   disable zoom buttons until plot has been made.
+#   add option to show value at cursor
+#   support for par mfrow. Set plot index to 1 after time change
+#   support type="l", "b", "p"
+
 #   button for new x11() plot
-#   support for par mfrow?
 #   more general support for par parameters in a text field:  "mar=x"
 #   provide widget to enter smoothing value?
 #   x vs y plots?
 #   difference plots?
 #   set dpar start/end from zoom
-#   show value at cursor
 
 .this <- new.env(parent=emptyenv())
 
@@ -926,39 +931,44 @@ dgui <- function(visible=TRUE,debug=FALSE)
 
     readDataHandler <- function(h,...)
     {
-        sv <- thisGet("selectedVars")
-        cat("reading ",paste(sv,collapse=","),"\n")
+        vars <- thisGet("selectedVars")
+        if (debug) cat("selected vars=",paste(vars,collapse=","),"\n")
 
         if (FALSE) {
             allvars <- thisGet("allVariables")
             w1vars <- words(allvars,1,1,sep=".")
-            mx <- match(w1vars,sv)
+            mx <- match(w1vars,vars)
+            if (any(!is.na(mx))) vars <- allvars[!is.na(mx)]
+            else vars <- NULL
         }
-        if (any(!is.na(mx))) {
-            vars <- allvars[!is.na(mx)]
+        if (length(vars) == 0) return(NULL)
 
-            if (FALSE) {
-                lenfile <- dpar("lenfile")
-                if (is.null(lenfile)) 
-                    iod <- netcdf()
-                else iod <- netcdf(lenfile = lenfile)
-                x <- readts(iod, variables = vars)
-                close(iod)
-            }
-            else {
-                # warn=1, print warnings as they occur.
-                # Under the default warn=0, warnings are printed
-                # when the top-level function returns, which, in the
-                # case of dgui, is just before exiting R.
-                wl <- options(warn=1)
-                # x <- dat(vars,derived=FALSE,smooth=TRUE)
-                x <- dat(sv,derived=FALSE,smooth=TRUE)
-                options(wl)
-            }
-            ovar <- thisGet("outVarName")
-            if (!is.null(ovar)) assign(ovar,x,envir=globalenv())
-            else thisSet(".tmpData",x)
+        if (debug) cat("reading ",paste(vars,collapse=","),"\n")
+
+        # warn=1, print warnings as they occur.
+        # Under the default warn=0, warnings are printed
+        # when the top-level function returns, which, in the
+        # case of dgui, is just before exiting R.
+        wl <- options(warn=1)
+
+        if (FALSE) {
+            lenfile <- dpar("lenfile")
+            if (is.null(lenfile)) 
+                iod <- netcdf()
+            else iod <- netcdf(lenfile = lenfile)
+            x <- readts(iod, variables = vars)
+            close(iod)
         }
+        else {
+            x <- dat(vars,derived=FALSE,smooth=TRUE)
+        }
+
+        options(wl)
+
+        ovar <- thisGet("outVarName")
+        if (!is.null(ovar)) assign(ovar,x,envir=globalenv())
+        else thisSet(".tmpData",x)
+
         NULL
     }
     g1 <- ggroup(container=mainContainer, horizontal=TRUE)
