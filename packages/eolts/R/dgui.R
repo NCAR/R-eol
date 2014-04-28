@@ -1,6 +1,16 @@
 # -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
 # vim: set shiftwidth=4 softtabstop=4 expandtab:
 
+# TODO:
+#   button for new x11() plot
+#   support for par mfrow?
+#   more general support for par parameters in a text field:  "mar=x"
+#   smoothing?
+#   x vs y plots?
+#   difference plots?
+#   set dpar start/end from zoom
+#   show value at cursor
+
 .this <- new.env(parent=emptyenv())
 
 # mytest <- 2
@@ -78,6 +88,9 @@ thisSet("heightsCheckBoxWidget",NULL)
 thisSet("plotZoom",FALSE)
 
 thisSet("zoomTimes",pairlist())
+
+thisSet("readDataWidget",NULL)
+thisSet("readAndPlotDataWidget",NULL)
     
 formatHMS <- function(tx)
 {
@@ -426,29 +439,39 @@ dgui <- function(visible=TRUE,debug=FALSE)
     g2 <- gframe("date",container=g1, horizontal=TRUE)
     startDateWidget <- gcalendar(text=thisGet("startDate"),format=dfmt,
         container=g2,handler=startDateHandler)
+    tooltip(startDateWidget) <- "changing the start date or time will also change the end time to start+length"
 
     g2 <- gframe("hour",container=g1, horizontal=TRUE)
     startHourWidget <- gcombobox(hrs,container=g2,action=1L,handler=startTimeHandler)
+    tooltip(startHourWidget) <- "changing the start date or time will also change the end time to start+length"
+
     g2 <- gframe("minute",container=g1, horizontal=TRUE)
     startMinuteWidget <- gcombobox(minsecs,container=g2,action=2L, editable=TRUE,
         handler=startTimeHandler)
+    tooltip(startMinuteWidget) <- "changing the start date or time will also change the end time to start+length"
+
     g2 <- gframe("sec",container=g1, horizontal=TRUE)
     startSecWidget <- gcombobox(minsecs, container=g2,action=3L, editable=TRUE,
         handler=startTimeHandler)
+    tooltip(startSecWidget) <- "changing the start date or time will also change the end time to start+length"
 
     g1 <- gframe("End Time",container=mainContainer, horizontal=TRUE)
 
     g2 <- gframe("date",container=g1, horizontal=TRUE)
     endDateWidget <- gcalendar(text=thisGet("endDate"),format=dfmt,container=g2,handler=endDateHandler)
+    tooltip(endDateWidget) <- "changing the end date or time will also change the period length to end-start"
 
     g2 <- gframe("hour",container=g1, horizontal=TRUE)
     endHourWidget <- gcombobox(hrs,container=g2,action=1L,handler=endTimeHandler)
+    tooltip(endHourWidget) <- "changing the end date or time will also change the period length to end-start"
     g2 <- gframe("minute",container=g1, horizontal=TRUE)
     endMinuteWidget <- gcombobox(minsecs, container=g2, action=2L, editable=TRUE,
         handler=endTimeHandler)
+    tooltip(endMinuteWidget) <- "changing the end date or time will also change the period length to end-start"
     g2 <- gframe("sec",container=g1, horizontal=TRUE)
     endSecWidget <- gcombobox(minsecs, container=g2, action=3L,  editable=TRUE,
         handler=endTimeHandler)
+    tooltip(endSecWidget) <- "changing the end date and time will also change the period length to end-start"
 
     timeLengthTypeHandler <- function(h,...)
     {
@@ -545,11 +568,13 @@ dgui <- function(visible=TRUE,debug=FALSE)
     selected <- match(thisGet("timeLengthType"),types,nomatch=1)
     timeLengthTypeWidget <- gcombobox(types,selected=selected,container=g2,
         hander=timeLengthTypeHandler)
+    tooltip(timeLengthTypeWidget) <- "Changing the period length will also change the end time"
 
     # size(timeLengthTypeWidget) is 1,1 at this point
     addHandlerChanged(timeLengthTypeWidget,timeLengthTypeHandler)
 
     timeLengthValueWidget <- gedit(as.character(thisGet("timeLengthValue")),width=6,container=g2)
+    tooltip(timeLengthValueWidget) <- "Changing the period length will also change the end time"
     # Had to use this method, rather than handler= in the constructor
     addHandlerChanged(timeLengthValueWidget,timeLengthValueHandler)
 
@@ -609,9 +634,12 @@ dgui <- function(visible=TRUE,debug=FALSE)
         NULL
     }
 
-    g2 <- gframe("time shift",container=g1, horizontal=TRUE)
-    gbutton("previous",container=g2,handler=backForwardHandler,action=-1L)
-    gbutton("next",container=g2,handler=backForwardHandler,action=1L)
+    g2 <- gframe("shift",container=g1, horizontal=TRUE)
+    widget <- gbutton("previous",container=g2,handler=backForwardHandler,action=-1L)
+    tooltip(widget) <- "shift start and end time earlier by the period length"
+
+    widget <- gbutton("next",container=g2,handler=backForwardHandler,action=1L)
+    tooltip(widget) <- "shift start and end time later by the period length"
 
     timeZoneHandler <- function(h,...)
     {
@@ -649,7 +677,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
     }
     if (nchar(localtz) == 0) localtz <- "local"
 
-    g2 <- gframe("time zone",container=g1, horizontal=TRUE)
+    g2 <- gframe("zone",container=g1, horizontal=TRUE)
     radio <- gradio(c(localtz,"UTC"),container=g2,horizontal=TRUE,handler=timeZoneHandler)
     thisSet("tzradio",radio)
 
@@ -659,13 +687,22 @@ dgui <- function(visible=TRUE,debug=FALSE)
         sv <- thisGet("selectedVars")
         if (svalue(h$obj)) {
             # cat("var=",h$action," selected\n")
-            thisSet("selectedVars",c(sv,h$action))
+            sv <- c(sv,h$action)
         }
         else {
             # cat("var=",h$action," unselected\n")
             mx <- match(h$action,sv)
-            if (!is.na(mx)) thisSet("selectedVars", sv[-mx])
+            if (!is.na(mx)) sv <- sv[-mx]
         }
+        thisSet("selectedVars",sv)
+
+        readEnable <- length(sv) > 0
+
+        widget <- thisGet("readDataWidget")
+        enabled(widget) <- readEnable
+        widget <- thisGet("readAndPlotDataWidget")
+        enabled(widget) <- readEnable
+
         NULL
     }
 
@@ -706,7 +743,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
 
             cnts <- words(w1vars,1,1,sep="_") == "counts"
             if (any(cnts)) w1vars <- w1vars[!cnts]
-            cat(paste(w1vars,collapse=","),"\n")
+            if (debug) cat(paste(w1vars,collapse=","),"\n")
 
             high_moments <- grepl("'",w1vars,fixed=TRUE)
 
@@ -790,7 +827,9 @@ dgui <- function(visible=TRUE,debug=FALSE)
     g2 <- gnotebook(container=gn1, tab.pos=3)
     # size(gn1) <- c(800,600)
 
-    gbutton("show variables",container=gb1,handler=showVariablesHandler,action=g2)
+    widget <- gbutton("show variables",container=gb1,handler=showVariablesHandler,
+        action=g2)
+    tooltip(widget) <- "Read variable names from NetCDF file and display"
 
     g1 <- gframe("Heights (m)",container=mainContainer, horizontal=TRUE)
 
@@ -927,15 +966,23 @@ dgui <- function(visible=TRUE,debug=FALSE)
     plotIt <- function(tz=NULL)
     {
         ovar <- thisGet("outVarName")
-        if (!is.null(ovar)) x <- get(ovar,envir=globalenv())
+        x <- NULL
+        if (!is.null(ovar)) {
+            if (exists(ovar,envir=globalenv())) x <- get(ovar,envir=globalenv())
+            else {
+                cat("output object",ovar,"not found.\n")
+                return(NULL)
+            }
+        }
         else x <- thisGet(".tmpData")
+
         if (!is.null(x)) {
             wl <- options(warn=1)
             if (is.null(tz)) tryCatch(plot(x))
             else tryCatch(plot(x[tz,]))
             options(wl)
         }
-        else cat("output variable",ovar,"is NULL.\n")
+        else cat("output object",ovar,"is NULL.\n")
         NULL
     }
     zoomInHandler <- function(h,...)
@@ -996,23 +1043,34 @@ dgui <- function(visible=TRUE,debug=FALSE)
             plotIt()
 
             if (!thisGet("plotZoom")) {
-                gbutton("zoom in",container=h$action,handler=zoomInHandler)
-                gbutton("zoom out",container=h$action,handler=zoomOutHandler)
-                gbutton("no zoom",container=h$action,handler=noZoomHandler)
+                widget <- gbutton("zoom in",container=h$action,handler=zoomInHandler)
+                tooltip(widget) <- "In graphics window, after cursor changes to a +, click with the left mouse button to select plot start and end times"
+
+                widget <- gbutton("zoom out",container=h$action,handler=zoomOutHandler)
+                tooltip(widget) <- "back out one level of zoom, and re-plot"
+
+                widget <- gbutton("no zoom",container=h$action,handler=noZoomHandler)
                 thisSet("plotZoom",TRUE)
             }
         }
         NULL
     }
 
-    gbutton("read data",container=g1,handler=readDataHandler)
+    widget <- gbutton("read data",container=g1,handler=readDataHandler)
+    tooltip(widget) <- "Read data from selected variables between start and end time into output object"
+    enabled(widget) <- FALSE
+    thisSet("readDataWidget",widget)
 
-    gbutton("read and plot",container=g1,handler=readAndPlotHandler,action=g1)
+    widget <- gbutton("read and plot",container=g1,handler=readAndPlotHandler,action=g1)
+    tooltip(widget) <- "Read data from selected variables between start and end time into output object and plot the resulting time series"
+    enabled(widget) <- FALSE
+    thisSet("readAndPlotDataWidget",widget)
 
-    glabel("output variable=",container=g1)
-    gcombobox(c("<none>","x","x1","x2","y","y1","y2"),
+    glabel("output object=",container=g1)
+    widget <- gcombobox(c("<none>","x","x1","x2","y","y1","y2"),
         container=g1, editable=TRUE, handler=outputVariableHandler)
 
+    tooltip(widget) <- "Data read from NetCDF files will be placed in this time series object in .GlobalEnv at the top of the R search list, where it is available from the R command line."
 
     thisSet("mainWidget",mainWidget)
 
