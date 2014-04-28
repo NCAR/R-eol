@@ -5,7 +5,7 @@
 #   button for new x11() plot
 #   support for par mfrow?
 #   more general support for par parameters in a text field:  "mar=x"
-#   smoothing?
+#   provide widget to enter smoothing value?
 #   x vs y plots?
 #   difference plots?
 #   set dpar start/end from zoom
@@ -13,7 +13,6 @@
 
 .this <- new.env(parent=emptyenv())
 
-# mytest <- 2
 
 thisExists <- function(name) 
 {
@@ -30,34 +29,38 @@ thisSet <- function(name,val)
     assign(name,val,envir=.this)
 }
 
-that_exists <- function(name) 
+# alternative functions for getting/setting objects in the
+# enclosing environment, which is the namespace.
+# To assign an object, have to use unlockBinding()
+# Seems like its not a good idea to mess with the namespace.
+# Leaving these functions here for reference.
+thatExists <- function(name) 
 {
     parenv <- parent.env(environment(NULL))
     exists(name,envir=parenv)
 }
 
-that_get <- function(name) 
+thatGet <- function(name) 
 {
     parenv <- parent.env(environment(NULL))
     get(name,envir=parenv)
 }
 
-that_put <- function(name,val) 
+thatSet <- function(name,val) 
 {
-    # enclosing environment, the variables in the namespace scope
     parenv <- parent.env(environment(NULL))
     lb <- bindingIsLocked(name,parenv)
     if (lb) unlockBinding(name,parenv)
     assign(name,val,envir=parenv)
     if (lb) lockBinding(name,parenv)
 }
+# mytest <- 2
+# thatSet("mytest",0)
 
 # The date selector in the calendar widget can only handle this time format.
 # "%Y %m %d" doesn't work.
 dfmt <- "%Y-%m-%d"
 infmt <- "%Y-%m-%d%H%M%OS"
-
-# that_put("mytest",0)
 
 thisSet("mainWidget",NULL)
 thisSet("selectedVars",NULL)
@@ -121,10 +124,10 @@ setTimePeriodLength <- function()
 dgui <- function(visible=TRUE,debug=FALSE)
 {
     if (FALSE) {
-        cat("mytest exists=",that_exists("mytest"),"\n")
-        cat("mytest=",that_get("mytest"),"\n")
-        that_put("mytest",20)
-        cat("mytest=",that_get("mytest"),"\n")
+        cat("mytest exists=",thatExists("mytest"),"\n")
+        cat("mytest=",thatGet("mytest"),"\n")
+        thatSet("mytest",20)
+        cat("mytest=",thatGet("mytest"),"\n")
     }
 
     mainWidget <- thisGet("mainWidget")
@@ -439,39 +442,39 @@ dgui <- function(visible=TRUE,debug=FALSE)
     g2 <- gframe("date",container=g1, horizontal=TRUE)
     startDateWidget <- gcalendar(text=thisGet("startDate"),format=dfmt,
         container=g2,handler=startDateHandler)
-    tooltip(startDateWidget) <- "changing the start date or time will also change the end time to start+length"
+    tooltip(startDateWidget) <- "Set dpar(\"start\"). Changing the start date or time will also change the end time to start+length. Removes any zoom."
 
     g2 <- gframe("hour",container=g1, horizontal=TRUE)
     startHourWidget <- gcombobox(hrs,container=g2,action=1L,handler=startTimeHandler)
-    tooltip(startHourWidget) <- "changing the start date or time will also change the end time to start+length"
+    tooltip(startHourWidget) <- "Set dpar(\"start\"). Changing the start date or time will also change the end time to start+length. Removes any zoom."
 
     g2 <- gframe("minute",container=g1, horizontal=TRUE)
     startMinuteWidget <- gcombobox(minsecs,container=g2,action=2L, editable=TRUE,
         handler=startTimeHandler)
-    tooltip(startMinuteWidget) <- "changing the start date or time will also change the end time to start+length"
+    tooltip(startMinuteWidget) <- "Set dpar(\"start\"). Changing the start date or time will also change the end time to start+length. Removes any zoom."
 
     g2 <- gframe("sec",container=g1, horizontal=TRUE)
     startSecWidget <- gcombobox(minsecs, container=g2,action=3L, editable=TRUE,
         handler=startTimeHandler)
-    tooltip(startSecWidget) <- "changing the start date or time will also change the end time to start+length"
+    tooltip(startSecWidget) <- "Set dpar(\"start\"). Changing the start date or time will also change the end time to start+length. Removes any zoom."
 
     g1 <- gframe("End Time",container=mainContainer, horizontal=TRUE)
 
     g2 <- gframe("date",container=g1, horizontal=TRUE)
     endDateWidget <- gcalendar(text=thisGet("endDate"),format=dfmt,container=g2,handler=endDateHandler)
-    tooltip(endDateWidget) <- "changing the end date or time will also change the period length to end-start"
+    tooltip(endDateWidget) <- "Set dpar(\"end\"). Changing the end date or time will also change the period length to end-start. Removes any zoom."
 
     g2 <- gframe("hour",container=g1, horizontal=TRUE)
     endHourWidget <- gcombobox(hrs,container=g2,action=1L,handler=endTimeHandler)
-    tooltip(endHourWidget) <- "changing the end date or time will also change the period length to end-start"
+    tooltip(endHourWidget) <- "Set dpar(\"end\"). Changing the end date or time will also change the period length to end-start. Removes any zoom."
     g2 <- gframe("minute",container=g1, horizontal=TRUE)
     endMinuteWidget <- gcombobox(minsecs, container=g2, action=2L, editable=TRUE,
         handler=endTimeHandler)
-    tooltip(endMinuteWidget) <- "changing the end date or time will also change the period length to end-start"
+    tooltip(endMinuteWidget) <- "Set dpar(\"end\"). Changing the end date or time will also change the period length to end-start. Removes any zoom."
     g2 <- gframe("sec",container=g1, horizontal=TRUE)
     endSecWidget <- gcombobox(minsecs, container=g2, action=3L,  editable=TRUE,
         handler=endTimeHandler)
-    tooltip(endSecWidget) <- "changing the end date and time will also change the period length to end-start"
+    tooltip(endSecWidget) <- "Set dpar(\"end\"). Changing the end date and time will also change the period length to end-start. Removes any zoom."
 
     timeLengthTypeHandler <- function(h,...)
     {
@@ -568,13 +571,13 @@ dgui <- function(visible=TRUE,debug=FALSE)
     selected <- match(thisGet("timeLengthType"),types,nomatch=1)
     timeLengthTypeWidget <- gcombobox(types,selected=selected,container=g2,
         hander=timeLengthTypeHandler)
-    tooltip(timeLengthTypeWidget) <- "Changing the period length will also change the end time"
+    tooltip(timeLengthTypeWidget) <- "Set dpar(\"lenday\",\"lenhr\",...) Changing the time period length will also change the end time to start+length. Removes any zoom."
 
     # size(timeLengthTypeWidget) is 1,1 at this point
     addHandlerChanged(timeLengthTypeWidget,timeLengthTypeHandler)
 
     timeLengthValueWidget <- gedit(as.character(thisGet("timeLengthValue")),width=6,container=g2)
-    tooltip(timeLengthValueWidget) <- "Changing the period length will also change the end time"
+    tooltip(timeLengthValueWidget) <- "Set dpar(\"lenday\",\"lenhr\",...) Changing the time period length will also change the end time to start+length. Removes any zoom."
     # Had to use this method, rather than handler= in the constructor
     addHandlerChanged(timeLengthValueWidget,timeLengthValueHandler)
 
@@ -925,9 +928,12 @@ dgui <- function(visible=TRUE,debug=FALSE)
     {
         sv <- thisGet("selectedVars")
         cat("reading ",paste(sv,collapse=","),"\n")
-        allvars <- thisGet("allVariables")
-        w1vars <- words(allvars,1,1,sep=".")
-        mx <- match(w1vars,sv)
+
+        if (FALSE) {
+            allvars <- thisGet("allVariables")
+            w1vars <- words(allvars,1,1,sep=".")
+            mx <- match(w1vars,sv)
+        }
         if (any(!is.na(mx))) {
             vars <- allvars[!is.na(mx)]
 
@@ -942,10 +948,11 @@ dgui <- function(visible=TRUE,debug=FALSE)
             else {
                 # warn=1, print warnings as they occur.
                 # Under the default warn=0, warnings are printed
-                # when the top-level function returns, which in the
-                # case of dgui is just before exiting R.
+                # when the top-level function returns, which, in the
+                # case of dgui, is just before exiting R.
                 wl <- options(warn=1)
-                x <- dat(vars,derived=FALSE)
+                # x <- dat(vars,derived=FALSE,smooth=TRUE)
+                x <- dat(sv,derived=FALSE,smooth=TRUE)
                 options(wl)
             }
             ovar <- thisGet("outVarName")
@@ -1062,7 +1069,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
     thisSet("readDataWidget",widget)
 
     widget <- gbutton("read and plot",container=g1,handler=readAndPlotHandler,action=g1)
-    tooltip(widget) <- "Read data from selected variables between start and end time into output object and plot the resulting time series"
+    tooltip(widget) <- "Read data from selected variables between start and end time into output object and plot the resulting time series at the current zoom setting."
     enabled(widget) <- FALSE
     thisSet("readAndPlotDataWidget",widget)
 
