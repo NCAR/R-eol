@@ -153,6 +153,7 @@ toggleVariableHandler <- function(h,...)
 disableZoom <- function()
 {
     for (button in thisGet("zoomButtons")) enabled(button) <- FALSE
+    thisSet("zoomTimes",pairlist())
 }
 
 enableZoom <- function()
@@ -341,7 +342,6 @@ dgui <- function(visible=TRUE,debug=FALSE)
     t1 <- dpar("start")
     thisSet("startDate",format(t1,format=dfmt))
     thisSet("startTime",formatHMS(t1))
-    thisSet("zoomTimes",pairlist())
 
     t2 <- dpar("end")
     thisSet("endDate",format(t2,format=dfmt))
@@ -445,7 +445,6 @@ dgui <- function(visible=TRUE,debug=FALSE)
         t1 <- utime(paste(startDate,paste(thisGet("startTime"),collapse=" ")),in.format=infmt)
         dpar(start=t1)
         thisSet("startDate",startDate)
-        thisSet("zoomTimes",pairlist())
 
         # adjust end time widgets to new end time
         t2 <- dpar("end")
@@ -484,7 +483,6 @@ dgui <- function(visible=TRUE,debug=FALSE)
         t1 <- utime(paste(thisGet("startDate"),paste(startTime,collapse=" ")),in.format=infmt)
         dpar(start=t1)
         thisSet("startTime",startTime)
-        thisSet("zoomTimes",pairlist())
 
         # adjust end time widgets
         t2 <- dpar("end")
@@ -523,7 +521,6 @@ dgui <- function(visible=TRUE,debug=FALSE)
             in.format=infmt)
 
         thisSet("endDate",endDate)
-        thisSet("zoomTimes",pairlist())
 
         if (t2 <= dpar("start")) {
             # adjust start time widgets
@@ -577,7 +574,6 @@ dgui <- function(visible=TRUE,debug=FALSE)
         endTime <- thisGet("endTime")
         endTime[h$action] <- as.character(svalue(h$obj))
         thisSet("endTime",endTime)
-        thisSet("zoomTimes",pairlist())
 
         t2 <- utime(paste(thisGet("endDate"),paste(endTime,collapse=" ")),in.format=infmt)
 
@@ -677,7 +673,6 @@ dgui <- function(visible=TRUE,debug=FALSE)
             second=dpar(lensec=dv))
 
         thisSet("timeLengthType",dt)
-        thisSet("zoomTimes",pairlist())
 
         # by default, font is not initialized, all NULL
         if (FALSE) {
@@ -728,7 +723,6 @@ dgui <- function(visible=TRUE,debug=FALSE)
                 second=dpar(lensec=dv))
 
             thisSet("timeLengthValue",dv)
-            thisSet("zoomTimes",pairlist())
 
             # adjust end time widgets
             t2 <- dpar("end")
@@ -752,9 +746,9 @@ dgui <- function(visible=TRUE,debug=FALSE)
             unblockHandlers(endHourWidget)
             unblockHandlers(endMinuteWidget)
             unblockHandlers(endSecWidget)
+            checkVariables()
+            disableZoom()
         }
-        checkVariables()
-        disableZoom()
         NULL
     }
 
@@ -789,7 +783,6 @@ dgui <- function(visible=TRUE,debug=FALSE)
 
         thisSet("startDate",startDate)
         thisSet("startTime",startTime)
-        thisSet("zoomTimes",pairlist())
 
         blockHandlers(startDateWidget)
         blockHandlers(startHourWidget)
@@ -853,7 +846,6 @@ dgui <- function(visible=TRUE,debug=FALSE)
             in.format=infmt)
 
         dpar(start=t1,end=t2)
-        thisSet("zoomTimes",pairlist())
 
         setTimePeriodLength()
 
@@ -865,6 +857,8 @@ dgui <- function(visible=TRUE,debug=FALSE)
 
         unblockHandlers(timeLengthTypeWidget)
         unblockHandlers(timeLengthValueWidget)
+
+        disableZoom()
         NULL
     }
 
