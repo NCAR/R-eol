@@ -3,8 +3,7 @@
 
 # TODO:
 #   dataset menu is not wide enough
-#   automatically do "show variables" when times change, and on first rendering
-#   disable zoom buttons until plot has been made.
+#   derived
 #   add option to show value at cursor
 #   support for par mfrow. Set plot index to 1 after time change
 #   support type="l", "b", "p"
@@ -17,7 +16,6 @@
 #   set dpar start/end from zoom
 
 .this <- new.env(parent=emptyenv())
-
 
 thisExists <- function(name) 
 {
@@ -92,10 +90,10 @@ thisSet("endDate","")
 thisSet("endTime","")
 
 thisSet("heightsCheckBoxWidget",NULL)
-
-thisSet("plotZoom",FALSE)
+thisSet("variablesNotebookWidget",NULL)
 
 thisSet("zoomTimes",pairlist())
+thisSet("zoomWidgets",NULL)
 
 thisSet("readDataWidget",NULL)
 thisSet("readAndPlotDataWidget",NULL)
@@ -126,6 +124,166 @@ setTimePeriodLength <- function()
     thisSet("timeLengthValue",dv)
 }
 
+toggleVariableHandler <- function(h,...)
+{
+    # cat("var=",svalue(h$obj)," selected\n")
+    sv <- thisGet("selectedVars")
+    if (svalue(h$obj)) {
+        # cat("var=",h$action," selected\n")
+        sv <- c(sv,h$action)
+    }
+    else {
+        # cat("var=",h$action," unselected\n")
+        mx <- match(h$action,sv)
+        if (!is.na(mx)) sv <- sv[-mx]
+    }
+    thisSet("selectedVars",sv)
+
+    readEnable <- length(sv) > 0
+
+    widget <- thisGet("readDataWidget")
+    enabled(widget) <- readEnable
+    widget <- thisGet("readAndPlotDataWidget")
+    enabled(widget) <- readEnable
+
+    NULL
+}
+
+checkVariables <- function()
+{
+    notebook <- thisGet("variablesNotebookWidget")
+    if (is.null(notebook)) return(NULL)
+
+    allvars <- sort(variables())
+
+    if (identical(allvars,thisGet("allVariables"))) return(NULL)
+    thisSet("allVariables",allvars)
+
+    if (length(allvars) > 0) {
+        hts <- sort(unique(heights(allvars)))
+        hts <- hts[hts > 0.1]
+
+        if (!identical(hts,thisGet("allHeights"))) {
+            thisSet("allHeights",hts)
+
+            chts <- sapply(hts,format)
+
+            if (thisGet("debug")) cat("heights=",paste(chts,collapse=","),"\n")
+            cb <- thisGet("heightsCheckBoxWidget")
+            cb[] <- c("clear","all",chts)
+        }
+
+        lenfile <- dpar("lenfile")
+        if (is.null(lenfile)) 
+            iod <- netcdf()
+        else iod <- netcdf(lenfile = lenfile)
+        stns <- sort(unique(stations(iod)))
+        close(iod)
+        if (!identical(stns,thisGet("allStations"))) {
+            thisSet("allStations",stns)
+
+            if (thisGet("debug")) cat("allStations=",paste(stns,collapse=","),"\n")
+            cb <- thisGet("stationsCheckBoxWidget")
+            cb[] <- c("clear","all",sapply(stns,format))
+        }
+
+        sites <- sort(unique(sites(allvars)))
+        if (!identical(sites,thisGet("allSites"))) {
+            thisSet("allSites",sites)
+            cb <- thisGet("sitesCheckBoxWidget")
+            cb[] <- c("clear","all",sites)
+        }
+
+        w1vars <- sort(unique(words(allvars,1,1,sep=".")))
+
+        cnts <- words(w1vars,1,1,sep="_") == "counts"
+        if (any(cnts)) w1vars <- w1vars[!cnts]
+        if (thisGet("debug")) cat(paste(w1vars,collapse=","),"\n")
+
+        selected <- thisGet("selectedVars")
+        # remove from selected variables any that are not in w1vars
+        mx <- is.na(match(selected,w1vars))
+        if (any(mx)) {
+            selected <- selected[!mx]
+            thisSet("selectedVars",selected)
+        }
+
+        high_moments <- grepl("'",w1vars,fixed=TRUE)
+
+        # delete any existing tab pages
+        if (length(notebook) > 0) {
+            for (i in 1:length(notebook)) {
+                svalue(notebook) <- i
+                dispose(notebook)
+            }
+        }
+        # cat("disposed\n")
+        # g1 <- ggroup(container=notebook, horizontal=FALSE,label="variables")
+        # var_group <- ggroup(horizontal=TRUE,use.scrollwindow=FALSE,container=notebook,label="variables")
+        layout <- glayout(container=notebook, homogeneous=TRUE,
+            label="first moments",spacing=0)
+        nc <- 10
+        i <- 0
+        for (var in w1vars[!high_moments]) {
+            ic <- (i %% nc) + 1
+            ir <- (i %/% nc) + 1
+            cb <- gcheckbox(text=var,action=var,checked=(var%in%selected),
+                handler=toggleVariableHandler)
+            layout[ir,ic] <- cb
+            if (FALSE && i == 0) {
+                sz <- size(cb)
+                cat("cb size =",paste(sz,collapse=","),"\n")
+            }
+            i <- i + 1
+        }
+        thisSet("var1MomLayout",layout)
+        # cat("done\n")
+
+        if (any(high_moments)) {
+            layout <- glayout(container=notebook, homogeneous=TRUE,
+                label="higher moments",spacing=0)
+            nc <- 10
+            i <- 0
+            for (var in w1vars[high_moments]) {
+                ic <- (i %% nc) + 1
+                ir <- (i %/% nc) + 1
+                cb <- gcheckbox(text=var,action=var, checked=(var%in%selected),
+                    handler=toggleVariableHandler)
+                layout[ir,ic] <- cb
+                if (FALSE && i == 0) {
+                    sz <- size(cb)
+                    cat("cb size =",paste(sz,collapse=","),"\n")
+                }
+                i <- i + 1
+            }
+            svalue(notebook) <- 1
+        }
+        thisSet("var2MomLayout",layout)
+
+        if (FALSE) {
+            sz <- size(layout)
+            cat("layout size =",paste(sz,collapse=","),"\n")
+            sz[2] <- as.integer(max(length(w1vars)/5,5) * sz[1])
+
+            cat("setting layout size to",paste(sz,collapse=","),"\n")
+            size(layout) <- c(1,50)
+
+            sz <- size(var_group)
+            cat("group size =",paste(sz,collapse=","),"\n")
+            sz[2] <- as.integer(max(length(w1vars)/5,5) * sz[1])
+
+            cat("setting group size to",paste(sz,collapse=","),"\n")
+            size(var_group) <- c(1,50)
+        }
+        else if (FALSE) {
+            sz <- size(layout)
+            cat("layout size =",paste(sz,collapse=","),"\n")
+            # size(layout) <- c(800,600)
+        }
+    }
+    NULL
+}
+
 dgui <- function(visible=TRUE,debug=FALSE)
 {
     if (FALSE) {
@@ -134,6 +292,8 @@ dgui <- function(visible=TRUE,debug=FALSE)
         thatSet("mytest",20)
         cat("mytest=",thatGet("mytest"),"\n")
     }
+
+    thisSet("debug",debug)
 
     mainWidget <- thisGet("mainWidget")
     if (!is.null(mainWidget)) {
@@ -177,7 +337,6 @@ dgui <- function(visible=TRUE,debug=FALSE)
 
     setTimePeriodLength()
 
-
     # primary setting is the start time
     # changing start time results in new end time, using length
     # changing length results in new end time
@@ -195,6 +354,8 @@ dgui <- function(visible=TRUE,debug=FALSE)
             dataset(dset)
             svalue(ncd) <- Sys.getenv("NETCDF_DIR")
             svalue(ncf) <- Sys.getenv("NETCDF_FILE")
+            thisSet("allVariables",NULL)
+            checkVariables()
             NULL
         }
 
@@ -295,6 +456,8 @@ dgui <- function(visible=TRUE,debug=FALSE)
         unblockHandlers(endHourWidget)
         unblockHandlers(endMinuteWidget)
         unblockHandlers(endSecWidget)
+
+        checkVariables()
         NULL
     }
 
@@ -331,6 +494,8 @@ dgui <- function(visible=TRUE,debug=FALSE)
         unblockHandlers(endHourWidget)
         unblockHandlers(endMinuteWidget)
         unblockHandlers(endSecWidget)
+
+        checkVariables()
         NULL
     }
 
@@ -384,6 +549,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
             unblockHandlers(timeLengthTypeWidget)
             unblockHandlers(timeLengthValueWidget)
         }
+        checkVariables()
         NULL
     }
 
@@ -437,6 +603,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
             unblockHandlers(timeLengthTypeWidget)
             unblockHandlers(timeLengthValueWidget)
         }
+        checkVariables()
         NULL
     }
     hrs <- sprintf("%02d",0L:23L)
@@ -447,39 +614,39 @@ dgui <- function(visible=TRUE,debug=FALSE)
     g2 <- gframe("date",container=g1, horizontal=TRUE)
     startDateWidget <- gcalendar(text=thisGet("startDate"),format=dfmt,
         container=g2,handler=startDateHandler)
-    tooltip(startDateWidget) <- "Set dpar(\"start\"). Changing the start date or time will also change the end time to start+length. Removes any zoom."
+    tooltip(startDateWidget) <- "Set dpar(\"start\"). Changing the start date or time changes the end time to (start+length) and removes any zoom. Hit return after editing the date."
 
     g2 <- gframe("hour",container=g1, horizontal=TRUE)
     startHourWidget <- gcombobox(hrs,container=g2,action=1L,handler=startTimeHandler)
-    tooltip(startHourWidget) <- "Set dpar(\"start\"). Changing the start date or time will also change the end time to start+length. Removes any zoom."
+    tooltip(startHourWidget) <- "Set dpar(\"start\"). Changing the start date or time changes the end time to (start+length) and removes any zoom."
 
     g2 <- gframe("minute",container=g1, horizontal=TRUE)
     startMinuteWidget <- gcombobox(minsecs,container=g2,action=2L, editable=TRUE,
         handler=startTimeHandler)
-    tooltip(startMinuteWidget) <- "Set dpar(\"start\"). Changing the start date or time will also change the end time to start+length. Removes any zoom."
+    tooltip(startMinuteWidget) <- "Set dpar(\"start\"). Changing the start date or time changes the end time to (start+length) and removes any zoom."
 
     g2 <- gframe("sec",container=g1, horizontal=TRUE)
     startSecWidget <- gcombobox(minsecs, container=g2,action=3L, editable=TRUE,
         handler=startTimeHandler)
-    tooltip(startSecWidget) <- "Set dpar(\"start\"). Changing the start date or time will also change the end time to start+length. Removes any zoom."
+    tooltip(startSecWidget) <- "Set dpar(\"start\"). Changing the start date or time changes the end time to (start+length) and removes any zoom."
 
     g1 <- gframe("End Time",container=mainContainer, horizontal=TRUE)
 
     g2 <- gframe("date",container=g1, horizontal=TRUE)
     endDateWidget <- gcalendar(text=thisGet("endDate"),format=dfmt,container=g2,handler=endDateHandler)
-    tooltip(endDateWidget) <- "Set dpar(\"end\"). Changing the end date or time will also change the period length to end-start. Removes any zoom."
+    tooltip(endDateWidget) <- "Set dpar(\"end\"). Changing the end date or time changes the period length to (end-start) and removes any zoom. Hit return after editing the date."
 
     g2 <- gframe("hour",container=g1, horizontal=TRUE)
     endHourWidget <- gcombobox(hrs,container=g2,action=1L,handler=endTimeHandler)
-    tooltip(endHourWidget) <- "Set dpar(\"end\"). Changing the end date or time will also change the period length to end-start. Removes any zoom."
+    tooltip(endHourWidget) <- "Set dpar(\"end\"). Changing the end date or time changes the period length to (end-start) and removes any zoom."
     g2 <- gframe("minute",container=g1, horizontal=TRUE)
     endMinuteWidget <- gcombobox(minsecs, container=g2, action=2L, editable=TRUE,
         handler=endTimeHandler)
-    tooltip(endMinuteWidget) <- "Set dpar(\"end\"). Changing the end date or time will also change the period length to end-start. Removes any zoom."
+    tooltip(endMinuteWidget) <- "Set dpar(\"end\"). Changing the end date or time changes the period length to (end-start) and removes any zoom."
     g2 <- gframe("sec",container=g1, horizontal=TRUE)
     endSecWidget <- gcombobox(minsecs, container=g2, action=3L,  editable=TRUE,
         handler=endTimeHandler)
-    tooltip(endSecWidget) <- "Set dpar(\"end\"). Changing the end date and time will also change the period length to end-start. Removes any zoom."
+    tooltip(endSecWidget) <- "Set dpar(\"end\"). Changing the end date and time changes the period length to (end-start) and removes any zoom."
 
     timeLengthTypeHandler <- function(h,...)
     {
@@ -525,6 +692,8 @@ dgui <- function(visible=TRUE,debug=FALSE)
         unblockHandlers(endHourWidget)
         unblockHandlers(endMinuteWidget)
         unblockHandlers(endSecWidget)
+
+        checkVariables()
         NULL
     }
 
@@ -566,6 +735,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
             unblockHandlers(endMinuteWidget)
             unblockHandlers(endSecWidget)
         }
+        checkVariables()
         NULL
     }
 
@@ -576,13 +746,13 @@ dgui <- function(visible=TRUE,debug=FALSE)
     selected <- match(thisGet("timeLengthType"),types,nomatch=1)
     timeLengthTypeWidget <- gcombobox(types,selected=selected,container=g2,
         hander=timeLengthTypeHandler)
-    tooltip(timeLengthTypeWidget) <- "Set dpar(\"lenday\",\"lenhr\",...) Changing the time period length will also change the end time to start+length. Removes any zoom."
+    tooltip(timeLengthTypeWidget) <- "Set dpar(\"lenday\",\"lenhr\",...) Changing the time period length changes the end time to (start+length) and removes any zoom."
 
     # size(timeLengthTypeWidget) is 1,1 at this point
     addHandlerChanged(timeLengthTypeWidget,timeLengthTypeHandler)
 
     timeLengthValueWidget <- gedit(as.character(thisGet("timeLengthValue")),width=6,container=g2)
-    tooltip(timeLengthValueWidget) <- "Set dpar(\"lenday\",\"lenhr\",...) Changing the time period length will also change the end time to start+length. Removes any zoom."
+    tooltip(timeLengthValueWidget) <- "Set dpar(\"lenday\",\"lenhr\",...) Changing the time period length changes the end time to (start+length) and removes any zoom."
     # Had to use this method, rather than handler= in the constructor
     addHandlerChanged(timeLengthValueWidget,timeLengthValueHandler)
 
@@ -639,6 +809,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         unblockHandlers(endHourWidget)
         unblockHandlers(endMinuteWidget)
         unblockHandlers(endSecWidget)
+        checkVariables()
         NULL
     }
 
@@ -689,160 +860,25 @@ dgui <- function(visible=TRUE,debug=FALSE)
     radio <- gradio(c(localtz,"UTC"),container=g2,horizontal=TRUE,handler=timeZoneHandler)
     thisSet("tzradio",radio)
 
-    toggleVariableHandler <- function(h,...)
-    {
-        # cat("var=",svalue(h$obj)," selected\n")
-        sv <- thisGet("selectedVars")
-        if (svalue(h$obj)) {
-            # cat("var=",h$action," selected\n")
-            sv <- c(sv,h$action)
-        }
-        else {
-            # cat("var=",h$action," unselected\n")
-            mx <- match(h$action,sv)
-            if (!is.na(mx)) sv <- sv[-mx]
-        }
-        thisSet("selectedVars",sv)
-
-        readEnable <- length(sv) > 0
-
-        widget <- thisGet("readDataWidget")
-        enabled(widget) <- readEnable
-        widget <- thisGet("readAndPlotDataWidget")
-        enabled(widget) <- readEnable
-
-        NULL
-    }
-
-    showVariablesHandler <- function(h,...)
-    {
-        thisSet("selectedVars",NULL)
-        allvars <- variables()
-        thisSet("allVariables",allvars)
-        if (length(allvars) > 0) {
-            hts <- sort(unique(heights(allvars)))
-            hts <- hts[hts > 0.1]
-            thisSet("allHeights",hts)
-
-            chts <- sapply(hts,format)
-
-            if (debug) cat("heights=",paste(chts,collapse=","),"\n")
-            cb <- thisGet("heightsCheckBoxWidget")
-            cb[] <- c("clear","all",chts)
-
-            lenfile <- dpar("lenfile")
-            if (is.null(lenfile)) 
-                iod <- netcdf()
-            else iod <- netcdf(lenfile = lenfile)
-            stns <- sort(unique(stations(iod)))
-            close(iod)
-            thisSet("allStations",stns)
-
-            if (debug) cat("allStations=",paste(stns,collapse=","),"\n")
-            cb <- thisGet("stationsCheckBoxWidget")
-            cb[] <- c("clear","all",sapply(stns,format))
-
-            sites <- sort(unique(sites(allvars)))
-            thisSet("allSites",sites)
-            cb <- thisGet("sitesCheckBoxWidget")
-            cb[] <- c("clear","all",sites)
-
-            w1vars <- sort(unique(words(allvars,1,1,sep=".")))
-
-            cnts <- words(w1vars,1,1,sep="_") == "counts"
-            if (any(cnts)) w1vars <- w1vars[!cnts]
-            if (debug) cat(paste(w1vars,collapse=","),"\n")
-
-            high_moments <- grepl("'",w1vars,fixed=TRUE)
-
-            # delete any existing tab pages
-            if (length(h$action) > 0) {
-                for (i in 1:length(h$action)) {
-                    svalue(h$action) <- i
-                    dispose(h$action)
-                }
-            }
-            # cat("disposed\n")
-            # g1 <- ggroup(container=h$action, horizontal=FALSE,label="variables")
-            # var_group <- ggroup(horizontal=TRUE,use.scrollwindow=FALSE,container=h$action,label="variables")
-            layout <- glayout(container=h$action, homogeneous=TRUE,
-                label="first moments",spacing=0)
-            nc <- 10
-            i <- 0
-            for (var in w1vars[!high_moments]) {
-                ic <- (i %% nc) + 1
-                ir <- (i %/% nc) + 1
-                cb <- gcheckbox(text=var,action=var,
-                    handler=toggleVariableHandler)
-                layout[ir,ic] <- cb
-                if (FALSE && i == 0) {
-                    sz <- size(cb)
-                    cat("cb size =",paste(sz,collapse=","),"\n")
-                }
-                i <- i + 1
-            }
-            thisSet("var1MomLayout",layout)
-            # cat("done\n")
-
-            if (any(high_moments)) {
-                layout <- glayout(container=h$action, homogeneous=TRUE,
-                    label="higher moments",spacing=0)
-                nc <- 10
-                i <- 0
-                for (var in w1vars[high_moments]) {
-                    ic <- (i %% nc) + 1
-                    ir <- (i %/% nc) + 1
-                    cb <- gcheckbox(text=var,action=var,
-                        handler=toggleVariableHandler)
-                    layout[ir,ic] <- cb
-                    if (FALSE && i == 0) {
-                        sz <- size(cb)
-                        cat("cb size =",paste(sz,collapse=","),"\n")
-                    }
-                    i <- i + 1
-                }
-                svalue(h$action) <- 1
-            }
-            thisSet("var2MomLayout",layout)
-
-            if (FALSE) {
-                sz <- size(layout)
-                cat("layout size =",paste(sz,collapse=","),"\n")
-                sz[2] <- as.integer(max(length(w1vars)/5,5) * sz[1])
-
-                cat("setting layout size to",paste(sz,collapse=","),"\n")
-                size(layout) <- c(1,50)
-
-                sz <- size(var_group)
-                cat("group size =",paste(sz,collapse=","),"\n")
-                sz[2] <- as.integer(max(length(w1vars)/5,5) * sz[1])
-
-                cat("setting group size to",paste(sz,collapse=","),"\n")
-                size(var_group) <- c(1,50)
-            }
-            else if (FALSE) {
-                sz <- size(layout)
-                cat("layout size =",paste(sz,collapse=","),"\n")
-                # size(layout) <- c(800,600)
-            }
-        }
-        NULL
-    }
-
     gb1 <- ggroup(container=mainContainer, horizontal=TRUE)
     gn1 <- ggroup(container=mainContainer, horizontal=TRUE,use.scrollbar=TRUE)
 
-    g2 <- gnotebook(container=gn1, tab.pos=3)
+    notebook <- gnotebook(container=gn1, tab.pos=3)
+    thisSet("variablesNotebookWidget",notebook)
     # size(gn1) <- c(800,600)
 
-    widget <- gbutton("show variables",container=gb1,handler=showVariablesHandler,
-        action=g2)
-    tooltip(widget) <- "Read variable names from NetCDF file and display"
+    if (FALSE) {
+        widget <- gbutton("show variables",container=gb1,handler=showVariablesHandler,
+            action=notebook)
+        tooltip(widget) <- "Read variable names from NetCDF file and display"
+    }
 
     g1 <- gframe("Heights (m)",container=mainContainer, horizontal=TRUE)
 
-    hts <- thisGet("allHeights")
-    if (is.null(hts)) hts <- 0
+    if (FALSE) {
+        hts <- thisGet("allHeights")
+        if (is.null(hts)) hts <- 0
+    }
     heightsHandler <- function(h,...)
     {
         hts <- svalue(h$obj)
@@ -864,8 +900,11 @@ dgui <- function(visible=TRUE,debug=FALSE)
         }
         NULL
     }
-    chts <- c("clear","all",sapply(hts,format))
-    names(chts) <- chts
+    if (FALSE) {
+        chts <- c("clear","all",sapply(hts,format))
+        names(chts) <- chts
+    }
+    else chts <- c("clear","all")
 
     heightsCheckBoxWidget <- gcheckboxgroup(chts,checked=rep(FALSE,length(chts)),
         horizontal=TRUE,handler=heightsHandler,container=g1)
@@ -873,7 +912,10 @@ dgui <- function(visible=TRUE,debug=FALSE)
 
     g1 <- gframe("Stations",container=mainContainer, horizontal=TRUE)
 
-    stns <- thisGet("allStations")
+    if (FALSE) {
+        stns <- thisGet("allStations")
+    }
+
     stationsHandler <- function(h,...)
     {
         stns <- svalue(h$obj)
@@ -895,7 +937,11 @@ dgui <- function(visible=TRUE,debug=FALSE)
         }
         NULL
     }
-    cstns <- c("clear","all",sapply(stns,format))
+
+    if (FALSE) {
+        cstns <- c("clear","all",sapply(stns,format))
+    }
+    else cstns <- c("clear","all")
 
     stationsCheckBoxWidget <- gcheckboxgroup(cstns,checked=rep(FALSE,length(cstns)),
         horizontal=TRUE,handler=stationsHandler,container=g1)
@@ -903,7 +949,9 @@ dgui <- function(visible=TRUE,debug=FALSE)
 
     g1 <- gframe("Sites",container=mainContainer, horizontal=TRUE)
 
-    sites <- thisGet("allSites")
+    if (FALSE) {
+        sites <- thisGet("allSites")
+    }
     sitesHandler <- function(h,...)
     {
         sites <- svalue(h$obj)
@@ -923,11 +971,16 @@ dgui <- function(visible=TRUE,debug=FALSE)
         }
         NULL
     }
-    csites <- c("clear","all",sites)
+    if (FALSE) {
+        csites <- c("clear","all",sites)
+    }
+    else csites <- c("clear","all")
 
     sitesCheckBoxWidget <- gcheckboxgroup(csites,checked=rep(FALSE,length(csites)),
         horizontal=TRUE,handler=sitesHandler,container=g1)
     thisSet("sitesCheckBoxWidget",sitesCheckBoxWidget)
+
+    checkVariables()
 
     readDataHandler <- function(h,...)
     {
@@ -1058,17 +1111,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         if (length(zoom) > 0) plotIt(zoom[[length(zoom)]])
         else {
             plotIt()
-
-            if (!thisGet("plotZoom")) {
-                widget <- gbutton("zoom in",container=h$action,handler=zoomInHandler)
-                tooltip(widget) <- "In graphics window, after cursor changes to a +, click with the left mouse button to select plot start and end times"
-
-                widget <- gbutton("zoom out",container=h$action,handler=zoomOutHandler)
-                tooltip(widget) <- "back out one level of zoom, and re-plot"
-
-                widget <- gbutton("no zoom",container=h$action,handler=noZoomHandler)
-                thisSet("plotZoom",TRUE)
-            }
+            for (button in thisGet("zoomButtons")) enabled(button) <- TRUE
         }
         NULL
     }
@@ -1088,6 +1131,22 @@ dgui <- function(visible=TRUE,debug=FALSE)
         container=g1, editable=TRUE, handler=outputVariableHandler)
 
     tooltip(widget) <- "Data read from NetCDF files will be placed in this time series object in .GlobalEnv at the top of the R search list, where it is available from the R command line."
+
+    zoomButtons <- list()
+    widget <- gbutton("zoom in",container=g1,handler=zoomInHandler)
+    tooltip(widget) <- "In graphics window, after cursor changes to a +, click with the left mouse button to select plot start and end times"
+    enabled(widget) <- FALSE
+    zoomButtons[1] <- widget
+
+    widget <- gbutton("zoom out",container=g1,handler=zoomOutHandler)
+    tooltip(widget) <- "back out one level of zoom, and re-plot"
+    enabled(widget) <- FALSE
+    zoomButtons[2] <- widget
+
+    widget <- gbutton("no zoom",container=g1,handler=noZoomHandler)
+    enabled(widget) <- FALSE
+    zoomButtons[3] <- widget
+    thisSet("zoomButtons",zoomButtons)
 
     thisSet("mainWidget",mainWidget)
 
