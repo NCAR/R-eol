@@ -3,10 +3,11 @@
 
 # TODO:
 #   dataset menu is not wide enough
-#   derived
+#   dat(x,derived=TRUE)
 #   add option to show value at cursor
 #   support for par mfrow. Set plot index to 1 after time change
 #   support type="l", "b", "p"
+#   after selecting dataset, provide start and end times of the dataset
 
 #   button for new x11() plot
 #   more general support for par parameters in a text field:  "mar=x"
@@ -149,12 +150,23 @@ toggleVariableHandler <- function(h,...)
     NULL
 }
 
+disableZoom <- function()
+{
+    for (button in thisGet("zoomButtons")) enabled(button) <- FALSE
+}
+
+enableZoom <- function()
+{
+    for (button in thisGet("zoomButtons")) enabled(button) <- TRUE
+}
+
 checkVariables <- function()
 {
     notebook <- thisGet("variablesNotebookWidget")
     if (is.null(notebook)) return(NULL)
 
-    allvars <- sort(variables())
+    allvars <- variables()
+    if (length(allvars) > 0) allvars <- sort(allvars)
 
     if (identical(allvars,thisGet("allVariables"))) return(NULL)
     thisSet("allVariables",allvars)
@@ -356,6 +368,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
             svalue(ncf) <- Sys.getenv("NETCDF_FILE")
             thisSet("allVariables",NULL)
             checkVariables()
+            disableZoom()
             NULL
         }
 
@@ -458,6 +471,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         unblockHandlers(endSecWidget)
 
         checkVariables()
+        disableZoom()
         NULL
     }
 
@@ -496,6 +510,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         unblockHandlers(endSecWidget)
 
         checkVariables()
+        disableZoom()
         NULL
     }
 
@@ -550,6 +565,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
             unblockHandlers(timeLengthValueWidget)
         }
         checkVariables()
+        disableZoom()
         NULL
     }
 
@@ -604,6 +620,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
             unblockHandlers(timeLengthValueWidget)
         }
         checkVariables()
+        disableZoom()
         NULL
     }
     hrs <- sprintf("%02d",0L:23L)
@@ -694,6 +711,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         unblockHandlers(endSecWidget)
 
         checkVariables()
+        disableZoom()
         NULL
     }
 
@@ -736,6 +754,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
             unblockHandlers(endSecWidget)
         }
         checkVariables()
+        disableZoom()
         NULL
     }
 
@@ -810,6 +829,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         unblockHandlers(endMinuteWidget)
         unblockHandlers(endSecWidget)
         checkVariables()
+        disableZoom()
         NULL
     }
 
@@ -1111,7 +1131,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         if (length(zoom) > 0) plotIt(zoom[[length(zoom)]])
         else {
             plotIt()
-            for (button in thisGet("zoomButtons")) enabled(button) <- TRUE
+            enableZoom()
         }
         NULL
     }
