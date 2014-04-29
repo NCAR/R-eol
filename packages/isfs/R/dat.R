@@ -6,8 +6,8 @@
 
 setClass("dat",contains="nts")
 
-dat <- function(what,derived=T,cache=unlist(options("dcache")),
-    avg,smooth=F,...)
+dat <- function(what,derived=TRUE,cache=unlist(options("dcache")),
+    avg,smooth=FALSE,...)
 {
 
     if (inherits(what,"nts")) return(as(what,"dat"))
@@ -17,9 +17,9 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
     #    dpar(avg=c(nonsimple.period,simple.period))
     #    or
     #    dpar(avg=simple.period)
-    # 2. the avg=T/F parameter to this dat function.
+    # 2. the avg=TRUE/FALSE parameter to this dat function.
     # 
-    # If dpar("avg") is non-zero, and avg=T in the dat call,
+    # If dpar("avg") is non-zero, and avg=TRUE in the dat call,
     # then averaging is done.
     #
     # The avg argument to dat defaults to FALSE, unless this is the
@@ -35,7 +35,7 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
     # This scheme results in derived variables being computed from
     # non-reduced data, then averaged after the derivation:
     # i.e. lazy, at the last minute, averaging.
-    # To override this behavior within a dat function specify avg=T 
+    # To override this behavior within a dat function specify avg=TRUE 
     # in the dat calls to the input variables:
     # For example, this dat function does the default:
     #     dat.X <- function(what,...) {
@@ -45,7 +45,7 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
     #
     # This function:
     #     dat.X <- function(what,...) {
-    #       dat("Y",avg=T,smooth=T) ^ 2
+    #       dat("Y",avg=TRUE,smooth=TRUE) ^ 2
     #     }
     # would result in X <- (average(Y))^2
     #
@@ -60,11 +60,11 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
     # input variables).
     #
     # Like averaging, smoothing is accomplished by computing means.
-    # However specifying smooth=T, and a smooth time period in
+    # However specifying smooth=TRUE, and a smooth time period in
     # dpar results in simple running averages of the selected data
     # variables, with an output interval equal to the current deltaT
     # of the data.
-    # Specifying avg=T and the avg time periods in dpar results in
+    # Specifying avg=TRUE and the avg time periods in dpar results in
     # more complicated processing, where for example, averages of
     # second moments will include the deviation of the means.
     #
@@ -184,7 +184,7 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
     # because of the way things are stored in the netcdf file:
     # X could be read as  X.a, X.b and Y in the opposite order: Y.b Y.a
 
-    dnames <- sort(lookup(what,verbose=F))
+    dnames <- sort(lookup(what,verbose=FALSE))
     if ((nnames <- length(dnames)) == 0) return(NULL)
 
     if (nnames == 1) {
@@ -209,7 +209,7 @@ dat <- function(what,derived=T,cache=unlist(options("dcache")),
 
     # cat("class(x)=",class(x),"\n")
     if (FALSE) {
-        if (nnames == 1 && existsClass(dnames) && extends(dnames,"dat",maybe=F))
+        if (nnames == 1 && existsClass(dnames) && extends(dnames,"dat",maybe=FALSE))
             class(x) <- dnames
         else class(x) <- "dat"
     }
@@ -240,9 +240,9 @@ smooth.avg.dat <- function(x,smooth,smoothper,avg,simple.avg,avgper)
         x <- average(x,smoothper,dt,method="mean",simple=TRUE)
     if (avg && !is.na(dt) && dt < avgper[2]) {
         dns <- dimnames(x)[[2]]
-        # do the initial simple=F averaging on second moments
+        # do the initial simple=FALSE averaging on second moments
         if (!simple.avg && any(regexpr("'",dns) != -1) && dt < avgper[1]) {
-            x <- average(x,avgper[1],avgper[1],method="mean",simple=F)
+            x <- average(x,avgper[1],avgper[1],method="mean",simple=FALSE)
             dt <- deltat(x)[1]
         }
         if (!is.na(dt) && dt < avgper[2])
@@ -312,7 +312,7 @@ setMethod("select",signature(x="dat"),
                 hdiff <- outer(xhts,hts,function(x,y) abs(x-y))
                 hdiff <- !is.na(hdiff) & hdiff < 1.e-5
                 htsmatch <-
-                    matrix(1:length(hts),nrow=length(xhts),ncol=length(hts),byrow=T)[hdiff]
+                    matrix(1:length(hts),nrow=length(xhts),ncol=length(hts),byrow=TRUE)[hdiff]
                 xhtsmatch <-
                     matrix(1:length(xhts),nrow=length(xhts),ncol=length(hts))[hdiff]
 
@@ -508,7 +508,7 @@ setMethod("clip",signature(x1="character"),
                     if (is.null(cmin)) cmin <- oldclip$min
                     if (is.null(cmax)) cmax <- oldclip$max
                 } else {
-                    if (clip) stop("clip limits must be specified when clip==T")
+                    if (clip) stop("clip limits must be specified when clip==TRUE")
                     cmin <- cmax <- NULL
                 }
             }
@@ -550,7 +550,7 @@ setMethod("[",signature(x="dat"),
             n.class <- "nts"
             attr(n.class,package="eolts")
             class(x) <- n.class
-            x <- x[...,drop=F]
+            x <- x[...,drop=FALSE]
             if (class(x) == "nts") class(x) <- class.x
             x
         }
@@ -898,7 +898,7 @@ setMethod("Cbind",signature(x1="dat",x2="ANY"),
 }
 
 setMethod("average", signature="dat",
-    function(x,...,simple=T)
+    function(x,...,simple=TRUE)
     {
         cat("average x=",dimnames(x)[[2]]," args=",unlist(list(...)),"simple=",simple,"\n")
 
@@ -920,7 +920,7 @@ setMethod("average", signature="dat",
             xa <- x[,1]
             xa[] <- 1
             class(xa) <- "nts"
-            xa <- average(xa,...,simple=T)
+            xa <- average(xa,...,simple=TRUE)
             wts <- matrix(0,ncol=ncol(x),nrow=nrow(xa))
             xa <- dat(nts(matrix(NA_real_,ncol=ncol(x),nrow=nrow(xa),dimnames=list(NULL,dns)),
                     tspar(xa), units=x@units,weightmap=1:ncol(x),
@@ -935,7 +935,7 @@ setMethod("average", signature="dat",
                 if (nw == 1) {
                     xx <- x[,xcol]
                     class(xx) <- "nts"
-                    av <- average(xx,...,simple=T)
+                    av <- average(xx,...,simple=TRUE)
                     xa[,xcol] <- av
                     # I believe the above assignment does this
                     # wts[,xcol] <- av@weights
@@ -982,8 +982,8 @@ setMethod("average", signature="dat",
 
                     class(xx) <- "nts"
 
-                    av <- average(xx + x1 * x2,...,simple=T) - 
-                    average(x1,...,simple=T) * average(x2,...,simple=T)
+                    av <- average(xx + x1 * x2,...,simple=TRUE) - 
+                    average(x1,...,simple=TRUE) * average(x2,...,simple=TRUE)
                     xa[,xcol] <- av
                 }
                 else if (nw == 3) {
@@ -1000,7 +1000,7 @@ setMethod("average", signature="dat",
                     if (any(naw)) xw@data[naw] <- 0
                     x1 <- x1 * fx
                     class(x1) <- "nts"
-                    x1a <- average(x1,...,simple=T)
+                    x1a <- average(x1,...,simple=TRUE)
 
                     if (any(mx <- (dns == dnames[2]))) x2 <- x[,mx]
                     else x2 <- dat(dnames[2])
@@ -1010,7 +1010,7 @@ setMethod("average", signature="dat",
                     if (any(naw)) xw@data[naw] <- 0
                     x2 <- x2 * fx
                     class(x2) <- "nts"
-                    x2a <- average(x2,...,simple=T)
+                    x2a <- average(x2,...,simple=TRUE)
 
                     if (any(mx <- (dns == dnames[3]))) x3 <- x[,mx]
                     else x3 <- dat(dnames[3])
@@ -1020,7 +1020,7 @@ setMethod("average", signature="dat",
                     if (any(naw)) xw@data[naw] <- 0
                     x3 <- x3 * fx
                     class(x3) <- "nts"
-                    x3a <- average(x3,...,simple=T)
+                    x3a <- average(x3,...,simple=TRUE)
 
                     if (!identical(as.numeric(xx@weights),as.numeric(x1@weights)))
                         warning(paste("average: weights of",dimnames(xx)[[2]],"differ from",dimnames(x1)[[2]]))
@@ -1053,11 +1053,11 @@ setMethod("average", signature="dat",
                     class(xx) <- "nts"
                     # browser()
 
-                    av <- average(xx + x1*x2x3 + x2*x1x3 + x3*x1x2 + x1*x2*x3,...,simple=T) - 
-                    x1a * average(x2x3,...,simple=T) -
-                    x2a * average(x1x3,...,simple=T) -
-                    x3a * average(x1x2,...,simple=T) -
-                    x1a * x2a * x3a
+                    av <- average(xx + x1*x2x3 + x2*x1x3 + x3*x1x2 + x1*x2*x3,...,simple=TRUE) - 
+                        x1a * average(x2x3,...,simple=TRUE) -
+                        x2a * average(x1x3,...,simple=TRUE) -
+                        x3a * average(x1x2,...,simple=TRUE) -
+                        x1a * x2a * x3a
                     xa[,xcol] <- av
                     # wts[,xcol] <- attr(av,"weights")
                     # attr(xa,"weights") <- wts
@@ -1073,7 +1073,7 @@ setMethod("average", signature="dat",
     }
     )
 
-other.dat.func <- function(what,whine=T)
+other.dat.func <- function(what,whine=TRUE)
 {
     nd <- length(search())
 
