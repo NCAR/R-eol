@@ -309,6 +309,7 @@ setMethod("variables",
                else x@name
             })
         }
+        if (length(x) == 0) x <- NULL
         x
     }
 )
