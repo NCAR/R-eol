@@ -1,20 +1,28 @@
 # -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
 # vim: set shiftwidth=4 softtabstop=4 expandtab:
 
+#
+#               Copyright (C) by UCAR
+# 
+# Graphical user interface for dpar(), reading data from netcdf, and plotting.
+
 # TODO:
-#   dataset menu is not wide enough
-#   dat(x,derived=TRUE)
+#   further break up table of variables:
+#       met, eddy, soil, rad, power, other
+#       derived met, derived eddy, derived flux, etc
+#   dpar("robust")
+#   dataset menu is not wide enough. show dataset description
 #   add option to show value at cursor
 #   support for par mfrow. Set plot index to 1 after time change
 #   support type="l", "b", "p"
-#   after selecting dataset, provide start and end times of the dataset
+#   after selecting dataset, indicate start and end times of the dataset
 
 #   button for new x11() plot
 #   more general support for par parameters in a text field:  "mar=x"
 #   provide widget to enter smoothing value?
 #   x vs y plots?
 #   difference plots?
-#   set dpar start/end from zoom
+#   ability to set dpar start/end from zoom
 
 .this <- new.env(parent=emptyenv())
 
@@ -376,8 +384,12 @@ dgui <- function(visible=TRUE,debug=FALSE)
 
         # enabled datasets
         mx <- sapply(.datasets,function(x){x$enable})
-        combo <- gcombobox(names(.datasets)[mx],container=g1,handler=datasetHandler,
-            size=c(100,25))
+        dnames <- names(.datasets[mx])
+        cur <- dataset()
+        sel <- match(cur,dnames)
+        if (is.na(sel)) sel <- 1
+        combo <- gcombobox(dnames,container=g1,handler=datasetHandler,
+            selected=sel, size=c(100,25))
         thisSet("datasetCombo",combo)
     }
 
@@ -1140,7 +1152,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
     enabled(widget) <- FALSE
     thisSet("readAndPlotDataWidget",widget)
 
-    glabel("output object=",container=g1)
+    glabel("output to:",container=g1)
     widget <- gcombobox(c("<none>","x","x1","x2","y","y1","y2"),
         container=g1, editable=TRUE, handler=outputVariableHandler)
 
