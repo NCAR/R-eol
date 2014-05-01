@@ -193,8 +193,7 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
             align_curr += align_inc )
     {
         /* move along the input series until we pass current align position */
-        while(( in_curr  >= 0 ) && ( in_curr < in_len ) &&
-                (( ivals[ in_curr ] < avals[ align_curr ] ) ) )
+        while( ( in_curr < in_len ) && ( ivals[ in_curr ] < avals[ align_curr ] ) )
             in_curr += in_inc;
 
         /* see how far we are from the current position */
@@ -206,14 +205,14 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
            between the align_ time and the in_ times before and after it. */
 
         over_set = under_set = 0;
-        if(( in_curr  >= 0 ) && ( in_curr < in_len ))
+        if( ( in_curr < in_len ))
         {
             over_num = ivals[ in_curr ];
             diff_over = over_num - align_num; 
             over_set = 1;
         }
 
-        if( (( in_curr - in_inc ) >= 0 ) && (( in_curr - in_inc ) < in_len ))
+        if( ( in_curr >= in_inc ) && (( in_curr - in_inc ) < in_len ))
         {
             under_num = ivals[ in_curr - in_inc ];
 
