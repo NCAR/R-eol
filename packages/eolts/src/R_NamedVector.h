@@ -33,10 +33,6 @@ private:
     R_NamedVector &operator=(const R_NamedVector &);
 };
 
-template class R_NamedVector<double>;
-template class R_NamedVector<int>;
-// template class R_NamedVector<char*>;
-
 /**
  * Specialization of getDataPtr() for R_NamedVector<double>.
  */

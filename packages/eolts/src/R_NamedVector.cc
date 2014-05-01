@@ -15,6 +15,10 @@
 
 using namespace eolts;
 
+template class R_NamedVector<double>;
+template class R_NamedVector<int>;
+// template class R_NamedVector<char*>;
+
 template<>
 double *R_NamedVector<double>::getDataPtr()
 {
