@@ -403,15 +403,10 @@ dgui <- function(visible=TRUE,debug=FALSE)
         NULL
     }
 
-
     g1 <- gframe("NETCDF_DIR",container=mainContainer, horizontal=TRUE)
-    ncd <- gedit(Sys.getenv("NETCDF_DIR"),container=g1)
+    txt <- Sys.getenv("NETCDF_DIR")
+    ncd <- gedit(txt,container=g1,width=ifelse(nchar(txt)>100,as.integer(nchar(txt)*1.3),100))
     addHandlerChanged(ncd,netcdfDirHandler)
-    if (guiToolkit()@toolkit != "tcltk") {
-	if (debug) cat("changing size on NETCDF_DIR widget\n")
-	size(ncd) <- c(400,25)
-	if (debug) cat("changed size on NETCDF_DIR widget\n")
-    }
 
     dirButtonHandler <- function(h,...)
     {
@@ -437,13 +432,9 @@ dgui <- function(visible=TRUE,debug=FALSE)
     }
 
     g1 <- gframe("NETCDF_FILE",container=mainContainer, horizontal=TRUE)
-    ncf <- gedit(Sys.getenv("NETCDF_FILE"),container=g1)
+    txt <- Sys.getenv("NETCDF_FILE")
+    ncf <- gedit(txt,container=g1,width=ifelse(nchar(txt)>100,as.integer(nchar(txt)*1.3),100))
     addHandlerChanged(ncf,netcdfFileHandler)
-    if (guiToolkit()@toolkit != "tcltk") {
-	if (debug) cat("changing size on NETCDF_FILE widget\n")
-	size(ncf) <- c(400,25)
-	if (debug) cat("changed size on NETCDF_FILE widget\n")
-    }
 
     fileButtonHandler <- function(h,...)
     {
