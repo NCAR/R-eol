@@ -41,13 +41,6 @@ private:
     R_Matrix &operator=(const R_Matrix &);
 };
 
-template class R_Matrix<double>;
-template class R_Matrix<int>;
-#ifdef DO_CHAR_MATRIX
-template class R_Matrix<char*>;
-#endif
-template class R_Matrix<Rcomplex>;
-
 /**
  * Specialization of getDataPtr() for R_Matrix<double>.
  */

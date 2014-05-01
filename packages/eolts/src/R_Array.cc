@@ -19,6 +19,10 @@ using std::string;
 
 using namespace eolts;
 
+template class R_Array<double>;
+template class R_Array<int>;
+template class R_Array<char*>;
+
 /**
  * Specialization of getDataPtr() for R_Array<double>.
  */
