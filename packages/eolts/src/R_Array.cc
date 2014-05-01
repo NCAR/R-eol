@@ -19,6 +19,90 @@ using std::string;
 
 using namespace eolts;
 
+/**
+ * Specialization of getDataPtr() for R_Array<double>.
+ */
+template<>
+double *R_Array<double>::getDataPtr()
+{
+    return REAL(getRObject());
+}
+
+/**
+ * Specialization of constructor for R_Array<double>.
+ */
+template<>
+R_Array<double>::R_Array(int type, const std::vector<size_t>& dims) : R_ArrayBase(REALSXP,dims)
+{
+    double *fp = getDataPtr();
+    double *fpend = fp + _length;
+    for ( ; fp < fpend; ) *fp++ = NA_REAL;
+}
+
+/**
+ * Specialization of constructor for R_Array<double>.
+ */
+template<>
+R_Array<double>::R_Array(int type, SEXP obj) : R_ArrayBase(REALSXP,obj)
+{
+}
+
+/**
+ * Specialization of getDataPtr() for R_Array<int>.
+ */
+template<>
+int *R_Array<int>::getDataPtr()
+{
+    return INTEGER(getRObject());
+}
+
+/**
+ * Specialization of constructor for R_Array<int>.
+ */
+template<>
+R_Array<int>::R_Array(int type, const std::vector<size_t>& dims) : R_ArrayBase(type,dims)
+{
+    int *fp = getDataPtr();
+    int *fpend = fp + _length;
+    if (type == INTSXP)
+        for ( ; fp < fpend; ) *fp++ = NA_INTEGER;
+    else if (type == LGLSXP)
+        for ( ; fp < fpend; ) *fp++ = NA_LOGICAL;
+}
+
+/**
+ * Specialization of constructor for R_Array<int>.
+ */
+template<>
+R_Array<int>::R_Array(int type, SEXP obj) : R_ArrayBase(type,obj)
+{
+}
+
+/**
+ * Specialization of getDataPtr() for R_Array<char*>.
+ */
+template<>
+char** R_Array<char*>::getDataPtr()
+{
+    return 0;
+}
+
+/**
+ * Specialization of constructor for R_Array<char*>.
+ */
+template<>
+R_Array<char*>::R_Array(int type, const std::vector<size_t>& dims) : R_ArrayBase(type,dims)
+{
+}
+
+/**
+ * Specialization of constructor for R_Array<char*>.
+ */
+template<>
+R_Array<char*>::R_Array(int type, SEXP obj) : R_ArrayBase(type,obj)
+{
+}
+
 extern "C" {
 SEXP create_array(SEXP type, SEXP dims)
 {

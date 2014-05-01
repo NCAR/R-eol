@@ -46,85 +46,55 @@ template class R_Array<char*>;
  * Specialization of getDataPtr() for R_Array<double>.
  */
 template<>
-double *R_Array<double>::getDataPtr()
-{
-    return REAL(getRObject());
-}
+double *R_Array<double>::getDataPtr();
 
 /**
  * Specialization of constructor for R_Array<double>.
  */
 template<>
-R_Array<double>::R_Array(int type, const std::vector<size_t>& dims) : R_ArrayBase(REALSXP,dims)
-{
-    double *fp = getDataPtr();
-    double *fpend = fp + _length;
-    for ( ; fp < fpend; ) *fp++ = NA_REAL;
-}
+R_Array<double>::R_Array(int type, const std::vector<size_t>& dims);
 
 /**
  * Specialization of constructor for R_Array<double>.
  */
 template<>
-R_Array<double>::R_Array(int type, SEXP obj) : R_ArrayBase(REALSXP,obj)
-{
-}
+R_Array<double>::R_Array(int type, SEXP obj);
 
 /**
  * Specialization of getDataPtr() for R_Array<int>.
  */
 template<>
-int *R_Array<int>::getDataPtr()
-{
-    return INTEGER(getRObject());
-}
+int *R_Array<int>::getDataPtr();
 
 /**
  * Specialization of constructor for R_Array<int>.
  */
 template<>
-R_Array<int>::R_Array(int type, const std::vector<size_t>& dims) : R_ArrayBase(type,dims)
-{
-    int *fp = getDataPtr();
-    int *fpend = fp + _length;
-    if (type == INTSXP)
-        for ( ; fp < fpend; ) *fp++ = NA_INTEGER;
-    else if (type == LGLSXP)
-        for ( ; fp < fpend; ) *fp++ = NA_LOGICAL;
-}
+R_Array<int>::R_Array(int type, const std::vector<size_t>& dims);
 
 /**
  * Specialization of constructor for R_Array<int>.
  */
 template<>
-R_Array<int>::R_Array(int type, SEXP obj) : R_ArrayBase(type,obj)
-{
-}
+R_Array<int>::R_Array(int type, SEXP obj);
 
 /**
  * Specialization of getDataPtr() for R_Array<char*>.
  */
 template<>
-char** R_Array<char*>::getDataPtr()
-{
-    return 0;
-}
+char** R_Array<char*>::getDataPtr();
 
 /**
  * Specialization of constructor for R_Array<char*>.
  */
 template<>
-R_Array<char*>::R_Array(int type, const std::vector<size_t>& dims) : R_ArrayBase(type,dims)
-{
-}
+R_Array<char*>::R_Array(int type, const std::vector<size_t>& dims);
 
 /**
  * Specialization of constructor for R_Array<char*>.
  */
 template<>
-R_Array<char*>::R_Array(int type, SEXP obj) : R_ArrayBase(type,obj)
-{
-}
+R_Array<char*>::R_Array(int type, SEXP obj);
 
 template<class T>
 void R_Array<T>::setDims(const std::vector<size_t>& dims)
