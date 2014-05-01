@@ -39,14 +39,18 @@ done
 # rm -rf /home/maclean/R/x86_64-redhat-linux-gnu-library/3.0/eolts
 # rm -rf /home/maclean/R/x86_64-redhat-linux-gnu-library/3.0/isfs
 
-rlib=$(R --vanilla --slave -e 'cat(.Library.site[1],"\n")' )
+if [ $(uname) == Darwin ]; then
+	rlib=$(R --vanilla --slave -e 'cat(.Library[1])' )
+else
+	rlib=$(R --vanilla --slave -e 'cat(.Library.site[1])' )
+fi
 # rlib=$(R RHOME)/site-library
 
 # --vanilla does --no-environ so we have to set R_LIBS_SITE ourselves
 # export R_LIBS_SITE=$rlib
 rargs="--vanilla"
 
-revision=$(git rev-list HEAD | wc -l)
+revision=$(( $(git rev-list HEAD | wc -l) ))
 [ $revision -eq 0 ] && revision=1
 
 if $do_eolts; then
@@ -61,7 +65,11 @@ if $do_eolts; then
     tmpdesc=$(mktemp /tmp/${0##*/}_XXXXXX)
     cp eolts/DESCRIPTION $tmpdesc
 
-    sed -ri "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" eolts/DESCRIPTION
+    if [ $(uname) == Darwin ]; then
+	sed -i "" -E "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" eolts/DESCRIPTION
+    else
+	sed -i -r "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" eolts/DESCRIPTION
+    fi
 
     R $rargs CMD build eolts
     bstatus=$?
@@ -89,7 +97,11 @@ if $do_isfs; then
     tmpdesc=$(mktemp /tmp/${0##*/}_XXXXXX)
     cp isfs/DESCRIPTION $tmpdesc
 
-    sed -ri "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" isfs/DESCRIPTION
+    if [ $(uname) == Darwin ]; then
+        sed -i "" -E "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" isfs/DESCRIPTION
+    else
+	sed -i -r "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" isfs/DESCRIPTION
+    fi
 
     R $rargs CMD build isfs
     bstatus=$?
