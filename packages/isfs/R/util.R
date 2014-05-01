@@ -84,10 +84,15 @@ sync <- function(pos)
     projectEnv <- NULL
     sl <- search()
     if (missing(pos)) {
-        projdata <- paste(Sys.getenv("ISFF"),"projects",Sys.getenv("PROJECT"),
+        projdata1 <- paste(Sys.getenv("ISFF"),"projects",Sys.getenv("PROJECT"),
             "ISFF/R",sep="/")
-        pos <- grepl(projdata,sl)
-        if (!any(pos)) stop(paste("pos is missing and can't find",projdata))
+        pos <- grepl(projdata1,sl)
+        if (!any(pos)) {
+            projdata2 <- paste(Sys.getenv("ISFF"),"projects",Sys.getenv("PROJECT"),
+                "R",sep="/")
+            pos <- grepl(projdata2,sl)
+        }
+        if (!any(pos)) stop(paste("pos is missing and can't find",projdata1,"or",projdata2))
         pos <- base::seq(along=pos)[pos][1]
         if (exists(".projectEnv",where=pos)) projectEnv <- get(".projectEnv",pos=pos)
     }
