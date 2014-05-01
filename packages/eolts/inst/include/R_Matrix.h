@@ -41,8 +41,140 @@ private:
     R_Matrix &operator=(const R_Matrix &);
 };
 
-#define DEBUG
-#undef DEBUG
+template class R_Matrix<double>;
+template class R_Matrix<int>;
+#ifdef DO_CHAR_MATRIX
+template class R_Matrix<char*>;
+#endif
+template class R_Matrix<Rcomplex>;
+
+/**
+ * Specialization of getDataPtr() for R_Matrix<double>.
+ */
+template<>
+double *R_Matrix<double>::getDataPtr()
+{
+    return REAL(getRObject());
+}
+
+/**
+ * Specialization of naValue() for R_Matrix<double>.
+ */
+template<>
+double R_Matrix<double>::naValue() const
+{
+    return R_NaReal;
+}
+
+/**
+ * Specialization of constuctor for R_Matrix<double>.
+ */
+template<>
+R_Matrix<double>::R_Matrix(int type, size_t nr,size_t nc) : R_MatrixBase(REALSXP,nr,nc)
+{
+    double *fp = getDataPtr();
+    double *fpend = fp + _length;
+    for ( ; fp < fpend; ) *fp++ = R_NaReal;
+}
+
+/**
+ * Specialization of constuctor for R_Matrix<double>.
+ */
+template<>
+R_Matrix<double>::R_Matrix(int type, SEXP obj) : R_MatrixBase(REALSXP,obj)
+{
+}
+
+/**
+ * Specialization of getDataPtr() for R_Matrix<int>.
+ */
+template<>
+int *R_Matrix<int>::getDataPtr()
+{
+    return INTEGER(getRObject());
+}
+
+/**
+ * Specialization of naValue() for R_Matrix<int>.
+ */
+template<>
+int R_Matrix<int>::naValue() const
+{
+    return R_NaInt;
+}
+
+/**
+ * Specialization of constuctor for R_Matrix<int>.
+ */
+template<>
+R_Matrix<int>::R_Matrix(int type, size_t nr,size_t nc) : R_MatrixBase(type,nr,nc)
+{
+    int *fp = getDataPtr();
+    int *fpend = fp + _length;
+    for ( ; fp < fpend; ) *fp++ = R_NaInt;
+}
+
+/**
+ * Specialization of constuctor for R_Matrix<int>.
+ */
+template<>
+R_Matrix<int>::R_Matrix(int type, SEXP obj) : R_MatrixBase(type,obj)
+{
+}
+
+/**
+ * Specialization of getDataPtr() for R_Matrix<Rcomplex>.
+ */
+template<>
+Rcomplex* R_Matrix<Rcomplex>::getDataPtr()
+{
+    return COMPLEX(getRObject());
+}
+
+/**
+ * Specialization of naValue() for R_Matrix<Rcomplex>.
+ */
+template<>
+Rcomplex R_Matrix<Rcomplex>::naValue() const
+{
+    const Rcomplex na = {R_NaReal,R_NaReal};
+    return na;
+}
+
+/**
+ * Specialization of constuctor for R_Matrix<Rcomplex>.
+ */
+template<>
+R_Matrix<Rcomplex>::R_Matrix(int type, size_t nr,size_t nc) : R_MatrixBase(CPLXSXP,nr,nc)
+{
+    Rcomplex *fp = getDataPtr();
+    Rcomplex *fpend = fp + _length;
+    for ( ; fp < fpend; fp++) fp->r = fp->i = NA_REAL;
+}
+
+/**
+ * Specialization of constuctor for R_Matrix<Rcomplex>.
+ */
+template<>
+R_Matrix<Rcomplex>::R_Matrix(int type, SEXP obj) : R_MatrixBase(CPLXSXP,obj)
+{
+}
+
+#ifdef DO_CHAR_MATRIX
+template<>
+R_Matrix<char*>::R_Matrix(size_t nr,size_t nc) : R_MatrixBase(STRSXP,nr,nc)
+{
+}
+
+template<>
+R_Matrix<char*>::R_Matrix(SEXP obj) : R_MatrixBase(STRSXP,obj)
+{
+}
+#endif
+
+// #define DEBUG
+// #undef DEBUG
+
 template<class T>
 void R_Matrix<T>::setDims(size_t nr,size_t nc)
 {
