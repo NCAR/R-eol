@@ -17,64 +17,7 @@
 using std::vector;
 using std::string;
 
-namespace eolts {
-
-template<>
-double *R_Array<double>::getDataPtr()
-{
-    return REAL(getRObject());
-}
-
-template<>
-R_Array<double>::R_Array(int type, const vector<size_t>& dims) : R_ArrayBase(REALSXP,dims)
-{
-    double *fp = getDataPtr();
-    double *fpend = fp + _length;
-    for ( ; fp < fpend; ) *fp++ = NA_REAL;
-}
-
-template<>
-R_Array<double>::R_Array(int type, SEXP obj) : R_ArrayBase(REALSXP,obj)
-{
-}
-
-template<>
-int *R_Array<int>::getDataPtr()
-{
-    return INTEGER(getRObject());
-}
-
-template<>
-R_Array<int>::R_Array(int type, const vector<size_t>& dims) : R_ArrayBase(type,dims)
-{
-    int *fp = getDataPtr();
-    int *fpend = fp + _length;
-    if (type == INTSXP)
-        for ( ; fp < fpend; ) *fp++ = NA_INTEGER;
-    else if (type == LGLSXP)
-        for ( ; fp < fpend; ) *fp++ = NA_LOGICAL;
-}
-
-template<>
-R_Array<int>::R_Array(int type, SEXP obj) : R_ArrayBase(type,obj)
-{
-}
-
-template<>
-char** R_Array<char*>::getDataPtr()
-{
-    return 0;
-}
-
-template<>
-R_Array<char*>::R_Array(int type, const vector<size_t>& dims) : R_ArrayBase(type,dims)
-{
-}
-
-template<>
-R_Array<char*>::R_Array(int type, SEXP obj) : R_ArrayBase(type,obj)
-{
-}
+using namespace eolts;
 
 extern "C" {
 SEXP create_array(SEXP type, SEXP dims)
@@ -184,5 +127,3 @@ SEXP set_adimnames(SEXP x, SEXP names)
     return ans;
 }
 }
-
-}   // namespace eolts
