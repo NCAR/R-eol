@@ -249,7 +249,7 @@ checkVariables <- function()
             ic <- (i %% nc) + 1
             ir <- (i %/% nc) + 1
             cb <- gcheckbox(text=var,action=var,checked=(var%in%selected),
-                handler=toggleVariableHandler)
+                container=layout,handler=toggleVariableHandler)
             layout[ir,ic] <- cb
             if (FALSE && i == 0) {
                 sz <- size(cb)
@@ -269,7 +269,7 @@ checkVariables <- function()
                 ic <- (i %% nc) + 1
                 ir <- (i %/% nc) + 1
                 cb <- gcheckbox(text=var,action=var, checked=(var%in%selected),
-                    handler=toggleVariableHandler)
+                    container=layout,handler=toggleVariableHandler)
                 layout[ir,ic] <- cb
                 if (FALSE && i == 0) {
                     sz <- size(cb)
