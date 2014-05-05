@@ -278,8 +278,8 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
             label_times(t1,t2, annotate=avg)
       
         # print dataset
-        # if (annotate)
-        #     mtext(paste("dataset =", get("dataset.which", frame=0)), 3, adj=1)
+        if (annotate)
+            mtext(paste0("dataset=", dataset()), 3, adj=1)
     } 
     if (browse) {
         cat(paste("Plotted data are in objects \"xdata\" and \"ydata\"\n",
