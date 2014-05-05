@@ -735,31 +735,31 @@ label_times <- function(t1,t2, annotate, adj, col=1, year=T, print=T,cex=par("ce
         t1.list$year != t2.list$year) {
         if (year)
             if (t1.list$year != t2.list$year)
-                times <- paste(format(t1, format = "%Y %b %d %02H:%02M",
+                times <- paste(format(t1, format = "%Y %b %d %H:%M",
                         time.zone=unlist(options("time.zone"))), "-",
-                    format(t2, format = "%Y %b %d %02H:%02M  %Z",
+                    format(t2, format = "%Y %b %d %H:%M  %Z",
                         time.zone=unlist(options("time.zone"))))
             else
-                times <- paste(format(t1, format = "%Y %b %d %02H:%02M",
+                times <- paste(format(t1, format = "%Y %b %d %H:%M",
                         time.zone=unlist(options("time.zone"))), "-",
-                    format(t2, format = "%b %d %02H:%02M  %Z",
+                    format(t2, format = "%b %d %H:%M  %Z",
                         time.zone=unlist(options("time.zone"))))
             else
-                times <- paste(format(t1, format = "%b %d %02H:%02M",
+                times <- paste(format(t1, format = "%b %d %H:%M",
                         time.zone=unlist(options("time.zone"))), "-",
-                    format(t2, format = "%b %d %02H:%02M  %Z",
+                    format(t2, format = "%b %d %H:%M  %Z",
                         time.zone=unlist(options("time.zone"))))
     }
     else {
         if (year)
-            times <- paste(format(t1, format = "%Y %b %d, %02H:%02M",
+            times <- paste(format(t1, format = "%Y %b %d, %H:%M",
                     time.zone=unlist(options("time.zone"))), "-",
-                format(t2, format = "%02H:%02M  %Z",
+                format(t2, format = "%H:%M  %Z",
                     time.zone=unlist(options("time.zone"))))
         else
-            times <- paste(format(t1, format = "%b %d, %02H:%02M",
+            times <- paste(format(t1, format = "%b %d, %H:%M",
                     time.zone=unlist(options("time.zone"))), "-",
-                format(t2, format = "%02H:%02M  %Z",
+                format(t2, format = "%H:%M  %Z",
                     time.zone=unlist(options("time.zone"))))
     }
 

@@ -146,8 +146,8 @@ qctable.list = function(x=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntper=4
                             },
                             x,t1,dt,ntper),ncol=ntper*4,byrow=T)
                     times = as.numeric(seq(from=t1,length=ntper,by=dt))
-                    if (dt >= 86400) fmt = "%b %02d %02H:%02M"
-                    else fmt = "%02H:%02M"
+                    if (dt >= 86400) fmt = "%b %d %H:%M"
+                    else fmt = "%H:%M"
                     cnames = sapply(times,function(t1,dt,fmt) {
                         paste(format(utime(t1),format=fmt),
                             format(utime(t1+dt),format=fmt),sep="-")
@@ -231,8 +231,8 @@ qctable.html = function(vars,x=NULL,ntper=4,file="",append=F,title=NULL,
     t2 = dpar("end")
 
     timecapt =  paste(
-        format(t1,format="%Y %b %02d %02H:%02M"),
-        format(t2,format="%Y %b %02d %02H:%02M %Z"),sep=" - ")
+        format(t1,format="%Y %b %d %H:%M"),
+        format(t2,format="%Y %b %d %H:%M %Z"),sep=" - ")
 
     # color: #FF8000 is a shade of orange. May be more readable than just "orange"
     if (!is.null(title)) {
@@ -460,7 +460,7 @@ qctable.html = function(vars,x=NULL,ntper=4,file="",append=F,title=NULL,
             #   format(utime("now"),format="%b %d %H:%M, %Y"),"</table>\n",sep="")
 
             html = paste(html,"<td>created: ",
-                format(utime("now"),format="%b %d %02H:%02M, %Y"),"</td></table>\n",sep="")
+                format(utime("now"),format="%b %d %H:%M, %Y"),"</td></table>\n",sep="")
 
             cat(html,file=file,append=append)
             append = file != "" 

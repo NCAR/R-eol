@@ -143,12 +143,12 @@ plotprofile <- function(x, every=3600, ntraces=6, smooth=deltat(x)[1],
 
         te <- tp + every*(ntraces - 1)
         lgnd <- sapply(as.numeric(seq(from=tp,to=te,by=every)),
-            function(x){format(utime(x),format="%02H:%02M")})
+            function(x){format(utime(x),format="%H:%M")})
 
         xlab <- paste(
             vname,"(",vunits,") ",
-            format(utime(tp),format="%02H:%02M-"),
-            format(utime(te),format="%02H:%02M %Z"),sep="")
+            format(utime(tp),format="%H:%M-"),
+            format(utime(te),format="%H:%M %Z"),sep="")
 
         if (all(is.na(xp[ip,1,]))) {
           # all data is NA, just plot a point off scale
@@ -197,8 +197,8 @@ plotprofile <- function(x, every=3600, ntraces=6, smooth=deltat(x)[1],
       ptitle <- paste(ptitle,"; offsets = (n)*", format(signif(dx,3))," ",vunits, sep="")
     mtext(ptitle,side=3,line=2.0,outer=T,cex=1.3)
 
-    mtext(paste(format(t1,format="%Y %b %d %02H:%02M"),
-                format(t2,format="%b %d %02H:%02M %Z"),sep="-"),
+    mtext(paste(format(t1,format="%Y %b %d %H:%M"),
+                format(t2,format="%b %d %H:%M %Z"),sep="-"),
       side=3,line=0,outer=T,cex=1.2)
     logo_stamp()
     NULL

@@ -233,6 +233,13 @@ setMethod("monthly",signature(from="utime",to="utime"),
 diff.utime <- function(x,...) diff(x@.Data)
 # setMethod("diff","utime",function(x,...) diff(x@.Data))
 
+# setGeneric("diff",function(x) standardGeneric("diff"))
+# setMethod("diff","utime",function(x,...)
+#     {
+#         diff(x@.Data)
+#     }
+# )
+
 setMethod( "c", signature(x="utime"),
     function(x, ...)
     {
