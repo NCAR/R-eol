@@ -1012,7 +1012,7 @@ setMethod("atan2",signature(y="ANY",x="nts"),
 # in nts's, even when the time positions were equal - probably
 # due to some round off error.
 # 
-setMethod("Ops",sig=signature(e1="nts",e2="nts"),
+setMethod("Ops",signature(e1="nts",e2="nts"),
     function(e1, e2)
     {
         # cat(".Generic=",.Generic," .Signature=",.Signature,"\n")
@@ -1207,6 +1207,30 @@ setMethod("Ops",signature(e1="nts",e2="missing"),
         e1
     }
     )
+
+setMethod("%*%",signature(x="nts",y="matrix"),
+    function(x, y)
+    {
+        x@data <- callGeneric(x@data,y)
+        x
+    }
+)
+
+setMethod("%*%",signature(x="matrix",y="nts"),
+    function(x, y)
+    {
+        y@data <- callGeneric(x,y@data)
+        y
+    }
+)
+
+# Transpose of an nts becomes a matrix
+setMethod("t",signature(x="nts"),
+    function(x)
+    {
+        t(x@data)
+    }
+)
 
 setMethod("Complex",signature(z="nts"),
     function(z) {
@@ -2048,4 +2072,3 @@ setMethod( "summary","nts", function( object, ... )
         allcols
     }
 )
-
