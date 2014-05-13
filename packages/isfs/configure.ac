@@ -22,6 +22,15 @@ AC_LANG(C++)
 # AC_EGREP_CPP(yes,[#ifdef __linux yes #endif],AC_DEFINE([HAS_PREP]))
 
 AC_CHECK_PROG([HAVE_PREP],[prep],[TRUE],[FALSE],[$PATH:/opt/nidas/bin])
+
+PKG_LIBS=:
+OBJECTS="init.o"
+
+if test "$HAVE_PREP" == TRUE; then
+    CPPFLAGS+=" -DHAVE_PREP"
+    OBJECTS+=" R_prep.o"
+    PKG_LIBS='$(R_HOME)/bin/Rscript -e "eolts:::LdFlags()"'
+fi
 #-------------------------------------------------------------------------------#
 #  Optional include paths
 #-------------------------------------------------------------------------------#
@@ -30,7 +39,10 @@ AC_CHECK_PROG([HAVE_PREP],[prep],[TRUE],[FALSE],[$PATH:/opt/nidas/bin])
 #  Do substitution                               	                 	#
 #-------------------------------------------------------------------------------#
 
+
 AC_SUBST(CPPFLAGS)
+AC_SUBST(OBJECTS)
+AC_SUBST(PKG_LIBS)
 AC_ARG_VAR(HAVE_PREP)
 AC_CONFIG_FILES([R/prep.R],[chmod -w R/prep.R])
 AC_SUBST(LIBS)

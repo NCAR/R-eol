@@ -9,6 +9,7 @@
  * 
  */
 
+#ifdef HAVE_PREP
 
 #ifndef R_PREP_H
 #define R_PREP_H
@@ -131,3 +132,5 @@ private:
 }   // namespace isfs
 
 #endif
+
+#endif  // HAVE_PREP

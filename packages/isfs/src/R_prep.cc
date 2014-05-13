@@ -12,6 +12,8 @@
  * 
  */
 
+#ifdef HAVE_PREP
+
 #include <sys/types.h>
 #include <signal.h>
 #include <unistd.h>
@@ -679,3 +681,4 @@ const char *R_prep::dupenv(const char *env,char** prevenv)
     }
     return _environ[ii];
 }
+#endif  // HAVE_PREP

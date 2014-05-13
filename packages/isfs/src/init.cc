@@ -11,6 +11,8 @@
  *	This is called by R when this library is loaded.
  */
 
+#ifdef HAVE_PREP
+
 #include <R.h>
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>   // DllInfo
@@ -38,3 +40,4 @@ extern "C" {
     }
 }
 
+#endif  // HAVE_PREP
