@@ -78,14 +78,13 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
 
     SEXP ret;
 
-    double diff_under=0, diff_over=0, over_num, 
-           under_num, align_num;
+    double diff_under=0, diff_over=0,  align_num;
     double match_tol;
 
     size_t in_len, in_start, in_curr;
     int in_inc, align_inc;
 
-    size_t align_len, align_start, align_end, align_curr;
+    size_t align_len, align_start,  align_curr;
     int how, error_how;
     int over_set, under_set;
 
@@ -139,7 +138,6 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
     /* see if the inputs are increasing or decreasing series */
     in_start = align_start = 0;
     in_inc = align_inc = 1;
-    align_end = align_len - 1;
 
     for( in_curr = 1; in_curr < in_len; in_curr++ )
     {
@@ -161,7 +159,6 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
         {
             align_inc = -1;
             align_start = align_len - 1;
-            align_end = 0;
             break;
         }
     }
@@ -189,13 +186,20 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
        NA or not values, and drop values */
 
     in_curr = in_start;
-    for( align_curr = align_start; align_curr != ( align_end + align_inc ); 
-            align_curr += align_inc )
+
+    /* goes from:
+     *  0 to align_len-1 
+     *  align_len-1 to 0
+     */
+    for( align_curr = align_start; align_curr < align_len; align_curr += align_inc )
     {
         /* move along the input series until we pass current align position */
         while( ( in_curr < in_len ) && ( ivals[ in_curr ] < avals[ align_curr ] ) )
             in_curr += in_inc;
-
+        /* in_curr will be in the range:
+         *  in_start=0 to in_len for in_inc==1
+         *  in_start=(inlen-1) to 0 to MAX_UINT (wrap-around), for in_inc= -1
+         */
         /* see how far we are from the current position */
 
         align_num = avals[ align_curr ];
@@ -207,14 +211,14 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
         over_set = under_set = 0;
         if( ( in_curr < in_len ))
         {
-            over_num = ivals[ in_curr ];
+            double over_num = ivals[ in_curr ];
             diff_over = over_num - align_num; 
             over_set = 1;
         }
 
-        if( ( in_curr >= in_inc ) && (( in_curr - in_inc ) < in_len ))
+        if( ( in_curr != in_start ) )
         {
-            under_num = ivals[ in_curr - in_inc ];
+            double under_num = ivals[ in_curr - in_inc ];
 
             diff_under = align_num - under_num; 
             under_set = 1;
