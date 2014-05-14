@@ -1,0 +1,15 @@
+Package: EOLsounding
+Title: Read and Visualize EOL sounding data
+Version: 2.4
+Author: Liangying Zhang
+Maintainer: Liangying Zhang <lzhang@ucar.edu>
+Description: This package reads in EOL sounding data and visualize
+        them for quick view purpose. It is created only for EOL raw
+        and qced sounding data, with certain data format. The raw 
+        data files should be named as DYYYYMMDD_hhmmss*; while the
+        qced files should be named as DYYYYMMDD_hhmmss*eol. Raw data
+        file has 6 lines in header, 19 lines for tail. QCed data 
+        file has 14 lines in header and no tails.
+Depends: lattice,maps
+License: GPL (>=2)
+Date: 2010-10-01
