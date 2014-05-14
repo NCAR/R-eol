@@ -33,17 +33,25 @@ if test "$HAVE_PREP" == TRUE; then
     CPPFLAGS+=" -DHAVE_PREP"
     OBJECTS+=" R_prep.o"
     PKG_LIBS='$(R_HOME)/bin/Rscript -e "eolts:::LdFlags()"'
-    # Change HAVE_PREP variable in R/prep.R from FALSE to TRUE rather
-    # than doing the usual generation of R/prep.R from R/prep.R.in
-    # with a substitution of @HAVE_PREP@ by the AC_CONFIG_FILES macro.
-    # Windows systems run configure.win and don't have autoconf and configure.ac.
-    # configure.win is run only once on a build. Since it then generally
-    # cannot configure things for both windows architectures, i386 and x64,
-    # it just generates a i386 package. So it isn't really a workable
-    # configuration script under windows.
-    # Therefore the unedited prep.R must be correct R code for a windows package,
-    # with "HAVE_PREP <- FALSE".  For unix-likes, issue commands here
-    # to set it to TRUE in R/prep.R if needed.
+    # As of R 3.0 one can add a "Biarch: yes" in DESCRIPTION to
+    # force a build of both architectures (i386 and x64) under windows.
+    # Without that, the existence of configure.win would cause
+    # builds for only i386, since configure.win is only run once.
+    # This made configure.win somewhat unusable, especially when
+    # wanting to build packages for both architectures on
+    # win-builder.r-project.org, where one cannot specify --force-biarch.
+    # As a result,  R/prep.R had to be correct for windows, without being
+    # edited in the configure step. This configure.ac then issues a sed command
+    # to change the value of HAVE_PREP in R/prep.R, instead of using the
+    # AC_CONFIG_FILES macro to substitute a value for @HAVE_PREP@ when
+    # generating R/prep.R from R/prep.R.in, which wouldn't be compatible
+    # with windows without a configure.win.
+    #
+    # Now that configure.win works for both windows architectures,
+    # it could be changed to do for windows what AC_CONFIG_FILES does here.
+    # That has not been done, and we instead issue a sed command to
+    # set the correct value in R/prep.R.
+    #
     AC_OUTPUT_COMMANDS([${SED} -i -e 's/HAVE_PREP <- FALSE/HAVE_PREP <- TRUE/' R/prep.R])
 fi
 #-------------------------------------------------------------------------------#
@@ -58,7 +66,6 @@ fi
 AC_SUBST(CPPFLAGS)
 AC_SUBST(OBJECTS)
 AC_SUBST(PKG_LIBS)
-# AC_SUBST(LIBS)
 
 AC_ARG_VAR(HAVE_PREP)
 # AC_CONFIG_FILES([R/prep.R],[chmod -w R/prep.R])

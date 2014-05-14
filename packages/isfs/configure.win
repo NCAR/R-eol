@@ -1,0 +1,3 @@
+#!/bin/sh
+
+sed -i -e 's/HAVE_PREP <- TRUE/HAVE_PREP <- FALSE/' R/prep.R

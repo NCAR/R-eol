@@ -1,3 +1,5 @@
 #!/bin/sh
-rm -f aotom4te.cache confdefs.h config.log config.status \
-    src/*.so src/*.o src/Makevars 
+rm -f confdefs.h config.* aclocal.m4 src/Makevars \
+    src/*.so src/*.o src/*.a src/.dll
+
+rm -rf autom4te.cache
