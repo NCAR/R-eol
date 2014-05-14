@@ -149,6 +149,7 @@ AC_CHECK_LIB([nc_server_rpc],[writedatarec_float_1],
     [
         HAVE_NC_SERVER=TRUE
         CPPFLAGS+=" -DHAVE_NC_SERVER"
+        AC_OUTPUT_COMMANDS([${SED} -i -e 's/HAVE_NC_SERVER <- FALSE/HAVE_NC_SERVER <- TRUE/' R/netcdfWrite.R])
     ],
     [
         HAVE_NC_SERVER=FALSE
@@ -158,11 +159,6 @@ AC_CHECK_LIB([nc_server_rpc],[writedatarec_float_1],
 #-------------------------------------------------------------------------------#
 #  Do substitution                               	                 	#
 #-------------------------------------------------------------------------------#
-
-AC_CONFIG_FILES([R/netcdfWrite.R],[chmod -w R/netcdfWrite.R])
-
-AC_SUBST([HAVE_FFTW3])
-AC_SUBST([HAVE_NC_SERVER])
 
 AC_SUBST([CPPFLAGS])
 AC_SUBST([LDFLAGS])

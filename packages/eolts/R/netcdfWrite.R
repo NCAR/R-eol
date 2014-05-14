@@ -1,6 +1,8 @@
 # -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
 # vim: set shiftwidth=4 softtabstop=4 expandtab:
 
+HAVE_NC_SERVER <- FALSE
+
 setGeneric("writets",function(con,x,...) standardGeneric("writets"))
 
 setMethod("writets",
@@ -8,7 +10,7 @@ setMethod("writets",
     function(con,x,...) {
 
         # not supported on all architectures
-        if (!@HAVE_NC_SERVER@) stop("sorry, writets not available. No nc_server_rpc support")
+        if (!HAVE_NC_SERVER) stop("sorry, writets not available. No nc_server_rpc support")
 
         dots <- list(...)
 
@@ -126,7 +128,7 @@ setMethod("writets",
     function(con,x,...) {
 
         # not supported on all architectures
-        if (!@HAVE_NC_SERVER@) stop("sorry, writets not available. No nc_server_rpc support")
+        if (!HAVE_NC_SERVER) stop("sorry, writets not available. No nc_server_rpc support")
 
         if (!hasArg(history)) stop("history argument not found")
             
