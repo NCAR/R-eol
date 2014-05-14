@@ -1,6 +1,8 @@
 # -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
 # vim: set shiftwidth=4 softtabstop=4 expandtab:
 
+HAVE_PREP <- FALSE
+
 setClass("prep",
     slots=c(
 	variables="character",
@@ -16,7 +18,7 @@ setClass("prep",
 
 prep <- function(variables,rate=0)
 {
-    if (!@HAVE_PREP@) stop("sorry prep not available")
+    if (!HAVE_PREP) stop("sorry prep not available")
     obj = new("prep",variables=variables,rate=rate)
     .Call("open_prep",obj,PACKAGE="isfs")
 }
