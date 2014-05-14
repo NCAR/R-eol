@@ -145,6 +145,24 @@ if test "$PKG_CONFIG" != "" && $PKG_CONFIG --exists nc_server 2>/dev/null; then
     )
 fi
 
+# As of R 3.0 one can add a "Biarch: yes" in DESCRIPTION to
+# force a build of both architectures (i386 and x64) under windows.
+# Without that, the existence of configure.win would cause
+# builds for only i386, since configure.win is only run once.
+# This made configure.win somewhat unusable, especially when
+# wanting to build packages for both architectures on
+# win-builder.r-project.org, where one cannot specify --force-biarch.
+# As a result,  R/netdcdfWrite.R had to be correct for windows, without being
+# edited in the configure step. This configure.ac then issues a sed command
+# to change the value of HAVE_NC_SERVER in R/netcdfWrite.R, instead of
+# using the AC_CONFIG_FILES macro to generate R/netcdfWrite.R from
+# R/netcdfWrite.R.in, which wouldn't be compatible with windows without
+# a configure.win.
+#
+# Now that configure.win works for both windows architectures,
+# it could be changed to do for windows what AC_CONFIG_FILES does here.
+# That has not been done, and we instead issue a sed command to
+# set the correct value in R/netcdfWrite.R.
 AC_CHECK_LIB([nc_server_rpc],[writedatarec_float_1],
     [
         HAVE_NC_SERVER=TRUE
@@ -159,6 +177,10 @@ AC_CHECK_LIB([nc_server_rpc],[writedatarec_float_1],
 #-------------------------------------------------------------------------------#
 #  Do substitution                               	                 	#
 #-------------------------------------------------------------------------------#
+
+# To substitute @HAVE_NC_SERVER@ when generating netcdfWrite.R from netcdfWrite.R.in
+# AC_CONFIG_FILES([R/netcdfWrite.R],[chmod -w R/netcdfWrite.R])
+# AC_SUBST([HAVE_NC_SERVER])
 
 AC_SUBST([CPPFLAGS])
 AC_SUBST([LDFLAGS])

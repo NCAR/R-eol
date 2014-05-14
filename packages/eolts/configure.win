@@ -1,0 +1,3 @@
+#!/bin/sh
+
+sed -i -e 's/HAVE_NC_SERVER <- TRUE/HAVE_NC_SERVER <- FALSE/' R/netcdfWrite.R
