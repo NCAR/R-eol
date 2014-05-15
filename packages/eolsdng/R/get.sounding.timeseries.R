@@ -1,3 +1,12 @@
+# -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
+# vim: set shiftwidth=4 softtabstop=4 expandtab:
+#
+# 2013,2014, Copyright University Corporation for Atmospheric Research
+# 
+# This file is part of the "eolsdng" package for the R software environment.
+# The license and distribution terms for this file may be found in the
+# file LICENSE in this package.
+
 get.sounding.timeseries <-
 function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderange=NA, projsonde=NULL, flightlines=NA, flightnames=NULL, plotcontour=FALSE, levelInterval=5)
 {
@@ -109,7 +118,7 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
           col=tempcolors(nlvl-1))
   }
   else {
-    require(lattice)
+    # require(lattice)
     offset = (x[2]-x[1])/2
     print(levelplot(data,row.values=x,column.values=y,ylim=yrange,
                scales=list(tck=1,tick.number=c(8,20),x=xlist),

@@ -8,6 +8,7 @@ fi
 do_eolts=false
 do_check=false
 do_isfs=false
+do_eolsdng=false
 do_install=false
 
 while [ $# -gt 0 ]; do
@@ -20,6 +21,9 @@ while [ $# -gt 0 ]; do
         ;;
     -i)
         do_isfs=true
+        ;;
+    -s)
+        do_eolsdng=true
         ;;
     -I)
         do_install=true
@@ -120,5 +124,33 @@ fi
 
 if $do_install; then
     scp eolts_[0-9]*.[0-9]*-*.tar.gz isfs_[0-9]*.[0-9]*-*.tar.gz porter2:/net/www/docs/software/R/src/contrib
+fi
+
+if $do_eolsdng; then
+
+    rm -f eolsdng_*.tar.gz
+
+    # make a backup of the eolsdng/DESCRIPTION file before changing the Version field
+    tmpdesc=$(mktemp /tmp/${0##*/}_XXXXXX)
+    cp eolsdng/DESCRIPTION $tmpdesc
+
+    if [ $(uname) == Darwin ]; then
+	sed -i "" -E "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" eolsdng/DESCRIPTION
+    else
+	sed -i -r "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" eolsdng/DESCRIPTION
+    fi
+
+    R $rargs CMD build eolsdng
+    bstatus=$?
+    cp $tmpdesc eolsdng/DESCRIPTION
+    rm -f $tmpdesc
+    [ $bstatus -ne 0 ] && exit $bstatus
+
+    R $rargs CMD INSTALL -l $rlib eolsdng_[0-9].[0-9]-*.tar.gz || exit $?
+
+    if $do_check; then
+        R $rargs CMD check -o /tmp eolsdng_[0-9].[0-9]-*.tar.gz || exit $?
+        # R --vanilla --environ CMD check --use-valgrind -o /tmp eolsdng_*.tar.gz || exit $?
+    fi
 fi
 

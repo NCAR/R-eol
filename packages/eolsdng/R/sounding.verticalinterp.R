@@ -1,3 +1,12 @@
+# -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
+# vim: set shiftwidth=4 softtabstop=4 expandtab:
+#
+# 2013,2014, Copyright University Corporation for Atmospheric Research
+# 
+# This file is part of the "eolsdng" package for the R software environment.
+# The license and distribution terms for this file may be found in the
+# file LICENSE in this package.
+
 sounding.verticalinterp <-
 function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderange=NA)
 {
@@ -37,17 +46,17 @@ function(ftype="qc", fdir=NULL, varname="temperature", YTYPE="height", sonderang
     sounding = readin.file(ftype, f)
     if (ftype == "raw") {
       #-- get only valid data --#
-      id  = (sounding[, 2] == "S00" | sounding[, 2] == "S01")
+      id  = (sounding[,"sta"] == "S00" | sounding[,"sta"] == "S01")
       sounding = sounding[id, ]
     }
     data = readin.data(sounding=sounding, varname=varname)
 
     if (YTYPE == "pressure")
-      y = sounding$p
+      y = sounding[,"p"]
     if (YTYPE == "height")
-      y = sounding$gp.alt
+      y = sounding[,"gp.alt"]
     if ((varname=="Wind Speed" | varname=="Wind Direction" | varname=="dZ/dt") & ftype == "raw")
-      ind = (!is.na(y) & !is.na(data) & sounding[,2] != "S01")
+      ind = (!is.na(y) & !is.na(data) & sounding[,"sta"] != "S01")
     else
       ind = (!is.na(y) & !is.na(data))
     yin = y[ind]

@@ -1,3 +1,12 @@
+# -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
+# vim: set shiftwidth=4 softtabstop=4 expandtab:
+#
+# 2013,2014, Copyright University Corporation for Atmospheric Research
+# 
+# This file is part of the "eolsdng" package for the R software environment.
+# The license and distribution terms for this file may be found in the
+# file LICENSE in this package.
+
 get.sounding.profiles <-
 function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RHprof=TRUE, WSPDprof=TRUE, dZprof=TRUE, YTYPE="pressure", projsonde=NULL, sonderange=NA, YAXISrange=NULL)
 {
@@ -142,25 +151,25 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
       if (nrow(raw.sounding) <= 1)
         next
       #-- get flight level --#
-      pflight = raw.sounding[raw.sounding[, 2] == "A11", 6]
+      pflight = raw.sounding[raw.sounding[,"sta"] == "A11", "press"]
       if (length(pflight)<1)
-        pflight = raw.sounding[raw.sounding[, 2] == "A00", 6]
-      hflight = raw.sounding[raw.sounding[, 2] == "A11", 20]/1000
+        pflight = raw.sounding[raw.sounding[,"sta"] == "A00", "press"]
+      hflight = raw.sounding[raw.sounding[,"sta"] == "A11", "gps.alt"]/1000
       if (length(hflight)<1)
-        hflight = raw.sounding[raw.sounding[, 2] == "A00", 20]/1000
+        hflight = raw.sounding[raw.sounding[,"sta"] == "A00", "gps.alt"]/1000
       #-- get only valid data --#
-      id  = (raw.sounding[, 2] == "S00" | raw.sounding[, 2] == "S01")
+      id  = (raw.sounding[, "sta"] == "S00" | raw.sounding[,"sta"] == "S01")
       raw.sounding = raw.sounding[id, ]
       if (nrow(raw.sounding) <= 1) {
         print(paste(lautime[i], "has NO valid data!!"))
         next
       }
-      raw.ps  = raw.sounding$p
-      raw.ght = raw.sounding$gps.alt/1000
-      raw.t   = raw.sounding$temp
-      raw.w   = raw.sounding$wspd
-      raw.rh  = raw.sounding$rh
-      raw.dz  = raw.sounding$dz
+      raw.ps  = raw.sounding[,"p"]
+      raw.ght = raw.sounding[,"gps.alt"]/1000
+      raw.t   = raw.sounding[,"temp"]
+      raw.w   = raw.sounding[,"wspd"]
+      raw.rh  = raw.sounding[,"rh"]
+      raw.dz  = raw.sounding[,"dz"]
 
       if (YTYPE == "height") {
         if (length(raw.ght[!is.na(raw.ght)]) < 1) {
@@ -168,9 +177,9 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
           next
         }
         rind.t  = (!is.na(raw.ght) & !is.na(raw.t))
-        rind.w  = (!is.na(raw.ght) & !is.na(raw.w) & raw.sounding[, 2] != "S01")
+        rind.w  = (!is.na(raw.ght) & !is.na(raw.w) & raw.sounding[,"sta"] != "S01")
         rind.rh = (!is.na(raw.ght) & !is.na(raw.rh))
-        rind.dz = (!is.na(raw.ght) & !is.na(raw.dz) & raw.sounding[, ] != "S01")
+        rind.dz = (!is.na(raw.ght) & !is.na(raw.dz) & raw.sounding[,"sta"] != "S01")
         ###-- Y axis as gps height --###
         rawY.t  = raw.ght[rind.t]
         rawY.w  = raw.ght[rind.w]
@@ -185,9 +194,9 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
           next
         }
         rind.t = (!is.na(raw.ps) & !is.na(raw.t))
-        rind.w = (!is.na(raw.ps) & !is.na(raw.w) & raw.sounding[, 2] != "S01")
+        rind.w = (!is.na(raw.ps) & !is.na(raw.w) & raw.sounding[,"sta"] != "S01")
         rind.rh = (!is.na(raw.ps) & !is.na(raw.rh))
-        rind.dz = (!is.na(raw.ps) & !is.na(raw.dz) & raw.sounding[, 2] != "S01")
+        rind.dz = (!is.na(raw.ps) & !is.na(raw.dz) & raw.sounding[,"sta"] != "S01")
         ###-- Y axis as pressure --###
         rawY.t  = raw.ps[rind.t]
         rawY.w  = raw.ps[rind.w]
@@ -205,12 +214,12 @@ function(raw.plot=TRUE, raw.dir=NULL, qc.plot=FALSE, qc.dir=NULL, Tprof=TRUE, RH
     if (qc.plot) {
       if (!raw.plot) aqcf =  paste(qc.dir, qcfs[i], sep="/")
       qc.sounding = readin.file("qc",aqcf)
-      qc.ps  = qc.sounding$p
-      qc.ght = qc.sounding$gps.alt/1000
-      qc.t   = qc.sounding$temp
-      qc.w   = qc.sounding$wspd
-      qc.rh  = qc.sounding$rh
-      qc.dz  = qc.sounding$dz
+      qc.ps  = qc.sounding[,"p"]
+      qc.ght = qc.sounding[,"gps.alt"]/1000
+      qc.t   = qc.sounding[,"temp"]
+      qc.w   = qc.sounding[,"wspd"]
+      qc.rh  = qc.sounding[,"rh"]
+      qc.dz  = qc.sounding[,"dz"]
 
       if (YTYPE == "height") {
         if (length(qc.ght[!is.na(qc.ght)]) < 1) {
