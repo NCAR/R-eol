@@ -1,5 +1,12 @@
 # -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
 # vim: set shiftwidth=4 softtabstop=4 expandtab:
+#
+# 2013,2014, Copyright University Corporation for Atmospheric Research
+# 
+# This file is part of the "isfs" package for the R software environment.
+# The license and distribution terms for this file may be found in the
+# file LICENSE in this package.
+
 plot.sunangle <- function(browse=F,year=2006,lat=40,lon=-105,yhi=90,twilight=T,localhours=T)
 {
     cat(paste("\nPlotting Sun Angles For: lat,lon =",lat,"/",lon,"\n"))

@@ -1,9 +1,14 @@
+# -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
+# vim: set shiftwidth=4 softtabstop=4 expandtab:
 #
-# Copyright (C) 2013 UCAR
+# 2013,2014, Copyright University Corporation for Atmospheric Research
 #
 # Much below was heavily borrowed from the Rcpp package for R.
 # Copyright (C) 2010 - 2012 Dirk Eddelbuettel and Romain Francois
-#
+# 
+# This file is part of the "eolts" package for the R software environment.
+# The license and distribution terms for this file may be found in the
+# file LICENSE in this package.
 
 ## make sure system.file returns an absolute path
 eolts.system.file <- function(...)

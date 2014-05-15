@@ -1,4 +1,13 @@
-test.fftw = function()
+# -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
+# vim: set shiftwidth=4 softtabstop=4 expandtab:
+#
+# 2013,2014, Copyright University Corporation for Atmospheric Research
+# 
+# This file is part of the "eolts" package for the R software environment.
+# The license and distribution terms for this file may be found in the
+# file LICENSE in this package.
+
+test.fftw <- function()
 {
     if (.Platform$OS.type == "windows") 
         do.test.fftw(TRUE)
@@ -18,7 +27,7 @@ sawfunc <- function(n,m,f,k)
     x <- seq(from=1,to=n,length=length(y))
     approx(x,y,1:n)$y + f(seq(from=0,to=2*pi*k*m,length=n))
 }
-do.test.fftw = function(use.mvfft)
+do.test.fftw <- function(use.mvfft)
 {
 
     eps <- 1.e-12
@@ -131,8 +140,8 @@ do.test.fftw = function(use.mvfft)
     xpower <- var(x) * (nr-1) / nr
     xpower <- xpower[row(xpower)==col(xpower)]    # diagonal
     checkTrue(all(abs(xxpower - xpower) < eps2))
-    xxmeansq = xx[1,] / nr / dt
-    xmeansq = apply(x@data,2,mean)^2
+    xxmeansq <- xx[1,] / nr / dt
+    xmeansq <- apply(x@data,2,mean)^2
     checkTrue(all(abs(xxmeansq - xmeansq) < eps2))
 
     nr <- 100
@@ -142,17 +151,17 @@ do.test.fftw = function(use.mvfft)
     # Test suggested by Tom from Lumley and Panofsky.
     #
     u <- matrix(cos((0:(nr-1)) * (m / nr) * 2 * pi),nrow=nr)
-    theta = pi / 3.0
+    theta <- pi / 3.0
     w <- matrix(cos((0:(nr-1)) * (m / nr) * 2 * pi - theta),nrow=nr)
     fu <- fftw(u,inverse=F,use.mvfft=use.mvfft)
     fw <- fftw(w,inverse=F,use.mvfft=use.mvfft)
 
-    xuw = xspectra(Cbind(fu,fw))
-    cuw1 = cospectra(xuw)
-    quw1 = quadspectra(xuw)
+    xuw <- xspectra(Cbind(fu,fw))
+    cuw1 <- cospectra(xuw)
+    quw1 <- quadspectra(xuw)
 
-    cuw2 = cos(theta) * pspectra(fu)
-    quw2 = sin(theta) * pspectra(fu)
+    cuw2 <- cos(theta) * pspectra(fu)
+    quw2 <- sin(theta) * pspectra(fu)
 
     checkTrue(all(abs(cuw1 - cuw2) < eps))
 
@@ -160,7 +169,7 @@ do.test.fftw = function(use.mvfft)
 
     return()
 }
-check.fftw = function()
+check.fftw <- function()
 {
     eps <- 1.e-12
     # Generate real matrix of random numbers

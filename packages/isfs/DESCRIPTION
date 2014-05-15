@@ -4,7 +4,7 @@ Date: 2013-09-13
 Title: Support for NCAR EOL ISFS, Integrated Surface Flux System
 Description: This package provides R functions to access and manipulate
     Integrated Surface Flux System time series.
-License: BSD_2_clause
+License: BSD_2_clause + file LICENSE
 URL: http://github.com/ncareol/R-eol.git
 Authors@R: person("Gordon","Maclean",role=c("aut","cre"),
             email="maclean@ucar.edu")
