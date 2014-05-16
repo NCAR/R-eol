@@ -66,13 +66,13 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
     dunits <- x@units
     names(dunits) = dnames
 
-    yinfo <- plot.dat.limits(x,ylim,one.scale)
+    yinfo <- plotLimits(x,ylim,one.scale)
     nscales <- yinfo$nscales
 
     if (nscales > 1 && remargin) std.par(nscales)
 
-    ylim <- yinfo$ylim
-    yscales <- yinfo$yscales
+    ylim <- yinfo$lim
+    yscales <- yinfo$scales
 
     # T for variables with different limits but the same units.
     # If T, we want to add the variable name to the Y axis
@@ -89,8 +89,8 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
 
     colv <- NULL
 
-    assemble.legend <- T
-    plot.legend <- T
+    assemble.legend <- TRUE
+    plot.legend <- TRUE
 
     legv <- x@attributes$legend
     if (!is.null(legv)) {
@@ -100,7 +100,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
         }
         else {
             legv <- as.character(legv)
-            assemble.legend <- F
+            assemble.legend <- FALSE
         }
     }
     all.same.vars <- all(dnames == dnames[1])
@@ -123,11 +123,11 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
     if (missing(yaxt)) yaxt = par("yaxt")
 
     xaxt.tmp <- "n"
-    xlab <- F
+    xlab <- FALSE
     if (bottom.row) {
         xaxt.tmp <- xaxt
-        if (xaxt == "n") xlab <- F
-        else xlab <- T
+        if (xaxt == "n") xlab <- FALSE
+        else xlab <- TRUE
     }
     mgp <- par("mgp")
     if (is.null(args$cex)) cex <- par("cex")
@@ -143,8 +143,8 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
         par(mgp=mgp)
     }
 
-    yaxes.done <- NULL
-    xaxes.done <- F
+    yaxis.done <- NULL
+    xaxis.done <- FALSE
 
     if (missing(cols)) cols = seq(from=2,length=ncol(x))
 
@@ -158,7 +158,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
         umatch = !is.na(match(names(dunits),varname))
         multunits = length(unique(dunits[umatch])) > 1
 
-        varnameunits = paste(varname,"(",vunits,")",sep="")
+        varnameunits = paste0(varname,"(",vunits,")")
 
         dupunits = ydupunits[varnameunits]
 
@@ -180,25 +180,25 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
         # All data is NAs
         if (any(is.na(ylim1)) || any(is.infinite(ylim1))) ylim1 <- c(-1,1)
 
-        clipped <- F
+        clipped <- FALSE
         cmin <- ylim1[1]
         cmax <- ylim1[2]
         clip.min <- datacol < cmin & !is.na(datacol)
         if (any(clip.min)) {
             datacol@data[clip.min@data] <- NA_real_
-            clipped <- T
+            clipped <- TRUE
         }
         clip.max <- datacol > cmax & !is.na(datacol)
         if (any(clip.max)) {
             datacol@data[clip.max@data] <- NA_real_
-            clipped <- T
+            clipped <- TRUE
         }
 
         if (colnum > length(cols))  col = cols[colnum %% length(cols)]
         else col = cols[colnum]
 
         # First trace, create scale, box and xaxis label
-        if (! xaxes.done) {
+        if (! xaxis.done) {
             plot.nts(datacol,xlim=xlim,type="n",col=1,xaxs=xaxs,
               xaxt=xaxt.tmp,yaxt="n",ylim=ylim1,axes=T,ylab="",xlab=xlab,
                       err=-1,cex=cex,log=log,...)
@@ -206,14 +206,14 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
 
             # put GMT across top of first row
             if (xaxt != "n") timeaxis(3,labels=first.row,tick=T,time.zone="GMT")
-            xaxes.done <- T
+            xaxis.done <- TRUE
         }
 
         par(new=T)
 
         side <- line <- ylab.txt <- NULL
         if (!missing(ylab)) ylab.txt <- ylab
-        if (do.yaxis <- (yaxt != "n" && is.na(match(yaxis.num,yaxes.done)))) {
+        if (do.yaxis <- (yaxt != "n" && is.na(match(yaxis.num,yaxis.done)))) {
             if (nscales == 1) {
                 side <- 2
                 line <- 0
@@ -237,7 +237,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
         cat("plot.nts, varname=",varname," ylim1=",signif(ylim1,4),"\n")
         plot.nts(datacol,xlim=xlim,ylim=ylim1,type=type,xaxs=xaxs,
               col=col,pch=col,lty=1,ylab="",
-              axes=F,err=-1,log=log,lwd=tlwd,...)
+              axes=FALSE,err=-1,log=log,lwd=tlwd,...)
 
         usr <- par("usr")	# used in various places below
 
@@ -307,28 +307,28 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
                     }
                     else {
                         at <- pretty(ylim1)
-                        ylabels <- T
+                        ylabels <- TRUE
                     }
                 } else {
                     at <- pretty(ylim1)
-                    ylabels <- T
+                    ylabels <- TRUE
                 }
                 # rotate right hand side labels so they're easier to read
                 # (must use at= argument for srt to work)
-                # cat("nscales=",nscales,"length(yaxes.done)=",length(yaxes.done),"side=",side,"at=",at,"line=",line,"ylabels=",paste(ylabels,collapse=","),"\n")
-                if (side == 4) {
+                # cat("nscales=",nscales,"length(yaxis.done)=",length(yaxis.done),"side=",side,"at=",at,"line=",line,"ylabels=",paste(ylabels,collapse=","),"\n")
+                if (side == 4) {    # right
                     axis(side=side,at=at,line=line,col=1,srt=-90,cex=cex*.8,labels=ylabels)
                     mtext(side=side,line=line+mgp[1]*.8,ylab.txt,col=1,
                           at=mean(usr[3:4]),srt=-90,cex=cex)
                 }
-                else if (nscales > 1 || length(yaxes.done) == 0) {
+                else if (nscales > 1 || length(yaxis.done) == 0) {
                     # axis(side=side,line=line,col=1,cex=cex*.8,at=at,labels=ylabels,adj=1)
                     axis(side=side,at=at,line=line,col=1,srt=90,cex=cex*.8,labels=ylabels)
                     mtext(side=side,line=line+mgp[1]*.8,ylab.txt,col=1,cex=cex)
                 }
                 if (nscales == 1 || length(dnames) == 1) axis(4,labels=F,at=at)
             }
-            yaxes.done <- c(yaxes.done,yaxis.num)
+            yaxis.done <- c(yaxis.done,yaxis.num)
         }
 
 
@@ -482,7 +482,7 @@ plot.dat.title <- function(title="",first.plot,last.plot,
     invisible(title)
 }
 
-plot.dat.limits <- function(data,ylim,one.scale=F)
+plotLimits <- function(data,lim,one.scale=F,namesep=".")
 {
 
     # unique variable names.
@@ -491,23 +491,23 @@ plot.dat.limits <- function(data,ylim,one.scale=F)
 
     # Sometimes two data colums may have the same name, but different units
     # e.g.:  P as mb and Pa
-    dnameunits = paste(dnames,"(",dunits,")",sep="")
+    dnameunits = paste0(dnames,"(",dunits,")")
     dnameunits.u = unique(dnameunits)
 
-    yscales <- rep(1,length(dnameunits.u))
-    names(yscales) <- dnameunits.u
+    scales <- rep(1,length(dnameunits.u))
+    names(scales) <- dnameunits.u
 
-    # T for variables with different limits but the same units,
-    # so that user can put the variable name in the Y axis label.
-    dupunits <- rep(F,length(dnameunits.u))
+    # TRUE for variables with different limits but the same units,
+    # where the Y axis label should have the variable name
+    dupunits <- rep(FALSE,length(dnameunits.u))
     names(dupunits) <- dnameunits.u
 
     # Fixed limits for all traces on plot
-    if (!is.null(ylim) && !is.list(ylim))
-          return(list(nscales=1,ylim=ylim,yscales=yscales))
+    if (!is.null(lim) && !is.list(lim))
+          return(list(nscales=1,lim=lim,scales=scales))
 
     if (one.scale) {
-        ylim <- range(unlist(sapply(unique(dnames),
+        lim <- range(unlist(sapply(unique(dnames),
             function(x,d,dn)
             {
                 l<-list()
@@ -515,43 +515,29 @@ plot.dat.limits <- function(data,ylim,one.scale=F)
                 l
             },
             data,dnames)),na.rm=T)
-        return(list(nscales=1,ylim=ylim,yscales=yscales))
+        return(list(nscales=1,lim=lim,scales=scales))
     }
 
-    # merge default limits on .isfsEnv with ylim. ylim takes precedence
-    if (FALSE) {
-    if (exists(".ylimits",envir=.isfsEnv)) {
-        ylimtmp <- get(".ylimits",envir=.isfsEnv)
-        # logical vector of variables with fixed Y limits
-        fixed <- sapply(ylimtmp,function(x)
-              { ifelse(is.null(x),F,ifelse(is.null(x$fixed),T,x$fixed)) })
-        # 
-        if (any(fixed)) ylimtmp <- c(lapply(ylimtmp[fixed],function(x){c(x$min,x$max)}),ylim)
-        ylimtmp[names(ylim)] <- ylim	# works if ylim is NULL
-        ylim <- ylimtmp
-    }
-    }
-
-    # ylim is now either NULL or a list
+    # lim is now either NULL or a list
 
     # first names of variables, i.e. "dir" for "dir.2m"
     # these may have repeated values
-    dnames1 <- words(dnames,1,1,sep=".")
+    dnames1 <- words(dnames,1,1,sep=namesep)
 
     udnames <- unique(dnames)
     udnames1 <- unique(dnames1)
 
-    rmtch <- match(names(ylim),udnames,nomatch=0)
-    rmtch1 <- match(names(ylim),udnames1,nomatch=0)
-    # reduce ylim to those variables that we have
-    ylim <- ylim[rmtch!=0 | rmtch1 != 0]
+    rmtch <- match(names(lim),udnames,nomatch=0)
+    rmtch1 <- match(names(lim),udnames1,nomatch=0)
+    # reduce lim to those variables that we have
+    lim <- lim[rmtch!=0 | rmtch1 != 0]
 
     # the length of udunits is the first guess at the number of
     # different scales on the yaxis.
     udunits <- unique(dunits)
 
-    # We may need more yscales because of the requested ylims
-    ylim.res <- list()
+    # We may need more scales because of the requested lims
+    lim.res <- list()
 
     iscale <- 0
     for (units.str in udunits) {
@@ -561,48 +547,48 @@ plot.dat.limits <- function(data,ylim,one.scale=F)
 
         # variable names with units equal to units.str
         dnames.u <- unique(dnames[umtch])
-        dnames1.u <- words(dnames.u,1,1,sep=".")
-        dnameunits.u <- paste(dnames.u,"(",units.str,")",sep="")
+        dnames1.u <- words(dnames.u,1,1,sep=namesep)
+        dnameunits.u <- paste0(dnames.u,"(",units.str,")")
 
         # ylmtch: for each variable with units equal to units.str,
-        # the index in ylim of its limits
-        ylmtch <- match(dnames.u,names(ylim),nomatch=0)
-        ylmtch1 <- match(dnames1.u,names(ylim),nomatch=0)
+        # the index in lim of its limits
+        ylmtch <- match(dnames.u,names(lim),nomatch=0)
+        ylmtch1 <- match(dnames1.u,names(lim),nomatch=0)
 
         # use first name match if not a complete match
         ylmtch[ylmtch == 0] <- ylmtch1[ylmtch == 0]
 
         if (any(ylmtch != 0)) {
-            ylim.res[dnameunits.u[ylmtch!=0]] <- ylim[ylmtch]
+            lim.res[dnameunits.u[ylmtch!=0]] <- lim[ylmtch]
             iscale <- iscale + 1
-            yscales[dnameunits.u[ylmtch!=0]] <- iscale
+            scales[dnameunits.u[ylmtch!=0]] <- iscale
 
-            chk <- F
+            chk <- FALSE
             # check for more than one limit
             if (length(unique(ylmtch[ylmtch!=0])) > 1) {
-                chk <- unlist(lapply(ylim[ylmtch][-1],
+                chk <- unlist(lapply(lim[ylmtch][-1],
                         function(x,y) {x[1]!=y[1] || x[2]!=y[2]},
-                        ylim[ylmtch][[1]]))
+                        lim[ylmtch][[1]]))
             }
             if (any(chk)) {
                 warning("variables ",paste(dnames.u[ylmtch!=0],collapse=","),	
                         " have units \"",
-                  units.str, "\" but have different ylim=",
-                  paste(names(ylim[ylmtch]),ylim[ylmtch],sep="=",collapse=","),"\n")
-                ylmtchk <- ylmtch[ylmtch!=0][-1][chk]	# indices into ylim
+                  units.str, "\" but have different limits=",
+                  paste(names(lim[ylmtch]),lim[ylmtch],sep="=",collapse=","),"\n")
+                ylmtchk <- ylmtch[ylmtch!=0][-1][chk]	# indices into lim
 
-                dupunits[dnameunits.u[ylmtch!=0]] <- T
+                dupunits[dnameunits.u[ylmtch!=0]] <- TRUE
 
                 for (i in ylmtchk) {
                   iscale <- iscale + 1
                   dylmtch <- match(i,ylmtch,nomatch=0)
-                  yscales[dnameunits.u[dylmtch]] <- iscale
+                  scales[dnameunits.u[dylmtch]] <- iscale
                 }
             }
         }
         if (any(ylmtch == 0)) {
-            # No values in ylim for these variables
-            ylims.for.units <- range(unlist(sapply(dnames.u[ylmtch==0],
+            # No values in lim for these variables
+            lims.for.units <- range(unlist(sapply(dnames.u[ylmtch==0],
                 function(x,d,dn)
                 {
                     l<-list()
@@ -610,21 +596,22 @@ plot.dat.limits <- function(data,ylim,one.scale=F)
                     l
                 },
                 data,dnames)),na.rm=T)
-            ylim.res[dnameunits.u[ylmtch==0]] <- list(ylims.for.units)
+            lim.res[dnameunits.u[ylmtch==0]] <- list(lims.for.units)
             iscale <- iscale + 1
-            yscales[dnameunits.u[ylmtch==0]] <- iscale
+            scales[dnameunits.u[ylmtch==0]] <- iscale
         }
     }
 
     #
-    dn <- names(ylim.res)
-    ylim <- list(nscales=iscale,ylim=ylim.res,yscales=yscales,dupunits=dupunits)
+    # dn <- names(lim.res)
+    lim <- list(nscales=iscale,lim=lim.res,scales=scales,dupunits=dupunits)
     cat("nscales=",iscale," units=",paste("\"",dunits,"\"",sep="",collapse=","),"\n")
 
     # This is a grotesque hack!
-    # Without it the names of the ylim member are jibberish! Splus bug?
-    names(ylim$ylim) <- dn
-    ylim
+    # Without it the names of the lim member are jibberish! Splus bug?
+    # names(lim$lim) <- dn
+
+    lim
 }
 
 logo_stamp <- function(print.motto=T)

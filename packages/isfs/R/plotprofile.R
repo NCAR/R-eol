@@ -60,7 +60,7 @@ plotprofile <- function(x, every=3600, ntraces=6, smooth=deltat(x)[1],
 
     xp <- array(NA_real_,dim=c(length(tps),ntraces,length(hts)))
 
-    xinfo <- plot.dat.limits(x,xlim,TRUE)
+    xinfo <- plotLimits(x,xlim,TRUE)
 
     clipped <- F
     cmin <- xinfo$ylim[1]
