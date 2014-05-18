@@ -240,12 +240,8 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
     if (all.is.na) plot.nas(type=type,axes=plotaxes,xlim=xlim.scaled,xlab="",
           ylim=ylim,ylab=ylab,xaxs=xaxs,xaxt="n",yaxt=yaxt,tck=tck,
           col=col[1],pch=pch[1],lty=lty[1],...)
-    else if (nc > 1) 
-        plot((tx-x0)/scalef,x@data[,1],type=type,axes=plotaxes,
-            xlim=xlim.scaled,xlab="",ylim=ylim,ylab=ylab,xaxs=xaxs,
-            xaxt="n",yaxt=yaxt,tck=tck,col=col[1],pch=pch[1],lty=lty[1],log=log,...)
     else
-        plot((tx-x0)/scalef,x@data,type=type,axes=plotaxes,
+        plot((tx-x0)/scalef,x@data[,1],type=type,axes=plotaxes,
             xlim=xlim.scaled,xlab="",ylim=ylim,ylab=ylab,xaxs=xaxs,
             xaxt="n",yaxt=yaxt,tck=tck,col=col[1],pch=pch[1],lty=lty[1],log=log,...)
 
