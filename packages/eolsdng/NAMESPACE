@@ -1,14 +1,13 @@
 
 # exported functions
 export(
-    read.raw.Dfile,
-    read.qc.eolfile,
     readDFile,
     readQCFile,
+    readSoundings,
+    plotSprofile,
 
     get.sounding.allLines,
     get.sounding.histograms,
-    get.sounding.profiles,
     get.sounding.timeseries,
     get.sounding.weathersymbols,
     sounding.verticalinterp,
