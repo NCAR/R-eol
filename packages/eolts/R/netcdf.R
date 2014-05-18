@@ -60,12 +60,12 @@ netcdf <- function(
                 function(x,str){grepl(x,str,fixed=TRUE)},str=file))
 
         if (hastimefmt) {
-            nmformat <- gsub("%Y","[12][0-9]{3}",file)
-            nmformat <- gsub("%m","[01][0-9]",nmformat)
-            nmformat <- gsub("%d","[0-3][0-9]",nmformat)
-            nmformat <- gsub("%H","[0-2][0-9]",nmformat)
-            nmformat <- gsub("%M","[0-5][0-9]",nmformat)
-            nmformat <- gsub("%S","[0-5][0-9]",nmformat)
+            nmformat <- gsub("%Y","[12][0-9]{3}",file,fixed=TRUE)
+            nmformat <- gsub("%m","[01][0-9]",nmformat,fixed=TRUE)
+            nmformat <- gsub("%d","[0-3][0-9]",nmformat,fixed=TRUE)
+            nmformat <- gsub("%H","[0-2][0-9]",nmformat,fixed=TRUE)
+            nmformat <- gsub("%M","[0-5][0-9]",nmformat,fixed=TRUE)
+            nmformat <- gsub("%S","[0-5][0-9]",nmformat,fixed=TRUE)
             files <- list.files(dir,nmformat)
 
             # Parse file names to get start times
