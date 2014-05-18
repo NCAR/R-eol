@@ -434,14 +434,14 @@ setMethod("clip",signature(x1="dat"),
     function(x1,...)
     {
         for (i in 1:ncol(x1)) {
-            cn <- dimnames(x1[,i])[[2]]
+            cn <- colnames(x1[,i])
             if (!is.null(cl <- clip(cn)) && (is.null(cl$clip) || cl$clip)) {
                 cmin <- cl$min
                 cmax <- cl$max
-                clip.x <- x1[,i] < cmin & !is.na(x1[,i])
-                if (any(clip.x)) x1[clip.x,i] <- NA_real_
-                clip.x <- x1[,i] > cmax & !is.na(x1[,i])
-                if (any(clip.x)) x1[clip.x,i] <- NA_real_
+                clip.x <- x1@data[,i] < cmin & !is.na(x1@data[,i])
+                if (any(clip.x)) x1@data[clip.x,i] <- NA_real_
+                clip.x <- x1@data[,i] > cmax & !is.na(x1@data[,i])
+                if (any(clip.x)) x1@data[clip.x,i] <- NA_real_
             }
         }
         x1
