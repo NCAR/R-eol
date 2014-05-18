@@ -16,7 +16,7 @@ setMethod("plot",signature(x="dat",y="missing"),
 
 plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
         log="",tlwd=par("lwd"),remargin=T,title,logo=T,
-	xaxt,yaxt,cols,...)
+	xaxt="s",yaxt="s",yaxs=par("yaxs"),cols,...)
 {
 
     # tlwd: trace line width.  Use that option if you want to
@@ -66,10 +66,10 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
     dunits <- x@units
     names(dunits) = dnames
 
-    yinfo <- plotLimits(x,ylim,one.scale)
+    yinfo <- plotLimits(x,ylim,one.scale,axs=yaxs)
     nscales <- yinfo$nscales
 
-    if (nscales > 1 && remargin) std.par(nscales)
+    if (nscales > 1 && remargin) adjPar(nyscales=nscales)
 
     ylim <- yinfo$lim
     yscales <- yinfo$scales
@@ -112,15 +112,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
 
     args <- list(...)
 
-    if (par("xaxt") != "n") par(xaxt="s")
-    if (missing(xaxt)) xaxt = par("xaxt")
-
     logy = any(substring(log,1:nchar(log),1:nchar(log)) == "y")
-    if (par("yaxt") != "n") {
-        if (logy) par(yaxt="l")
-        else par(yaxt="s")
-    }
-    if (missing(yaxt)) yaxt = par("yaxt")
 
     xaxt.tmp <- "n"
     xlab <- FALSE
@@ -199,9 +191,10 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
 
         # First trace, create scale, box and xaxis label
         if (! xaxis.done) {
-            plot.nts(datacol,xlim=xlim,type="n",col=1,xaxs=xaxs,
-              xaxt=xaxt.tmp,yaxt="n",ylim=ylim1,axes=T,ylab="",xlab=xlab,
-                      err=-1,cex=cex,log=log,...)
+            plot.nts(datacol,type="n",col=1, axes=T,
+                xaxt=xaxt.tmp, xaxs=xaxs, xlim=xlim,xlab=xlab,
+                yaxt="n", yaxs=yaxs, ylim=ylim1,ylab="",
+                err=-1,cex=cex,log=log,...)
             if (!bottom.row && xaxt != "n") timeaxis(1,labels=F,tick=T,time.zone=x@time.zone)
 
             # put GMT across top of first row
@@ -482,7 +475,7 @@ plot.dat.title <- function(title="",first.plot,last.plot,
     invisible(title)
 }
 
-plotLimits <- function(data,lim,one.scale=F,namesep=".")
+plotLimits <- function(data,lim,one.scale=FALSE,axs="i",namesep=".")
 {
 
     # unique variable names.
@@ -508,13 +501,20 @@ plotLimits <- function(data,lim,one.scale=F,namesep=".")
 
     if (one.scale) {
         lim <- range(unlist(sapply(unique(dnames),
-            function(x,d,dn)
+            function(x,d,dn,axs)
             {
-                l<-list()
-                l[[x]] <- range(clip(d[,dn==x]),na.rm=T)
+                lim <- range(clip(d[,dn==x]),na.rm=T)
+                if (axs == "r") {
+                    dl <- lim[2] - lim[1]
+                    lim[1] <- lim[1] - 0.04 * dl
+                    lim[2] <- lim[2] + 0.04 * dl
+                }
+                l <- list()
+                l[[x]] <- lim
                 l
             },
-            data,dnames)),na.rm=T)
+            data,dnames,axs)),na.rm=T)
+        # if xaxs or yaxs is "r", extend axis by 4% on each end
         return(list(nscales=1,lim=lim,scales=scales))
     }
 
@@ -588,28 +588,31 @@ plotLimits <- function(data,lim,one.scale=F,namesep=".")
         }
         if (any(ylmtch == 0)) {
             # No values in lim for these variables
-            lims.for.units <- range(unlist(sapply(dnames.u[ylmtch==0],
-                function(x,d,dn)
+            lim <- range(unlist(sapply(dnames.u[ylmtch==0],
+                function(x,d,dn,axs)
                 {
-                    l<-list()
-                    l[[x]] <- range(clip(d[,dn==x]),na.rm=T)
+                    lim <- range(clip(d[,dn==x]),na.rm=T)
+                    if (axs == "r") {
+                        dl <- lim[2] - lim[1]
+                        lim[1] <- lim[1] - 0.04 * dl
+                        lim[2] <- lim[2] + 0.04 * dl
+                    }
+                    l <- list()
+                    l[[x]] <- lim
                     l
                 },
-                data,dnames)),na.rm=T)
-            lim.res[dnameunits.u[ylmtch==0]] <- list(lims.for.units)
+                data,dnames,axs)),na.rm=T)
+
+
+            lim.res[dnameunits.u[ylmtch==0]] <- list(lim)
             iscale <- iscale + 1
             scales[dnameunits.u[ylmtch==0]] <- iscale
         }
     }
 
-    #
     # dn <- names(lim.res)
     lim <- list(nscales=iscale,lim=lim.res,scales=scales,dupunits=dupunits)
     cat("nscales=",iscale," units=",paste("\"",dunits,"\"",sep="",collapse=","),"\n")
-
-    # This is a grotesque hack!
-    # Without it the names of the lim member are jibberish! Splus bug?
-    # names(lim$lim) <- dn
 
     lim
 }
@@ -651,7 +654,7 @@ logo_stamp <- function(print.motto=T)
 # old name for backward compatibility
 fun.logo.stamp <- logo_stamp
 
-std.par <- function(nyscales=1,prows=NULL,pcols=NULL,rscale=1,lscale=1)
+adjPar <- function(nxscales=1,nyscales=1,prows=NULL,pcols=NULL,rscale=1,lscale=1)
 {
     # This function sets the par options: par,mar and mfrow based on input.
     #
@@ -711,6 +714,11 @@ std.par <- function(nyscales=1,prows=NULL,pcols=NULL,rscale=1,lscale=1)
 
     mar[2] <- (mgp[1] + 1.0) * lscales + 0.1
     mar[4] <- (mgp[1] + 1.0) * rscales + 0.1
+
+    lscales <- (nxscales-1) %/% 2 + 1
+    rscales <- nxscales %/% 2
+    mar[1] <- (mgp[1] + 1.0) * lscales + 0.1
+    mar[3] <- (mgp[1] + 1.0) * rscales + 0.1
 
     # warning:  put cex and mex before mar and oma in this par call.
     # Set cex to original value, and mex to cex, so margin lines are
