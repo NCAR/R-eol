@@ -91,11 +91,11 @@ sync <- function(pos)
     sl <- search()
     if (missing(pos)) {
         projdata1 <- paste(Sys.getenv("ISFF"),"projects",Sys.getenv("PROJECT"),
-            "ISFF/R",sep="/")
+            "ISFF/R",sep=.Platform$file.sep)
         pos <- grepl(projdata1,sl)
         if (!any(pos)) {
             projdata2 <- paste(Sys.getenv("ISFF"),"projects",Sys.getenv("PROJECT"),
-                "R",sep="/")
+                "R",sep=.Platform$file.sep)
             pos <- grepl(projdata2,sl)
         }
         if (!any(pos)) stop(paste("pos is missing and can't find",projdata1,"or",projdata2))
