@@ -17,7 +17,7 @@ export(
     nwords,
     plot.dat,
     plotLimits,
-    std.par,
+    adjPar,
     logo_stamp,
     plotprofile,
     plotdat.ts,
