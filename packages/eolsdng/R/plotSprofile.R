@@ -33,17 +33,17 @@ plotSprofile <- function(raw=NULL,qc=NULL,projsonde=NULL,type="b",
         lautime <- positions(raw)[1]    # launch time
 
         xrnames <- colnames(raw)
-        xunits <- units(raw)
+        xunits <- eolts::units(raw)
 
         # find y axis data: p, pressure, gp.alt or gps.alt
         ym <- match(xrnames,c("p","pressure","gp.alt","gps.alt"))
-        yname <- xrnames[!is.na(ym)][1]
-        if (substr(yname,1,1) == "p") reverse_yaxis <- TRUE
-        yunits <- units(raw)[!is.na(ym)][1]
+        # use last one
+        yname <- tail(xrnames[!is.na(ym)],1)
+        yunits <- tail(eolts::units(raw)[!is.na(ym)],1)
 
-        ys <- match(xrnames,"sta")
-        xrnames <- xrnames[is.na(ym) & is.na(ys)]
-        xunits <- xunits[is.na(ym) & is.na(ys)]
+        ym <- match(xrnames,c(yname,"sta"))
+        xrnames <- xrnames[is.na(ym)]
+        xunits <- xunits[is.na(ym)]
 
         if (!is.null(qc))
             legtxt <- paste0(xrnames,"_raw(",xunits,")")
@@ -55,12 +55,12 @@ plotSprofile <- function(raw=NULL,qc=NULL,projsonde=NULL,type="b",
         if (is.null(lautime)) lautime <- positions(qc)[1]
 
         xqnames <- colnames(qc)
-        xunits <- units(qc)
+        xunits <- eolts::units(qc)
 
         # find y axis data: p, pressure, gp.alt or gps.alt
         ym <- match(xqnames,c("p","pressure","gp.alt","gps.alt"))
-        yqname <- xqnames[!is.na(ym)][1]
-        yqunits <- units(qc)[!is.na(ym)][1]
+        yqname <- tail(xqnames[!is.na(ym)],1)
+        yqunits <- tail(eolts::units(qc)[!is.na(ym)],1)
 
         if (!is.null(yname) && yname != yqname)
             stop(paste("Inconsistent y axis data variables:",yname,yqname))
@@ -70,16 +70,20 @@ plotSprofile <- function(raw=NULL,qc=NULL,projsonde=NULL,type="b",
             stop(paste("Inconsistent y axis data units:",yunits,yqunits))
         else yunits <- yqunits
 
-        ys <- match(xqnames,"sta")
+        ys <- match(xqnames,c(yname,"sta"))
 
-        xqnames <- xqnames[is.na(ym) & is.na(ys)]
-        xunits <- xunits[is.na(ym) & is.na(ys)]
+        xqnames <- xqnames[is.na(ys)]
+        xunits <- xunits[is.na(ys)]
 
         if (!is.null(raw))
             legtxt <- c(legtxt,paste0(xqnames,"_qc(",xunits,")"))
         else
             legtxt <- c(legtxt,paste0(xqnames,"_qc(",xunits,")"))
     }
+
+    # reverse axis if Y is pressure
+    if (substr(yname,1,1) == "p") reverse_yaxis <- TRUE
+
     xnames <- c(xrnames,xqnames)
 
     mci <- length(legtxt) + 1  # max color index needed
@@ -152,12 +156,12 @@ plotSprofile <- function(raw=NULL,qc=NULL,projsonde=NULL,type="b",
         itrace <- itrace + 1
 
         if (itrace > length(xrnames)) {
-            xunits <- units(qc[,xname])[1]
+            xunits <- eolts::units(qc[,xname])[1]
             xdata <- unlist(qc[,xname]@data)
             ydata <- unlist(qc[,yname]@data)
         }
         else {
-            xunits <- units(raw[,xname])[1]
+            xunits <- eolts::units(raw[,xname])[1]
             xdata <- unlist(raw[,xname]@data)
             ydata <- unlist(raw[,yname]@data)
         }

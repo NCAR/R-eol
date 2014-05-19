@@ -144,10 +144,10 @@ readDFile <- function (file=stop("'file' must be specified"),sta_clean=TRUE)
         okptu  <- grepl("S0",sta,fixed=TRUE)
         okwind <- grepl("S00",sta,fixed=TRUE) | grepl("S10",sta,fixed=TRUE)
         # which status 1=ptu, 2=wind to apply to data columns
-        ptuqc <- c("p","temp")
-        windqc <- c("wdir","wspd")
-        d@data[!okptu,ptuqc] <- NA_real_
-        d@data[!okwind,windqc] <- NA_real_
+        ptuqc <- c("p","temp","rh","rh1","rh2")
+        windqc <- c("wdir","wspd","dz","lon","lat","gp.alt","wsat","ssat","werr","gps.alt")
+        d@data[!okptu,match(ptuqc,colnames(d))] <- NA_real_
+        d@data[!okwind,match(windqc,colnames(d))] <- NA_real_
     }
     # browser()
     d
