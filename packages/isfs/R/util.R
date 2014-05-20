@@ -26,10 +26,13 @@ dataset <- function(which,verbose=F,datasets=NULL)
     #   f       an arbitrary function which can perform any extra settings
     if (is.null(datasets)) {
         if (!exists(".datasets")) return(NULL)
-        datasets <- .datasets
+        datasets <- get(".datasets")
     }
+    if (!exists(".projectEnv")) stop(".projectEnv not found")
+
     current <- "unknown"
-    if(exists("dataset.which",envir=.projectEnv)) current <- get("dataset.which",envir=.projectEnv)
+    if(exists("dataset.which",envir=get(".projectEnv")))
+        current <- get("dataset.which",envir=get(".projectEnv"))
 
     # discard datasets that are not enabled.
     datasets <- datasets[sapply(datasets,function(x) { ifelse (is.null(x$enable),FALSE,x$enable) })]
@@ -65,11 +68,11 @@ dataset <- function(which,verbose=F,datasets=NULL)
     dset$f()
     if (ncf != dset$ncf || ncd != dset$ncd) clear.cache()
 
-    assign("dataset.which",which,envir=.projectEnv)
+    assign("dataset.which",which,envir=get(".projectEnv"))
 
     if (verbose) {
         cat(paste("************************************************\n"))
-        cat(paste("current dataset is \"", get("dataset.which",envir=.projectEnv),"\"\n",sep=""))
+        cat(paste("current dataset is \"", get("dataset.which",envir=get(".projectEnv")),"\"\n",sep=""))
 
         cat(paste("NETCDF_FILE=",Sys.getenv("NETCDF_FILE"),"\n",
                 "NETCDF_DIR=",Sys.getenv("NETCDF_DIR"),"\n",

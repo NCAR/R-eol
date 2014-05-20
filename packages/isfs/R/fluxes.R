@@ -507,6 +507,7 @@ dat.H.dry <- function(what,derived=TRUE,...)
 {
     # Turbulent sensible heat flux without contribution from varying Cp 
 
+    robust <- dpar("robust")
     Q <- dat("Q",avg=T,smooth=T)
     if (is.null(robust) || robust) {
         if (all(is.na(Q)))
