@@ -5,10 +5,10 @@ export(
     readQCFile,
     readSoundings,
     plotSprofile,
+    plotSvarProfile,
     plotScontour,
     interpSounding,
 
-    get.sounding.allLines,
     get.sounding.histograms,
     get.sounding.weathersymbols,
     station.symbol

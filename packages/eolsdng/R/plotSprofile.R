@@ -20,7 +20,6 @@ plotSprofile <- function(raw=NULL,qc=NULL,projsonde=NULL,type="b",
     #   change the trace line width without changing the line width
     #   of the axes.
 
-    ######-- legend information --######
     legtxt <- NULL
     legcol <- NULL
     lautime <- NULL
@@ -80,6 +79,9 @@ plotSprofile <- function(raw=NULL,qc=NULL,projsonde=NULL,type="b",
         else
             legtxt <- c(legtxt,paste0(xqnames,"_qc(",xunits,")"))
     }
+
+    if (length(yname) == 0)
+        stop("No variable for y axis found")
 
     # reverse axis if Y is pressure
     if (substr(yname,1,1) == "p") reverse_yaxis <- TRUE
@@ -238,8 +240,12 @@ plotSprofile <- function(raw=NULL,qc=NULL,projsonde=NULL,type="b",
         }
 
         nas <- is.na(xdata)
-        lines(xdata[!nas],ydata[!nas],col=col[legcol[itrace]],lty=1,lwd=tlwd,err=-1,...)
-        points(xdata[!nas],ydata[!nas],col=col[legcol[itrace]],pch=legpch[itrace],err=-1,...)
+        if (type =="b" || type == "l" || type == "o")
+            lines(xdata[!nas],ydata[!nas],
+                col=col[legcol[itrace]],lty=1,lwd=tlwd,err=-1,...)
+        if (type =="b" || type == "p" || type == "o")
+            points(xdata[!nas],ydata[!nas],
+                col=col[legcol[itrace]],pch=legpch[itrace],err=-1,...)
 
         if (clipped) {
             # clip.min and clip.max are logical vectors

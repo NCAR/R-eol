@@ -7,83 +7,89 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-interpSounding <- function(xs,xname,yname)
+interpSounding <- function(sdngs,xname,ynames)
 {
     res <- list()
-    yout <- NULL
+    xout <- NULL
+    xunits <- NULL
+    xreversed <- NULL
 
-    for (sname in names(xs)) {
-        x <- xs[[sname]]
-        vnames <- colnames(x)
+    for (sname in names(sdngs)) {
 
+        sdng <- sdngs[[sname]]
+
+        vnames <- colnames(sdng)
         if (is.na(match(xname,vnames))) stop(paste(xname,"not found in",sname))
-        if (is.na(match(yname,vnames))) stop(paste(yname,"not found in",sname))
 
-        xtunits <- eolts::units(x[,xname])
-        ytunits <- eolts::units(x[,yname])
+        xin <- as.vector(sdng@data[,xname])
 
         # interpolate over log of pressure
-        if (is.null(yout)) {
-            xunits <- xtunits
-            yunits <- ytunits
-            if (yunits == "mb") {
-                yout <- seq(5,1200,5)
-                yiout <- log(yout)
+        if (xunits == "mb") xin <- log(xin)
+
+        xok <- !is.na(xin) & !is.infinite(xin)
+        if (sum(xok) < 10) next
+        xin <- xin[xok]
+
+        # compute means of first and last 10% of xin, and
+        # compare, in order to guess whether xin is increasing or decreasing
+        nm <- length(xin) / 10
+        if (nm < 2) nm <- length(xin) / 2
+
+        m1 <- mean(xin[1:nm],trim=0.2)
+        m2 <- mean(tail(xin,nm),trim=0.2)
+
+        if (is.null(xout)) {
+            xunits <- eolts::units(sdng[,xname])
+            xreversed <- m1 > m2
+            if (xunits == "mb") {
+                xout <- seq(5,1200,5)
+                xiout <- log(xout)
             }
             else {
-                yout <- seq(0,30000,75)
-                yiout <- yout
+                xout <- seq(0,30000,75)
+                xiout <- xout
+            }
+            if (xreversed) {
+                # make xout have same upward/downward trend as xin
+                xout <- rev(xout)
+                xiout <- rev(xiout)
             }
         }
         else {
+            xtunits <- eolts::units(sdng[,xname])
             if (xunits != xtunits)
                 stop(paste("units of",xname,"are changing,",xunits,"!=",xtunits))
-            if (yunits != ytunits)
-                stop(paste("units of",yname,"are changing,",yunits,"!=",ytunits))
+            xtreversed <- m1 > m2
+            if (xreversed != xtreversed)
+                stop(paste("upward/downward trend of",xname,"seems to be changing over these soundings"))
         }
 
-        yin <- as.vector(x@data[,yname])
-        if (yunits == "mb") yin <- log(yin)
+        rmat <- matrix(NA,ncol=length(ynames)+1,nrow=length(xout),
+                dimnames=list(NULL,c(xname,ynames)))
 
-        yok <- !is.na(yin) & !is.infinite(yin) & substring(x@data[,"sta"],1,1) == "S"
-        if (sum(yok) < 10) next
-        yin <- yin[yok]
+        rmat[,xname] <- xout
 
-        # compute means of first and last 10% of yin, and
-        # compare, in order to guess whether yin is increasing or decreasing
-        nm <- length(yin) / 10
-        if (nm < 2) nm <- length(yin) / 2
+        for (yname in ynames) {
 
-        m1 <- mean(yin[1:nm])
-        m2 <- mean(tail(yin,nm))
+            if (is.na(match(yname,vnames))) stop(paste(yname,"not found in",sname))
 
-        xr <- matrix(NA,ncol=length(xname)+1,nrow=length(yout),
-                dimnames=list(NULL,c(xname,yname)))
+            yin <- sdng@data[xok,yname]
 
-        xin <- x@data[yok,xname]
-
-        if (m1 > m2) {
-            # reverse yout so that it has the same trend as yin
-            if (sum(!is.na(xin)) > 1)
-                xr[,xname] <- approx(yin,xin,rev(yiout))$y
-            xr[,yname] <- rev(yout)
-        }
-        else {
-            if (sum(!is.na(xin)) > 1)
-                xr[,xname] <- approx(yin,xin,yiout)$y
-            xr[,yname] <- yout
+            if (sum(!is.na(yin)) > 1)
+                rmat[,yname] <- approx(xin,yin,xiout)$y
+            NULL
         }
 
-        tin <- as.numeric(positions(x))[yok]
+        tin <- as.numeric(positions(sdng))[xok]
         t0  <- tin[1]
         tn  <- tail(tin,1)
-        # tin <- tin - t0
-        # tx <- utime(t0 + replace.nas(approx(1:length(tin),tin,1:length(yout))$y,FALSE))
-        tx <- utime(t0 + seq(from=0,to=tn-t0,length.out=length(yout)))
+        tx <- utime(t0 + seq(from=0,to=tn-t0,length.out=length(xout)))
 
-        xr <- dat(nts(xr,tx,units=c(xunits,yunits)))
-        res[sname] <- xr
-        # browser()
+        yunits <- eolts::units(sdng[,ynames])
+
+        rmat <- dat(nts(rmat,tx,units=c(xunits,yunits)))
+        res[sname] <- rmat
+        NULL
     }
     res
 }

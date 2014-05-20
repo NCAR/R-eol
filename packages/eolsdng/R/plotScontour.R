@@ -7,9 +7,9 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-plotScontour <- function(xs,xname,yname,contour=FALSE)
+plotScontour <- function(xs,zname,yname,contour=FALSE)
 {
-    xs <- interpSounding(xs,xname,yname)
+    xs <- interpSounding(xs,yname,zname)
 
     zmat <- NULL
     ydata <- NULL
@@ -25,13 +25,13 @@ plotScontour <- function(xs,xname,yname,contour=FALSE)
         vnames <- colnames(x)
         is <- is + 1
 
-        if (is.na(match(xname,vnames))) stop(paste(xname,"not found in",sname))
+        if (is.na(match(zname,vnames))) stop(paste(zname,"not found in",sname))
         if (is.na(match(yname,vnames))) stop(paste(yname,"not found in",sname))
 
-        xunits <- eolts::units(x[,xname])
+        xunits <- eolts::units(x[,zname])
         yunits <- eolts::units(x[,yname])
 
-        xdata <- x@data[,xname]
+        zdata <- x@data[,zname]
         if (is.null(ydata)) {
             ydata <- x@data[,yname]
             # before calling filled.contour, ydata must be in increasing order
@@ -42,14 +42,14 @@ plotScontour <- function(xs,xname,yname,contour=FALSE)
             if (!identical(ydata,x@data[,yname])) stop("changing ydata")
         }
 
-        ymin <- min(ymin,ydata[!is.na(xdata)],na.rm=TRUE)
-        ymax <- max(ymax,ydata[!is.na(xdata)],na.rm=TRUE)
+        ymin <- min(ymin,ydata[!is.na(zdata)],na.rm=TRUE)
+        ymax <- max(ymax,ydata[!is.na(zdata)],na.rm=TRUE)
 
         # row: one for each sounding
         # column: one for each interpolated observation
         if (is.null(zmat)) zmat <- matrix(NA,nrow=length(xs),ncol=length(ydata))
 
-        zmat[is,] <- if(flipData) { rev(xdata)} else {xdata}
+        zmat[is,] <- if(flipData) { rev(zdata)} else {zdata}
     }
 
     flipYaxis <- (yunits == "mb") # flip the Y axis
@@ -59,7 +59,7 @@ plotScontour <- function(xs,xname,yname,contour=FALSE)
     ylim <- c(ymin,ymax)
     cat("ylim=",paste(ylim,collapse=","),"\n")
 
-    if (xname =="rh")
+    if (zname =="rh")
         colorfunc <- colorRampPalette(c("red","yellow","green","cyan","blue"))
     else
         colorfunc <- colorRampPalette(c("blue","cyan","green","yellow","red"))
@@ -82,7 +82,7 @@ plotScontour <- function(xs,xname,yname,contour=FALSE)
                 axis(1)
                 axis(2,las=0)
             },
-            key.title=mtext(paste0(xname,"(",xunits,")"),cex=1.1,side=1))
+            key.title=mtext(paste0(zname,"(",xunits,")"),cex=1.1,side=1))
     }
     else {
         # require(lattice)
@@ -102,7 +102,7 @@ plotScontour <- function(xs,xname,yname,contour=FALSE)
                 panel.text(xdata[1],ylim[1],names(xs)[1],cex=0.8,adj=c(0,0))
                 panel.text(tail(xdata,1),ylim[1],tail(names(xs),1),cex=0.8,adj=c(1,0))
                 panel.text(xlim[2]+diff(xlim)*0.10,ylim[1]+100,
-                    paste0(xname,"(",xunits,")"))
+                    paste0(zname,"(",xunits,")"))
             }
         ))
     }
