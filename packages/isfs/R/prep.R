@@ -110,7 +110,7 @@ setMethod("readts",
         # analysis on successive periods and look at the same frequencies.
         if (period == .Call("prep_get_period",con,PACKAGE="isfs"))
               nrows <- .Call("prep_get_nrows",con,PACKAGE="isfs")
-        else nrows <- 0
+        else nrows <- 0L
 
         # cat("nrows=",nrows,"\n")
 
@@ -127,8 +127,8 @@ setMethod("readts",
         x@time.zone = options("time.zone")[[1]]
 
         nrows <- nrow(x)
-        if (nrows <= 1) {
-          if (nrows == 1) {
+        if (nrows <= 1L) {
+          if (nrows == 1L) {
             warning(paste("One point time series read from",format(start),"to",format(end)))
             return(invisible(x))
           }
@@ -136,8 +136,8 @@ setMethod("readts",
           return(NULL)
         }
         # In the future, try to read an even number of records - help fft efficiency
-        if (nrows > 100 && nrows %% 2) {
-          nrows <- nrows - 1
+        if (nrows > 100L && nrows %% 2L) {
+          nrows <- nrows - 1L
           x <- x[1:nrows,]
         }
 
@@ -160,7 +160,7 @@ setMethod("readts",
           # Set nrows the first time we get evenly sampled data
           if (.Call("prep_get_nrows",con,PACKAGE="isfs") <= 0) {
             # cat("prep_set_nrows, nrows=",nrows,"\n")
-            .Call("prep_set_nrows",con,nrows,PACKAGE="isfs")
+            .Call("prep_set_nrows",con,as.integer(nrows),PACKAGE="isfs")
             # cat("prep_set_period, period=",period,"\n")
             .Call("prep_set_period",con,period,PACKAGE="isfs")
           }
