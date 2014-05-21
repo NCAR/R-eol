@@ -35,9 +35,11 @@
 }
 
 \examples{
-fdir <- system.file("DropsondeData", "qc.eol", package="EOLsounding")
-## print to file "weathersymbols.ps"
-get.sounding.weathersymbols(fdir=fdir, projsonde="TPARC Dropsonde", tsize=1.3)
+    \dontrun{
+        fdir <- system.file("DropsondeData", "qc.eol", package="EOLsounding")
+        ## print to file "weathersymbols.ps"
+        get.sounding.weathersymbols(fdir=fdir, projsonde="TPARC Dropsonde", tsize=1.3)
+    }
 }
 
 \keyword{ aplot }

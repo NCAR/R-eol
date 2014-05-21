@@ -1,49 +1,83 @@
-\name{get.sounding.profiles}
-\alias{get.sounding.profiles}
+\name{plotSprofile}
+\alias{plotSprofile}
 \title{Plot EOL Sounding Profiles}
 \description{
- Plot sounding profiles for EOL raw sounding data and/or QCed sounding data. 
- The plots will be saved to file named "profiles.ps" under working directory.
+Plot sounding profiles for EOL raw sounding data and/or QCed sounding data. The plot is made on the current graphics device. If a device is not active in an interactive session, the default graphics device will be started.
 }
 \usage{
- get.sounding.profiles(raw.plot=TRUE,raw.dir=NULL,qc.plot=FALSE,
-   qc.dir=NULL,Tprof=TRUE,RHprof=TRUE,WSPDprof=TRUE,dZprof=TRUE,
-   YTYPE="pressure",projsonde=NULL,sonderange=NA,YAXISrange=NULL)
+plotSprofile(raw = NULL, qc = NULL, title = NULL, type = "b", xlim = NULL, xlab, xaxt = par("xaxt"), xaxs = par("xaxs"), ylim = NULL, ylab, yaxt = par("yaxt"), yaxs = par("yaxs"), col = c("black", "red", "green", "blue", "purple", "cyan", "orange", "yellow", "gray", "pink"), tlwd = par("lwd"), ...)
 }
 \arguments{
- \item{raw.plot}{Logical:if true to plot profiles from raw data. Default is TRUE.}
- \item{raw.dir}{Raw sounding data files location.}
- \item{qc.plot}{Logical:if true to plot profiles from QCed data. Default is FALSE.}
- \item{qc.dir}{QCed sounding data files location.}
- \item{Tprof}{Logical:if true to plot temperature profiles. Default is TRUE.}
- \item{RHprof}{Logical:if true to plot relative humidity profiles. Default is TRUE.}
- \item{WSPDprof}{Logical:if true to plot wind speed profiles. Default is TRUE.}
- \item{dZprof}{Logical:if true to plot profiles of sounding falling(rising) rate. Default is TRUE.}
- \item{YTYPE}{Default is "pressure", sounding profiles will be plotted against pressures. If assign as "height", sounding profiles will be plotted against GPS altitude.}
- \item{projsonde}{A character string to input project name and/or sounding type, which will be plotted as legends in first plot served as an information panel.}
- \item{sonderange}{A numeric vector of length 2, indicating the beginning and ending number of soundings respectively. Only soundings in the range will be processed/plotted if sonderange is assigned. It will be ignored if inputs are not valid.}
- \item{YAXISrange}{A numeric vector of length 2, indicating the range for Y-axis. Default is NULL, and Y-axis range will be set automatically according to the range of sonde's pressure or height.}
+  \item{raw}{
+A sounding, such as is returned from \code{\link{readDFile}}, or one of the elements returned from \code{\link{readSoundings}}.
 }
-\value{
- The profiles will be plotted on 2x4 panels and printed to file "profiles.ps" in working directory.
+  \item{qc}{
+A sounding. If \code{raw} is also specified, both the raw and qc sounding are plotted.
+}
+  \item{title}{
+Title of the plot.
+}
+  \item{type}{
+Type of trace, see \code{\link{plot.default}}.
+}
+  \item{xlim}{
+Limits of the x axis, see \code{\link{plot.default}}.
+}
+  \item{xlab}{
+Label for x axis, see \code{\link{plot.default}}. If missing, the names of the variables plotted on the x axis will be shown.
+}
+  \item{xaxt}{
+See \code{\link{par}}.
+}
+  \item{xaxs}{
+See \code{\link{par}}.
+}
+  \item{ylim}{
+Limits of the y axis, see \code{\link{plot.default}}.
+}
+  \item{ylab}{
+Label for y axis, see \code{\link{plot.default}}. If missing, the names of the variable plotted on the y axis will be shown.
+}
+  \item{yaxt}{
+See \code{\link{par}}.
+}
+  \item{yaxs}{
+See \code{\link{par}}.
+}
+  \item{col}{
+Colors used on the plot.  See \code{\link{par}}.  The first color is used for the plotting box, the remaining colors for the profile traces.
+}
+  \item{tlwd}{
+Trace line width. See \code{plot.default}
+}
+  \item{\dots}{
+Other arguments passed to plot.
+}
 }
 \details{
- This function plots sounding profiles. Users may choose whether to put raw and QCed data together, whether to plot temperature, relative humidity and wind speed on same plot or seperately. Users may also choose a range of soundings to be processed. Y axis can be chosen as pressure or height(GPS altitude). The first panel is blank with only legends, users may input project name, sounding type and/or other information to show here.
-
- When raw sounding is plotted, only valid data will be processed, meaning S00 and/or S01 for T and RH, and only S00 for Wspd and dz/dt.
-
- If both raw plot and qc plot are chosen, but only raw data is available, the plot will be skipped.
+An xy plot is created of the sounding. The variable plotted on the Y axis is chosen from  the last column of \code{c("p","pressure","gp.alt","gps.alt")} that is found in the sounding data.frame. All the other variables will be plotted on the X axis.
 }
-\author{Liangying Zhang \email{lzhang@ucar.edu}}
+\value{
+None. A plot is generated on the current graphics device. If a graphics device is not active in an interactive session, the default graphics device will activated.
+}
+\references{
+}
+\author{
+Gordon Maclean
+}
+\note{
+}
+
+%% ~Make other sections like Warning with \section{Warning }{....} ~
+
 \seealso{
- \code{\link[EOLsounding]{read.raw.Dfile}},
- \code{\link[EOLsounding]{read.qc.eolfile}}.
 }
 \examples{
-raw.dir <- system.file("DropsondeData", "D-file", package="EOLsounding")
-qc.dir <- system.file("DropsondeData", "qc.eol", package="EOLsounding")
-## will print to file "profiles.ps"
-get.sounding.profiles(raw.plot=TRUE,raw.dir=raw.dir,
-                      qc.plot=TRUE,qc.dir=qc.dir)
+    \dontrun{
+        xs = readSoundings()
+        plotSprofile(xs[2]][,c("rh","temp","wspd","wdir","p")])
+    }
 }
-\keyword{aplot}
+% Add one or more standard keywords, see file 'KEYWORDS' in the
+% R documentation directory.
+\keyword{ sounding }

@@ -7,41 +7,7 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-read.qc.eolfile <-
-function(file=stop("'file' must be specified"), nskip = 14)
-{
-  #---------------------------------------------------------
-  # Read in the data, skip the header, and name the variable
-  #---------------------------------------------------------
-  if (length(system(paste("ls", file), TRUE)) < 1)
-    stop(paste("THE FILE", file, "DOES NOT EXIST"))
-
-  na.strs = c("-999.00", "-999.000000")
-  d = read.table(file, skip = nskip, na.strings=na.strs)
-  time   = d$V1
-  utc.hh = d$V2
-  utc.mm = d$V3
-  utc.ss = d$V4
-  press  = d$V5
-  temp   = d$V6
-  dewpt  = d$V7
-  rhum   = d$V8
-  uwind  = d$V9
-  vwind  = d$V10
-  wspd   = d$V11
-  wdir   = d$V12
-  dz     = d$V13
-  gp.alt = d$V14
-  lon    = d$V15
-  lat    = d$V16
-  gps.alt= d$V17
-
-  newdata = data.frame(time, utc.hh, utc.mm, utc.ss, p = press, temp, dewpt, rh = rhum, u = uwind, v = vwind, wspd, wdir, dz, gp.alt, lon, lat, gps.alt)
-  return(newdata)
-}
-
-readQCFile <-
-function(file=stop("'file' must be specified"))
+readQCFile <- function(file)
 {
     hdrw1 <- scan(file=file,what=list(w1=""),flush=TRUE,quiet=TRUE,nlines=30)
 
@@ -68,10 +34,13 @@ function(file=stop("'file' must be specified"))
     lhdr <- seq(along=lhdr)[lhdr][1]
 
     # read header line containing variable names
-    varnames <- unlist(read.table(file=file,skip=lhdr,nrows=1,row.names=NULL,stringsAsFactors=FALSE)[,-(1:4)])
+    varnames <- unlist(read.table(file=file,skip=lhdr,nrows=1,row.names=NULL,stringsAsFactors=FALSE))
+
+    units <- unlist(read.table(file=file,skip=lhdr+1,nrows=1,row.names=NULL,stringsAsFactors=FALSE))
 
     # mapping of header strings to returned variable names
     hnames <- list(
+        Time="toff",
         Press="p",
         Temp="temp",
         Dewpt="dewpt",
@@ -86,30 +55,15 @@ function(file=stop("'file' must be specified"))
         Lat="lat",
         GPSAlt="gps.alt")
 
-    # character columns
-    utcnames <- c("time","hh","mm","ss")
-
-    # names of the data columns in the file, in order
-    dnames <- hnames[varnames]
-
-    # Check if there are extra columns in the Dfile than the above
-    missnames <- sapply(dnames,is.null)
-    if (any(missnames)) {
-        warning(paste("extra variable names in header:",
-                paste('"',names(hnames)[missnames],'"',sep="",collapse=","), "in file",file))
-        dnames[missnames] <- varnames[is.na(match(varnames,names(hnames)))]
-    }
-    dnames <- unlist(dnames)
-    
-    # columns in D file, in order
-    col.names <- c(utcnames, dnames)
-
+    # time columns
+    utcnames <- units[2:4]
+    varnames[2:4] <- utcnames
 
     # read data into numeric values
     d <- read.table(file=file, skip=lhdr+3,
-        col.names=col.names,row.names=NULL, na.strings=c("-999.00","-999.000000"))
+        col.names=varnames,row.names=NULL, na.strings=c("-999.00","-999.000000"))
 
-    sod <- d[,"hh"] * 3600 + d[,"mm"] * 60 + d[,"ss"]
+    sod <- d[,utcnames[1]] * 3600 + d[,utcnames[2]] * 60 + d[,utcnames[3]]
     t0day <- floor(as.numeric(launchutc)/86400) * 86400
     tx <- t0day + sod
     # browser()
@@ -125,5 +79,22 @@ function(file=stop("'file' must be specified"))
         mx <- seq(along=mx)[mx][1] + 1
         tx[mx:length(tx)] <- tx[mx:length(tx)] + 86400
     }
-    data.frame(utc=utime(tx),d[,c("time",dnames)])
+
+    # non-time variables.
+    varnames <- varnames[-(2:4)]
+    units <- units[-(2:4)]
+
+    # map the names of the data columns in the file
+    dnames <- hnames[varnames]
+
+    # Check if there are extra columns in the Dfile than the above
+    missnames <- sapply(dnames,is.null)
+    if (any(missnames)) {
+        warning(paste("extra variable names in header:",
+                paste('"',names(hnames)[missnames],'"',sep="",collapse=","), "in file",file))
+        dnames[missnames] <- varnames[is.na(match(varnames,names(hnames)))]
+    }
+    dnames <- unlist(dnames)
+    
+    dat(nts(d[,dnames],utime(tx),units=units))
 }

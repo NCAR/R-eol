@@ -7,7 +7,7 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-readDFile <- function (file=stop("'file' must be specified"),sta_clean=TRUE) 
+readDFile <- function (file,sta_clean=TRUE) 
 {
     # if (file.access(file,4) != 0)
     #     stop(paste("Error:",file,"does not exist or is not readable"))

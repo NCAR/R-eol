@@ -7,9 +7,9 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-plotScontour <- function(xs,zname,yname,contour=FALSE)
+plotScontour <- function(sdngs,zname,yname,contour=FALSE)
 {
-    xs <- interpSounding(xs,yname,zname)
+    sdngs <- interpSoundings(sdngs,yname,zname)
 
     zmat <- NULL
     ydata <- NULL
@@ -19,9 +19,9 @@ plotScontour <- function(xs,zname,yname,contour=FALSE)
     ymin <- Inf
     ymax <- -Inf
 
-    for (sname in names(xs)) {
+    for (sname in names(sdngs)) {
 
-        x <- xs[[sname]]
+        x <- sdngs[[sname]]
         vnames <- colnames(x)
         is <- is + 1
 
@@ -47,7 +47,7 @@ plotScontour <- function(xs,zname,yname,contour=FALSE)
 
         # row: one for each sounding
         # column: one for each interpolated observation
-        if (is.null(zmat)) zmat <- matrix(NA,nrow=length(xs),ncol=length(ydata))
+        if (is.null(zmat)) zmat <- matrix(NA,nrow=length(sdngs),ncol=length(ydata))
 
         zmat[is,] <- if(flipData) { rev(zdata)} else {zdata}
     }
@@ -75,8 +75,8 @@ plotScontour <- function(xs,zname,yname,contour=FALSE)
                 title(ylab=paste0(yname,"(",yunits,")"),
                     xlab="sounding")
                 abline(v=xdata,lwd=1)
-                text(xdata[1],ylim[1],names(xs)[1],cex=0.8,adj=0)
-                text(tail(xdata,1),ylim[1],tail(names(xs),1),cex=0.8,adj=1)
+                text(xdata[1],ylim[1],names(sdngs)[1],cex=0.8,adj=0)
+                text(tail(xdata,1),ylim[1],tail(names(sdngs),1),cex=0.8,adj=1)
             },
             plot.axes={
                 axis(1)
@@ -99,8 +99,8 @@ plotScontour <- function(xs,zname,yname,contour=FALSE)
             panel=function(...) {
                 panel.levelplot(...)
                 panel.abline(v=xdata,lwd=1)
-                panel.text(xdata[1],ylim[1],names(xs)[1],cex=0.8,adj=c(0,0))
-                panel.text(tail(xdata,1),ylim[1],tail(names(xs),1),cex=0.8,adj=c(1,0))
+                panel.text(xdata[1],ylim[1],names(sdngs)[1],cex=0.8,adj=c(0,0))
+                panel.text(tail(xdata,1),ylim[1],tail(names(sdngs),1),cex=0.8,adj=c(1,0))
                 panel.text(xlim[2]+diff(xlim)*0.10,ylim[1]+100,
                     paste0(zname,"(",xunits,")"))
             }

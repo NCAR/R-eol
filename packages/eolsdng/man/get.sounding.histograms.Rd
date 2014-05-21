@@ -31,8 +31,10 @@
  \code{\link[EOLsounding]{read.qc.eolfile}}.
 }
 \examples{
-fdir <- system.file("DropsondeData", "qc.eol", package="EOLsounding")
-## will print to file "histograms.ps"
-get.sounding.histograms(fdir=fdir, projsonde="TPARC Dropsonde")
+    \dontrun{
+        fdir <- system.file("DropsondeData", "qc.eol", package="EOLsounding")
+        ## will print to file "histograms.ps"
+        get.sounding.histograms(fdir=fdir, projsonde="TPARC Dropsonde")
+    }
 }
 \keyword{aplot}
