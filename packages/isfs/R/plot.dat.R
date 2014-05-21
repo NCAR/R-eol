@@ -69,7 +69,13 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
     yinfo <- plotLimits(x,ylim,one.scale,axs=yaxs)
     nscales <- yinfo$nscales
 
-    if (nscales > 1 && remargin) adjPar(nyscales=nscales)
+    if (nscales > 1 && remargin) {
+        mfg <- par("mfg")
+        # if identical(mfg[1:2],mfg[3:4]) then
+        # the next plot will be the first one in the mfrow matrix
+        if (identical(mfg[1:2],mfg[3:4]))
+            adjPar(nyscales=nscales)
+    }
 
     ylim <- yinfo$lim
     yscales <- yinfo$scales
