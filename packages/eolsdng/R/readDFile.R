@@ -131,25 +131,31 @@ readDFile <- function (file,sta_clean=TRUE)
     units <- sub(")","",units,fixed=TRUE)
     d <- dat(nts(d,utc,units=units))
 
+    if (sta_clean) {
+        sta <- unlist(d@data[,"sta"])
+        ok <- substring(sta,1,1) == "S"
+        d <- d[ok,]
+        sta <- sta[ok]
+
+        # If first digit of sta is not zero, set PTU values to NA
+        ok  <- grepl("S0",sta,fixed=TRUE)
+        ptuqc <- c("p","temp","rh","rh1","rh2")
+        d@data[!ok,match(ptuqc,colnames(d))] <- NA_real_
+
+        # If second digit of sta is not zero, set wind/gps values to NA
+        ok <- grepl("S00",sta,fixed=TRUE) | grepl("S10",sta,fixed=TRUE)
+        windqc <- c("wdir","wspd","dz","lon","lat","gp.alt","wsat","ssat","werr","gps.alt")
+        d@data[!ok,match(windqc,colnames(d))] <- NA_real_
+    }
+
+    # check for unique sid, save it as attribute
     sids <- unique(as.vector(d@data[,"sid"]))
     if (any(is.na(sids))) sids <- sids[!is.na(sids)]
     attr(d,"sid") <- sids
     if (length(sids) > 1)
         warning(paste0("Multiple sonde ids (",paste(sids,collapse=","),
             ") found in ",file))
-
-    # browser()
-    if (sta_clean) {
-        sta <- unlist(d@data[,"sta"])
-        okptu  <- grepl("S0",sta,fixed=TRUE)
-        okwind <- grepl("S00",sta,fixed=TRUE) | grepl("S10",sta,fixed=TRUE)
-        # which status 1=ptu, 2=wind to apply to data columns
-        ptuqc <- c("p","temp","rh","rh1","rh2")
-        windqc <- c("wdir","wspd","dz","lon","lat","gp.alt","wsat","ssat","werr","gps.alt")
-        d@data[!okptu,match(ptuqc,colnames(d))] <- NA_real_
-        d@data[!okwind,match(windqc,colnames(d))] <- NA_real_
-    }
-    # browser()
+    d <- d[,is.na(match(colnames(d),"sid"))]
     d
 }
 

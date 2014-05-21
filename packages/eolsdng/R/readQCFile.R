@@ -41,6 +41,9 @@ readQCFile <- function(file)
     # mapping of header strings to returned variable names
     hnames <- list(
         Time="toff",
+        hh="hh",
+        mm="mm",
+        ss="ss",
         Press="p",
         Temp="temp",
         Dewpt="dewpt",
@@ -59,9 +62,20 @@ readQCFile <- function(file)
     utcnames <- units[2:4]
     varnames[2:4] <- utcnames
 
+    # map the names of the data columns in the file
+    dnames <- hnames[varnames]
+    # Check if there are extra columns in the QC file than the above
+    missnames <- sapply(dnames,is.null)
+    if (any(missnames)) {
+        warning(paste("extra variable names in header:",
+                paste('"',names(hnames)[missnames],'"',sep="",collapse=","), "in file",file))
+        dnames[missnames] <- varnames[is.na(match(varnames,names(hnames)))]
+    }
+    dnames <- unlist(dnames)
+
     # read data into numeric values
     d <- read.table(file=file, skip=lhdr+3,
-        col.names=varnames,row.names=NULL, na.strings=c("-999.00","-999.000000"))
+        col.names=dnames,row.names=NULL, na.strings=c("-999.00","-999.000000"))
 
     sod <- d[,utcnames[1]] * 3600 + d[,utcnames[2]] * 60 + d[,utcnames[3]]
     t0day <- floor(as.numeric(launchutc)/86400) * 86400
@@ -81,20 +95,8 @@ readQCFile <- function(file)
     }
 
     # non-time variables.
-    varnames <- varnames[-(2:4)]
+    dnames <- dnames[-(2:4)]
     units <- units[-(2:4)]
-
-    # map the names of the data columns in the file
-    dnames <- hnames[varnames]
-
-    # Check if there are extra columns in the Dfile than the above
-    missnames <- sapply(dnames,is.null)
-    if (any(missnames)) {
-        warning(paste("extra variable names in header:",
-                paste('"',names(hnames)[missnames],'"',sep="",collapse=","), "in file",file))
-        dnames[missnames] <- varnames[is.na(match(varnames,names(hnames)))]
-    }
-    dnames <- unlist(dnames)
     
     dat(nts(d[,dnames],utime(tx),units=units))
 }
