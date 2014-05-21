@@ -26,9 +26,6 @@ interpSoundings <- function(sdngs,xname,ynames)
 
         xin <- as.vector(sdng@data[,xname])
 
-        # interpolate over log of pressure
-        if (xunits == "mb") xin <- log(xin)
-
         xok <- !is.na(xin) & !is.infinite(xin)
         if (sum(xok) < 10) next
         xin <- xin[xok]
@@ -66,6 +63,9 @@ interpSoundings <- function(sdngs,xname,ynames)
             if (xreversed != xtreversed)
                 stop(paste("upward/downward trend of",xname,"seems to be changing over these soundings"))
         }
+
+        # interpolate over log of pressure
+        if (xunits == "mb") xin <- log(xin)
 
         rmat <- matrix(NA,ncol=length(ynames)+1,nrow=length(xout),
                 dimnames=list(NULL,c(xname,ynames)))

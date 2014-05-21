@@ -7,7 +7,8 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-plotScontour <- function(sdngs,zname,yname,contour=FALSE)
+plotScontour <- function(sdngs,yname,zname,contour=TRUE,
+    ylim=NULL)
 {
     sdngs <- interpSoundings(sdngs,yname,zname)
 
@@ -28,13 +29,15 @@ plotScontour <- function(sdngs,zname,yname,contour=FALSE)
         if (is.na(match(zname,vnames))) stop(paste(zname,"not found in",sname))
         if (is.na(match(yname,vnames))) stop(paste(yname,"not found in",sname))
 
-        xunits <- eolts::units(x[,zname])
+        zunits <- eolts::units(x[,zname])
         yunits <- eolts::units(x[,yname])
 
         zdata <- x@data[,zname]
         if (is.null(ydata)) {
             ydata <- x@data[,yname]
             # before calling filled.contour, ydata must be in increasing order
+            # There should be no NAs in ydata, which is the result of
+            # the interpolation, above.
             flipData <- ydata[1] > tail(ydata,1)
             if (flipData) ydata <- rev(ydata)
         }
@@ -56,7 +59,8 @@ plotScontour <- function(sdngs,zname,yname,contour=FALSE)
 
     xdata <- 1:nrow(zmat)
     xlim <- c(1,nrow(zmat))
-    ylim <- c(ymin,ymax)
+    if (is.null(ylim))
+        ylim <- c(ymin,ymax)
     cat("ylim=",paste(ylim,collapse=","),"\n")
 
     if (zname =="rh")
@@ -82,7 +86,7 @@ plotScontour <- function(sdngs,zname,yname,contour=FALSE)
                 axis(1)
                 axis(2,las=0)
             },
-            key.title=mtext(paste0(zname,"(",xunits,")"),cex=1.1,side=1))
+            key.title=mtext(paste0(zname,"(",zunits,")"),cex=1.1,side=1))
     }
     else {
         # require(lattice)
@@ -102,7 +106,7 @@ plotScontour <- function(sdngs,zname,yname,contour=FALSE)
                 panel.text(xdata[1],ylim[1],names(sdngs)[1],cex=0.8,adj=c(0,0))
                 panel.text(tail(xdata,1),ylim[1],tail(names(sdngs),1),cex=0.8,adj=c(1,0))
                 panel.text(xlim[2]+diff(xlim)*0.10,ylim[1]+100,
-                    paste0(zname,"(",xunits,")"))
+                    paste0(zname,"(",zunits,")"))
             }
         ))
     }

@@ -39,10 +39,16 @@ plotSvarProfile <- function(sdngs,xname,yname,type="b",
         ydata <- x[,yname]
 
         xinfo <- plotLimits(xdata,xlim,FALSE,xaxs)
-        xlim1 <- c(min(xlim1[1],xinfo$lim[[1]][1]),max(xlim1[2],xinfo$lim[[1]][2]))
+        if (is.list(xinfo$lim))
+            xlim1 <- c(min(xlim1[1],xinfo$lim[[1]][1]),max(xlim1[2],xinfo$lim[[1]][2]))
+        else
+            xlim1 <- c(min(xlim1[1],xinfo$lim[1]),max(xlim1[2],xinfo$lim[2]))
 
         yinfo <- plotLimits(ydata,ylim,FALSE,yaxs)
-        ylim1 <- c(min(ylim1[1],yinfo$lim[[1]][1]),max(ylim1[2],yinfo$lim[[1]][2]))
+        if (is.list(yinfo$lim))
+            ylim1 <- c(min(ylim1[1],yinfo$lim[[1]][1]),max(ylim1[2],yinfo$lim[[1]][2]))
+        else
+            ylim1 <- c(min(ylim1[1],yinfo$lim[1]),max(ylim1[2],yinfo$lim[2]))
 
     }
 

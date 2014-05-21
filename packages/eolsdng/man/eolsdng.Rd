@@ -22,10 +22,13 @@ Built: \tab R 3.0.2; ; 2014-05-20 19:33:45 UTC; unix\cr
 
 Index:
 \preformatted{
-eolsdng-package         Read and Visualize EOL sounding data ~~ package
-                        title ~~
-plotScontour            Plot Contours of EOL Sounding Profiles
-readSoundings           Function to read one or more soundings.
+eolsdng         Read and Visualize EOL sounding data
+readDFile       Read a D file.
+readQCFile      Read a QC file.
+readSoundings   Read one or more D or QC files.
+plotSprofile    Plot profiles one or more variables in one sounding.
+plotSvarContour Plot profiles of one variable over multiple soundings
+plotScontour    Plot contours of a variable over X=sounding, Y=pressure or altitude
 }
 ~~ An overview of how to use the package, including the most important ~~
 ~~ functions ~~

@@ -40,7 +40,7 @@ See \code{\link{par}}.
 See \code{\link{par}}.
 }
   \item{ylim}{
-Limits of the Y axis, see \code{\link{plot.default}}. If not specified, the Y axis will be dynamically scaled, after applying any clip limits defined for the variable.
+Limits of the Y axis, see \code{\link{plot.default}}. If not specified, the Y axis will be dynamically scaled, after applying any clip limits defined for the variable. Specify as c(ymin,ymax) with ymax > ymin, even in the case where the y axis is automatically flipped if plotting pressure.
 }
   \item{ylab}{
 Label for the Y axis, see \code{\link{plot.default}}. If missing, the names of the variable plotted on the Y axis will be shown.
@@ -65,6 +65,7 @@ Parameters passed to \code{\link{plot.default}}.
 }
 }
 \details{
+If yname starts with "p", it is assumed to be pressure, in which case the yaxis is flipped.
 }
 \value{
 None. A plot is generated on the current graphics device. If a graphics device is not active in an interactive session, the default graphics device will activated.
