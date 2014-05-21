@@ -37,12 +37,14 @@ Gordon Maclean
 \code{\link{readQCFile}}
 }
 \examples{
-    \dontrun{
-        x = readDFile("D20080815_172011_P.1")
-        # time series plot of pressure, temp and rh
-        plot(x[,c("p","temp","rh")])
-        plotSprofile(x)
-    }
+# Read sample D file contained in eolsdng R package
+dir = system.file("unitTests","data","D-file",package="eolsdng")
+dfile = file.path(dir,"D20080815_172011_P.1")
+x = readDFile(dfile)
+# time series plot of pressure, temp and rh
+plot(x[,c("p","temp","rh")])
+# profile plot
+plotSprofile(x[,c("p","temp","rh","wspd","wdir")])
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
