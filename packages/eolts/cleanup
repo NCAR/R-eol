@@ -1,5 +1,5 @@
 #!/bin/sh
 rm -f confdefs.h config.*  aclocal.m4 src/Makevars \
-    src/*.so src/*.o src/*.a src/.dll
+    src/*.so src/*.o src/*.a src/.dll inst/lib/*.so
 
 rm -rf autom4te.cache
