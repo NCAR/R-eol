@@ -46,6 +46,8 @@ plotSvarProfile <- function(sdngs,xname,yname,type="b",
 
     }
 
+    if (substr(yname,1,1) == "p") ylim1 <- rev(ylim1)
+
     is <- 0
     for (sname in names(sdngs)) {
 
@@ -67,7 +69,7 @@ plotSvarProfile <- function(sdngs,xname,yname,type="b",
                 xlim=xlim1, xaxt=xaxt, xaxs=xaxs, xlab=paste0(xname,"(",xunits,")"),
                 ylim=ylim1, yaxt=yaxt, yaxs=yaxs, ylab=paste0(yname,"(",yunits,")"),
                 ...)
-            grid(lwd=2)
+            grid()
             legend("topright", names(sdngs), col=col[2:(ns+1)],
                 lty=rep(1,ns), lwd = 2.5, cex = 0.8, bty="n")
             make_plot <- FALSE

@@ -70,15 +70,29 @@ Be aware that all data types including Sxx, Axx, Pxx are read and returned.
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-# Read sample D files contained in eolsdng R package
-dir = system.file("unitTests","data","D-file",package="eolsdng")
+
+# Read sample D files provided in the eolsdng R package
+dir = system.file(package="eolsdng","unitTests","data","D-file")
+
+# start time for search of soundings
 t1 = utime("2008 8 15 17:20",time.zone="UTC")
-t2 = t1 + 60 * 20   # add 10 minutes
+# end time
+t2 = t1 + 60 * 20   # add 20 minutes
+
 xs = readSoundings(dir=dir,start=t1,end=t2)
+
+# display the names of the soundings
+names(xs)
+
+# display the column (variable) names of a sounding
+colnames(xs[[1]])
+
+# Plot profiles of rh vs p for all soundings.
 plotSvarProfile(xs,"rh","p")
 
-# loop over the soundings
+# loop over the soundings and generate multiple plots
 par(mfrow=c(2,ceiling(length(xs)/2)))
+
 for (fname in names(xs)) {
     x = xs[[fname]]
     # Use @data to get numeric vector from the time series
@@ -88,10 +102,11 @@ for (fname in names(xs)) {
     plot(temp,press)
     title(fname)
 }
-# use plotSprofile
+
+# use plotSprofile for similar plots
+par(mfrow=c(2,ceiling(length(xs)/2)))
 for (fname in names(xs)) {
     x = xs[[fname]]
-    # Use @data to get numeric vector from the time series
     plotSprofile(x[,c("temp","p")],title=fname)
 }
 }

@@ -32,7 +32,11 @@ plotSprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
         lautime <- positions(raw)[1]    # launch time
 
         xrnames <- colnames(raw)
-        xunits <- eolts::units(raw)
+
+        # discard non-numeric columns
+        nm <- sapply(raw@data[1,],function(x){ mode(x)=="numeric"})
+        xrnames <- xrnames[nm]
+        xunits <- eolts::units(raw)[nm]
 
         # find y axis data: p, pressure, gp.alt or gps.alt
         ym <- match(xrnames,c("p","pressure","gp.alt","gps.alt"))
@@ -54,7 +58,9 @@ plotSprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
         if (is.null(lautime)) lautime <- positions(qc)[1]
 
         xqnames <- colnames(qc)
-        xunits <- eolts::units(qc)
+        nm <- sapply(raw@data[1,],function(x){ mode(x)=="numeric"})
+        xqnames <- xqnames[nm]
+        xunits <- eolts::units(qc)[nm]
 
         # find y axis data: p, pressure, gp.alt or gps.alt
         ym <- match(xqnames,c("p","pressure","gp.alt","gps.alt"))
@@ -125,10 +131,9 @@ plotSprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
             xlim=xlim, xlab="",
             ylim=ylim, ylab=ylab,
             ...)
-        if (!is.null(title))
-            legend("topright",title, bty="n", cex=1.7)
-        legend("center", legtxt, col=col[legcol], bty="n",lty=rep(1,ntrace), lwd=2.5, cex=1.5)
-        box()
+        legend("center", legtxt, col=col[legcol], bty="n",lty=rep(1,ntrace),
+            lwd=tlwd, cex=1.5,title=title)
+        # box()
         return(invisible(NULL))
     }
 
@@ -230,7 +235,8 @@ plotSprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
                 ylim=ylim,ylab=ylab,yaxs=yaxs,yaxt=yaxt,
                 err=-1,...)
             # axis(2)
-            axis(4)
+            axis(4,labels=FALSE)
+            if (nscales == 1) grid()
             yaxis_done <- TRUE
         }
         else {
@@ -290,6 +296,6 @@ plotSprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
         NULL
     }       # xname in xnames
     legend("topright", legtxt, col=col[legcol], bty="n",lty=rep(1,ntrace), lwd=tlwd,
-        cex=1.1)
+        cex=1.1,title=title)
     invisible(NULL) 
 }
