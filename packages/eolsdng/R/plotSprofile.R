@@ -7,7 +7,7 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-plotSprofile <- function(raw=NULL,qc=NULL,projsonde=NULL,type="b",
+plotSprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
     xlim=NULL,xlab,xaxt=par("xaxt"),xaxs=par("xaxs"),
     ylim=NULL,ylab,yaxt=par("yaxt"),yaxs=par("yaxs"),
     col=c("black","red","green","blue","purple","cyan",
@@ -36,7 +36,7 @@ plotSprofile <- function(raw=NULL,qc=NULL,projsonde=NULL,type="b",
 
         # find y axis data: p, pressure, gp.alt or gps.alt
         ym <- match(xrnames,c("p","pressure","gp.alt","gps.alt"))
-        # use last one
+        # use first one
         yname <- tail(xrnames[!is.na(ym)],1)
         yunits <- tail(eolts::units(raw)[!is.na(ym)],1)
 
@@ -121,9 +121,12 @@ plotSprofile <- function(raw=NULL,qc=NULL,projsonde=NULL,type="b",
 
     if (!is.null(raw) && nrow(raw) == 0) {
         # empty plot, just containing legends
-        plot(0,0, type="n", xlim=xlim, ylab=ystr, xlab="", axes=TRUE,...)
-        if (!is.null(projsonde))
-            legend("topright",projsonde, bty="n", cex=1.7)
+        plot(0,0, type="n", axes=TRUE,
+            xlim=xlim, xlab="",
+            ylim=ylim, ylab=ylab,
+            ...)
+        if (!is.null(title))
+            legend("topright",title, bty="n", cex=1.7)
         legend("center", legtxt, col=col[legcol], bty="n",lty=rep(1,ntrace), lwd=2.5, cex=1.5)
         box()
         return(invisible(NULL))

@@ -1,22 +1,22 @@
-\name{interpSounding}
-\alias{interpSounding}
+\name{interpSoundings}
+\alias{interpSoundings}
 \title{Do Interpolation on Vertical Levels for Sounding Data}
 \description{
 Interpolate all columns of a list of soundings.
 }
 \usage{
-interpSounding(xs, xname, ynames)
+interpSoundings(sdngs, xname, ynames)
 }
 \arguments{
-  \item{xs}{
-A list of soundings, as returned by \code{\link{readSoundings}}
+  \item{sdngs}{
+A list of soundings, as returned by \code{\link{readSoundings}}, or an individual sounding.
 }
   \item{xname}{
 Name of variable to be interpolated over, whose values will be the x argument passed to \code{\link{approx}}.
-}
+  }
   \item{ynames}{
 Name of variable to be interpolated, whose values will be the y argument passed to \code{\link{approx}}.
-}
+  }
 }
 \details{
 In each of the soundings, the units of the x variable is checked for consistency. interpSoundings will stop with an error if the units of x change between soundings.

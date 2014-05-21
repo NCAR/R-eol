@@ -1,33 +1,49 @@
-\name{read.raw.Dfile}
-\alias{read.raw.Dfile}
+\name{readDFile}
+\alias{readDFile}
+%- Also NEED an '\alias' for EACH other topic documented here.
 \title{Read in Raw EOL Sounding Data in Dfile Format}
 \description{
- Reads in raw EOL sounding data, including radiosonde(upsonde), dropsonde and driftsonde, in Dfile format.
+Reads in raw EOL sounding data, including radiosonde(upsonde), dropsonde and driftsonde, in Dfile format.
 }
 \usage{
- read.raw.Dfile(file = stop("'file' must be specified"))
+readDFile(file, sta_clean = TRUE)
 }
+%- maybe also 'usage' for other objects documented here.
 \arguments{
- \item{file}{A string indicating where and what file to read from.}
+  \item{file}{
+Full path name of D file to be read.
 }
-\value{
- A data frame with all raw sounding variable (total 20 columns).
- Be aware that all valid and invalid data have been returned.
+  \item{sta_clean}{
+Logical value, specifying whether the "sta" sounding field in the D file is used to screen the PTU and wind/GPS data. Values for "p", "temp" and "rh" will be set to \code{NA_real_} if the first digit in the corresponding sta value is 1: \code{S10 or S11}.  Values for wind and gps variables will be set to \code{NA_real_} if the second digit in the corresponding sta value is 1:\code{S01 or S11}
+}
 }
 \details{
- This function reads in a EOL raw sounding data file, remove the file header
- (should always be 6 lines) and file tails (should always be 19 lines), and 
- returns the file body with 20 named columns. 
- The 20 columns are: ava,sta,sid,utc.date,utc.time,p,temp,rh,wdir,wspd,vvel,
- lon,lat,gp.alt,wsat,rh1,rh2,ssat,werr,gps.alt.
- Be aware that all data types including Sxx, Axx, Pxx are read and returned.
 }
-\author{Liangying Zhang \email{lzhang@ucar.edu}}
+\value{
+A time series containing all variables read from the D file.
+}
+\references{
+}
+\author{
+Gordon Maclean
+}
+\note{
+}
+
+%% ~Make other sections like Warning with \section{Warning }{....} ~
+
 \seealso{
- \code{\link[EOLsounding]{read.qc.eolfile}}.
+\code{\link{readSoundings}}
+\code{\link{readQCFile}}
 }
 \examples{
-file <- system.file("DropsondeData","D-file","D20080815_172011_P.1",package="EOLsounding")
-read.raw.Dfile(file = file)
+    \dontrun{
+        x = readDFile("D20080815_172011_P.1")
+        # time series plot of pressure, temp and rh
+        plot(x[,c("p","temp","rh")])
+        plotSprofile(x)
+    }
 }
-\keyword{IO}
+% Add one or more standard keywords, see file 'KEYWORDS' in the
+% R documentation directory.
+\keyword{ sounding }

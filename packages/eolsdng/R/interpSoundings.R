@@ -7,12 +7,15 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-interpSounding <- function(sdngs,xname,ynames)
+interpSoundings <- function(sdngs,xname,ynames)
 {
     res <- list()
     xout <- NULL
     xunits <- NULL
     xreversed <- NULL
+
+    if (!is.list(sdngs))
+        sdngs <- list(sdng=sdngs)
 
     for (sname in names(sdngs)) {
 

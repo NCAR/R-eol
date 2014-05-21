@@ -5,13 +5,13 @@
  Plot profile contours of a variable from a list of soundings, where the X axis is the sounding index, and Y is pressure or altitude. The plot is made on the current graphics device. If a device is not active in an interactive session, the default graphics device will be started.
 }
 \usage{
-plotScontour(xs, xname, yname, contour = FALSE)
+plotScontour(sdngs, zname, yname, contour = FALSE)
 }
 \arguments{
-  \item{xs}{
-      \code{xs} A list of soundings, as returned by \code{\link{readSoundings}}
+  \item{sdngs}{
+      \code{sdngs} A list of soundings, as returned by \code{\link{readSoundings}}
 }
-  \item{xname}{
+  \item{zname}{
       \code{zname} Name of variable to be contoured.
 }
   \item{yname}{
@@ -29,13 +29,13 @@ none
 \references{
 }
 \author{
-\email{maclean@ucar.edu}
+Gordon Maclean
 }
 \note{
 }
 \seealso{
 \code{\link{readSoundings}}
-\code{\link{interpSounding}}
+\code{\link{interpSoundings}}
 }
 \examples{
     \dontrun{

@@ -7,7 +7,7 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-plotSvarProfile <- function(xs,xname,yname,type="b",
+plotSvarProfile <- function(sdngs,xname,yname,type="b",
     xlim=NULL,xlab,xaxt=par("xaxt"),xaxs=par("xaxs"),
     ylim=NULL,ylab,yaxt=par("yaxt"),yaxs=par("yaxs"),
     col=c("black","red","green","blue","purple","cyan",
@@ -18,14 +18,14 @@ plotSvarProfile <- function(xs,xname,yname,type="b",
     # plot profiles of one variable from one or more soundings.
 
     make_plot <- TRUE
-    ns <- length(xs)
+    ns <- length(sdngs)
 
     xlim1 <- c(Inf,-Inf)
     ylim1 <- c(Inf,-Inf)
 
-    for (sname in names(xs)) {
+    for (sname in names(sdngs)) {
 
-        x <- xs[[sname]]
+        x <- sdngs[[sname]]
         vnames <- colnames(x)
         is <- is + 1
 
@@ -45,9 +45,9 @@ plotSvarProfile <- function(xs,xname,yname,type="b",
         ylim1 <- c(min(ylim1[1],yinfo$lim[1]),max(ylim1[2],yinfo$lim[2]))
 
     }
-    for (sname in names(xs)) {
+    for (sname in names(sdngs)) {
 
-        x <- xs[[sname]]
+        x <- sdngs[[sname]]
         vnames <- colnames(x)
         is <- is + 1
 
@@ -66,7 +66,7 @@ plotSvarProfile <- function(xs,xname,yname,type="b",
                 ylim=ylim1, yaxt=yaxt, yaxs=yaxs, ylab=paste0(yname,"(",yunits,")"),
                 ...)
             grid(lwd=2)
-            legend("topright", names(xs), col=col[2:(ns+1)],
+            legend("topright", names(sdngs), col=col[2:(ns+1)],
                 lty=rep(1,ns), lwd = 2.5, cex = 0.8, bty="n")
             make_plot <- FALSE
         }

@@ -7,7 +7,7 @@ export(
     plotSprofile,
     plotSvarProfile,
     plotScontour,
-    interpSounding,
+    interpSoundings,
 
     get.sounding.histograms,
     get.sounding.weathersymbols,
