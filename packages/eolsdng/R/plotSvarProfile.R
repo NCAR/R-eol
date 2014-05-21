@@ -12,7 +12,8 @@ plotSvarProfile <- function(sdngs,xname,yname,type="b",
     ylim=NULL,ylab,yaxt=par("yaxt"),yaxs=par("yaxs"),
     col=c("black","red","green","blue","purple","cyan",
         "orange","gold","gray","pink","violet","brown","magenta",
-        "chocolate","tomato","darkgreen"),title="",...)
+        "chocolate","tomato","darkgreen"),
+    title="", tlwd=par("lwd"),...)
 
 {
     # plot profiles of one variable from one or more soundings.
@@ -27,7 +28,6 @@ plotSvarProfile <- function(sdngs,xname,yname,type="b",
 
         x <- sdngs[[sname]]
         vnames <- colnames(x)
-        is <- is + 1
 
         if (is.na(match(xname,vnames))) stop(paste(xname,"not found in",sname))
         if (is.na(match(yname,vnames))) stop(paste(yname,"not found in",sname))
@@ -35,16 +35,18 @@ plotSvarProfile <- function(sdngs,xname,yname,type="b",
         xunits <- eolts::units(x[,xname])
         yunits <- eolts::units(x[,yname])
 
-        xdata <- x@data[,xname]
-        ydata <- x@data[,yname]
+        xdata <- x[,xname]
+        ydata <- x[,yname]
 
         xinfo <- plotLimits(xdata,xlim,FALSE,xaxs)
-        xlim1 <- c(min(xlim1[1],xinfo$lim[1]),max(xlim1[2],xinfo$lim[2]))
+        xlim1 <- c(min(xlim1[1],xinfo$lim[[1]][1]),max(xlim1[2],xinfo$lim[[1]][2]))
 
         yinfo <- plotLimits(ydata,ylim,FALSE,yaxs)
-        ylim1 <- c(min(ylim1[1],yinfo$lim[1]),max(ylim1[2],yinfo$lim[2]))
+        ylim1 <- c(min(ylim1[1],yinfo$lim[[1]][1]),max(ylim1[2],yinfo$lim[[1]][2]))
 
     }
+
+    is <- 0
     for (sname in names(sdngs)) {
 
         x <- sdngs[[sname]]

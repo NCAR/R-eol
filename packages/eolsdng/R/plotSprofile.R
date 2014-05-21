@@ -132,7 +132,9 @@ plotSprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
         return(invisible(NULL))
     }
 
-    adjPar(nxscales=nscales)
+    mfg <- par("mfg")
+    if (identical(mfg[1:2],mfg[3:4])) 
+        adjPar(nxscales=nscales)
 
     args <- list(...)
 

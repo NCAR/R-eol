@@ -5,7 +5,13 @@
 Plot profiles of one variable from multiple soundings.
 }
 \usage{
-plotSvarProfile(sdngs, xname, yname, type = "b", xlim = NULL, xlab, xaxt = par("xaxt"), xaxs = par("xaxs"), ylim = NULL, ylab, yaxt = par("yaxt"), yaxs = par("yaxs"), col = c("black", "red", "green", "blue", "purple", "cyan", "orange", "gold", "gray", "pink", "violet", "brown", "magenta", "chocolate", "tomato", "darkgreen"), title = "", ...)
+plotSvarProfile(sdngs, xname, yname, type = "b",
+    xlim = NULL, xlab, xaxt = par("xaxt"), xaxs = par("xaxs"),
+    ylim = NULL, ylab, yaxt = par("yaxt"), yaxs = par("yaxs"),
+    col = c("black", "red", "green", "blue", "purple", "cyan",
+        "orange", "gold", "gray", "pink", "violet", "brown",
+        "magenta", "chocolate", "tomato", "darkgreen"),
+    tlwd = par("lwd"), title = "", ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -51,6 +57,9 @@ Colors used on the plot.  See \code{\link{par}}. The first color is used for the
   \item{title}{
 Type of plot, see \code{\link{plot.default}}.
 }
+  \item{tlwd}{
+Trace line width. See \code{plot.default}
+}
   \item{\dots}{
 Parameters passed to \code{\link{plot.default}}.
 }
@@ -73,11 +82,12 @@ Gordon Maclean
 \seealso{
 }
 \examples{
-    \dontrun{
-        xs = readSoundings()
-        plotSvarProfile(xs,"rh","p")
-    }
-
+# Read sample D files contained in eolsdng R package
+dir = system.file("unitTests","data","D-file",package="eolsdng")
+t1 = utime("2008 8 15 17:20",time.zone="UTC")
+t2 = t1 + 60 * 20   # add 10 minutes
+xs = readSoundings(dir=dir,start=t1,end=t2)
+plotSvarProfile(xs,"rh","p")
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

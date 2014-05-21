@@ -7,8 +7,13 @@ Function to read one or more soundings.
 This function scans a directory for one or more files matching a name format given in the file parameter. A list, containing one or more sounding time series is returned.
 }
 \usage{
-readSoundings(dir = c(paste(Sys.getenv("SONDE_ROOT"), "projects", Sys.getenv("PROJECT"), Sys.getenv("PLATFORM"), Sys.getenv("DATASET"), sep = .Platform$file.sep), Sys.getenv("SONDE_DATA")), file = c("D\%Y\%m\%d_\%H\%M\%S_P\\\\.[0-9]+", "D\%Y\%m\%d_\%H\%M\%S_P\\\\.[0-9]+.gz", "D\%Y\%m\%d_\%H\%M\%S\\\\.[0-9]+", "D\%Y\%m\%d_\%H\%M\%S\\\\.[0-9]+.gz"), start = dpar("start"), end = dpar("end"), sta_clean = TRUE)
-readSoundings(dir,file,start,end,sta_clean)
+readSoundings(
+    dir = c(paste(Sys.getenv("SONDE_ROOT"), "projects", Sys.getenv("PROJECT"),
+            Sys.getenv("PLATFORM"), Sys.getenv("DATASET"), sep = .Platform$file.sep),
+        Sys.getenv("SONDE_DATA")),
+    file = c("D\%Y\%m\%d_\%H\%M\%S_P\\\\.[0-9]+", "D\%Y\%m\%d_\%H\%M\%S_P\\\\.[0-9]+.gz",
+        "D\%Y\%m\%d_\%H\%M\%S\\\\.[0-9]+", "D\%Y\%m\%d_\%H\%M\%S\\\\.[0-9]+.gz"),
+    start = dpar("start"), end = dpar("end"), sta_clean = TRUE)
 }
 \arguments{
   \item{dir}{
@@ -23,7 +28,7 @@ readSoundings(dir,file,start,end,sta_clean)
         \item $SONDE_ROOT/projects/$PROJECT/$PLATFORM/$DATASET
         \item $SONDE_DATA
     }
-    Or, one can override this default:  dir="C:\\AVAPS_DATA\D-files"
+    Or, one can override this default:  dir="C:\\\\AVAPS_DATA\\D-files"
   }
   \item{file}{
     A character vector containing \itemize{
@@ -65,20 +70,29 @@ Be aware that all data types including Sxx, Axx, Pxx are read and returned.
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-\dontrun{
-    Sys.setenv(SONDE_ROOT="c:\\AVAPS_DATA")
-    Sys.setenv(PROJECT="DEEPWAVE")
-    Sys.setenv(PLATFORM="AVAPS")
-    Sys.setenv(DATASET="Dfiles-RF02")
-    options(time.zone="UTC")
-    dpar(start="2014 jun 13 00:00",lenday=1)
-    xs = readSoundings()
-    for (fname in names(xs)) {
-        x = xs[fname]
-        press = x[,"p"]
-        temp = x[,"temp"]
-        plot(temp,press)
-    }
+# Read sample D files contained in eolsdng R package
+dir = system.file("unitTests","data","D-file",package="eolsdng")
+t1 = utime("2008 8 15 17:20",time.zone="UTC")
+t2 = t1 + 60 * 20   # add 10 minutes
+xs = readSoundings(dir=dir,start=t1,end=t2)
+plotSvarProfile(xs,"rh","p")
+
+# loop over the soundings
+par(mfrow=c(2,ceiling(length(xs)/2)))
+for (fname in names(xs)) {
+    x = xs[[fname]]
+    # Use @data to get numeric vector from the time series
+    press = x@data[,"p"]
+    temp = x@data[,"temp"]
+    # generic XY plot
+    plot(temp,press)
+    title(fname)
+}
+# use plotSprofile
+for (fname in names(xs)) {
+    x = xs[[fname]]
+    # Use @data to get numeric vector from the time series
+    plotSprofile(x[,c("temp","p")],title=fname)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

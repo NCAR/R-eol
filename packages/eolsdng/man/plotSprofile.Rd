@@ -5,7 +5,12 @@
 Plot sounding profiles for EOL raw sounding data and/or QCed sounding data. The plot is made on the current graphics device. If a device is not active in an interactive session, the default graphics device will be started.
 }
 \usage{
-plotSprofile(raw = NULL, qc = NULL, title = NULL, type = "b", xlim = NULL, xlab, xaxt = par("xaxt"), xaxs = par("xaxs"), ylim = NULL, ylab, yaxt = par("yaxt"), yaxs = par("yaxs"), col = c("black", "red", "green", "blue", "purple", "cyan", "orange", "yellow", "gray", "pink"), tlwd = par("lwd"), ...)
+plotSprofile(raw = NULL, qc = NULL, title = NULL, type = "b",
+    xlim = NULL, xlab, xaxt = par("xaxt"), xaxs = par("xaxs"),
+    ylim = NULL, ylab, yaxt = par("yaxt"), yaxs = par("yaxs"),
+    col = c("black", "red", "green", "blue", "purple", "cyan",
+        "orange", "yellow", "gray", "pink"), tlwd = par("lwd"),
+    ...)
 }
 \arguments{
   \item{raw}{
