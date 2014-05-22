@@ -218,12 +218,12 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
                 side <- if (iplot %% 2) 1 else 3
                 line <- (mgp[1] + 1) * ((iplot-1) %/% 2)
                 if (missing(xlab)) {
-                  if (dupunits) xlab.txt <- paste(varname," (",xunits,")",sep="")
+                  if (dupunits) xlab.txt <- paste(xname," (",xunits,")",sep="")
                   else xlab.txt <- paste("(",xunits,")",sep="")
                 }
             }
         }
-        cat("plot, varname=",xname," xlim1=",signif(xlim1,4),"\n")
+        cat("plot, xname=",xname," xlim1=",signif(xlim1,4),"\n")
 
         # browser()
         # First trace, create scale, box and yaxes labels

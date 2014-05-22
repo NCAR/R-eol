@@ -7,10 +7,14 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-scontour <- function(sdngs,yname,zname,contour=TRUE,
-    ylim=NULL)
+scontour <- function(sdngs, yname, zname, contour=TRUE, ylim=NULL, ynstep=100)
 {
-    sdngs <- interpSoundings(sdngs,yname,zname)
+
+    # parameters to control plot:
+    #   ylim, ystep  (is ystep necessary?)
+    #   zlim (perhaps only clip z?) Is zstep necessary?
+    #       Perhaps only to reduce colors
+    sdngs <- interpSoundings(sdngs, yname, zname, ylim, ynstep)
 
     zmat <- NULL
     ydata <- NULL
@@ -32,7 +36,6 @@ scontour <- function(sdngs,yname,zname,contour=TRUE,
 
         zunits <- eolts::units(sdng[,zname])
         yunits <- eolts::units(sdng[,yname])
-
 
         if (is.null(ydata)) {
             ydata <- sdng@data[,yname]

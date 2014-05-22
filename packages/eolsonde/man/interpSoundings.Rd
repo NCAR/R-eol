@@ -5,7 +5,7 @@
 Interpolate all columns of a list of soundings.
 }
 \usage{
-interpSoundings(sdngs, xname, ynames)
+interpSoundings(sdngs, xname, ynames, xlim=NULL, nstep=100)
 }
 \arguments{
   \item{sdngs}{
@@ -17,10 +17,19 @@ Name of variable to be interpolated over, whose values will be the x argument pa
   \item{ynames}{
 Name of variable to be interpolated, whose values will be the y argument passed to \code{\link{approx}}.
   }
+  \item{xlim}{
+Limits of interpolation over X.
+  }
+  \item{nstep}{
+Number of X values to interpolate over.
+  }
 }
 \details{
 In each of the soundings, the units of the x variable is checked for consistency. interpSoundings will stop with an error if the units of x change between soundings.
-If the units of x are "mb" (millibars) then the y variables are interpolated over \code{xout=seq(5,1200,5)}. Otherwise the x variable is assumed to be an altitude in meters, and the interpolation is done over \code{xout=seq(0,30000,75)}.
+
+If xlim is not NULL, the interpolation is done over \code{seq(from=xlim[1],to=xlim[2],length=nstep)}.
+
+If xlim is NULL, and the units of x are "mb" (millibars) then the interpolation is done over \code{xout=seq(5,1200,length=nstep)}. Otherwise the x variable is assumed to be an altitude in meters, and the interpolation is done over \code{xout=seq(0,30000,length=nstep)}.
 }
 \value{
 A list of sounding time series, like \code{readSoundings}, but containing only the xname and ynames variables.

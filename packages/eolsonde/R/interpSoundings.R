@@ -7,7 +7,7 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-interpSoundings <- function(sdngs,xname,ynames)
+interpSoundings <- function(sdngs, xname, ynames, xlim=NULL, nstep=100)
 {
     res <- list()
     xout <- NULL
@@ -41,12 +41,14 @@ interpSoundings <- function(sdngs,xname,ynames)
         if (is.null(xout)) {
             xunits <- eolts::units(sdng[,xname])
             xreversed <- m1 > m2
+            if (!is.null(xlim))
+                xout <- seq(from=xlim[1],to=xlim[2],length=nstep)
             if (xunits == "mb") {
-                xout <- seq(5,1200,5)
+                if (is.null(xlim)) xout <- seq(5,1200,length=nstep)
                 xiout <- log(xout)
             }
             else {
-                xout <- seq(0,30000,75)
+                if (is.null(xlim)) xout <- seq(0,30000,length=nstep)
                 xiout <- xout
             }
             if (xreversed) {
@@ -76,7 +78,7 @@ interpSoundings <- function(sdngs,xname,ynames)
 
             if (is.na(match(yname,vnames))) stop(paste(yname,"not found in",sname))
 
-            yin <- sdng@data[xok,yname]
+            yin <- clip(sdng[xok,yname])@data[,1]
 
             if (sum(!is.na(yin)) > 1)
                 rmat[,yname] <- approx(xin,yin,xiout)$y
