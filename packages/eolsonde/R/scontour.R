@@ -7,7 +7,7 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-plotScontour <- function(sdngs,yname,zname,contour=TRUE,
+scontour <- function(sdngs,yname,zname,contour=TRUE,
     ylim=NULL)
 {
     sdngs <- interpSoundings(sdngs,yname,zname)
@@ -19,22 +19,23 @@ plotScontour <- function(sdngs,yname,zname,contour=TRUE,
     reverse <- FALSE
     ymin <- Inf
     ymax <- -Inf
+    slabels <- NULL # sounding labels
 
     for (sname in names(sdngs)) {
 
-        x <- sdngs[[sname]]
-        vnames <- colnames(x)
+        sdng <- sdngs[[sname]]
+        vnames <- colnames(sdng)
         is <- is + 1
 
         if (is.na(match(zname,vnames))) stop(paste(zname,"not found in",sname))
         if (is.na(match(yname,vnames))) stop(paste(yname,"not found in",sname))
 
-        zunits <- eolts::units(x[,zname])
-        yunits <- eolts::units(x[,yname])
+        zunits <- eolts::units(sdng[,zname])
+        yunits <- eolts::units(sdng[,yname])
 
-        zdata <- x@data[,zname]
+
         if (is.null(ydata)) {
-            ydata <- x@data[,yname]
+            ydata <- sdng@data[,yname]
             # before calling filled.contour, ydata must be in increasing order
             # There should be no NAs in ydata, which is the result of
             # the interpolation, above.
@@ -42,8 +43,10 @@ plotScontour <- function(sdngs,yname,zname,contour=TRUE,
             if (flipData) ydata <- rev(ydata)
         }
         else {
-            if (!identical(ydata,x@data[,yname])) stop("changing ydata")
+            if (!identical(ydata,sdng@data[,yname])) stop("changing ydata")
         }
+
+        zdata <- clip(sdng[,zname])@data[,1]
 
         ymin <- min(ymin,ydata[!is.na(zdata)],na.rm=TRUE)
         ymax <- max(ymax,ydata[!is.na(zdata)],na.rm=TRUE)
@@ -53,6 +56,15 @@ plotScontour <- function(sdngs,yname,zname,contour=TRUE,
         if (is.null(zmat)) zmat <- matrix(NA,nrow=length(sdngs),ncol=length(ydata))
 
         zmat[is,] <- if(flipData) { rev(zdata)} else {zdata}
+
+        # remove trailing portions in name
+        for (char in c(".","_","-")) {
+            ic <- rev(unlist(gregexpr(char,sname,fixed=TRUE)))
+            for (i in ic) {
+                if (i > 14) sname <- substr(sname,1,i-1)
+            }
+        }
+        slabels  <- append(slabels,sname)
     }
 
     flipYaxis <- (yunits == "mb") # flip the Y axis
@@ -68,6 +80,11 @@ plotScontour <- function(sdngs,yname,zname,contour=TRUE,
     else
         colorfunc <- colorRampPalette(c("blue","cyan","green","yellow","red"))
 
+    nl <- length(slabels)
+    nskip <- as.integer(ceiling(nl/20))
+    slabx <- seq(from=1,to=nl,by=nskip)
+    slabels <- slabels[slabx]
+
     if (contour) {
         #browser()
         if (flipYaxis) ylim <- rev(ylim)
@@ -78,9 +95,8 @@ plotScontour <- function(sdngs,yname,zname,contour=TRUE,
             plot.title= {
                 title(ylab=paste0(yname,"(",yunits,")"),
                     xlab="sounding")
-                abline(v=xdata,lwd=1)
-                text(xdata[1],ylim[1],names(sdngs)[1],cex=0.8,adj=0)
-                text(tail(xdata,1),ylim[1],tail(names(sdngs),1),cex=0.8,adj=1)
+                abline(v=slabx,lwd=1,lty=2,col="lightgray")
+                text(slabx,par("usr")[3],slabels,cex=0.8,adj=c(0,0),srt=90)
             },
             plot.axes={
                 axis(1)
@@ -102,9 +118,8 @@ plotScontour <- function(sdngs,yname,zname,contour=TRUE,
             col.regions=colorfunc(nlevels),
             panel=function(...) {
                 panel.levelplot(...)
-                panel.abline(v=xdata,lwd=1)
-                panel.text(xdata[1],ylim[1],names(sdngs)[1],cex=0.8,adj=c(0,0))
-                panel.text(tail(xdata,1),ylim[1],tail(names(sdngs),1),cex=0.8,adj=c(1,0))
+                panel.abline(v=slabx,lwd=1,lty=2,col="lightgray")
+                panel.text(slabx,ylim[1],slabels,cex=0.8,adj=c(0,0),srt=90)
                 panel.text(xlim[2]+diff(xlim)*0.10,ylim[1]+100,
                     paste0(zname,"(",zunits,")"))
             }

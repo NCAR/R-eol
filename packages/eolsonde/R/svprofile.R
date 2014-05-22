@@ -7,7 +7,7 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-plotSvarProfile <- function(sdngs,xname,yname,type="b",
+svprofile <- function(sdngs,xname,yname,type="b",
     xlim=NULL,xlab,xaxt=par("xaxt"),xaxs=par("xaxs"),
     ylim=NULL,ylab,yaxt=par("yaxt"),yaxs=par("yaxs"),
     col=c("black","red","green","blue","purple","cyan",

@@ -26,9 +26,9 @@ eolsonde        Read and Visualize EOL sounding data
 readDFile       Read a D file.
 readQCFile      Read a QC file.
 readSoundings   Read one or more D or QC files.
-plotSprofile    Plot profiles one or more variables in one sounding.
-plotSvarContour Plot profiles of one variable over multiple soundings
-plotScontour    Plot contours of a variable over X=sounding, Y=pressure or altitude
+sprofile        Plot profiles one or more variables in one sounding.
+svprofile       Plot profiles of one variable over multiple soundings
+scontour        Plot contours of a variable over X=sounding, Y=pressure or altitude
 }
 ~~ An overview of how to use the package, including the most important ~~
 ~~ functions ~~

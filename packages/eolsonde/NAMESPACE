@@ -4,9 +4,9 @@ export(
     readDFile,
     readQCFile,
     readSoundings,
-    plotSprofile,
-    plotSvarProfile,
-    plotScontour,
+    sprofile,
+    svprofile,
+    scontour,
     interpSoundings,
 
     get.sounding.histograms,

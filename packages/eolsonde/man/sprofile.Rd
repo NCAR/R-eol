@@ -1,11 +1,11 @@
-\name{plotSprofile}
-\alias{plotSprofile}
+\name{sprofile}
+\alias{sprofile}
 \title{Plot EOL Sounding Profiles}
 \description{
 Plot sounding profiles for EOL raw sounding data and/or QCed sounding data. The plot is made on the current graphics device. If a device is not active in an interactive session, the default graphics device will be started.
 }
 \usage{
-plotSprofile(raw = NULL, qc = NULL, title = NULL, type = "b",
+sprofile(raw = NULL, qc = NULL, title = NULL, type = "b",
     xlim = NULL, xlab, xaxt = par("xaxt"), xaxs = par("xaxs"),
     ylim = NULL, ylab, yaxt = par("yaxt"), yaxs = par("yaxs"),
     col = c("black", "red", "green", "blue", "purple", "cyan",
@@ -80,7 +80,7 @@ Gordon Maclean
 \examples{
     \dontrun{
         xs = readSoundings()
-        plotSprofile(xs[[2]][,c("rh","temp","wspd","wdir","p")])
+        sprofile(xs[[2]][,c("rh","temp","wspd","wdir","p")])
     }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

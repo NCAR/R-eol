@@ -1,11 +1,11 @@
-\name{plotScontour}
-\alias{plotScontour}
+\name{scontour}
+\alias{scontour}
 \title{Plot Contours of EOL Sounding Profiles}
 \description{
  Plot profile contours of a variable from a list of soundings, where the X axis is the sounding index, and Y is pressure or altitude.
 }
 \usage{
-plotScontour(sdngs, yname, zname, contour = TRUE)
+scontour(sdngs, yname, zname, contour = TRUE, ylim=NULL)
 }
 \arguments{
   \item{sdngs}{
@@ -49,7 +49,7 @@ t2 = t1 + 60 * 20   # add 20 minutes
 xs = readSoundings(dir=dir,start=t1,end=t2)
 
 # Plot contours of temp vs X=sounding index, Y=pressure.
-plotScontour(xs,"p","temp")
+scontour(xs,"p","temp")
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

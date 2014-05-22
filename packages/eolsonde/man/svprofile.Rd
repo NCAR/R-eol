@@ -1,17 +1,17 @@
-\name{plotSvarProfile}
-\alias{plotSvarProfile}
+\name{svprofile}
+\alias{svprofile}
 \title{Plot EOL Sounding Profiles for one variable with multi soundings}
 \description{
 Plot profiles of one variable from multiple soundings.
 }
 \usage{
-plotSvarProfile(sdngs, xname, yname, type = "b",
+svprofile(sdngs, xname, yname, type = "b",
     xlim = NULL, xlab, xaxt = par("xaxt"), xaxs = par("xaxs"),
     ylim = NULL, ylab, yaxt = par("yaxt"), yaxs = par("yaxs"),
     col = c("black", "red", "green", "blue", "purple", "cyan",
         "orange", "gold", "gray", "pink", "violet", "brown",
         "magenta", "chocolate", "tomato", "darkgreen"),
-    tlwd = par("lwd"), title = "", ...)
+    title = "",tlwd=par("lwd"), ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -88,7 +88,7 @@ dir = system.file("unitTests","data","D-file",package="eolsonde")
 t1 = utime("2008 8 15 17:20",time.zone="UTC")
 t2 = t1 + 60 * 20   # add 10 minutes
 xs = readSoundings(dir=dir,start=t1,end=t2)
-plotSvarProfile(xs,"rh","p")
+svprofile(xs,"rh","p")
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

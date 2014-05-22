@@ -90,7 +90,7 @@ names(xs)
 colnames(xs[[1]])
 
 # Plot profiles of rh vs p for all soundings.
-plotSvarProfile(xs,"rh","p")
+svprofile(xs,"rh","p")
 
 # loop over the soundings and generate multiple plots
 par(mfrow=c(2,ceiling(length(xs)/2)))
@@ -105,22 +105,22 @@ for (fname in names(xs)) {
     title(fname)
 }
 
-# use plotSprofile for similar plots
+# use sprofile for similar plots
 par(mfrow=c(2,ceiling(length(xs)/2)))
 for (fname in names(xs)) {
     x = xs[[fname]]
-    plotSprofile(x[,c("temp","p")],title=fname)
+    sprofile(x[,c("temp","p")],title=fname)
 }
 
 \dontrun{
 # set the default directory for readSoundings
 Sys.setenv(SONDE_DATA="/net/isf/dropsonde3/kbeierle/MPEX-2013/Dfiles")
 # file name pattern
-file = "D%Y%m%d_%H%M%S_P.[0-9].PresCorr"
+file = "D\%Y\%m\%d_\%H\%M\%S_P.[0-9].PresCorr"
 t1 = utime("2013 05 16 09:00")
 t2 = t1 + 7200
 xs = readSoundings(file=file,start=t1,end=t2)
-plotScontour(xs,"p","temp")
+sprofile(xs,"p","temp")
 }
 
 }

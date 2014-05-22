@@ -36,7 +36,7 @@ Gordon Maclean
         x = readQCFile("D20080815_175400_PQC.eol")
         # time series plot of pressure, temp and rh
         plot(x[,c("p","temp","rh")])
-        plotSprofile(x)
+        sprofile(x)
     }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

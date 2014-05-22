@@ -44,7 +44,7 @@ x = readDFile(dfile)
 # time series plot of pressure, temp and rh
 plot(x[,c("p","temp","rh")])
 # profile plot
-plotSprofile(x[,c("p","temp","rh","wspd","wdir")])
+sprofile(x[,c("p","temp","rh","wspd","wdir")])
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -39,9 +39,9 @@ Gordon Maclean
 \examples{
     \dontrun{
         xs = readSoundings()
-        plotSprofile(xs)
+        sprofile(xs)
         xs = interpSoundings(xs,"p",c("temp","rh","wspd","wdir"))
-        plotSprofile(xs)
+        sprofile(xs)
     }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
