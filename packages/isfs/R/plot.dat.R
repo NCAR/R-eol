@@ -639,7 +639,10 @@ logo_stamp <- function(print.motto=T)
 
     lineoff <- cex / mex + .1
 
-    if (is.null(platform <- dpar("platform"))) platform <- "NCAR ISFS"
+    if (is.null(platform <- dpar("platform"))) {
+        platform <- Sys.getenv("PLATFORM")
+        if (nchar(platform) == 0) platform <- "NCAR ISFS"
+    }
     string <- paste(platform,format(utime("now"),format="%H:%M %h %d %Y %Z"))
     mtext(string,side=1,line=oma[1]-lineoff,outer=T,adj=1)
 
