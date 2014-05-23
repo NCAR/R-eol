@@ -44,19 +44,19 @@ readQCFile <- function(file)
         hh="hh",
         mm="mm",
         ss="ss",
-        Press="p",
-        Temp="temp",
-        Dewpt="dewpt",
-        RH="rh",
-        Uwind="u",
-        Vwind="v",
-        Wspd="wspd",
-        Dir="wdir",
-        dZ="dz",
-        GeoPoAlt="gp.alt",
+        Press="P",
+        Temp="T",
+        Dewpt="Dewpt",
+        RH="RH",
+        Uwind="U",
+        Vwind="V",
+        Wspd="Wspd",
+        Dir="Wdir",
+        dZ="dZ/dt",
+        GeoPoAlt="Alt_gp",
         Lon="lon",
         Lat="lat",
-        GPSAlt="gps.alt")
+        GPSAlt="Alt_gps")
 
     # time columns
     utcnames <- units[2:4]
@@ -75,7 +75,8 @@ readQCFile <- function(file)
 
     # read data into numeric values
     d <- read.table(file=file, skip=lhdr+3,
-        col.names=dnames,row.names=NULL, na.strings=c("-999.00","-999.000000"))
+        col.names=dnames,row.names=NULL, na.strings=c("-999.00","-999.000000"),
+        check.names=FALSE)
 
     sod <- d[,utcnames[1]] * 3600 + d[,utcnames[2]] * 60 + d[,utcnames[3]]
     t0day <- floor(as.numeric(launchutc)/86400) * 86400

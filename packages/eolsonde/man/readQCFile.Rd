@@ -34,8 +34,8 @@ Gordon Maclean
 \examples{
     \dontrun{
         x = readQCFile("D20080815_175400_PQC.eol")
-        # time series plot of pressure, temp and rh
-        plot(x[,c("p","temp","rh")])
+        # time series plot of P, T and RH
+        plot(x[,c("P","T","RH")])
         sprofile(x)
     }
 }

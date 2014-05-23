@@ -48,24 +48,24 @@ readDFile <- function (file,sta_clean=TRUE)
 
     # mapping of header strings to returned variable names
     hnames <- list(
-        "Sonde"="sid",
+        "Sonde"="SID",
         "UTCDate"="utc.date",
         "UTCTime"="utc.time",
-        "AirPress"="p",
-        "AirTemp"="temp",
-        "RelHumid"="rh",
-        "WindDir"="wdir",
-        "WindSpd"="wspd",
-        "VertVeloc"="dz",
+        "AirPress"="P",
+        "AirTemp"="T",
+        "RelHumid"="RH",
+        "WindDir"="Wdir",
+        "WindSpd"="Wspd",
+        "VertVeloc"="dZ/dt",
         "GPSLongitude"="lon",
         "GPSLatitude"="lat",
-        "GeopotenAltitude"="gp.alt",
+        "GeopotenAltitude"="Alt_gp",
         "GPSWnd"="wsat",
-        "SondeRH1"="rh1",
-        "SondeRH2"="rh2",
+        "SondeRH1"="RH1",
+        "SondeRH2"="RH2",
         "GPSSnd"="ssat",
-        "WindError"="werr",
-        "GPSAltitude"="gps.alt")
+        "WindError"="Werr",
+        "GPSAltitude"="Alt_gps")
 
     # character columns
     # sta:  Spw:  p=0 good PTU checksum, p=1 bad PTU checksum
@@ -90,8 +90,10 @@ readDFile <- function (file,sta_clean=TRUE)
     col.names <- c(strnames, dnames)
 
     # read as character data
+    # set check.names to FALSE to avoid translation of dZ/dt to dZ.dt
     d <- read.table(file=file, colClasses="character",fill=TRUE,
-        col.names=col.names,row.names=NULL, stringsAsFactors=FALSE)
+        col.names=col.names,row.names=NULL, stringsAsFactors=FALSE,
+        check.names=FALSE)
 
     # extract data rows
     d <- d[drows,]
@@ -101,9 +103,9 @@ readDFile <- function (file,sta_clean=TRUE)
         in.format="%y%m%d%H%M%OS",time.zone="UTC")
 
     # missing values for numeric columns
-    na_vals <- c(sid=0, p=9999, temp=99, rh=999, wdir=999, wspd=999,
-        dz=99, lon=999, lat=99, gp.alt=99999,
-        wsat=999, rh1=999, rh2=999, ssat=999, werr=99, gps.alt=99999)
+    na_vals <- c(SID=0, P=9999, T=99, RH=999, Wdir=999, Wspd=999,
+        "dZ/dt"=99, lon=999, lat=99, Alt_gp=99999,
+        wsat=999, RH1=999, RH2=999, ssat=999, Werr=99, Alt_gps=99999)
 
     # numeric variables are those not in strnames or utcnames
     numnames <- dnames[is.na(match(dnames,c(strnames,utcnames)))]
@@ -123,7 +125,8 @@ readDFile <- function (file,sta_clean=TRUE)
 
     # d <- data.frame(d[,strnames],utc=utc,d2)
     # sta <- d[,"sta"]
-    d <- data.frame(d[,strnames],d2)
+    # set check.names to FALSE to avoid translation of dZ/dt to dZ.dt
+    d <- data.frame(d[,strnames],d2,check.names=FALSE)
     units <- rep("",length(colnames(d)))
     mu <- match(names(hunits),colnames(d),nomatch=0)
     units[mu] <- hunits[mu!=0]
@@ -139,23 +142,23 @@ readDFile <- function (file,sta_clean=TRUE)
 
         # If first digit of sta is not zero, set PTU values to NA
         ok  <- grepl("S0",sta,fixed=TRUE)
-        ptuqc <- c("p","temp","rh","rh1","rh2")
+        ptuqc <- c("P","T","RH","RH1","RH2")
         d@data[!ok,match(ptuqc,colnames(d))] <- NA_real_
 
         # If second digit of sta is not zero, set wind/gps values to NA
         ok <- grepl("S00",sta,fixed=TRUE) | grepl("S10",sta,fixed=TRUE)
-        windqc <- c("wdir","wspd","dz","lon","lat","gp.alt","wsat","ssat","werr","gps.alt")
+        windqc <- c("Wdir","Wspd","dZ/dt","lon","lat","Alt_gp","wsat","ssat","Werr","Alt_gps")
         d@data[!ok,match(windqc,colnames(d))] <- NA_real_
     }
 
     # check for unique sid, save it as attribute
-    sids <- unique(as.vector(d@data[,"sid"]))
+    sids <- unique(as.vector(d@data[,"SID"]))
     if (any(is.na(sids))) sids <- sids[!is.na(sids)]
-    attr(d,"sid") <- sids
+    attr(d,"SID") <- sids
     if (length(sids) > 1)
         warning(paste0("Multiple sonde ids (",paste(sids,collapse=","),
             ") found in ",file))
-    d <- d[,is.na(match(colnames(d),"sid"))]
+    d <- d[,is.na(match(colnames(d),"SID"))]
     d
 }
 

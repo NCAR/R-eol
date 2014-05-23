@@ -19,11 +19,12 @@ test_sdngs <- function()
     datadir <- file.path(system.file("unitTests", package=pkg),"data","D-file")
     cat("datadir=",datadir,"\n")
     Sys.setenv(SONDE_DATA=datadir)
+    Sys.setenv(SONDE_ROOT="/x")
 
     options(time.zone="UTC")
     dpar(start="2008 8 15 1727",lenmin=12)
 
     sdngs <- readSoundings()
 
-    checkEquals(length(sdngs),3)
+    checkEquals(length(sdngs),2)
 }

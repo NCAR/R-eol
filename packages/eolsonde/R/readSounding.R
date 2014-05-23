@@ -8,8 +8,8 @@
 # file LICENSE in this package.
 
 readSoundings <- function(
-    dir=c(paste(Sys.getenv("SONDE_ROOT"),"projects",Sys.getenv("PROJECT"),
-        Sys.getenv("PLATFORM"),Sys.getenv("DATASET"),sep=.Platform$file.sep),
+    dir=c(file.path(Sys.getenv("SONDE_ROOT"),"projects",Sys.getenv("PROJECT"),
+        Sys.getenv("PLATFORM"),"data",Sys.getenv("DATASET")),
         Sys.getenv("SONDE_DATA")),
     file=c(
         "D%Y%m%d_%H%M%S_P\\.[0-9]+",
@@ -51,12 +51,7 @@ readSoundings <- function(
                 files <- files[fi]
 
                 fwithin <- ftimes >= start & ftimes <= end
-                # determine last file whose time is less than start
-                before <- ftimes < start
-                if (any(before)) {
-                    before <- max(seq(along=files)[before])
-                    fwithin[before] <- TRUE
-                }
+
                 if (any(fwithin)) files <- files[fwithin]
                 else warning(paste("no files found in",dir,"between ",
                         format(start,format="%Y %b %d %H:%M:%S",time.zone="GMT"),"and",

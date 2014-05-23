@@ -52,7 +52,8 @@ svprofile <- function(sdngs,xname,yname,type="b",
 
     }
 
-    if (substr(yname,1,1) == "p") ylim1 <- rev(ylim1)
+    # reverse y axis if plotting pressure
+    if (yunits == "mb") ylim1 <- rev(ylim1)
 
     is <- 0
     for (sname in names(sdngs)) {
@@ -83,6 +84,7 @@ svprofile <- function(sdngs,xname,yname,type="b",
         lines(xdata, ydata, lwd=tlwd, col=col[is+1],type=type)
         points(xdata, ydata, cex=0.5, col=col[is+1],type=type)
     }
-    NULL
+    logo_stamp()
+    invisible(NULL)
 }
 

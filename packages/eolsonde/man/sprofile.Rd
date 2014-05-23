@@ -60,7 +60,7 @@ Other arguments passed to plot.
 }
 }
 \details{
-An xy plot is created of the sounding, of all numeric columns. The variable plotted on the Y axis is chosen from  the last column of \code{c("p","pressure","gp.alt","gps.alt")} that is found in the sounding data.frame. All the other variables will be plotted on the X axis.
+An xy plot is created of the sounding, of all numeric columns. The variable plotted on the Y axis is chosen from  the last column of \code{c("P","Alt_gp","Alt_gps")} that is found in the sounding data.frame. All the other variables will be plotted on the X axis.
 }
 \value{
 None. A plot is generated on the current graphics device. If a graphics device is not active in an interactive session, the default graphics device will activated.
@@ -80,7 +80,7 @@ Gordon Maclean
 \examples{
     \dontrun{
         xs = readSoundings()
-        sprofile(xs[[2]][,c("rh","temp","wspd","wdir","p")])
+        sprofile(xs[[2]][,c("RH","T","Wspd","Wdir","P")])
     }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -65,7 +65,7 @@ Parameters passed to \code{\link{plot.default}}.
 }
 }
 \details{
-If yname starts with "p", it is assumed to be pressure, in which case the yaxis is flipped.
+The units of the Y variable are checked to see if it is an air pressure ("mb"), in which case the yaxis is flipped.
 }
 \value{
 None. A plot is generated on the current graphics device. If a graphics device is not active in an interactive session, the default graphics device will activated.
@@ -88,7 +88,7 @@ dir = system.file("unitTests","data","D-file",package="eolsonde")
 t1 = utime("2008 8 15 17:20",time.zone="UTC")
 t2 = t1 + 60 * 20   # add 10 minutes
 xs = readSoundings(dir=dir,start=t1,end=t2)
-svprofile(xs,"rh","p")
+svprofile(xs,"RH","P")
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

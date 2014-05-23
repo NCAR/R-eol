@@ -8,8 +8,8 @@ This function scans a directory for one or more files matching a name format giv
 }
 \usage{
 readSoundings(
-    dir = c(paste(Sys.getenv("SONDE_ROOT"), "projects", Sys.getenv("PROJECT"),
-            Sys.getenv("PLATFORM"), Sys.getenv("DATASET"), sep = .Platform$file.sep),
+    dir = c(file.path(Sys.getenv("SONDE_ROOT"), "projects", Sys.getenv("PROJECT"),
+            Sys.getenv("PLATFORM"), Sys.getenv("DATASET")),
         Sys.getenv("SONDE_DATA")),
     file = c("D\%Y\%m\%d_\%H\%M\%S_P\\\\.[0-9]+", "D\%Y\%m\%d_\%H\%M\%S_P\\\\.[0-9]+.gz",
         "D\%Y\%m\%d_\%H\%M\%S\\\\.[0-9]+", "D\%Y\%m\%d_\%H\%M\%S\\\\.[0-9]+.gz"),
@@ -20,15 +20,19 @@ readSoundings(
     A character vector containing one or more directories to scan. The default value is built from environment variables:
     
     \code{
-    dir = c(paste(Sys.getenv("SONDE_ROOT"), "projects", Sys.getenv("PROJECT"), Sys.getenv("PLATFORM"), Sys.getenv("DATASET"), sep = .Platform$file.sep), Sys.getenv("SONDE_DATA"))
+    dir = c(file.path(Sys.getenv("SONDE_ROOT"), "projects", Sys.getenv("PROJECT"), Sys.getenv("PLATFORM"), "data", Sys.getenv("DATASET")), Sys.getenv("SONDE_DATA"))
     }
 
     From a unix shell, these values are (for Windows, substitute \\ for /):
     \itemize{
-        \item $SONDE_ROOT/projects/$PROJECT/$PLATFORM/$DATASET
+        \item $SONDE_ROOT/projects/$PROJECT/$PLATFORM/data/$DATASET
         \item $SONDE_DATA
     }
-    Or, one can override this default:  dir="C:\\\\AVAPS_DATA\\D-files"
+    Or, one can override this default: \code{readSoundings(dir="C:\\\\AVAPS_DATA\\D-files",...)}, or
+    \code{
+        Sys.setenv(SONDE_DATA="C:\\\\AVAPS_DATA\\D-files")
+        xs = readSoundings(...)
+    }
   }
   \item{file}{
     A character vector containing \itemize{
@@ -89,8 +93,8 @@ names(xs)
 # display the column (variable) names of a sounding
 colnames(xs[[1]])
 
-# Plot profiles of rh vs p for all soundings.
-svprofile(xs,"rh","p")
+# Plot profiles of RH vs P for all soundings.
+svprofile(xs,"RH","P")
 
 # loop over the soundings and generate multiple plots
 par(mfrow=c(2,ceiling(length(xs)/2)))
@@ -98,8 +102,8 @@ par(mfrow=c(2,ceiling(length(xs)/2)))
 for (fname in names(xs)) {
     x = xs[[fname]]
     # Use @data to get numeric vector from the time series
-    press = x@data[,"p"]
-    temp = x@data[,"temp"]
+    press = x@data[,"P"]
+    temp = x@data[,"T"]
     # generic XY plot
     plot(temp,press)
     title(fname)
@@ -109,7 +113,7 @@ for (fname in names(xs)) {
 par(mfrow=c(2,ceiling(length(xs)/2)))
 for (fname in names(xs)) {
     x = xs[[fname]]
-    sprofile(x[,c("temp","p")],title=fname)
+    sprofile(x[,c("T","P")],title=fname)
 }
 
 \dontrun{
@@ -120,7 +124,7 @@ file = "D\%Y\%m\%d_\%H\%M\%S_P.[0-9].PresCorr"
 t1 = utime("2013 05 16 09:00")
 t2 = t1 + 7200
 xs = readSoundings(file=file,start=t1,end=t2)
-sprofile(xs,"p","temp")
+sprofile(xs,"P","T")
 }
 
 }

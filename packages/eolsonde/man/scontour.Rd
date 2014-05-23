@@ -5,14 +5,14 @@
  Plot profile contours of a variable from a list of soundings, where the X axis is the sounding index, and Y is pressure or altitude.
 }
 \usage{
-scontour(sdngs, yname, zname, contour = TRUE, ylim=NULL, ynstep=100)
+scontour(sdngs, yname, zname, contour = TRUE, ylim=NULL, ynstep=100, title="")
 }
 \arguments{
   \item{sdngs}{
       A list of soundings, as returned by \code{\link{readSoundings}}
   }
   \item{yname}{
-      Name of variable to use for the Y axis, typically "p", "gps.alt", or "gp.alt".
+      Name of variable to use for the Y axis, typically "P", "Alt_gps", or "Alt_gp".
   }
   \item{zname}{
       Name of variable to be contoured.
@@ -25,6 +25,9 @@ scontour(sdngs, yname, zname, contour = TRUE, ylim=NULL, ynstep=100)
   }
   \item{ynstep}{
       Number of steps in Y to interpolate the Z variable.
+  }
+  \item{title}{
+      Title for the plot
   }
 }
 \details{
@@ -55,7 +58,7 @@ t2 = t1 + 60 * 20   # add 20 minutes
 xs = readSoundings(dir=dir,start=t1,end=t2)
 
 # Plot contours of temp vs X=sounding index, Y=pressure.
-scontour(xs,"p","temp")
+scontour(xs,"P","T")
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

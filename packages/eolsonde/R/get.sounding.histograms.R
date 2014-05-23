@@ -20,11 +20,11 @@ get.sounding.histograms <- function (fdir=NULL,projsonde=NULL,
         f = paste(fdir, flist[i], sep = "/")
         qc.sounding = readin.file("qc",f)
         time = qc.sounding[,"time"]
-        ps = qc.sounding[,"p"]
-        t  = qc.sounding[,"temp"]
-        rh = qc.sounding[,"rh"]
-        w  = qc.sounding[,"wspd"]
-        wd = qc.sounding[,"wdir"]
+        ps = qc.sounding[,"P"]
+        t  = qc.sounding[,"T"]
+        rh = qc.sounding[,"RH"]
+        w  = qc.sounding[,"Wspd"]
+        wd = qc.sounding[,"Wdir"]
 
         maxp = max(ps,na.rm=TRUE)
         if(maxp > 1015)	print(maxp)

@@ -37,11 +37,11 @@ test_dfile <- function()
     cat("t2=",format(positions(sdng)[nr],format="%Y %m %d %H:%M:%OS"),"\n")
     checkEquals(positions(sdng)[nr],utime("2008 08 15 17:29:45.82"))
 
-    checkEquals(as.numeric(sdng[1,"p"]),391.4)
-    checkEquals(as.numeric(sdng[1,"gps.alt"]),7752.0)
+    checkEquals(as.numeric(sdng[1,"P"]),391.4)
+    checkEquals(as.numeric(sdng[1,"Alt_gps"]),7752.0)
 
-    checkTrue(is.na(as.numeric(sdng[nr,"p"])))
-    checkEquals(as.numeric(sdng[nr,"gps.alt"]),67.01)
+    checkTrue(is.na(as.numeric(sdng[nr,"P"])))
+    checkEquals(as.numeric(sdng[nr,"Alt_gps"]),67.01)
 
 
     # read dfile with sta_clean=TRUE
@@ -60,10 +60,10 @@ test_dfile <- function()
     cat("t2=",format(positions(sdng)[nr],format="%Y %m %d %H:%M:%OS"),"\n")
     checkEquals(positions(sdng)[nr],utime("2008 08 15 17:29:45.82"))
 
-    checkTrue(is.na(as.numeric(sdng[1,"p"])))
-    checkTrue(is.na(as.numeric(sdng[1,"gps.alt"])))
+    checkTrue(is.na(as.numeric(sdng[1,"P"])))
+    checkTrue(is.na(as.numeric(sdng[1,"Alt_gps"])))
 
-    checkTrue(is.na(as.numeric(sdng[nr,"p"])))
-    checkEquals(as.numeric(sdng[nr,"gps.alt"]),67.01)
+    checkTrue(is.na(as.numeric(sdng[nr,"P"])))
+    checkEquals(as.numeric(sdng[nr,"Alt_gps"]),67.01)
 
 }

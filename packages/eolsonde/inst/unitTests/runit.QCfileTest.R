@@ -37,12 +37,12 @@ test_qcfile <- function()
     cat("t2=",format(positions(sdng)[nr],format="%Y %m %d %H:%M:%OS"),"\n")
     checkEquals(positions(sdng)[nr],utime("2008 08 15 17:29:46.04"))
 
-    checkEquals(as.numeric(sdng[1,"p"]),391.4)
-    checkEquals(as.numeric(sdng[1,"gps.alt"]),7752.0)
+    checkEquals(as.numeric(sdng[1,"P"]),391.4)
+    checkEquals(as.numeric(sdng[1,"Alt_gps"]),7752.0)
 
-    checkTrue(is.na(as.numeric(sdng[nr-1,"p"])))
-    checkEquals(as.numeric(sdng[nr,"p"]),1009.16)
+    checkTrue(is.na(as.numeric(sdng[nr-1,"P"])))
+    checkEquals(as.numeric(sdng[nr,"P"]),1009.16)
 
-    checkEquals(as.numeric(sdng[nr-1,"gps.alt"]),67.01)
-    checkTrue(is.na(as.numeric(sdng[nr,"gps.alt"])))
+    checkEquals(as.numeric(sdng[nr-1,"Alt_gps"]),67.01)
+    checkTrue(is.na(as.numeric(sdng[nr,"Alt_gps"])))
 }

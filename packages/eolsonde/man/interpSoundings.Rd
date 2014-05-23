@@ -49,7 +49,7 @@ Gordon Maclean
     \dontrun{
         xs = readSoundings()
         sprofile(xs)
-        xs = interpSoundings(xs,"p",c("temp","rh","wspd","wdir"))
+        xs = interpSoundings(xs,"P",c("T","RH","Wspd","Wdir"))
         sprofile(xs)
     }
 }

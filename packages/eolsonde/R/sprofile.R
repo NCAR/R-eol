@@ -39,7 +39,7 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
         xunits <- eolts::units(raw)[nm]
 
         # find y axis data: p, pressure, gp.alt or gps.alt
-        ym <- match(xrnames,c("p","pressure","gp.alt","gps.alt"))
+        ym <- match(xrnames,c("P","Alt_gp","Alt_gps"))
         # use first one
         yname <- tail(xrnames[!is.na(ym)],1)
         yunits <- tail(eolts::units(raw)[!is.na(ym)],1)
@@ -63,7 +63,7 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
         xunits <- eolts::units(qc)[nm]
 
         # find y axis data: p, pressure, gp.alt or gps.alt
-        ym <- match(xqnames,c("p","pressure","gp.alt","gps.alt"))
+        ym <- match(xqnames,c("P","Alt_gp","Alt_gps"))
         yqname <- tail(xqnames[!is.na(ym)],1)
         yqunits <- tail(eolts::units(qc)[!is.na(ym)],1)
 
@@ -90,7 +90,7 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
         stop("No variable for y axis found")
 
     # reverse axis if Y is pressure
-    if (substr(yname,1,1) == "p") reverse_yaxis <- TRUE
+    if (yunits == "mb") reverse_yaxis <- TRUE
 
     xnames <- c(xrnames,xqnames)
 
@@ -297,5 +297,6 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
     }       # xname in xnames
     legend("topright", legtxt, col=col[legcol], bty="n",lty=rep(1,ntrace), lwd=tlwd,
         cex=1.1,title=title)
+    logo_stamp()
     invisible(NULL) 
 }
