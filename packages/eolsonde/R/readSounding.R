@@ -53,16 +53,35 @@ readSoundings <- function(
                 fwithin <- ftimes >= start & ftimes <= end
 
                 if (any(fwithin)) files <- files[fwithin]
-                else warning(paste("no files found in",dir,"between ",
+                else {
+                    warning(paste(length(files),"files found in",dir,
+                        " but none with times between ",
                         format(start,format="%Y %b %d %H:%M:%S",time.zone="GMT"),"and",
                         format(end,format="%Y %b %d %H:%M:%S %Z",time.zone="GMT")))
+                    next
+                }
 
-                cat("files=",paste(files,collapse=","),"\n")
+                # cat("files=",paste(files,collapse=","),"\n")
 
                 for (fx in files) {
                     # browser()
                     # return a list of soundings
                     res[[fx]] <- readDFile(paste(dx,fx,sep=.Platform$file.sep),sta_clean=sta_clean)
+
+                    srec <- sum(substr(res[[fx]]@data[,"sta"],1,1) == "S")
+                    ptuok <- sum(substr(res[[fx]]@data[,"sta"],1,2) == "S0")
+                    gpsok <- sum(substr(res[[fx]]@data[,"sta"],1,3) == "S00"
+                            | substr(res[[fx]]@data[,"sta"],1,3) == "S10")
+                    if (sta_clean) {
+                        cat("read",fx,", nrow=",nrow(res[[fx]]),
+                            ",#PTUOK=",ptuok,",#GPSOK=",gpsok,"\n")
+                    } else {
+                        prec <- sum(substr(res[[fx]]@data[,"sta"],1,1) == "P")
+                        arec <- sum(substr(res[[fx]]@data[,"sta"],1,1) == "A")
+                        cat("read",fx,", nrow=",nrow(res[[fx]]),
+                            ",#A=",arec,",#P=",prec,",#S=",srec,
+                            ",#PTUOK=",ptuok,",#GPSOK=",gpsok,"\n")
+                    }
                 }
             }
         }

@@ -7,7 +7,7 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-scontour <- function(sdngs, yname, zname, contour=TRUE, ylim=NULL, ynstep=100,
+scontour <- function(sdngs, yname, zname, contour=FALSE, ylim=NULL, ynstep=100,
     title="")
 {
 
@@ -47,7 +47,11 @@ scontour <- function(sdngs, yname, zname, contour=TRUE, ylim=NULL, ynstep=100,
             if (flipData) ydata <- rev(ydata)
         }
         else {
-            if (!identical(ydata,sdng@data[,yname])) stop("changing ydata")
+            if (flipData) {
+                if (!identical(ydata,rev(sdng@data[,yname]))) stop("changing ydata")
+            } else {
+                if (!identical(ydata,sdng@data[,yname])) stop("changing ydata")
+            }
         }
 
         zdata <- clip(sdng[,zname])@data[,1]
@@ -132,6 +136,7 @@ scontour <- function(sdngs, yname, zname, contour=TRUE, ylim=NULL, ynstep=100,
             },
             key.title=mtext(paste0(zname,"(",zunits,")"),cex=1.1,side=1)
             )
+        logo_stamp()
     }
     else {
         # require(lattice)
@@ -140,28 +145,68 @@ scontour <- function(sdngs, yname, zname, contour=TRUE, ylim=NULL, ynstep=100,
         ylim <- c(ylim[1] - 0.04 * diff(ylim),ylim[2] + 0.04 * diff(ylim))
         if (flipYaxis) ylim <- rev(ylim)
         nlevels <- 20
-        plot(
-            levelplot(zmat,row.values=xdata,column.values=ydata,
-                xlim=xlim, xlab=NULL, xaxt="n",
-                ylim=ylim, yaxs="r", ylab=paste0(yname,"(",yunits,")"),
-                aspect="fill",
-                at=pretty(range(zmat,na.rm=TRUE),n=nlevels),
-                col.regions=colorfunc(nlevels),
-                lattice.options(layout.heights=list(bottom.padding=
-                        list(x=strwidth(slabels[1],units="inches"),units="inch"))),
-                scales=list(x=list(at=slabx,labels=slabels,cex=0.7,rot=90,axs="r")),
-                # auto.key=list(title=paste0(zname,"(",zunits,")"),cex=1.1,side=1),
-                main=title,
-                panel=function(...) {
-                    panel.levelplot(...)
-                    # panel.axis(side="bottom",at=slabx,labels=slabels,outside=TRUE,text.cex=0.6,rot=90)
-                    panel.abline(v=slabx,lwd=1,lty=2,col="lightgray")
-                    # panel.text(xlim[2]+diff(xlim)*0.10,ylim[1]+100,
-                     #    paste0(zname,"(",zunits,")"))
-                }
-            )
+        # zmat <- as.vector(zmat)
+        data <- expand.grid(x=xdata,y=ydata)
+        data$z <- as.vector(zmat)
+
+        # as option to levelplot, results in too much bottom padding
+        # lattice.options = list(layout.heights=list(bottom.padding=
+        #     list(x=strwidth(slabels[1],units="inches"),units="inch"))),
+
+        # as option to levelplot, looks good
+        # lattice.options=lattice.options(layout.heights=list(bottom.padding=
+        #     list(x=strwidth(slabels[1],units="inches"),units="inch"))),
+
+        # this also works
+        # lo <- lattice.options("layout.heights")
+        # lo$bottom.padding <- list(x=strwidth(slabels[1],units="inches"),units="inch")
+        # then the option to levelplot
+        # lattice.options=lo,
+
+        # too much padding, with ncl=7, plus gives warning:
+        # In trellis.par.set(layout.heights = list(bottom.padding = ncl)) :
+        #   Note: The default device has been opened to honour attempt to
+        # modify trellis settings
+        # cat("ncl=",ncl,"\n")
+        # trellis.par.set(layout.heights=list(bottom.padding=ncl))
+
+        # works, with no warning
+        lh <- trellis.par.get("layout.heights")
+        xlab.cex <- 0.7
+        lh$bottom.padding <- ncl * xlab.cex
+
+        plot <- levelplot(z ~ x * y,data,
+            xlim=xlim, xlab=NULL, xaxt="n",
+            ylim=ylim, yaxs="r", ylab=paste0(yname,"(",yunits,")"),
+            par.settings=lh,
+            aspect="fill",
+            cuts=nlevels,
+            col.regions=colorfunc(nlevels+1),
+            scales=list(x=list(at=slabx,labels=slabels,cex=xlab.cex,rot=90,axs="r")),
+            # auto.key=list(title=paste0(zname,"(",zunits,")"),cex=1.1,side=1),
+            main=title,
+            panel=function(...) {
+                panel.levelplot(...)
+                panel.grid(h=-1,v=-1,lty=2,col="lightgray")
+                grid::grid.text(paste0(zname,"(",zunits,")"),
+                    x = xlim[2]+diff(xlim)*0.1, y = ylim[1]-diff(ylim)*0.05,
+                    hjust=0.5)
+            },
+            page = function(page) {
+                # cat("layout.heights=",str(trellis.par.get("layout.heights")),"\n")
+                # cat("layout.widths=",str(trellis.par.get("layout.widths")),"\n")
+                grid::grid.text(paste0(zname,"(",zunits,")"),
+                    x = 0.91, y = .15, hjust=0.5,vjust=1,rot=90)
+                isfs::trellis_logo()
+            }
         )
+        plot(plot)
+        
+        # lattice.options(default.args = list(page = function(n) 
+        #             grid::grid.text(date(), x = 0.01, y = 0.01, 
+        #                                     default.units = "npc", 
+         #                                                        just = c("left", "bottom"))))
+        # mtext(paste0(zname,"(",zunits,")"),1,outer=TRUE,adj=1,line=0)
     }
-    logo_stamp()
     invisible(NULL)
 }
