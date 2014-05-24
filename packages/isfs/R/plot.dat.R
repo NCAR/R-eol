@@ -660,8 +660,36 @@ logo_stamp <- function(print.motto=T)
 
 }
 
-# old name for backward compatibility
-fun.logo.stamp <- logo_stamp
+trellis_logo <- function(print.motto=T,cex=1.0)
+{
+    # add a logo to a trellis (lattice) plot
+    # this function should be called from the
+    # page function of a lattice plot
+    # xyplot(...,
+    #       page=function(page) { trellis_logo() }
+    # )
+    if (is.null(platform <- dpar("platform"))) {
+        platform <- Sys.getenv("PLATFORM")
+        if (nchar(platform) == 0) platform <- "NCAR ISFS"
+    }
+    string <- paste(platform,
+        format(utime("now"),format="%H:%M %h %d %Y %Z"))
+
+    grid::grid.text(string,x=1, y=0, just=c(1,0),gp=grid::gpar(cex=cex))
+
+    string <- Sys.getenv("PROJECT")
+
+    # print.motto=F will prevent printing of motto
+    # print.motto can also be a string variable to replace
+    # options("motto")
+    if( is.logical(print.motto) && print.motto )
+      print.motto <- options("motto")[[1]]
+    if(!is.null(print.motto) && is.character(print.motto) )
+      string <- paste(string,print.motto,sep=": ")
+
+    grid::grid.text(string,x=0, y=0, just=c(0,0),gp=grid::gpar(cex=cex))
+    NULL
+}
 
 adjPar <- function(nxscales=1,nyscales=1,prows=NULL,pcols=NULL,rscale=1,lscale=1)
 {
