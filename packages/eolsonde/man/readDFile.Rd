@@ -14,7 +14,7 @@ readDFile(file, sta_clean = TRUE)
 Full path name of D file to be read.
 }
   \item{sta_clean}{
-Logical value, specifying whether the "sta" sounding field in the D file is used to screen the PTU and wind/GPS data. Values for "P", "T" and "RH" will be set to \code{NA_real_} if the first digit in the corresponding sta value is 1: \code{S10 or S11}.  Values for wind and gps variables will be set to \code{NA_real_} if the second digit in the corresponding sta value is 1:\code{S01 or S11}
+Logical value, specifying whether the "sta" sounding field in the D file is used to screen the PTU and wind/GPS data. If sta_clean is \code{TRUE}, then only records with an "sta" record starting with "S" will be kept, values for "P", "T" and "RH" will be set to \code{NA_real_} if the first digit in the corresponding sta value is 1: \code{S10 or S11} and values for wind and gps variables will be set to \code{NA_real_} if the second digit in the corresponding sta value is 1:\code{S01 or S11}
 }
 }
 \details{

@@ -9,7 +9,7 @@ This function scans a directory for one or more files matching a name format giv
 \usage{
 readSoundings(
     dir = c(file.path(Sys.getenv("SONDE_ROOT"), "projects", Sys.getenv("PROJECT"),
-            Sys.getenv("PLATFORM"), Sys.getenv("DATASET")),
+            Sys.getenv("PLATFORM"), "data", Sys.getenv("DATASET")),
         Sys.getenv("SONDE_DATA")),
     file = c("D\%Y\%m\%d_\%H\%M\%S_P\\\\.[0-9]+", "D\%Y\%m\%d_\%H\%M\%S_P\\\\.[0-9]+.gz",
         "D\%Y\%m\%d_\%H\%M\%S\\\\.[0-9]+", "D\%Y\%m\%d_\%H\%M\%S\\\\.[0-9]+.gz"),
@@ -59,8 +59,7 @@ A \code{\link{utime}} object containing the end time of files to be matched. Thi
 \details{
 }
 \value{
-A list of sounding time series objects. The names of the elements of the list are the file names containing the corresponding. Each time series element is a \code{\link{dat}} object, containing a data.frame, with a column for each variable in the sounding. The time of each row in the time series can be accessed with the \code{\link{positions}} method.
-Be aware that all data types including Sxx, Axx, Pxx are read and returned.
+A list of sounding time series objects. The names of the elements in the list are the file names of the sounding. Each time series element is a \code{\link{dat}} object, containing a data.frame, with a column for each variable in the sounding. The time of each row in the time series can be accessed with the \code{\link{positions}} method.
 }
 \references{
 }
@@ -130,4 +129,4 @@ sprofile(xs,"P","T")
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ timeseries }
+\keyword{ sounding }
