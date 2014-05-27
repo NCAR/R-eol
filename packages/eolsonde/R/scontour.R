@@ -35,9 +35,12 @@ scontour <- function(sdngs, yname, zname,
     #       Perhaps only to reduce colors
 
     profile <- FALSE
-    if (profile) {
+    if (profile)
         p1 <- proc.time()
-        sdngs <- interpSoundings(sdngs, yname, zname, ylim, ynstep)
+
+    sdngs <- interpSoundings(sdngs, yname, zname, ylim, ynstep)
+
+    if (profile) {
         p2 <- proc.time()
         cat("interp times=",as.character(p2-p1),"\n")
         p1 <- p2
