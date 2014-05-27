@@ -56,7 +56,7 @@ readDFile <- function (file,sta_clean=TRUE)
         "RelHumid"="RH",
         "WindDir"="Wdir",
         "WindSpd"="Wspd",
-        "VertVeloc"="dZ/dt",
+        "VertVeloc"="Vz",
         "GPSLongitude"="lon",
         "GPSLatitude"="lat",
         "GeopotenAltitude"="Alt_gp",
@@ -90,7 +90,6 @@ readDFile <- function (file,sta_clean=TRUE)
     col.names <- c(strnames, dnames)
 
     # read as character data
-    # set check.names to FALSE to avoid translation of dZ/dt to dZ.dt
     d <- read.table(file=file, colClasses="character",fill=TRUE,
         col.names=col.names,row.names=NULL, stringsAsFactors=FALSE,
         check.names=FALSE)
@@ -109,7 +108,7 @@ readDFile <- function (file,sta_clean=TRUE)
 
     # missing values for numeric columns
     na_vals <- list(SID=0, P=9999, T=99, RH=999, Wdir=999, Wspd=999,
-        "dZ/dt"=99, lon=999, lat=99, Alt_gp=c(99999,9999),
+        "Vz"=99, lon=999, lat=99, Alt_gp=c(99999,9999),
         wsat=999, RH1=999, RH2=999, ssat=999, Werr=99, Alt_gps=99999)
 
     # numeric variables are those not in strnames or utcnames
@@ -130,7 +129,6 @@ readDFile <- function (file,sta_clean=TRUE)
 
     # d <- data.frame(d[,strnames],utc=utc,d2)
     # sta <- d[,"sta"]
-    # set check.names to FALSE to avoid translation of dZ/dt to dZ.dt
     d <- data.frame(d[,strnames],d2,check.names=FALSE)
     units <- rep("",length(colnames(d)))
     mu <- match(names(hunits),colnames(d),nomatch=0)
@@ -152,7 +150,7 @@ readDFile <- function (file,sta_clean=TRUE)
 
         # If second digit of sta is not zero, set wind/gps values to NA
         ok <- grepl("S00",sta,fixed=TRUE) | grepl("S10",sta,fixed=TRUE)
-        windqc <- c("Wdir","Wspd","dZ/dt","lon","lat","Alt_gp","wsat","ssat","Werr","Alt_gps")
+        windqc <- c("Wdir","Wspd","Vz","lon","lat","Alt_gp","wsat","ssat","Werr","Alt_gps")
         d@data[!ok,match(windqc,colnames(d))] <- NA_real_
     }
 

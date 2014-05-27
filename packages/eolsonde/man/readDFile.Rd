@@ -28,7 +28,7 @@ From the variable names in the Dfile header, the following translation from "Hea
     RelHumid \tab RH \tab 999 \tab S00 or S10\cr
     WindDir \tab Wdir \tab 999 \tab S00 or S10\cr
     WindSpd \tab Wspd \tab 999 \tab S00 or S10\cr
-    VertVeloc \tab dZ/dt \tab 99 \tab S00 or S10\cr
+    VertVeloc \tab Vz \tab 99 \tab S00 or S10\cr
     GPSLongitude \tab lon \tab 999 \tab S00 or S10\cr
     GPSLatitude \tab lat \tab 99 \tab S00 or S10\cr
     GeopotenAltitude \tab Alt_gp \tab 99999, 9999 \tab S00 or S10\cr

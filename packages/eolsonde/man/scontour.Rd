@@ -60,12 +60,12 @@ xs = readSoundings(dir=dir,start=t1,end=t2)
 # Plot contours of Z=temperature vs X=sounding index, Y=pressure.
 scontour(xs,"P","T")
 
-# Contour of Z=vertical velocity (dZ/dt) vs X=sounding index, Y=geopotential altitude
-scontour(xs,"Alt_gp","dZ/dt")
+# Contour of Z=vertical velocity (Vz) vs X=sounding index, Y=geopotential altitude
+scontour(xs,"Alt_gp","Vz")
 
 # Clip some outliers of Alt_g, re-plot.
 clip("Alt_gp",TRUE,0,15000)
-scontour(xs,"Alt_gp","dZ/dt")
+scontour(xs,"Alt_gp","Vz")
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

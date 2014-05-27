@@ -52,7 +52,7 @@ readQCFile <- function(file)
         Vwind="V",
         Wspd="Wspd",
         Dir="Wdir",
-        dZ="dZ/dt",
+        dZ="Vz",
         GeoPoAlt="Alt_gp",
         Lon="lon",
         Lat="lat",
