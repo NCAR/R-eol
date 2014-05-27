@@ -38,16 +38,30 @@ interpSoundings <- function(sdngs, xname, ynames, xlim=NULL, nstep=100)
         xin <- clip(sdng[,xname])
         xtunits <- eolts::units(xin)
         xok <- !is.na(xin@data[,1]) & !is.infinite(xin@data[,1])
-        if (sum(xok) < 10) next
+        if (sum(xok) < 2) next
         xin <- xin@data[xok,]   # no longer a time series
 
         xmin <- min(xmin,xin)
         xmax <- max(xmax,xin)
 
-        nm <- length(xin) / 10
-        if (nm < 2) nm <- length(xin) / 2
-        m1 <- mean(xin[1:nm],trim=0.2)
-        m2 <- mean(tail(xin,nm),trim=0.2)
+        # compute mean of 1st and last 10% of X
+        lx <- length(xin)
+        nm <- lx / 10
+        if (nm < 2) nm <- lx / 2
+        m1 <- m2 <- NA_real_
+        while  (nm <= lx / 2) {
+            m1 <- mean(xin[1:nm],trim=0.2)
+            m2 <- mean(tail(xin,nm),trim=0.2)
+            if  (!is.na(m1) && !is.na(m2)) break
+            inc <- as.integer(lx / 10)
+            if (inc < 1) inc <- 1
+            nm <- nm + inc
+        }
+        if  (is.na(m1) || is.na(m2)) {
+            warning(paste("cannot determine trend of",xname,"in",sname))
+            next
+        }
+
         xtreversed <- m1 > m2
 
         if (abs(m1-m2) > 1.e-4) {
@@ -133,9 +147,11 @@ interpSoundings <- function(sdngs, xname, ynames, xlim=NULL, nstep=100)
 
             # first interpolate yin to same times as xin
             yin <- clip(sdng[,yname])
+
+            # "align" will complain if yin or tin are not ordered in time
             yin <- align(yin,tin,how="interp",matchtol=dt*10)
 
-            if (sum(!is.na(yin)) > 2)
+            if (sum(!is.na(yin@data)) > 2)
                 tryCatch(
                     rmat[,yname] <- approx(xin@data[,1],yin@data[,1],xiout)$y,
                     error=function(e)
@@ -145,7 +161,8 @@ interpSoundings <- function(sdngs, xname, ynames, xlim=NULL, nstep=100)
                         # "need at least two non-NA values to interpolate"
                         # User has been warned above in check of means
                         if (all(!grepl("need at least two",format(e),fixed=TRUE)))
-                            warning(paste(format(e),collapse=": "),": ",sname,", ",xname,call.=FALSE)
+                            warning(paste(format(e),collapse=": "),
+                                ": ",sname,", ",xname,call.=FALSE)
                         NA_real_
                     }
                 )
