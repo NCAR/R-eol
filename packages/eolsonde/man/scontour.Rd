@@ -5,7 +5,7 @@
  Plot profile contours of a variable from a list of soundings, where the X axis is the sounding index, and Y is pressure or altitude.
 }
 \usage{
-scontour(sdngs, yname, zname, contour = TRUE, ylim=NULL, ynstep=100, title="")
+scontour(sdngs, yname, zname, contour = TRUE, ylim=NULL, ynstep=100, title)
 }
 \arguments{
   \item{sdngs}{
@@ -15,19 +15,19 @@ scontour(sdngs, yname, zname, contour = TRUE, ylim=NULL, ynstep=100, title="")
       Name of variable to use for the Y axis, typically "P", "Alt_gps", or "Alt_gp".
   }
   \item{zname}{
-      Name of variable to be contoured.
+      Name of variable to be contoured. Values of this variable will be clipped before being interpolated onto the X-Y grid, where X is the sounding index.
   }
   \item{contour}{
         When TRUE, a contour plot is generated. Otherwise, a level plot (color filling) will be drawn.
   }
   \item{ylim}{
-      Limits on yaxis.
+      Limits on yaxis. If not specified, the limits will be determined from the data, after clipping.
   }
   \item{ynstep}{
       Number of steps in Y to interpolate the Z variable.
   }
   \item{title}{
-      Title for the plot
+      Title for the plot. If missing, the name of the Y variable plus the number of sounding will be used for the title.
   }
 }
 \details{
