@@ -7,18 +7,44 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-scontour <- function(sdngs, yname, zname, contour=FALSE, ylim=NULL, ynstep=100,
-    title="")
+scontour <- function(sdngs, yname, zname,
+    contour=FALSE, ylim=NULL, ynstep=100,
+    title)
 {
 
+    # proc.times:
+    #   First 20 MPEX soundings, each 3694 to 4069 rows, 17 columns
+    # > scontour(xs[1:20],"Alt_gp","RH")
+    # interp times=
+    #    user  system elapsed 
+    #   4.687   0.100   4.857 
+    # accum zdata times
+    #    user  system elapsed 
+    #   0.649   0.000   0.657 
+    # ylim= -261.4,13970 
+    # plot times=
+    #    user  system elapsed 
+    #   0.624   0.023   0.683 
+    # This was a version of interpSoundings with no apply(),
+    # just for loops.
+
+    # 
     # parameters to control plot:
     #   ylim, ystep  (is ystep necessary?)
     #   zlim (perhaps only clip z?) Is zstep necessary?
     #       Perhaps only to reduce colors
-    sdngs <- interpSoundings(sdngs, yname, zname, ylim, ynstep)
+
+    profile <- FALSE
+    if (profile) {
+        p1 <- proc.time()
+        sdngs <- interpSoundings(sdngs, yname, zname, ylim, ynstep)
+        p2 <- proc.time()
+        cat("interp times=",as.character(p2-p1),"\n")
+        p1 <- p2
+    }
 
     zmat <- NULL
-    ydata <- NULL
+    yData <- NULL
     is <- 0
 
     reverse <- FALSE
@@ -38,7 +64,8 @@ scontour <- function(sdngs, yname, zname, contour=FALSE, ylim=NULL, ynstep=100,
         zunits <- eolts::units(sdng[,zname])
         yunits <- eolts::units(sdng[,yname])
 
-        if (is.null(ydata)) {
+        # make sure thay Y values aren't changing
+        if (is.null(yData)) {
             ydata <- sdng@data[,yname]
             # before calling filled.contour, ydata must be in increasing order
             # There should be no NAs in ydata, which is the result of
@@ -56,8 +83,8 @@ scontour <- function(sdngs, yname, zname, contour=FALSE, ylim=NULL, ynstep=100,
 
         zdata <- clip(sdng[,zname])@data[,1]
 
-        ymin <- min(ymin,ydata[!is.na(zdata)],na.rm=TRUE)
-        ymax <- max(ymax,ydata[!is.na(zdata)],na.rm=TRUE)
+        ymin <- min(ymin,sdng@data[!is.na(zdata),yname],na.rm=TRUE)
+        ymax <- max(ymax,sdng@data[!is.na(zdata),yname],na.rm=TRUE)
 
         # row: one for each sounding
         # column: one for each interpolated observation
@@ -80,6 +107,12 @@ scontour <- function(sdngs, yname, zname, contour=FALSE, ylim=NULL, ynstep=100,
         slabels  <- append(slabels,slabel)
     }
 
+    if (profile) {
+        p2 <- proc.time()
+        cat("accum zdata times=",as.character(p2-p1),"\n")
+        p1 <- p2
+    }
+
     flipYaxis <- (yunits == "mb") # flip the Y axis
 
     xdata <- 1:nrow(zmat)
@@ -98,6 +131,9 @@ scontour <- function(sdngs, yname, zname, contour=FALSE, ylim=NULL, ynstep=100,
     slabx <- seq(from=1,to=nl,by=nskip)
     slabels <- slabels[slabx]
     ncl <- max(sapply(slabels,nchar)) / 2
+
+    if (missing(title))
+        title <- paste0(zname," (",length(sdngs)," soundings)")
 
     if (contour) {
         #browser()
@@ -134,7 +170,8 @@ scontour <- function(sdngs, yname, zname, contour=FALSE, ylim=NULL, ynstep=100,
                 axis(1,at=slabx,labels=slabels,cex.axis=0.7,hadj=1,padj=0.5,las=3)
                 axis(2,las=0)
             },
-            key.title=mtext(paste0(zname,"(",zunits,")"),cex=1.1,side=1)
+            key.title=mtext(paste0(zname,"(",zunits,")"),cex=1.1,side=1,
+                las=2)
             )
         logo_stamp()
     }
@@ -183,14 +220,13 @@ scontour <- function(sdngs, yname, zname, contour=FALSE, ylim=NULL, ynstep=100,
             cuts=nlevels,
             col.regions=colorfunc(nlevels+1),
             scales=list(x=list(at=slabx,labels=slabels,cex=xlab.cex,rot=90,axs="r")),
-            # auto.key=list(title=paste0(zname,"(",zunits,")"),cex=1.1,side=1),
             main=title,
             panel=function(...) {
                 panel.levelplot(...)
                 panel.grid(h=-1,v=-1,lty=2,col="lightgray")
-                grid::grid.text(paste0(zname,"(",zunits,")"),
-                    x = xlim[2]+diff(xlim)*0.1, y = ylim[1]-diff(ylim)*0.05,
-                    hjust=0.5)
+                # grid::grid.text(paste0(zname,"(",zunits,")"),
+                #     x = xlim[2]+diff(xlim)*0.1, y = ylim[1]-diff(ylim)*0.05,
+                #     hjust=0.5)
             },
             page = function(page) {
                 # cat("layout.heights=",str(trellis.par.get("layout.heights")),"\n")
@@ -207,6 +243,11 @@ scontour <- function(sdngs, yname, zname, contour=FALSE, ylim=NULL, ynstep=100,
         #                                     default.units = "npc", 
          #                                                        just = c("left", "bottom"))))
         # mtext(paste0(zname,"(",zunits,")"),1,outer=TRUE,adj=1,line=0)
+    }
+    if (profile) {
+        p2 <- proc.time()
+        cat("plot times=",as.character(p2-p1),"\n")
+        p1 <- p2
     }
     invisible(NULL)
 }
