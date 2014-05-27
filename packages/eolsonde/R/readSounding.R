@@ -86,5 +86,6 @@ readSoundings <- function(
             }
         }
     }
+    if (length(res) == 0) warning("No sounding files found")
     res
 }
