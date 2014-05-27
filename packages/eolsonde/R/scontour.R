@@ -40,6 +40,12 @@ scontour <- function(sdngs, yname, zname,
 
     sdngs <- interpSoundings(sdngs, yname, zname, ylim, ynstep)
 
+    if (length(sdngs) == 0) {
+        warning(paste("No plot from scontour, since interpSoundings of ",
+                zname,"over",yname,"returned nothing"))
+        return(invisible(NULL))
+    }
+
     if (profile) {
         p2 <- proc.time()
         cat("interp times=",as.character(p2-p1),"\n")
@@ -85,9 +91,11 @@ scontour <- function(sdngs, yname, zname,
         }
 
         zdata <- clip(sdng[,zname])@data[,1]
+        zok <- !is.na(zdata)
+        if (!any(zok)) next
 
-        ymin <- min(ymin,sdng@data[!is.na(zdata),yname],na.rm=TRUE)
-        ymax <- max(ymax,sdng@data[!is.na(zdata),yname],na.rm=TRUE)
+        ymin <- min(ymin,sdng@data[zok,yname],na.rm=TRUE)
+        ymax <- max(ymax,sdng@data[zok,yname],na.rm=TRUE)
 
         # row: one for each sounding
         # column: one for each interpolated observation
@@ -108,6 +116,12 @@ scontour <- function(sdngs, yname, zname,
             slabel <- substr(slabel,1,nchar(slabel)-2)
 
         slabels  <- append(slabels,slabel)
+    }
+
+    if (is.null(zmat)) {
+        warning(paste("No plot from scontour, since interpSoundings of ",
+                zname,"over",yname,"returned nothing"))
+        return(invisible(NULL))
     }
 
     if (profile) {
