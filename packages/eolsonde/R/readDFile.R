@@ -49,8 +49,8 @@ readDFile <- function (file,sta_clean=TRUE)
     # mapping of header strings to returned variable names
     hnames <- list(
         "Sonde"="SID",
-        "UTCDate"="utc.date",
-        "UTCTime"="utc.time",
+        "UTCDate"="UTCDate",
+        "UTCTime"="UTCTime",
         "AirPress"="P",
         "AirTemp"="T",
         "RelHumid"="RH",
@@ -71,7 +71,7 @@ readDFile <- function (file,sta_clean=TRUE)
     # sta:  Spw:  p=0 good PTU checksum, p=1 bad PTU checksum
     # sta:  Spw:  w=0 good wind checksum, w=1 bad wind checksum
     strnames <- c("ava","sta")
-    utcnames <- c("utc.date","utc.time")
+    utcnames <- c("UTCDate","UTCTime")
 
     # names of the data columns in the D file, in order
     dnames <- hnames[varnames]
@@ -98,13 +98,18 @@ readDFile <- function (file,sta_clean=TRUE)
     # extract data rows
     d <- d[drows,]
 
+    # discard times of all zeroes
+    badtime <- d[,"UTCDate"] == "000000"
+    if (any(badtime))
+        d <- d[!badtime,]
+
     # convert utc columns to utime
-    utc <- utime(paste(d[,"utc.date"],d[,"utc.time"]),
+    utc <- utime(paste(d[,"UTCDate"],d[,"UTCTime"]),
         in.format="%y%m%d%H%M%OS",time.zone="UTC")
 
     # missing values for numeric columns
-    na_vals <- c(SID=0, P=9999, T=99, RH=999, Wdir=999, Wspd=999,
-        "dZ/dt"=99, lon=999, lat=99, Alt_gp=99999,
+    na_vals <- list(SID=0, P=9999, T=99, RH=999, Wdir=999, Wspd=999,
+        "dZ/dt"=99, lon=999, lat=99, Alt_gp=c(99999,9999),
         wsat=999, RH1=999, RH2=999, ssat=999, Werr=99, Alt_gps=99999)
 
     # numeric variables are those not in strnames or utcnames
@@ -113,11 +118,11 @@ readDFile <- function (file,sta_clean=TRUE)
     # convert data columns to numeric
     d2 <- lapply(numnames,function(n,x,na_vals)
         {
-            # browser()
-            x <- type.convert(x[,n])
-            naval <- na_vals[n]
-            if (!is.null(naval)) x[!is.na(x) & x==naval] <- NA
-            x
+            # if (n == "Alt_gp") browser()
+            xx <- type.convert(x[,n],as.is=TRUE)
+            nas <- na_vals[[n]]
+            if (!is.null(nas)) xx[xx %in% nas] <- NA_real_
+            xx
         },
         x=d,na_vals=na_vals)
 
@@ -161,4 +166,3 @@ readDFile <- function (file,sta_clean=TRUE)
     d <- d[,is.na(match(colnames(d),"SID"))]
     d
 }
-
