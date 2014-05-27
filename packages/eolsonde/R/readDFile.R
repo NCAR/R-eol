@@ -164,5 +164,11 @@ readDFile <- function (file,sta_clean=TRUE)
         warning(paste0("Multiple sonde ids (",paste(sids,collapse=","),
             ") found in ",file))
     d <- d[,is.na(match(colnames(d),"SID"))]
+
+    # put in time order
+    di <- order(positions(d))
+    if (any(diff(di) < 0))
+        d <- d[di,]
+
     d
 }

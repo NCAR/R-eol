@@ -31,14 +31,19 @@ test_dfile <- function()
 
     nr <- nrow(sdng)
 
+    # readDFile sorts the time series
+
     cat("t1=",format(positions(sdng)[1],format="%Y %m %d %H:%M:%OS"),"\n")
-    checkEquals(positions(sdng)[1],utime("2008 08 15 17:20:11.36"))
+    checkEquals(positions(sdng)[1],utime("2008 08 15 17:20:01.82"),tolerance=0)
 
     cat("t2=",format(positions(sdng)[nr],format="%Y %m %d %H:%M:%OS"),"\n")
-    checkEquals(positions(sdng)[nr],utime("2008 08 15 17:29:45.82"))
+    checkEquals(positions(sdng)[nr],utime("2008 08 15 17:29:45.82"),tolerance=0)
 
-    checkEquals(as.numeric(sdng[1,"P"]),391.4)
-    checkEquals(as.numeric(sdng[1,"Alt_gps"]),7752.0)
+    checkTrue(is.na(as.numeric(sdng[1,"P"])))
+    checkEquals(as.numeric(sdng[20,"P"]),391.4)
+
+    checkTrue(is.na(as.numeric(sdng[1,"Alt_gps"])))
+    checkEquals(as.numeric(sdng[20,"Alt_gps"]),7752.0)
 
     checkTrue(is.na(as.numeric(sdng[nr,"P"])))
     checkEquals(as.numeric(sdng[nr,"Alt_gps"]),67.01)
@@ -55,10 +60,10 @@ test_dfile <- function()
     nr <- nrow(sdng)
 
     cat("t1=",format(positions(sdng)[1],format="%Y %m %d %H:%M:%OS"),"\n")
-    checkEquals(positions(sdng)[1],utime("2008 08 15 17:20:11.82"))
+    checkEquals(positions(sdng)[1],utime("2008 08 15 17:20:11.82"),tolerance=0)
 
     cat("t2=",format(positions(sdng)[nr],format="%Y %m %d %H:%M:%OS"),"\n")
-    checkEquals(positions(sdng)[nr],utime("2008 08 15 17:29:45.82"))
+    checkEquals(positions(sdng)[nr],utime("2008 08 15 17:29:45.82"),tolerance=0)
 
     checkTrue(is.na(as.numeric(sdng[1,"P"])))
     checkTrue(is.na(as.numeric(sdng[1,"Alt_gps"])))

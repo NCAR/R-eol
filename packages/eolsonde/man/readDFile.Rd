@@ -14,13 +14,40 @@ readDFile(file, sta_clean = TRUE)
 Full path name of D file to be read.
 }
   \item{sta_clean}{
-Logical value, specifying whether the "sta" sounding field in the D file is used to screen the PTU and wind/GPS data. If sta_clean is \code{TRUE}, then only records with an "sta" record starting with "S" will be kept, values for "P", "T" and "RH" will be set to \code{NA_real_} if the first digit in the corresponding sta value is 1: \code{S10 or S11} and values for wind and gps variables will be set to \code{NA_real_} if the second digit in the corresponding sta value is 1:\code{S01 or S11}
+Logical value, specifying whether the "STA" sounding field in the D file is used to screen the PTU and wind/GPS data. If sta_clean is \code{TRUE}, then only records with an "STA" record starting with "S" will be kept, values for "P", "T" and "RH" will be set to \code{NA_real_} if the first digit in the corresponding STA value is 1: \code{S10 or S11} and values for wind and gps variables will be set to \code{NA_real_} if the second digit in the corresponding STA value is 1:\code{S01 or S11}
 }
 }
 \details{
+\code{readDFile} reads the "AVAPS-" and "STA" columns in the D file, and makes no assumptions about the number of lines in the header. The names of the variables are extracted from the first two AVAPS-T, COM lines in the file, and the units from the third AVAPS-T, COM line.
+
+From the variable names in the Dfile header, the following translation from "Header Name" to "Column Name" is applied to generate column names in the sounding. Also shown are the missing data value for each column, and the good STA value, which is used if sta_clean is TRUE:
+\tabular{llrl}{
+    Header Name \tab Column Name \tab Missing Data \tab Good STA\cr
+    AirPress \tab P \tab  9999 \tab S00 or S10\cr
+    AirTemp \tab T \tab 99 \tab S00 or S10\cr
+    RelHumid \tab RH \tab 999 \tab S00 or S10\cr
+    WindDir \tab Wdir \tab 999 \tab S00 or S10\cr
+    WindSpd \tab Wspd \tab 999 \tab S00 or S10\cr
+    VertVeloc \tab dZ/dt \tab 99 \tab S00 or S10\cr
+    GPSLongitude \tab lon \tab 999 \tab S00 or S10\cr
+    GPSLatitude \tab lat \tab 99 \tab S00 or S10\cr
+    GeopotenAltitude \tab Alt_gp \tab 99999, 9999 \tab S00 or S10\cr
+    GPSWnd \tab wsat \tab 999 \tab S00 or S10\cr
+    SondeRH1 \tab rh1 \tab 999 \tab S00 or S10\cr
+    SondeRH2 \tab rh2 \tab 999 \tab S00 or S10\cr
+    GPSSnd \tab ssat \tab 999 \tab S00 or S10\cr
+    WindError \tab Werr \tab 99 \tab S00 or S10\cr
+    GPSAltitude \tab Alt_gps \tab 99999 \tab S00 or S10\cr
+}
+
+The data values are extracted from the AVAPS-D rows in the file. Values matching the missing data value are set to NA_real_.
+
+The times are extracted from the UTCDate and UTCTime columns of the data lines in the Dfile. The resultant time series is sorted in time.
+
+Then if sta_clean is TRUE, the values are overwritten with NA_real_ if the STA value does not match the above values for each column.
 }
 \value{
-A time series containing all variables read from the D file.
+A sorted time series containing all variables read from the D file.
 }
 \references{
 }
