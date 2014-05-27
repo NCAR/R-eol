@@ -1720,7 +1720,20 @@ setMethod("align",signature="nts",
         if (length(tol) == 0) tol <- deltat(pos)["trimmed.mean"] * .1
 
         if (inherits(pos,"nts")) pos <- positions(pos)
-        else if (inherits(pos,"utime")) pos <- as(pos,"timeDate")
+        # else if (inherits(pos,"utime")) pos <- as(pos,"timeDate")
+
+        # put in time order
+        xi <- order(positions(x))
+        if (any(diff(xi) < 0)) {
+            warning("Correcting for un-ordered time series")
+            x <- x[xi,]
+        }
+
+        xi <- order(pos)
+        if (any(diff(xi) < 0)) {
+            warning("Correcting for un-ordered pos")
+            pos <- pos[xi]
+        }
 
         class.x <- class(x)
         stations.x <- stations(x)
