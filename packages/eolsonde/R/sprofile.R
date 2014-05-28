@@ -319,16 +319,18 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
     }       # xname in xnames
 
     slabel <- title
-    # remove trailing portions in name
-    for (char in c(".","_","-")) {
-        ic <- rev(unlist(gregexpr(char,slabel,fixed=TRUE)))
-        for (i in ic) {
-            if (i > 14) slabel <- substr(slabel,1,i-1)
+    if (!is.null(slabel)) {
+        # remove trailing portions in name
+        for (char in c(".","_","-")) {
+            ic <- rev(unlist(gregexpr(char,slabel,fixed=TRUE)))
+            for (i in ic) {
+                if (i > 14) slabel <- substr(slabel,1,i-1)
+            }
         }
+        # if it looks like sounding name ends in HHMMSS, remove the seconds to save space
+        if (grepl("[0-9]{8}[_-][0-9]{6}$",slabel) || grepl("[0-9]{14}$",slabel))
+            slabel <- substr(slabel,1,nchar(slabel)-2)
     }
-    # if it looks like sounding name ends in HHMMSS, remove the seconds to save space
-    if (grepl("[0-9]{8}[_-][0-9]{6}$",slabel) || grepl("[0-9]{14}$",slabel))
-        slabel <- substr(slabel,1,nchar(slabel)-2)
 
     legend("topright", legtxt, col=col[legcol], bty="n",lty=rep(1,ntrace), lwd=tlwd,
         cex=1.0,title=slabel)
