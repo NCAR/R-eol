@@ -60,6 +60,7 @@ scontour <- function(sdngs, yname, zname,
     ymin <- Inf
     ymax <- -Inf
     slabels <- NULL
+    zunits <- "unknown"
 
     for (sname in names(sdngs)) {
 
@@ -150,7 +151,7 @@ scontour <- function(sdngs, yname, zname,
     ncl <- max(sapply(slabels,nchar)) / 2
 
     if (missing(title))
-        title <- paste0(zname," (",length(sdngs)," soundings)")
+        title <- paste0(zname,"(",zunits,"), ",length(sdngs)," soundings")
 
     if (contour) {
         #browser()
