@@ -305,6 +305,20 @@ setMethod("dimnames", signature(x="nts"),
     }
     )
 
+setMethod("colnames", signature(x="nts"),
+    function(x)
+    {
+        colnames(x@data)
+    }
+    )
+
+setMethod("rownames", signature(x="nts"),
+    function(x)
+    {
+        rownames(x@data)
+    }
+    )
+
 setReplaceMethod("dim", signature(x="nts",value="numeric"),
     function(x,value)
     {
@@ -317,10 +331,35 @@ setReplaceMethod("dim", signature(x="nts",value="numeric"),
 setReplaceMethod("dimnames", signature(x="nts",value="list"),
     function(x,value)
     {
-        dimnames(x@data) <- value
+        # Workaround for strange situation in R:
+        # if x@data is a data.frame,
+        # dimnames(x@data) <- list(NULL,c("a","b")) will
+        # coerce both list elements to character before the
+        # assignment.  as.character(NULL) is character(0) which is
+        # an invalid dimname.
+        # So do the rownames and colnames separately
+        rownames(x@data) <- value[[1]]
+        colnames(x@data) <- value[[2]]
         x
     }
     )
+
+setReplaceMethod("colnames", signature(x="nts",value="character"),
+    function(x,value)
+    {
+        colnames(x@data) <- value
+        x
+    }
+    )
+
+setReplaceMethod("rownames", signature(x="nts",value="character"),
+    function(x,value)
+    {
+        rownames(x@data) <- value
+        x
+    }
+    )
+
 
 setGeneric("stations",function(x) standardGeneric("stations"))
 

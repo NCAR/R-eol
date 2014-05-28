@@ -237,9 +237,10 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
         xlim.scaled <- (xrange-x0)/scalef
     }
 
-    if (all.is.na) plot.nas(type=type,axes=plotaxes,xlim=xlim.scaled,xlab="",
-          ylim=ylim,ylab=ylab,xaxs=xaxs,xaxt="n",yaxt=yaxt,tck=tck,
-          col=col[1],pch=pch[1],lty=lty[1],...)
+    if (all.is.na)
+        plot.nas(type=type,axes=plotaxes,xlim=xlim.scaled,xlab="",
+            ylim=ylim,ylab=ylab,xaxs=xaxs,xaxt="n",yaxt=yaxt,tck=tck,
+            col=col[1],pch=pch[1],lty=lty[1],...)
     else
         plot((tx-x0)/scalef,x@data[,1],type=type,axes=plotaxes,
             xlim=xlim.scaled,xlab="",ylim=ylim,ylab=ylab,xaxs=xaxs,
