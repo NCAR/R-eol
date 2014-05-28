@@ -42,7 +42,8 @@ test.netcdf <- function()
     checkTrue(max(abs(x-xx),na.rm=TRUE) < 1.e-10)
     checkTrue(all.equal(x@data,xx@data))
 
-    checkTrue(all.equal(as.numeric(positions(x)),as.numeric(positions(xx))))
+    # checkTrue(all.equal(as.numeric(positions(x)),as.numeric(positions(xx))))
+    checkEquals(as.numeric(positions(x)),as.numeric(positions(xx)),tolerance=0)
 
     # these fail, not sure why
     # checkTrue(identical(positions(x),positions(xx)))

@@ -27,7 +27,7 @@ test.nts <- function()
     checkEquals(as.numeric(x[3,1]),3)
     checkEquals(as.vector(x[2:3,2]),c(nr+2,nr+3))
     checkEquals(as.numeric(x[2:3,2]),c(nr+2,nr+3))
-    checkEquals(positions(x[3,]),t1+20)
+    checkEquals(as.numeric(positions(x[3,])),as.numeric(t1+20),tolerance=0)
     checkEquals(dim(x[1:3,2]),c(3,1))
 
     # check of deltat
@@ -47,7 +47,7 @@ test.nts <- function()
     checkEquals(dimnames(xx)[[2]],dns[1])
     checkEquals(units(xx),xunits[1])
     checkEquals(as.numeric(xx[3,1]),3 + 3 + nr)
-    checkEquals(positions(xx[3,]),t1+20)
+    checkEquals(as.numeric(positions(xx[3,])),as.numeric(t1+20),tolerance=0)
 
     xx <- x[x < 5]
     # xx is not an nts
