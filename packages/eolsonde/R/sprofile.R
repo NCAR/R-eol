@@ -11,7 +11,8 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
     xlim=NULL,xlab,xaxt=par("xaxt"),xaxs=par("xaxs"),
     ylim=NULL,ylab,yaxt=par("yaxt"),yaxs=par("yaxs"),
     col=c("black","red","green","blue","purple","cyan",
-        "orange","yellow","gray","pink"),tlwd=par("lwd"),...)
+        "orange","yellow","gray","pink"),tlwd=par("lwd"),
+    pcex=0.25,...)
 {
     # Plot profiles of one or more variables vs pressure or altitude,
     # one sounding per plot
@@ -138,8 +139,13 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
     }
 
     mfg <- par("mfg")
-    if (identical(mfg[1:2],mfg[3:4])) 
+    # cat("par(mfg)=",paste(par("mfg"),collapse=","),"\n")
+
+    # If first plot on page, call adjPar
+    if (identical(mfg[1:2],mfg[3:4])) {
+        # cat("calling adjPar\n")
         adjPar(nxscales=nscales)
+    }
 
     args <- list(...)
 
@@ -150,7 +156,7 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
     if (is.null(args$cex)) cex <- par("cex")
     else cex <- args$cex
 
-    old.par <- par(c("mgp","mgp"))
+    old.par <- par(c("mgp"))
     on.exit(par(old.par),add=T)
 
     tckadj <- par("tck")
@@ -182,11 +188,14 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
         dupunits <- xinfo$dupunits[xnameunits]
         xaxis_num <- xscales[xnameunits] # 1:bottom, 2:top, 3:2nd scale on bottom, etc
 
+        # cat("xnameunits=",xnameunits,"dupunits=",dupunits,"\n")
+
         xlim1 <- xlim
         if (is.list(xlim1)) {
             xlim1 <- xlim[[xname]]
             if (is.null(xlim1)) xlim1 <- xlim[[xnameunits]]
         }
+        # cat("xname=",xname,"xlim1=",paste(xlim1,collapse=","),"xaxs=",xaxs,"\n")
 
         # All data is NAs
         if (any(is.na(xlim1)) || any(is.infinite(xlim1))) xlim1 <- c(-1,1)
@@ -204,6 +213,8 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
             xdata[clip.max] <- NA_real_
             clipped <- T
         }
+
+        # par(new=TRUE)
 
         side <- line <- xlab.txt <- NULL
         if (!missing(xlab)) xlab.txt <- xlab
@@ -223,13 +234,16 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
                 }
             }
         }
-        cat("plot, xname=",xname," xlim1=",signif(xlim1,4),"\n")
+        # cat("plot, xname=",xname," xlim1=",signif(xlim1,4),"\n")
 
         # browser()
         # First trace, create scale, box and yaxes labels
         if (!yaxis_done) {
             if (is.null(ylim)) ylim <- range(ydata,na.rm=T)
             if (reverse_yaxis) ylim <- rev(ylim)
+            # xaxs="r" (extend by 4%) or xaxs="i" was passed
+            # to plotLimits when determining xlim1.
+            # So the axes are not extended again by 4% set xaxs="i" here.
             plot(xdata,ydata,type="n",col=1,axes=TRUE,
                 xlim=xlim1,xlab="",xaxs="i",xaxt="n",
                 ylim=ylim,ylab=ylab,yaxs=yaxs,yaxt=yaxt,
@@ -243,11 +257,13 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
             # rescale for changing x axis
             if (FALSE) {
                 plot(xdata,ydata, type="n",axes=FALSE,
-                    xaxt="n",xaxs="d", xlab="", xlim=xlim1,
-                    yaxt="n",yaxs=yaxs, ylab="", ylim=ylim,
+                    xaxt="n",xaxs="i", xlab="", xlim=xlim1,
+                    yaxt="n",yaxs="i", ylab="", ylim=ylim,
                     ...)
             }
-            par(usr=c(xlim1,ylim))
+            else {
+                par(usr=c(xlim1,ylim))
+            }
         }
 
         nas <- is.na(xdata)
@@ -256,23 +272,27 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
                 col=col[legcol[itrace]],lty=1,lwd=tlwd,err=-1,...)
         if (type =="b" || type == "p" || type == "o")
             points(xdata[!nas],ydata[!nas],
-                col=col[legcol[itrace]],pch=legpch[itrace],err=-1,...)
+                col=col[legcol[itrace]],pch=legpch[itrace],cex=pcex,err=-1,...)
 
         if (clipped) {
+            # cat("clipped=TRUE\n")
+            # usr <- par("usr")
             # clip.min and clip.max are logical vectors
             # TRUE where the data exceeds the min or max
             # plot those points at the corresponding axis
             if (any(as.vector(clp <- clip.min))) {
+                # cat(paste(xname,"#clipped min=",sum(clp),",xlim1[1]=",xlim1[1]),"\n")
                 xtmp <- xdata[clp]
                 ytmp <- ydata[clp]
                 xtmp[] <- xlim1[1]
-                points(xtmp,ytmp,pch=4,col=col[legcol[itrace]],cex=cex)
+                points(xtmp,ytmp,pch="*",col=col[legcol[itrace]],cex=1.0)
             }
             if (any(as.vector(clp <- clip.max))) {
+                # cat(paste(xname,"#clipped max=",sum(clp),",xlim1[2]=",xlim1[2]),"\n")
                 xtmp <- xdata[clp]
                 ytmp <- ydata[clp]
                 xtmp[] <- xlim1[2]
-                points(xtmp,ytmp,pch=4,col=col[legcol[itrace]],cex=cex)
+                points(xtmp,ytmp,pch="*",col=col[legcol[itrace]],cex=1.0)
             }
         }
 
@@ -283,8 +303,7 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
             at <- pretty(xlim1)
             if (side == 3) {        # top
                 axis(side=side,at=at,line=line,col=1,cex=cex*.8,labels=TRUE)
-                mtext(side=side,line=line+mgp[1]*.8,xlab.txt,col=1,
-                      at=mean(xlim1[1:2]),cex=cex)
+                mtext(side=side,line=line+mgp[1]*.8,xlab.txt,col=1,cex=cex)
             }
             else if (nscales > 1 || length(xaxis_done) == 0) {
                 axis(side=side,at=at,line=line,col=1,cex=cex*.8,labels=TRUE)
@@ -293,10 +312,31 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
             if (nscales == 1 || length(xnames) == 1) axis(4,labels=F,at=at)
         }
         xaxis_done <- c(xaxis_done,xaxis_num)
+
+        # cat("par(page)=",par("page"),"\n")
+        # cat("par(mfg)=",paste(par("mfg"),collapse=","),"\n")
         NULL
     }       # xname in xnames
+
+    slabel <- title
+    # remove trailing portions in name
+    for (char in c(".","_","-")) {
+        ic <- rev(unlist(gregexpr(char,slabel,fixed=TRUE)))
+        for (i in ic) {
+            if (i > 14) slabel <- substr(slabel,1,i-1)
+        }
+    }
+    # if it looks like sounding name ends in HHMMSS, remove the seconds to save space
+    if (grepl("[0-9]{8}[_-][0-9]{6}$",slabel) || grepl("[0-9]{14}$",slabel))
+        slabel <- substr(slabel,1,nchar(slabel)-2)
+
     legend("topright", legtxt, col=col[legcol], bty="n",lty=rep(1,ntrace), lwd=tlwd,
-        cex=1.1,title=title)
-    logo_stamp()
+        cex=1.0,title=slabel)
+
+    # cat("before logo_stamp par(mfg)=",paste(par("mfg"),collapse=","),"\n")
+
+    # first plot
+    if (identical(par("mfg")[1:2],c(1L,1L))) logo_stamp()
+
     invisible(NULL) 
 }
