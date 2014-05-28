@@ -7,9 +7,10 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
-    xlim=NULL,xlab,xaxt=par("xaxt"),xaxs=par("xaxs"),
-    ylim=NULL,ylab,yaxt=par("yaxt"),yaxs=par("yaxs"),
+sprofile <- function(sdng,xnames=NULL,yname=NULL,title=names(sdng)[1],
+    type="b",
+    xlim=NULL,xlab=NULL,xaxt=par("xaxt"),xaxs=par("xaxs"),
+    ylim=NULL,ylab=NULL,yaxt=par("yaxt"),yaxs=par("yaxs"),
     col=c("black","red","green","blue","purple","cyan",
         "orange","yellow","gray","pink"),tlwd=par("lwd"),
     pcex=0.25,...)
@@ -21,112 +22,91 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
     #   change the trace line width without changing the line width
     #   of the axes.
 
-    legtxt <- NULL
-    legcol <- NULL
-    lautime <- NULL
-    yname <- NULL
-    yunits <- NULL
-    xrnames <- NULL
-    xqnames <- NULL
-    reverse_yaxis <- FALSE
-    if (!is.null(raw)) {
-        lautime <- positions(raw)[1]    # launch time
-
-        xrnames <- colnames(raw)
-
-        # discard non-numeric columns
-        nm <- sapply(raw@data[1,],function(x){ mode(x)=="numeric"})
-        xrnames <- xrnames[nm]
-        xunits <- eolts::units(raw)[nm]
-
-        # find y axis data: p, pressure, gp.alt or gps.alt
-        ym <- match(xrnames,c("P","Alt_gp","Alt_gps"))
-        # use first one
-        yname <- tail(xrnames[!is.na(ym)],1)
-        yunits <- tail(eolts::units(raw)[!is.na(ym)],1)
-
-        ym <- match(xrnames,c(yname,"sta"))
-        xrnames <- xrnames[is.na(ym)]
-        xunits <- xunits[is.na(ym)]
-
-        if (!is.null(qc))
-            legtxt <- paste0(xrnames,"_raw(",xunits,")")
-        else
-            legtxt <- paste0(xrnames,"(",xunits,")")
+    if (is.list(sdng)) {
+        if (length(sdng) == 0) stop("sdng is empty")
+        if (length(sdng) > 1) {
+            sapply(1:length(sdng),function(i,sdngs,...)
+                {
+                    sprofile(sdngs[i],xnames=xnames,yname=yname,
+                        title=names(sdngs)[i], type=type,
+                        xlim=xlim,xlab=xlab,xaxt=xaxt,xaxs=xaxs,
+                        ylim=ylim,ylab=ylab,yaxt=yaxt,yaxs=yaxs,
+                        col=col,tlwd=tlwd, pcex=pcex,...)
+                }, sdng,...)
+            return(invisible(NULL))
+        }
+        force(title)
+        sdng <- sdng[[1]]
     }
 
-    if (!is.null(qc)) {
-        if (is.null(lautime)) lautime <- positions(qc)[1]
+    if (is.null(xnames)) {
+        xnames <- colnames(sdng)
 
-        xqnames <- colnames(qc)
-        nm <- sapply(raw@data[1,],function(x){ mode(x)=="numeric"})
-        xqnames <- xqnames[nm]
-        xunits <- eolts::units(qc)[nm]
+        # discard non-numeric columns
+        nm <- sapply(sdng@data[1,],function(x){ mode(x)=="numeric"})
+        xnames <- xnames[nm]
+        xunits <- eolts::units(sdng)[nm]
+    }
+    else {
+        bad <- is.na(match(xnames,colnames(sdng)))
+        if (any(bad)) {
+            msg <- paste(paste(xnames[bad],collapse=","),"not found in sounding")
+            if (all(bad)) stop(msg)
+            else warning(msg)
+        }
+        xnames <- xnames[!bad]
+        xunits <- eolts::units(sdng)[match(xnames,colnames(sdng))]
+    }
 
+    if (is.null(yname)) {
         # find y axis data: p, pressure, gp.alt or gps.alt
-        ym <- match(xqnames,c("P","Alt_gp","Alt_gps"))
-        yqname <- tail(xqnames[!is.na(ym)],1)
-        yqunits <- tail(eolts::units(qc)[!is.na(ym)],1)
+        # use last one
+        ym <- max(match(c("P","Alt_gp","Alt_gps"),xnames,nomatch=0))
+        if (ym == 0) stop("yname argument is NULL and pressure or altitude not found in sounding")
+        yname <- xnames[ym]
+        yunits <- xunits[ym]
 
-        if (!is.null(yname) && yname != yqname)
-            stop(paste("Inconsistent y axis data variables:",yname,yqname))
-        else yname <- yqname
-
-        if (!is.null(yunits) && yunits != yqunits)
-            stop(paste("Inconsistent y axis data units:",yunits,yqunits))
-        else yunits <- yqunits
-
-        ys <- match(xqnames,c(yname,"sta"))
-
-        xqnames <- xqnames[is.na(ys)]
-        xunits <- xunits[is.na(ys)]
-
-        if (!is.null(raw))
-            legtxt <- c(legtxt,paste0(xqnames,"_qc(",xunits,")"))
-        else
-            legtxt <- c(legtxt,paste0(xqnames,"_qc(",xunits,")"))
+        # remove yname from xnames
+        xunits <- xunits[-ym]
+        xnames <- xnames[-ym]
+    }
+    else {
+        yname <- yname[1]
+        bad <- is.na(match(yname,colnames(sdng)))
+        if (any(bad))
+            stop(paste(yname,"not found in sounding"))
+        yunits <- eolts::units(sdng)[match(yname,colnames(sdng),nomatch=0)]
     }
 
     if (length(yname) == 0)
         stop("No variable for y axis found")
 
+    ntrace <- length(xnames)
+
+    legtxt <- paste0(xnames,"(",xunits,")")
+
     # reverse axis if Y is pressure
-    if (yunits == "mb") reverse_yaxis <- TRUE
+    reverse_yaxis <- (yunits == "mb")
 
-    xnames <- c(xrnames,xqnames)
-
-    mci <- length(legtxt) + 1  # max color index needed
+    mci <- ntrace + 1  # max color index needed
     if (mci > length(col)) {
-        ndup <- ceiling(length(legtxt) / (length(col)-1))
+        ndup <- ceiling(ntrace / (length(col)-1))
         legcol <- rep(2:length(col),ndup)[2:mci]
     }
     else legcol <- 2:mci
 
-    # pch=4 is usually an 'X", reserve that for showing clipped points
-    legpch <- (1:(mci+1))[-4]
-
-    # Determine number of x scales for the various variables and units
-    if (!is.null(xrnames) && !is.null(xqnames)) {
-        mx <- is.na(match(xqnames,xrnames))
-
-        if (any(mx))
-            stop(paste("QC variables",paste(xqnames[mx],collapse=","),"not found in raw data"))
-    }
-
-    if (!is.null(raw))
-        xinfo <- plotLimits(raw[,xrnames],xlim,FALSE,xaxs)
-    else
-        xinfo <- plotLimits(qc[,xqnames],xlim,FALSE,xaxs)
+    xinfo <- plotLimits(sdng[,xnames],xlim,FALSE,xaxs)
 
     nscales <- xinfo$nscales
     xscales <- xinfo$scales # 1=bottom,2=top,3=2nd axis on bottom, etc
     xlim <- xinfo$lim
 
-    ntrace <- length(xnames)
+    # plotting characters
+    pch <- 1:ntrace
 
     ylab <- paste0(yname,"(",yunits,")")
 
-    if (!is.null(raw) && nrow(raw) == 0) {
+    if (!is.null(sdng) && nrow(sdng) == 0) {
         # empty plot, just containing legends
         plot(0,0, type="n", axes=TRUE,
             xlim=xlim, xlab="",
@@ -173,16 +153,9 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
     for (xname in xnames) {
         itrace <- itrace + 1
 
-        if (itrace > length(xrnames)) {
-            xunits <- eolts::units(qc[,xname])[1]
-            xdata <- unlist(qc[,xname]@data)
-            ydata <- unlist(qc[,yname]@data)
-        }
-        else {
-            xunits <- eolts::units(raw[,xname])[1]
-            xdata <- unlist(raw[,xname]@data)
-            ydata <- unlist(raw[,yname]@data)
-        }
+        xunits <- eolts::units(sdng[,xname])[1]
+        xdata <- unlist(sdng[,xname]@data)
+        ydata <- unlist(sdng[,yname]@data)
 
         xnameunits <- paste0(xname,"(",xunits,")")
         dupunits <- xinfo$dupunits[xnameunits]
@@ -214,21 +187,19 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
             clipped <- T
         }
 
-        # par(new=TRUE)
-
         side <- line <- xlab.txt <- NULL
-        if (!missing(xlab)) xlab.txt <- xlab
+        if (!is.null(xlab)) xlab.txt <- xlab
         if (do_xaxis <- (xaxt != "n" && is.na(match(xaxis_num,xaxis_done)))) {
             if (nscales == 1) {
                 side <- 1 # 1:bottom, 2:left, 3:top, 4:right
                 line <- 0
-                if (missing(xlab)) xlab.txt <- paste0("(",xunits,")")
+                if (is.null(xlab)) xlab.txt <- paste0("(",xunits,")")
             }
             else {
                 iplot <- xaxis_num # 1:bottom, 2:top, 3:2nd scale on bottom, etc
                 side <- if (iplot %% 2) 1 else 3
                 line <- (mgp[1] + 1) * ((iplot-1) %/% 2)
-                if (missing(xlab)) {
+                if (is.null(xlab)) {
                   if (dupunits) xlab.txt <- paste(xname," (",xunits,")",sep="")
                   else xlab.txt <- paste("(",xunits,")",sep="")
                 }
@@ -272,7 +243,7 @@ sprofile <- function(raw=NULL,qc=NULL,title=NULL,type="b",
                 col=col[legcol[itrace]],lty=1,lwd=tlwd,err=-1,...)
         if (type =="b" || type == "p" || type == "o")
             points(xdata[!nas],ydata[!nas],
-                col=col[legcol[itrace]],pch=legpch[itrace],cex=pcex,err=-1,...)
+                col=col[legcol[itrace]],pch=pch[itrace],cex=pcex,err=-1,...)
 
         if (clipped) {
             # cat("clipped=TRUE\n")
