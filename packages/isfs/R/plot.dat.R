@@ -584,12 +584,13 @@ plotLimits <- function(data,lim,one.scale=FALSE,axs="i",namesep=".")
                         lim[ylmtch][[1]]))
             }
             if (any(chk)) {
-                warning("variables ",paste(dnu[ylmtch!=0],collapse=","),	
-                    " have units \"",
-                    units.str, "\" but have different limits=",
-                    paste(names(lim[ylmtch]),lim[ylmtch],sep="=",collapse=","),"\n")
+                if (FALSE) {
+                    warning("variables ",paste(dnu[ylmtch!=0],collapse=","),	
+                        " have units \"",
+                        units.str, "\" but have different limits=",
+                        paste(names(lim[ylmtch]),lim[ylmtch],sep="=",collapse=","),"\n")
+                }
                 ylmtchk <- ylmtch[ylmtch!=0][-1][chk]	# indices into lim
-
 
                 for (i in ylmtchk) {
                     iscale <- iscale + 1
