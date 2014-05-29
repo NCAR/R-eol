@@ -132,11 +132,13 @@ sprofile <- function(sdng,xnames=NULL,yname=NULL,title=names(sdng)[1],
     if (xaxt != "n") xaxt <- "s"
     if (yaxt != "n") yaxt <- "s"
 
+    old.par <- list()
+
     mgp <- par("mgp")
     if (is.null(args$cex)) cex <- par("cex")
     else cex <- args$cex
 
-    old.par <- par(c("mgp"))
+    old.par$mgp <- mgp
     on.exit(par(old.par),add=T)
 
     tckadj <- par("tck")
