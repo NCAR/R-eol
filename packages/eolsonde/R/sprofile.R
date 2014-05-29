@@ -269,7 +269,8 @@ sprofile <- function(sdng,xnames=NULL,yname=NULL,title=names(sdng)[1],
             }
         }
 
-        if (xlim1[1] * xlim1[2] < 0) abline(v=0,lty=2)
+        # Line at zeros. Disable
+        # if (xlim1[1] * xlim1[2] < 0) abline(v=0,lty=2)
 
         # browser()
         if (do_xaxis) {
