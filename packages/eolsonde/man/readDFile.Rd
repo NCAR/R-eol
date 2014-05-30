@@ -45,6 +45,8 @@ The data values are extracted from the AVAPS-D rows in the file. Values matching
 The times are extracted from the UTCDate and UTCTime columns of the data lines in the Dfile. The resultant time series is sorted in time.
 
 Then if sta_clean is TRUE, the values are overwritten with NA_real_ if the STA value does not match the above values for each column.
+
+\code{readDFile} uses the R function \code{\link{read.table}}. Therefore it supports reading files which have been compressed with 'gzip2', 'bzip2', 'xz' or 'lzma'.
 }
 \value{
 A sorted time series containing all variables read from the D file.
@@ -59,9 +61,7 @@ Gordon Maclean
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{
-\code{\link{readSoundings}}
-\code{\link{readQCFile}}
+\seealso{ \code{\link{readSoundings}} \code{\link{readQCFile}} \code{\link{read.table}}
 }
 \examples{
 # Read sample D file contained in eolsonde R package
@@ -70,8 +70,8 @@ dfile = file.path(dir,"D20080815_172011_P.1.gz")
 x = readDFile(dfile)
 # time series plot of P, T and RH
 plot(x[,c("P","T","RH")])
-# profile plot
-sprofile(x[,c("P","T","RH","Wspd","Wdir")])
+# profile plot of T, RH vs P
+sprofile(x,c("T","RH"),"P")
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

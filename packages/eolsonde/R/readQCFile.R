@@ -99,5 +99,11 @@ readQCFile <- function(file)
     dnames <- dnames[-(2:4)]
     units <- units[-(2:4)]
     
-    dat(nts(d[,dnames],utime(tx),units=units))
+    d <- dat(nts(d[,dnames],utime(tx),units=units))
+
+    # put in time order
+    di <- order(positions(d))
+    if (any(diff(di) < 0))
+        d <- d[di,]
+    d
 }
