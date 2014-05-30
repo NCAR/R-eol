@@ -249,8 +249,8 @@ scontour <- function(sdngs, yname, zname,
             page = function(page) {
                 # cat("layout.heights=",str(trellis.par.get("layout.heights")),"\n")
                 # cat("layout.widths=",str(trellis.par.get("layout.widths")),"\n")
-                grid::grid.text(paste0(zname,"(",zunits,")"),
-                    x = 0.91, y = .15, hjust=0.5,vjust=1,rot=90)
+                # grid::grid.text(paste0(zname,"(",zunits,")"),
+                #     x = 0.91, y = .15, hjust=0.5,vjust=1,rot=90)
                 isfs::trellis_logo()
             }
         )
