@@ -22,7 +22,7 @@ Logical value, specifying whether the "STA" sounding field in the D file is used
 
 From the variable names in the Dfile header, the following translation from "Header Name" to "Column Name" is applied to generate column names in the sounding. Also shown are the missing data value for each column, and the good STA value, which is used if sta_clean is TRUE:
 \tabular{llrl}{
-    Header Name \tab Column Name \tab Missing Data \tab Good STA\cr
+    Header Name \tab Column Name \tab Missing Data \tab Good STA \cr
     AirPress \tab P \tab  9999 \tab S00 or S10\cr
     AirTemp \tab T \tab 99 \tab S00 or S10\cr
     RelHumid \tab RH \tab 999 \tab S00 or S10\cr
@@ -44,12 +44,12 @@ The data values are extracted from the AVAPS-D rows in the file. Values matching
 
 The times are extracted from the UTCDate and UTCTime columns of the data lines in the Dfile. The resultant time series is sorted in time.
 
-Then if sta_clean is TRUE, the values are overwritten with NA_real_ if the STA value does not match the above values for each column.
+Then if sta_clean is TRUE, and the STA value in a record does not match the Good STA value shown above, the corresponding data values are overwritten with NA_real_.
 
 \code{readDFile} uses the R function \code{\link{read.table}}. Therefore it supports reading files which have been compressed with 'gzip2', 'bzip2', 'xz' or 'lzma'.
 }
 \value{
-A sorted time series containing all variables read from the D file.
+A sorted time series containing all data columns read from the D file.
 }
 \references{
 }

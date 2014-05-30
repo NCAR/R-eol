@@ -1,20 +1,19 @@
 \name{readQCFile}
 \alias{readQCFile}
-\title{Read in QCed EOL Sounding Data in eol file Format}
+\title{Read in QCed EOL Sounding Data in QC file Format}
 \description{
- Reads in QCed EOL sounding data, including radiosonde(upsonde), dropsonde and driftsonde, in eol file format.
+ Reads in QCed EOL sounding data, including radiosonde(upsonde), dropsonde and driftsonde, in the EOL QC file format.
 }
 \usage{
 readQCFile(file)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{file}{
 Full path name of QC file to be read.
 }
 }
 \details{
-\code{readQCFile} finds the "UTC Launch Time" line in the header to determine the launch date. It then looks for the line in the file containing only a '/'. The following two lines contain the variable names and the units. It then reads the data, starting 3 lines after the '/'.
+\code{readQCFile} finds the "UTC Launch Time" line in the file header to determine the launch date. It then looks for the line in the file containing only a '/'. The following two lines contain the variable names and the units. It then reads the data, starting 3 lines after the '/'.
 
 From the variable names, the following translation from "Header Name" to "Column Name" is applied to generate column names in the sounding. Also shown are the missing data values for each column:
 \tabular{llr}{
@@ -41,7 +40,7 @@ The data times are determined from the "hh", "mm" and "ss" columns in the file, 
 \code{readQCFile} uses the R function \code{\link{read.table}}. Therefore it supports reading files which have been compressed with 'gzip2', 'bzip2', 'xz' or 'lzma'.
 }
 \value{
-A sorted time series containing all variables read from the QC file.
+A sorted time series containing all data columns read from the QC file.
 }
 \references{
 }

@@ -17,6 +17,7 @@ readSoundings <- function(
 {
 
     files <- list()
+    timeMisMatch <- NULL
 
     for (dx in dir) {
         files <- append(files,lapply(file,function(fpat)
@@ -33,9 +34,11 @@ readSoundings <- function(
                 # If no time descriptors in fpat, return the list of files
                 fs <- list.files(path=dx,pattern=fre)
 
+
                 if (fre == fpat) {
                     fs
                 } else {
+                    # Add a trailing wildcard if no match
                     if (length(fs) == 0)
                         fs <- list.files(path=dx,pattern=paste0(fre,".*"))
                     lapply(fs,function(f)
@@ -43,13 +46,17 @@ readSoundings <- function(
                             # Parse file names to get start times
                             # Any that fail to parse return NA, and we'll ignore them.
                             ft <- as.numeric(strptime(f,format=fpat,tz="UTC"))
-                            if (is.null(ft)) {
+                            if (is.na(ft)) {
                                 # try removing possible REs after the %S
                                 fpat <- sub("%S.*","%S",fpat)
                                 ft <- as.numeric(strptime(f,format=fpat,tz="UTC"))
                             }
-                            if (!is.na(ft) && ft >= start && ft <= end) list(f=f,t=utime(ft),d=dx)
-                            else NULL
+                            if (!is.na(ft) && ft >= start && ft <= end)
+                                list(f=f,t=utime(ft),d=dx)
+                            else {
+                                timeMisMatch <<- append(timeMisMatch,f)
+                                NULL
+                            }
                         }
                     )
                 }
@@ -63,6 +70,18 @@ readSoundings <- function(
     files <- unlist(files,recursive=FALSE)
 
     files <- files[!sapply(files,is.null)]
+
+    if (length(files) == 0) {
+        if (length(timeMisMatch) > 0)
+            warning(paste0(length(timeMisMatch),
+                    " files matched ",paste(file,collapse=","),
+                    " in ",paste(dir,collapse=","),
+                    " but are not within times: ",
+                    eolts::format(start,"%Y %m %d %H:%M:%S"),"-",
+                    eolts::format(end,"%Y %m %d %H:%M:%S"),". For example=",timeMisMatch[1]))
+        else warning(paste("no files matching",paste(file,collapse=",")))
+        return(NULL)
+    }
 
     # get file names, remove duplicates
     fnames <- unlist(sapply(files,function(f){f$f}))
