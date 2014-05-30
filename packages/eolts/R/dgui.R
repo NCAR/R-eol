@@ -876,7 +876,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         NULL
     }
 
-    localtz <- options("time.zone")[[1]]
+    localtz <- getOption("time.zone")
     if (nchar(localtz) == 0) {
         localtz <- attr(as.POSIXlt(Sys.time()),"tzone")
         if (nchar(localtz[1]) > 0) localtz <- localtz[1]

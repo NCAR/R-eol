@@ -237,10 +237,10 @@ setMethod("readts",
           stns <- dpar("stns")
 
         if (!hasArg(time.format) || is.null((time.format <- dots$time.format)))
-          time.format <- options("time.out.format")[[1]]
+          time.format <- getOption("time.out.format")
 
         if (!hasArg(time.zone) || is.null((time.zone <- dots$time.zone)))
-          time.zone <- options("time.zone")[[1]]
+          time.zone <- getOption("time.zone")
 
         ncverbose <- dpar("ncverbose")
 

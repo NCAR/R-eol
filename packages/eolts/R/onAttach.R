@@ -25,9 +25,9 @@
 
     packageStartupMessage(paste(pkgname,"::.onAttach, setting options():\n",
         "  time.in.format=c(",
-        paste("\"",options("time.in.format")[[1]],"\"",sep="",collapse=", "),")\n",
-        "  time.out.format=\"",options("time.out.format")[[1]],"\"\n",
-        "  time.zone=\"",options("time.zone")[[1]],"\"\n"),sep="")
+        paste("\"",getOption("time.in.format"),"\"",sep="",collapse=", "),")\n",
+        "  time.out.format=\"",getOption("time.out.format"),"\"\n",
+        "  time.zone=\"",getOption("time.zone"),"\"\n"),sep="")
     packageStartupMessage("For help on time formats, do ?strptime\n")
 
 }

@@ -737,31 +737,31 @@ label_times <- function(t1,t2, annotate, adj, col=1, year=T, print=T,cex=par("ce
         if (year)
             if (t1.list$year != t2.list$year)
                 times <- paste(format(t1, format = "%Y %b %d %H:%M",
-                        time.zone=unlist(options("time.zone"))), "-",
+                        time.zone=getOption("time.zone")), "-",
                     format(t2, format = "%Y %b %d %H:%M  %Z",
-                        time.zone=unlist(options("time.zone"))))
+                        time.zone=getOption("time.zone")))
             else
                 times <- paste(format(t1, format = "%Y %b %d %H:%M",
-                        time.zone=unlist(options("time.zone"))), "-",
+                        time.zone=getOption("time.zone")), "-",
                     format(t2, format = "%b %d %H:%M  %Z",
-                        time.zone=unlist(options("time.zone"))))
+                        time.zone=getOption("time.zone")))
             else
                 times <- paste(format(t1, format = "%b %d %H:%M",
-                        time.zone=unlist(options("time.zone"))), "-",
+                        time.zone=getOption("time.zone")), "-",
                     format(t2, format = "%b %d %H:%M  %Z",
-                        time.zone=unlist(options("time.zone"))))
+                        time.zone=getOption("time.zone")))
     }
     else {
         if (year)
             times <- paste(format(t1, format = "%Y %b %d, %H:%M",
-                    time.zone=unlist(options("time.zone"))), "-",
+                    time.zone=getOption("time.zone")), "-",
                 format(t2, format = "%H:%M  %Z",
-                    time.zone=unlist(options("time.zone"))))
+                    time.zone=getOption("time.zone")))
         else
             times <- paste(format(t1, format = "%b %d, %H:%M",
-                    time.zone=unlist(options("time.zone"))), "-",
+                    time.zone=getOption("time.zone")), "-",
                 format(t2, format = "%H:%M  %Z",
-                    time.zone=unlist(options("time.zone"))))
+                    time.zone=getOption("time.zone")))
     }
 
     if (!missing(annotate))

@@ -123,8 +123,8 @@ setMethod("readts",
         stations(x) <- as.integer(rep(0,ncol(x)))
         # start(x) = start(x)
         # end(x) = end(x)
-        x@time.format = options("time.out.format")[[1]]
-        x@time.zone = options("time.zone")[[1]]
+        x@time.format = getOption("time.out.format")
+        x@time.zone = getOption("time.zone")
 
         nrows <- nrow(x)
         if (nrows <= 1L) {

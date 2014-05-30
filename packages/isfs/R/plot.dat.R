@@ -457,8 +457,7 @@ plot.dat.title <- function(title="",first.plot,last.plot,
                 paste(plot.dat.title.save,collapse=","),sep=" ")
 
             if (!is.null(plot.dat.date)) {
-                t1@time.zone <- unlist(options("time.zone"))
-                t2@time.zone <- unlist(options("time.zone"))
+                t1@time.zone <- t2@time.zone <- getOption("time.zone")
                 date.text <- format(t1,format="%Y %b %d")
                 day1 <- as.list(t1)[["day"]]
                 day2 <- as.list(t2)[["day"]]
@@ -671,9 +670,9 @@ logo_stamp <- function(print.motto=T,cex=0.75)
 
     # print.motto=F will prevent printing of motto
     # print.motto can also be a string variable to replace
-    # options("motto")
+    # getOption("motto")
     if( is.logical(print.motto) && print.motto )
-        print.motto <- options("motto")[[1]]
+        print.motto <- getOption("motto")
     if(!is.null(print.motto) && is.character(print.motto) )
         string <- paste(string,print.motto,sep=": ")
 
@@ -702,9 +701,9 @@ trellis_logo <- function(print.motto=T,cex=0.75)
 
     # print.motto=F will prevent printing of motto
     # print.motto can also be a string variable to replace
-    # options("motto")
+    # getOption("motto")
     if( is.logical(print.motto) && print.motto )
-        print.motto <- options("motto")[[1]]
+        print.motto <- getOption("motto")
     if(!is.null(print.motto) && is.character(print.motto) )
         string <- paste(string,print.motto,sep=": ")
 

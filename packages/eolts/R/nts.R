@@ -24,8 +24,8 @@ setClass("nts",
         stations=integer(0),
         deltat=numeric(0),
         wss=numeric(0),
-        time.format=options("time.out.format")[[1]],
-        time.zone=options("time.zone")[[1]]
+        time.format=getOption("time.out.format"),
+        time.zone=getOption("time.zone")
         )
     )
 
@@ -36,8 +36,8 @@ nts <- function(data,positions,
     weightmap=NULL,
     stations=NULL,
     wss=NULL,
-    time.format=options("time.out.format")[[1]],
-    time.zone=options("time.zone")[[1]])
+    time.format=getOption("time.out.format"),
+    time.zone=getOption("time.zone"))
 {
     ret <- new("nts")
 
@@ -51,7 +51,7 @@ nts <- function(data,positions,
 
     ret@positions <- as(positions,"utime")
 
-    # ret@positions@format <- unlist(options("time.out.format"))
+    # ret@positions@format <- getOption("time.out.format")
 
     if (length(ret@positions) != nrow(ret@data))
         stop(paste("length(positions)=",length(positions),
@@ -472,7 +472,7 @@ setReplaceMethod("deltat", signature(x="nts",value="numeric"),
     }
     )
 
-match.nts <- function(e1,e2,dt=options("dt.eps")[[1]],...)
+match.nts <- function(e1,e2,dt=getOption("dt.eps"),...)
 {
     d1 <- deltat(e1)
     d2 <- deltat(e2)
@@ -940,7 +940,7 @@ setMethod("cumsum",signature(x="nts"),
 setMethod("atan2",signature(y="nts",x="nts"),
     function(y,x)
     {
-        if (length(tol <- options("dt.eps")[[1]]) == 0) {
+        if (length(tol <- getOption("dt.eps")) == 0) {
             d1 <- deltat(y)
             d2 <- deltat(x)
 
@@ -1064,7 +1064,7 @@ setMethod("Ops",signature(e1="nts",e2="nts"),
         s1 <- stations(e1)
         s2 <- stations(e2)
 
-        dt.eps <- options("dt.eps")[[1]] # seconds
+        dt.eps <- getOption("dt.eps") # seconds
         if (length(dt.eps) == 0) {
             if (!is.null(d1) && nrow(e1) > 1 && !is.na(d1["min"]) &&
                 d1["min"] < 0) warning("First time series is not ordered. align results are probably not correct")
@@ -1754,7 +1754,7 @@ setMethod("align",signature="nts",
         if (missing(error.how)) error.how <- "NA"
 
         if (!missing(matchtol)) tol <- matchtol
-        else tol <- options("dt.eps")[[1]]
+        else tol <- getOption("dt.eps")
 
         if (length(tol) == 0) tol <- deltat(pos)["trimmed.mean"] * .1
 

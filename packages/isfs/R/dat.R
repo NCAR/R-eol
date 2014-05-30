@@ -11,7 +11,7 @@
 
 setClass("dat",contains="nts")
 
-dat <- function(what,derived=TRUE,cache=unlist(options("dcache")),
+dat <- function(what,derived=TRUE,cache=getOption("dcache"),
     avg,smooth=FALSE,...)
 {
 
