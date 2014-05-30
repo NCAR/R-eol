@@ -95,7 +95,7 @@ readSoundings <- function(
         {
             fp <- file.path(fx$d,fx$f)
             # read first string of the file. If it contains "AVAPS", call readDFile
-            ftype <- scan(fp,nmax=1,what="")
+            ftype <- scan(fp,nmax=1,what="",quiet=TRUE)
             if (grepl("AVAPS",ftype,fixed=TRUE)) {
                 sdng <- readDFile(fp,sta_clean=sta_clean)
                 srec <- sum(substr(sdng@data[,"sta"],1,1) == "S")
