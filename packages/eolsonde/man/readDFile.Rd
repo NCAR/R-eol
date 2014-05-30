@@ -66,7 +66,7 @@ Gordon Maclean
 \examples{
 # Read sample D file contained in eolsonde R package
 dir = system.file("unitTests","data","D-file",package="eolsonde")
-dfile = file.path(dir,"D20080815_172011_P.1")
+dfile = file.path(dir,"D20080815_172011_P.1.gz")
 x = readDFile(dfile)
 # time series plot of P, T and RH
 plot(x[,c("P","T","RH")])

@@ -20,7 +20,7 @@ test_dfile <- function()
 
     options(time.zone="UTC")
 
-    dfile <- file.path(datadir,"D20080815_172011_P.1")
+    dfile <- file.path(datadir,"D20080815_172011_P.1.gz")
     cat("dfile=",dfile,"\n")
 
     sdng <- readDFile(dfile,sta_clean=FALSE)

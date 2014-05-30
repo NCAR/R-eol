@@ -20,7 +20,7 @@ test_qcfile <- function()
 
     options(time.zone="UTC")
 
-    qcfile <- file.path(datadir,"D20080815_172011_PQC.eol")
+    qcfile <- file.path(datadir,"D20080815_172011_PQC.eol.gz")
     cat("qcfile=",qcfile,"\n")
 
     sdng <- readQCFile(qcfile)

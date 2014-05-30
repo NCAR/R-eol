@@ -11,18 +11,25 @@ test_sdngs <- function()
 {
 
     wd <- getwd()
-    cat("wd=",wd,"\n")
+    # cat("wd=",wd,"\n")
     pkg <- sub("\\.Rcheck$", '', basename(dirname(wd)))
-    cat("pkg=",pkg,"\n")
-
+    # cat("pkg=",pkg,"\n")
 
     datadir <- file.path(system.file("unitTests", package=pkg),"data","D-file")
-    cat("datadir=",datadir,"\n")
+    # cat("datadir=",datadir,"\n")
     Sys.setenv(SONDE_DATA=datadir)
     Sys.setenv(SONDE_ROOT="/x")
 
     options(time.zone="UTC")
     dpar(start="2008 8 15 1727",lenmin=12)
+
+    sdngs <- readSoundings()
+
+    checkEquals(length(sdngs),2)
+
+    datadir <- file.path(system.file("unitTests", package=pkg),"data","qc.eol")
+    # cat("datadir=",datadir,"\n")
+    Sys.setenv(SONDE_DATA=datadir)
 
     sdngs <- readSoundings()
 
