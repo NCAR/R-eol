@@ -1,6 +1,6 @@
 import(methods)
 
-import(splusTimeDate,splusTimeSeries)
+import(splusTimeDate,splusTimeSeries,gWidgets2)
 
 # importFrom("splusTimeDate","[")
 
