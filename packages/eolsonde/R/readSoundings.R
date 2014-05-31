@@ -94,6 +94,9 @@ readSoundings <- function(
     sdngs <- lapply(files,function(fx)
         {
             fp <- file.path(fx$d,fx$f)
+            # shortened name for messages
+            fpshort <- ifelse(nchar(fp) > 45,
+                paste0("...",substring(fp,nchar(fp)-45)),fp)
             # read first string of the file. If it contains "AVAPS", call readDFile
             ftype <- scan(fp,nmax=1,what="",quiet=TRUE)
             if (grepl("AVAPS",ftype,fixed=TRUE)) {
@@ -102,19 +105,20 @@ readSoundings <- function(
                 ptuok <- sum(substr(sdng@data[,"sta"],1,2) == "S0")
                 gpsok <- sum(substr(sdng@data[,"sta"],1,3) == "S00"
                         | substr(sdng@data[,"sta"],1,3) == "S10")
+
                 if (sta_clean) {
-                    cat("read",fp,", dim=",paste(dim(sdng),collapse=","),
-                        ",#PTUOK=",ptuok,",#GPSOK=",gpsok,"\n")
+                    cat(paste0(fpshort,": (",paste(dim(sdng),collapse="x"),
+                        "), #PTUOK=",ptuok,", #GPSOK=",gpsok),"\n")
                 } else {
                     prec <- sum(substr(sdng@data[,"sta"],1,1) == "P")
                     arec <- sum(substr(sdng@data[,"sta"],1,1) == "A")
-                    cat("read",fp,", dim=",paste(dim(sdng),collapse=","),
-                        ",#A=",arec,",#P=",prec,",#S=",srec,
-                        ",#PTUOK=",ptuok,",#GPSOK=",gpsok,"\n")
+                    cat(paste0(fpshort,": (",paste(dim(sdng),collapse="x"),
+                        "), #A=",arec,", #P=",prec,", #S=",srec,
+                        ", #PTUOK=",ptuok,", #GPSOK=",gpsok),"\n")
                 }
             } else {
                 sdng <- readQCFile(fp)
-                cat("read",fp,", dim=",paste(dim(sdng),collapse=","),"\n")
+                cat(paste0(fpshort,": (",paste(dim(sdng),collapse="x"),")"),"\n")
             }
             sdng
         }

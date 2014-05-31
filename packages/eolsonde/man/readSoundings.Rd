@@ -16,22 +16,7 @@ readSoundings(
 }
 \arguments{
   \item{dir}{
-    A character vector containing one or more directories to scan. The default value is built from environment variables:
-    
-    \code{
-    dir = c(file.path(Sys.getenv("SONDE_ROOT"), "projects", Sys.getenv("PROJECT"), Sys.getenv("PLATFORM"), "data", Sys.getenv("DATASET")), Sys.getenv("SONDE_DATA"))
-    }
-
-    From a unix shell, these values are (for Windows, substitute \\ for /):
-    \itemize{
-        \item $SONDE_ROOT/projects/$PROJECT/$PLATFORM/data/$DATASET
-        \item $SONDE_DATA
-    }
-    Or, one can override this default: \code{readSoundings(dir="C:\\\\AVAPS_DATA\\D-files",...)}, or
-    \code{
-        Sys.setenv(SONDE_DATA="C:\\\\AVAPS_DATA\\D-files")
-        xs = readSoundings(...)
-    }
+    A character vector containing one or more directories to scan. The default value is built from environment variables.
   }
   \item{file}{
     A character vector containing \itemize{
@@ -49,11 +34,24 @@ A \code{\link{utime}} object containing the end time of files to be matched. Thi
   \item{sta_clean}{Passed as an argument to \code{\link{readDFile}}.}
 }
 \details{
-The directory is scanned for files whose names match one of the patterns in the \code{file} argument.
+From a Unix shell the default setting of dir translates to:
+\itemize{
+    \item $SONDE_ROOT/projects/$PROJECT/$PLATFORM/data/$DATASET
+    \item $SONDE_DATA
+}
+From a Windows command interpreter it translates to:
+\itemize{
+    \item \%SONDE_ROOT\%\\projects\\\%PROJECT\%\\\%PLATFORM\%\\data\\\%DATASET\%
+    \item \%SONDE_DATA\%
+}
 
-If the file argument contains time descriptors such as "%Y", the initial string before the time descriptors should be a fixed string, i.e. it should not contain regular expressions.  The portion after a "%S" time descriptor can contain regular expressions, such as ".*\\.gz".  If the file argument contains time descriptors, and \code{list.files} does not match any files, it is tried again, allowing any trailing characters after the file string.
+Note that in Windows, one can use the Unix-style forward-slash for the directory separator. The back-slash is an escape for special characters. See \link{Quotes}.
 
-The default value: \code{file = c("D\%Y\%m\%d_\%H\%M\%S_P")} will match file names starting with D, followed by "YYYYMMDD_HHMMSS", followed by "_P", followed by any trailing characters.  Therefore it would match any of \enumerate{
+The directories are scanned for files whose names match one of the patterns in the \code{file} argument.
+
+If the file argument contains time descriptors such as "\%Y", the initial string before the time descriptors should be a fixed string, i.e. it should not contain regular expressions.  The portion after a "\%S" time descriptor can contain regular expressions, such as ".*\\.gz".  If the file argument contains time descriptors, and \code{list.files} does not match any files, it is tried again, allowing any trailing characters after the file string.
+
+The default value: \code{file = "D\%Y\%m\%d_\%H\%M\%S_P"} will match file names starting with D, followed by "YYYYMMDD_HHMMSS", followed by "_P", followed by any trailing characters.  Therefore it would match any of \enumerate{
         \item D20080816_003205_PQC
         \item D20080816_003205_P
         \item D20080816_003205_P.gz
@@ -99,6 +97,9 @@ names(xs)
 # display the column (variable) names of a sounding
 colnames(xs[[1]])
 
+# display the first 10 rows and 5 columns of the 3rd sounding:
+xs[[3]][1:10,1:5]
+
 # Plot profiles of RH vs P for all soundings.
 svprofile(xs,"RH","P")
 
@@ -115,12 +116,9 @@ for (fname in names(xs)) {
     title(fname)
 }
 
-# use sprofile for similar plots
-par(mfrow=c(2,ceiling(length(xs)/2)))
-for (fname in names(xs)) {
-    x = xs[[fname]]
-    sprofile(x[,c("T","P")],title=fname)
-}
+# Plot profiles of T,RH,Vz,Wspd vs P, all soundings, 
+par(mfrow=c(2,2),ask=TRUE)
+sprofile(xs,c("T","RH","Vz","Wspd"),"P")
 
 \dontrun{
 # set the default directory for readSoundings
@@ -130,10 +128,15 @@ file = "D\%Y\%m\%d_\%H\%M\%S_P.[0-9].PresCorr"
 t1 = utime("2013 05 16 09:00")
 t2 = t1 + 7200
 xs = readSoundings(file=file,start=t1,end=t2)
-sprofile(xs,"P","T")
+
+# Windows
+xs = readSoundings(dir="C:/AVAPS_DATA/D-files",...)
+# or
+Sys.setenv(SONDE_DATA="C:/AVAPS_DATA/D-files")
+xs = readSoundings(...)
+}
 }
 
-}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{ sounding }

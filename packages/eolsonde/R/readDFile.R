@@ -90,20 +90,20 @@ readDFile <- function (file,sta_clean=TRUE)
     col.names <- c(strnames, dnames)
 
     # read as character data
-    d <- read.table(file=file, colClasses="character",fill=TRUE,
+    sdng <- read.table(file=file, colClasses="character",fill=TRUE,
         col.names=col.names,row.names=NULL, stringsAsFactors=FALSE,
         check.names=FALSE)
 
     # extract data rows
-    d <- d[drows,]
+    sdng <- sdng[drows,]
 
     # discard times of all zeroes
-    badtime <- d[,"UTCDate"] == "000000"
+    badtime <- sdng[,"UTCDate"] == "000000"
     if (any(badtime))
-        d <- d[!badtime,]
+        sdng <- sdng[!badtime,]
 
     # convert utc columns to utime
-    utc <- utime(paste(d[,"UTCDate"],d[,"UTCTime"]),
+    utc <- utime(paste(sdng[,"UTCDate"],sdng[,"UTCTime"]),
         in.format="%y%m%d%H%M%OS",time.zone="UTC")
 
     # missing values for numeric columns
@@ -115,58 +115,61 @@ readDFile <- function (file,sta_clean=TRUE)
     numnames <- dnames[is.na(match(dnames,c(strnames,utcnames)))]
 
     # convert data columns to numeric
-    d2 <- lapply(numnames,function(n,x,na_vals)
+    d2 <- lapply(numnames,function(n)
         {
             # if (n == "Alt_gp") browser()
-            xx <- type.convert(x[,n],as.is=TRUE)
+            x <- type.convert(sdng[,n],as.is=TRUE)
+            # From help page for type.convert:
+            # Vectors which are entirely missing values are converted to
+            # logical, since ‘NA’ is primarily logical.
+            if (is.logical(x)) x <- as.numeric(x)
             nas <- na_vals[[n]]
-            if (!is.null(nas)) xx[xx %in% nas] <- NA_real_
-            xx
-        },
-        x=d,na_vals=na_vals)
+            if (!is.null(nas)) x[x %in% nas] <- NA_real_
+            x
+        })
 
     names(d2) <- numnames
 
-    # d <- data.frame(d[,strnames],utc=utc,d2)
-    # sta <- d[,"sta"]
-    d <- data.frame(d[,strnames],d2,check.names=FALSE)
-    units <- rep("",length(colnames(d)))
-    mu <- match(names(hunits),colnames(d),nomatch=0)
+    # sdng <- data.frame(sdng[,strnames],utc=utc,d2)
+    # sta <- sdng[,"sta"]
+    sdng <- data.frame(sdng[,strnames],d2,check.names=FALSE)
+    units <- rep("",length(colnames(sdng)))
+    mu <- match(names(hunits),colnames(sdng),nomatch=0)
     units[mu] <- hunits[mu!=0]
     units <- sub("(","",units,fixed=TRUE)
     units <- sub(")","",units,fixed=TRUE)
-    d <- dat(nts(d,utc,units=units))
+    sdng <- dat(nts(sdng,utc,units=units))
 
     if (sta_clean) {
-        sta <- unlist(d@data[,"sta"])
+        sta <- unlist(sdng@data[,"sta"])
         ok <- substring(sta,1,1) == "S"
-        d <- d[ok,]
+        sdng <- sdng[ok,]
         sta <- sta[ok]
 
         # If first digit of sta is not zero, set PTU values to NA
         ok  <- grepl("S0",sta,fixed=TRUE)
         ptuqc <- c("P","T","RH","RH1","RH2")
-        d@data[!ok,match(ptuqc,colnames(d))] <- NA_real_
+        sdng@data[!ok,match(ptuqc,colnames(sdng))] <- NA_real_
 
         # If second digit of sta is not zero, set wind/gps values to NA
         ok <- grepl("S00",sta,fixed=TRUE) | grepl("S10",sta,fixed=TRUE)
         windqc <- c("Wdir","Wspd","Vz","lon","lat","Alt_gp","wsat","ssat","Werr","Alt_gps")
-        d@data[!ok,match(windqc,colnames(d))] <- NA_real_
+        sdng@data[!ok,match(windqc,colnames(sdng))] <- NA_real_
     }
 
     # check for unique sid, save it as attribute
-    sids <- unique(as.vector(d@data[,"SID"]))
+    sids <- unique(as.vector(sdng@data[,"SID"]))
     if (any(is.na(sids))) sids <- sids[!is.na(sids)]
-    attr(d,"SID") <- sids
+    attr(sdng,"SID") <- sids
     if (length(sids) > 1)
         warning(paste0("Multiple sonde ids (",paste(sids,collapse=","),
             ") found in ",file))
-    d <- d[,is.na(match(colnames(d),"SID"))]
+    sdng <- sdng[,is.na(match(colnames(sdng),"SID"))]
 
     # put in time order
-    di <- order(positions(d))
+    di <- order(positions(sdng))
     if (any(diff(di) < 0))
-        d <- d[di,]
+        sdng <- sdng[di,]
 
-    d
+    sdng
 }

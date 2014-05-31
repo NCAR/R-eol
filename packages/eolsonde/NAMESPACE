@@ -1,4 +1,6 @@
 
+import(eolts, isfs, lattice, maps)
+
 # exported functions
 export(
     readDFile,

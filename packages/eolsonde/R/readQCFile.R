@@ -74,11 +74,11 @@ readQCFile <- function(file)
     dnames <- unlist(dnames)
 
     # read data into numeric values
-    d <- read.table(file=file, skip=lhdr+3,
+    sdng <- read.table(file=file, skip=lhdr+3,
         col.names=dnames,row.names=NULL, na.strings=c("-999.00","-999.000000"),
         check.names=FALSE)
 
-    sod <- d[,utcnames[1]] * 3600 + d[,utcnames[2]] * 60 + d[,utcnames[3]]
+    sod <- sdng[,utcnames[1]] * 3600 + sdng[,utcnames[2]] * 60 + sdng[,utcnames[3]]
     t0day <- floor(as.numeric(launchutc)/86400) * 86400
     tx <- t0day + sod
     # browser()
@@ -98,12 +98,27 @@ readQCFile <- function(file)
     # non-time variables.
     dnames <- dnames[-(2:4)]
     units <- units[-(2:4)]
+
+    sdng <- sdng[,dnames]
+
+    # if any columns are logical, convert to numeric
+    ldata <- sapply(dnames,function(n){is.logical(sdng[1,n])})
+
+    if (any(ldata)) {
+        sapply((1:length(ldata))[ldata],function(i)
+            {
+                sdng[,i] <<- as.numeric(sdng[,i])
+                NULL
+            }
+        )
+        NULL
+    }
     
-    d <- dat(nts(d[,dnames],utime(tx),units=units))
+    sdng <- dat(nts(sdng,utime(tx),units=units))
 
     # put in time order
-    di <- order(positions(d))
+    di <- order(positions(sdng))
     if (any(diff(di) < 0))
-        d <- d[di,]
-    d
+        sdng <- sdng[di,]
+    sdng
 }
