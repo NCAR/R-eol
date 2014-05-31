@@ -506,19 +506,21 @@ plotLimits <- function(data,lim,one.scale=FALSE,axs="i",namesep=".")
 
     if (one.scale) {
         lim <- range(unlist(sapply(unique(dnames),
-                    function(x,d,dn,axs)
+                    function(n)
                     {
-                        lim <- range(clip(d[,dn==x]),na.rm=T)
+                        lim <- tryCatch(
+                            range(clip(data[,dnames==n]),na.rm=T),
+                            warning=function(e)c(Inf,-Inf)
+                        )
                         if (axs == "r") {
                             dl <- lim[2] - lim[1]
                             lim[1] <- lim[1] - 0.04 * dl
                             lim[2] <- lim[2] + 0.04 * dl
                         }
                         l <- list()
-                        l[[x]] <- lim
+                        l[[n]] <- lim
                         l
-                    },
-                    data,dnames,axs)),na.rm=T)
+                    })),na.rm=T)
         # if xaxs or yaxs is "r", extend axis by 4% on each end
         return(list(nscales=1,lim=lim,scales=scales))
     }
@@ -601,19 +603,21 @@ plotLimits <- function(data,lim,one.scale=FALSE,axs="i",namesep=".")
         if (any(ylmtch == 0)) {
             # No values in lim for these variables
             lim <- range(unlist(sapply(dnu[ylmtch==0],
-                        function(x,d,dn,axs)
+                        function(n)
                         {
-                            lim <- range(clip(d[,dn==x]),na.rm=T)
+                            lim <- tryCatch(
+                                range(clip(data[,dnames==n]),na.rm=T),
+                                warning=function(e)c(Inf,-Inf)
+                            )
                             if (axs == "r") {
                                 dl <- lim[2] - lim[1]
                                 lim[1] <- lim[1] - 0.04 * dl
                                 lim[2] <- lim[2] + 0.04 * dl
                             }
                             l <- list()
-                            l[[x]] <- lim
+                            l[[n]] <- lim
                             l
-                        },
-                        data,dnames,axs)),na.rm=T)
+                        })),na.rm=T)
 
 
             lim.res[dnuu[ylmtch==0]] <- list(lim)
