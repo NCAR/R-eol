@@ -23,11 +23,14 @@
             time.zone=time.zone
     )
 
+    if (FALSE) {
     packageStartupMessage(paste(pkgname,"::.onAttach, setting options():\n",
         "  time.in.format=c(",
         paste("\"",getOption("time.in.format"),"\"",sep="",collapse=", "),")\n",
         "  time.out.format=\"",getOption("time.out.format"),"\"\n",
         "  time.zone=\"",getOption("time.zone"),"\"\n"),sep="")
     packageStartupMessage("For help on time formats, do ?strptime\n")
+    }
+    packageStartupMessage("For help on eolts package, do: package? eolts")
 
 }

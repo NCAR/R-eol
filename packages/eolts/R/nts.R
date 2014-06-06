@@ -31,7 +31,7 @@ setClass("nts",
 
 nts <- function(data,positions,
     units,
-    names=NULL,
+    names,
     weights=NULL,
     weightmap=NULL,
     stations=NULL,
@@ -71,7 +71,8 @@ nts <- function(data,positions,
     }
     else ret@units <- rep("",ncol(ret@data))
 
-    if (!is.null(names)) dimnames(ret@data) <- list(NULL,names)
+    if (!missing(names)) colnames(ret@data) <- names
+
     if (!is.null(weights)) {
         ret@weights <- weights
         ret@weightmap <- as.integer(weightmap)
@@ -396,7 +397,6 @@ setReplaceMethod("stations", signature(x="nts",value="ANY"),
     )
 
 setMethod("deltat", signature(x="utime"),
-    # deltat on splus library has args: x,...
     function(x,...)
     {
         # cat(paste("deltat of utime, length(x)=",length(x),"\n"))
@@ -1048,12 +1048,7 @@ setMethod("atan2",signature(y="ANY",x="nts"),
     }
     )
 
-# Override Ops method for nts.  The version in Splus 6.0.1 (and perhaps
-# all versions 5.x and 6.x before that) does not specify a matchtol
-# in the aligns.  This seemed to cause incorrect time match failures 
-# in nts's, even when the time positions were equal - probably
-# due to some round off error.
-# 
+# Override Ops method for nts.
 setMethod("Ops",signature(e1="nts",e2="nts"),
     function(e1, e2)
     {
