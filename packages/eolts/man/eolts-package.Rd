@@ -41,10 +41,25 @@ A \code{\link{plot}} method has been defined for \code{nts}, providing time labe
 \code{\link{fftw}} is an FFT, based on FFTW from \url{www.fftw.org}, represented as a type of \code{\link{spectra}}. An \code{fftw} can be quickly generated from an \code{\link{nts}}.
 
 Other \code{spectra} are generated from \code{fftw}s: \code{\link{pspectra}} (power spectra), \code{\link{xspectra}} (cross spectra), \code{\link{cospectra}}, \code{\link{quadspectra}} (quadrature spectra), \code{\link{phase}} and \code{\link{coherence}}.
+
+When the \code{eolts} package is attached to an R session, the following values are set in \code{options}:
+\itemize{
+    \item \code{time.in.format=c( "\%Y\%m\%d\%H:\%M:\%OS", "\%Y\%m\%d\%H:\%M", "\%Y\%m\%d\%H\%M\%OS", "\%Y \%b\%d\%H:\%M:\%OS", "\%Y \%b\%d\%H:\%M", "\%Y \%b\%d\%H\%M\%OS")}
+    \item \code{time.out.format = "\%Y \%m \%d \%H:\%M:\%OS3 \%Z"}
+    \item \code{time.zone = Sys.timezone()}
+}
+\code{options("time.in.format")} provides default values for the \code{in.format} argument to \code{\link{utime}}, which will try each in succession when parsing a date and time from a character string.  With the above values for \code{time.in.format} any of the following time strings can be parsed with the \code{\link{utime}} function:
+\itemize{
+    \item "2014 6 23 14:57:27.23"
+    \item "2014 6 23 14:57"
+    \item "2014 6 23 145727.23"
+    \item "2014 Jun 23 14:57:27.23"
+    \item "2014 Jun 23 14:57"
+    \item "2014 Jun 23 145727.23"
+}
 }
 \author{
 Gordon Maclean
-
 Maintainer: Gordon Maclean <maclean@ucar.edu>
 }
 \references{
