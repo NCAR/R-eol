@@ -1269,6 +1269,15 @@ setMethod("t",signature(x="nts"),
     }
 )
 
+setMethod("diff",signature(x="nts"),
+    function(x)
+    {
+        y <-  x[-1,]
+        y@data <- diff(x@data)
+        y
+    }
+)
+
 setMethod("Complex",signature(z="nts"),
     function(z) {
         z@data <- callGeneric(z@data)
