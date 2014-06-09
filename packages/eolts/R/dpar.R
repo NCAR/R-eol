@@ -33,7 +33,7 @@ dpar <- function(...,save.cache=F)
 
     dpar.list.orig <- dpar.list
 
-    temp <- list(...)
+    newvals <- list(...)
 
     # time can be set with start and end
     time.names <- c("start","end","lensec")
@@ -91,16 +91,16 @@ dpar <- function(...,save.cache=F)
     get.names <- c(data.selection.names,data.opt.names,deriv.opt.names,time.names)
 
     # 
-    if(is.null(names(temp))) {
+    if(is.null(names(newvals))) {
         # no named parameters passed, i.e. not in the form  dpar(a=99)
         # therefore we are setting values using a list:
         #	dpar(list(a=99,b=12))
         # or it is a query:
         #  dpar(c("a","b"))
-        arg <- temp[[1]]
+        arg <- newvals[[1]]
 
         amode <- mode(arg)
-        if (amode == "list") temp <- arg
+        if (amode == "list") newvals <- arg
         else if (amode == "character") {
             if (any((mn <- match(arg,get.names,nomatch=0))==0)) {
                 if (any(!is.na(match(arg,time.len.names)))) str <- 'Use "lensec" to query the time length'
@@ -119,27 +119,27 @@ dpar <- function(...,save.cache=F)
         else  stop(paste("invalid argument:", arg))
     }
     else {
-        if(mode(unlist(temp, recursive = F)) == "list")
+        if(mode(unlist(newvals, recursive = F)) == "list")
             stop("dpar(name=list()) is illegal")
     }
-    if(length(temp) == 0) return()
-    inames <- names(temp)
+    if(length(newvals) == 0) return()
+    inames <- names(newvals)
     if(is.null(inames)) stop("parameters must be given by name")
 
     # convert $month to $mon
     if (any(mn <- (inames=="month"))) {
-        temp$mon <- temp$month
+        newvals$mon <- newvals$month
         inames[mn] <- "mon"
     }
 
     # allow sloppy users to specify other names for the station parameter
     stn.alts <- c("stn","stations","station")
     if (any((mn <- match(stn.alts,inames,nomatch=0))!=0)) {
-        names(temp)[mn] <- "stns"
-        inames <- names(temp)
+        names(newvals)[mn] <- "stns"
+        inames <- names(newvals)
     }
 
-    imodes <- sapply(temp,function(x)mode(x))
+    imodes <- sapply(newvals,function(x)mode(x))
 
     mn <- match(inames,data.selection.names,nomatch=0)
     if (any(mn != 0)) {
@@ -156,7 +156,7 @@ dpar <- function(...,save.cache=F)
 
     inames <- unique(set.names[mn])
 
-    dpar.list[inames] <- temp[inames]
+    dpar.list[inames] <- newvals[inames]
     if (any(inames == "day") || any(inames == "mon"))
         dpar.list$yday <- NULL
     else if (any(inames == "yday")) {
@@ -235,8 +235,11 @@ dpar <- function(...,save.cache=F)
 
     assign(".dpar",dpar.list,envir=.eoltsEnv)
 
-    temp <- dpar.list.orig[inames]
-    invisible(temp)
+    mx <- is.na(match(inames,names(dpar.list.orig)))
+    res <- list()
+    if (any(mx)) res <- sapply(inames[mx],function(x)NULL,USE.NAMES=TRUE)
+    res <- c(res,dpar.list.orig[inames[!mx]])
+    invisible(res)
 }
 dpar.next <- function()
 {
