@@ -8,7 +8,6 @@ project_plots <- function(dataDir=Sys.getenv("SONDE_DATA"),plotDir=file.path(dat
     # AVAPS users don't want project dependent code in an .RData, so
     # things like this have to go in this package.
     dpar(platform="AVAPS")
-    Sys.setenv(PROJECT="")
     dpar(start="2008 1 1 00:00",end="2019 1 1 00:00")
 
     if (!file.exists(plotDir)) dir.create(plotDir)
