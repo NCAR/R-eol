@@ -10,6 +10,7 @@ export(
     svprofile,
     scontour,
     interpSoundings,
+    project_plots,
 
     get.sounding.histograms,
     get.sounding.weathersymbols,
