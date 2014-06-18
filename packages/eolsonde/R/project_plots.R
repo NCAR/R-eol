@@ -15,9 +15,14 @@ project_plots <- function(dataDir=Sys.getenv("SONDE_DATA"),plotDir=file.path(dat
     # set plot suffix to trailing portion of dataDir
     plotSuffix <- dataDir
     psep <- unlist(gregexpr(.Platform$file.sep,dataDir,fixed=TRUE))
-    if (tail(psep,1) == nchar(dataDir)) psep <- tail(psep,2)[1]
-    else psep <- tail(psep,1)
-    if (!is.null(psep)) plotSuffix <- substring(dataDir,psep+1)
+    while (length(psep) > 0 && tail(psep,1) == nchar(dataDir)) {
+        dataDir <- substring(dataDir,1,nchar(dataDir)-1)
+        psep <- psep[-length(psep)]
+    }
+    psep <- tail(psep,1)
+
+    if (length(psep) == 0) psep <- 0
+    plotSuffix <- substring(dataDir,psep+1)
 
     xs <- readSoundings(dir=dataDir,file="D%Y%m%d_%H%M%S_P\\.[0-9]+")
     ns <- length(xs)
