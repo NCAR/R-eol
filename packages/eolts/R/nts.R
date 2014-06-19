@@ -1363,6 +1363,11 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
         wm1 <- x1@weightmap
         wm2 <- x2@weightmap
 
+        if (length(pos) == 1 && pos == "union") {
+            tstart <- min(start(x1),start(x2))
+            tend <- max(end(x1),end(x2))
+        }
+
         class.x1 <- class(x1)
         class(x1) <- "timeSeries"
         class(x2) <- "timeSeries"
@@ -1416,6 +1421,16 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
         x1@weightmap <- as.integer(wmap)
         s1 <- c(s1,s2)
         stations(x1) <- s1
+
+        if (length(pos) == 1 && pos == "union") {
+            start(x1) <- tstart
+            end(x1) <- tend
+        }
+        else {
+            # reset start and end time of not doing union
+            start(x1) <- positions(x1)[1]
+            end(x1) <- tail(positions(x1),1)
+        }
 
         i <- 1
         while( i <= length(args)) {

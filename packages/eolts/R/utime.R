@@ -378,7 +378,7 @@ setMethod("Math",signature(x="utime"),
 setMethod("Summary",signature(x="utime"),
     function(x,...,na.rm=FALSE)
     {
-        x@.Data <- callGeneric(x@.Data)
+        x@.Data <- callGeneric(x@.Data,...,na.rm=na.rm)
         x
     }
 )
