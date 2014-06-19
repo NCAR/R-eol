@@ -1369,7 +1369,7 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
 
         # cat("calling seriesMerge, timeSeries, timeSeries\n")
         x1 <- splusTimeSeries::seriesMerge(x1,x2,pos=pos,
-            how=how,error.how=error.how,matchtol=matchtol,suffixes=suffixes[1:2])
+            how=how,error.how=error.how,matchtol=matchtol/86400,suffixes=suffixes[1:2])
         class(x1) <- class.x1
 
         # seriesMerge adds arg numbers to dimnames: "a" + "b" -> "a1" "b2". Remove them
