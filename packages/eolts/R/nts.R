@@ -1297,18 +1297,18 @@ setGeneric("seriesMerge")
 # setGeneric("seriesMerge",function(x1,x2,...) standardGeneric("seriesMerge"))
 
 setMethod("seriesMerge",signature(x1="nts",x2="nts"),
-    function(x1,x2,...)
+    function(x1,x2,...,pos="union")
     {
 
         args <- list(...)
 
-        haspos <- unlist(sapply(args, function(x) {
+        is_ts <- unlist(sapply(args, function(x) {
                 if (.hasSlot(x,"positions"))
-                    T
+                    TRUE
                 else
-                    F
+                    FALSE
                         }))
-        ndots <- sum(haspos)
+        ndots <- sum(is_ts)
 
         if (hasArg(how)) {
             if ("how" %in% names(args)) how <- args$how
@@ -1340,7 +1340,7 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
         #     ", args$error.how=",args$error.how,
         #     ", error.how=",error.how,"\n")
 
-        args <- args[haspos]
+        args <- args[is_ts]
 
         nc1 <- ncol(x1)
         nc2 <- ncol(x2)
@@ -1368,7 +1368,7 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
         class(x2) <- "timeSeries"
 
         # cat("calling seriesMerge, timeSeries, timeSeries\n")
-        x1 <- splusTimeSeries::seriesMerge(x1,x2,pos="union",
+        x1 <- splusTimeSeries::seriesMerge(x1,x2,pos=pos,
             how=how,error.how=error.how,matchtol=matchtol,suffixes=suffixes[1:2])
         class(x1) <- class.x1
 
@@ -1398,7 +1398,7 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
                     if (nrow(w1) == nrow(w2) && nrow(w1) == nrow(x1)) w1 <- cbind(w1@data,w2@data)
                     else {
                         w1 <- seriesMerge(w1,w2,
-                            pos="union",how=how,error.how=error.how,
+                            pos=pos,how=how,error.how=error.how,
                             matchtol=matchtol,suffixes=suffixes[1:2])@data
                     }
                 }
@@ -1451,13 +1451,13 @@ setMethod("seriesMerge",signature(x1="nts",x2="numeric"),
 
         args <- list(...)
 
-        haspos <- unlist(sapply(args, function(x) {
+        is_ts <- unlist(sapply(args, function(x) {
                 if (.hasSlot(x,"positions"))
-                    T
+                    TRUE
                 else
-                    F
+                    FALSE
                     }))
-        ndots <- sum(haspos)
+        ndots <- sum(is_ts)
 
         if (hasArg(how)) how <- args$how
         else how <- NULL
@@ -1475,7 +1475,7 @@ setMethod("seriesMerge",signature(x1="nts",x2="numeric"),
         if (hasArg(suffixes)) suffixes <- args$suffixes
         else suffixes <- paste(".", 1:(ndots + 2), sep="")
 
-        args <- args[haspos]
+        args <- args[is_ts]
 
         nc1 <- ncol(x1)
         w1 <- x1@weights
@@ -1605,13 +1605,14 @@ setMethod("Rbind",signature(x1="nts",x2="nts"),
 setGeneric("Cbind",function(x1,x2,...) standardGeneric("Cbind"))
 
 setMethod("Cbind",signature(x1="nts",x2="nts"),
-    function(x1,x2,pos="union",...) seriesMerge(x1,x2,pos=pos,...)
+    function(x1,x2,...,pos="union")
+        seriesMerge(x1,x2,...,pos=pos)
     )
 
 setMethod("Cbind",signature(x1="ANY",x2="nts"),
     function(x1,x2,...)
     {
-        if (is.null(x1)) x2
+        if (is.null(x1)) Cbind(x2,...)
         else stop("unsupported argument type x1")
     }
     )
@@ -1619,7 +1620,7 @@ setMethod("Cbind",signature(x1="ANY",x2="nts"),
 setMethod("Cbind",signature(x1="nts",x2="ANY"),
     function(x1,x2,...)
     {
-        if (is.null(x2)) x1
+        if (is.null(x2)) Cbind(x1,...)
         else stop("unsupported argument type x2")
     }
     )

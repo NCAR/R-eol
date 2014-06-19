@@ -120,10 +120,20 @@ test.nts <- function()
 
     xxx <- Cbind(x,xx)
     checkEquals(class(xxx)[1],"nts")
+    checkEquals(nrow(xxx),nrow(x))
+    checkEquals(ncol(xxx),ncol(x) + ncol(xx))
     checkEquals(x@data,xxx@data[,1:nc])
     checkEquals(xx@data,xxx@data[,(nc+1):(nc*2)])
 
-    # approx if x to txn times, which are earlier by 0.4 sec. So 
+    xxx <- Cbind(x,xx,xx)
+    checkEquals(class(xxx)[1],"nts")
+    checkEquals(nrow(xxx),nrow(x))
+    checkEquals(ncol(xxx),ncol(x) + 2 * ncol(xx))
+    checkEquals(x@data,xxx@data[,1:nc])
+    checkEquals(xx@data,xxx@data[,(nc+1):(nc*2)])
+    checkEquals(xx@data,xxx@data[,(nc*2+1):(nc*3)])
+
+    # approx x to txn times, which are earlier by 0.4 sec
     xx <- approx(x,xout=txn,method="constant",f=0,rule=2)
     # checkEquals(class(xx)[1],"nts")
     checkEquals(dim(xx),c(nr,nc))
@@ -131,6 +141,7 @@ test.nts <- function()
     # last value of x won't exist in new timeseries. 
     checkTrue(all(abs((x@data[-nr,]-xx@data[-1,])) < .00001))
     checkTrue(all(abs((xx@data[1,]-xx@data[2,])) < .00001))
+
 
     # TODO: seriesMerge
 
