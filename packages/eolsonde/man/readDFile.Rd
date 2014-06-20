@@ -23,9 +23,9 @@ Logical value, specifying whether the "STA" sounding field in the D file is used
 From the variable names in the Dfile header, the following translation from "Header Name" to "Column Name" is applied to generate column names in the sounding. Also shown are the missing data value for each column, and the good STA value, which is used if sta_clean is TRUE:
 \tabular{llrl}{
     Header Name \tab Column Name \tab Missing Data \tab Good STA \cr
-    AirPress \tab P \tab  9999 \tab S00 or S10\cr
-    AirTemp \tab T \tab 99 \tab S00 or S10\cr
-    RelHumid \tab RH \tab 999 \tab S00 or S10\cr
+    AirPress \tab P \tab  9999 \tab S00 or S01\cr
+    AirTemp \tab T \tab 99 \tab S00 or S01\cr
+    RelHumid \tab RH \tab 999 \tab S00 or S01\cr
     WindDir \tab Wdir \tab 999 \tab S00 or S10\cr
     WindSpd \tab Wspd \tab 999 \tab S00 or S10\cr
     VertVeloc \tab Vz \tab 99 \tab S00 or S10\cr
@@ -33,8 +33,8 @@ From the variable names in the Dfile header, the following translation from "Hea
     GPSLatitude \tab lat \tab 99 \tab S00 or S10\cr
     GeopotenAltitude \tab Alt_gp \tab 99999, 9999 \tab S00 or S10\cr
     GPSWnd \tab wsat \tab 999 \tab S00 or S10\cr
-    SondeRH1 \tab rh1 \tab 999 \tab S00 or S10\cr
-    SondeRH2 \tab rh2 \tab 999 \tab S00 or S10\cr
+    SondeRH1 \tab RH1 \tab 999 \tab S00 or S01\cr
+    SondeRH2 \tab RH2 \tab 999 \tab S00 or S01\cr
     GPSSnd \tab ssat \tab 999 \tab S00 or S10\cr
     WindError \tab Werr \tab 99 \tab S00 or S10\cr
     GPSAltitude \tab Alt_gps \tab 99999 \tab S00 or S10\cr

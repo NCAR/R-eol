@@ -51,17 +51,17 @@ The directories are scanned for files whose names match one of the patterns in t
 
 If the file argument contains time descriptors such as "\%Y", the initial string before the time descriptors should be a fixed string, i.e. it should not contain regular expressions.  The portion after a "\%S" time descriptor can contain regular expressions, such as ".*\\.gz".  If the file argument contains time descriptors, and \code{list.files} does not match any files, it is tried again, allowing any trailing characters after the file string.
 
-The default value: \code{file = "D\%Y\%m\%d_\%H\%M\%S_P"} will match file names starting with D, followed by "YYYYMMDD_HHMMSS", followed by "_P", followed by any trailing characters.  Therefore it would match any of \enumerate{
+The default value: \code{file = "D\%Y\%m\%d_\%H\%M\%S_P"} will match file names starting with D, followed by "YYYYMMDD_HHMMSS", followed by "_P", followed by any trailing characters.  Therefore it would match any of \itemize{
         \item D20080816_003205_PQC
         \item D20080816_003205_P
         \item D20080816_003205_P.gz
     }
 
-If the file pattern contains time descriptors, then it is used to parse the times of the files from the names, using \code{strptime}. A file is selected to be read if the time in its name falls between \code{start} and \code{end}.
+If the file pattern contains time descriptors, then it is used to parse time from the file names, using \code{\link{strptime}}. A file is selected to be read if the time in its name falls between \code{start} and \code{end}.
 
 If the first string in the file contains "AVAPS", it is read with \code{\link{readDFile}}, otherwise with \code{\link{readQCFile}}.
 
-\code{\link{readDFile}} and \code{\link{readQCFile}} use the R functions \code{read.table} and \code{scan}. These functions are able to read files compressed with 'gzip2', 'bzip2', 'xz' or 'lzma'.
+\code{\link{readDFile}} and \code{\link{readQCFile}} use the R functions \code{\link{read.table}} and \code{\link{scan}}. These functions are able to read files compressed with 'gzip2', 'bzip2', 'xz' or 'lzma'.
 }
 \value{
 A list of sounding time series objects. The names of the elements in the list are the file names of the sounding. Each time series element is a \code{\link{dat}} object, containing a data.frame, with a column for each variable in the sounding. The time of each row in the time series can be accessed with the \code{\link{positions}} method.
@@ -79,12 +79,11 @@ A list of sounding time series objects. The names of the elements in the list ar
 }
 \examples{
 
-options(time.zone="UTC")
-
 # Read sample D files provided in the eolsonde R package
 dir = system.file(package="eolsonde","unitTests","data","D-file")
 
 # start time for search of soundings
+options(time.zone="UTC")
 t1 = utime("2008 8 15 17:20")
 # end time
 t2 = t1 + 60 * 20   # add 20 minutes
