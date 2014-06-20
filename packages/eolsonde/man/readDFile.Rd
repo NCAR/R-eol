@@ -21,7 +21,7 @@ Logical value, specifying whether the "STA" sounding field in the D file is used
 \code{readDFile} reads the "AVAPS-" and "STA" columns in the D file, and makes no assumptions about the number of lines in the header. The names of the variables are extracted from the first two AVAPS-T, COM lines in the file, and the units from the third AVAPS-T, COM line.
 
 From the variable names in the Dfile header, the following translation from "Header Name" to "Column Name" is applied to generate column names in the sounding. Also shown are the missing data value for each column, and the good STA value, which is used if sta_clean is TRUE:
-\tabular{llrl}{
+\tabular{llll}{
     Header Name \tab Column Name \tab Missing Data \tab Good STA \cr
     AirPress \tab P \tab  9999 \tab S00 or S01\cr
     AirTemp \tab T \tab 99 \tab S00 or S01\cr
