@@ -24,11 +24,11 @@ Character string describing the time zone. See \code{\link{OlsonNames}}.
 \details{
 When the \code{eolts} package is attached to an R session, the following values are set in \code{options}:
 \itemize{
-    \item \code{time.in.format=c( "\%Y\%m\%d\%H:\%M:\%OS", "\%Y\%m\%d\%H:\%M", "\%Y\%m\%d\%H\%M\%OS", "\%Y \%b\%d\%H:\%M:\%OS", "\%Y \%b\%d\%H:\%M", "\%Y \%b\%d\%H\%M\%OS")}
+    \item \code{time.in.format = c( "\%Y\%m\%d\%H:\%M:\%OS", "\%Y\%m\%d\%H:\%M", "\%Y\%m\%d\%H\%M\%OS", "\%Y \%b\%d\%H:\%M:\%OS", "\%Y \%b\%d\%H:\%M", "\%Y \%b\%d\%H\%M\%OS")}
     \item \code{time.out.format = "\%Y \%m \%d \%H:\%M:\%OS3 \%Z"}
     \item \code{time.zone = Sys.timezone()}
 }
-\code{options("time.in.format")} provides default values for the \code{in.format} argument to \code{\link{utime}}, which will try each in succession when parsing a date and time from a character string.  With the above values for \code{time.in.format} any of the following time strings can be parsed with the \code{\link{utime}} function:
+\code{options("time.in.format")} provides default values for the \code{in.format} argument to \code{\link{utime}}.  When parsing a character time value, each member of \code{in.format} will be tried in succession until success.  With the above values for \code{time.in.format} any of the following time strings can be parsed with the \code{\link{utime}} function:
 \itemize{
     \item "2014 6 23 14:57:27.23"
     \item "2014 6 23 14:57"

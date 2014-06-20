@@ -112,7 +112,9 @@ Gordon Maclean
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-class?utime \code{"\linkS4class{nts}"}
+\"? utime\" or \code{\link{utime}}
+\"? nts\" or \code{\link{nts}}
+\"class? nts\" or \code{"\linkS4class{nts}"}
 }
 \examples{
 options(time.zone="US/Central")

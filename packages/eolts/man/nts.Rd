@@ -1,7 +1,7 @@
 \name{nts}
 \alias{nts}
 \title{
-Construct an object of \code{"\linkS4class{nts}"}.
+Construct an object of class \code{"\linkS4class{nts}"}.
 }
 \description{
 Create an object of \code{"\linkS4class{nts}"} from a matrix or data.frame and an associated vector of \code{"\linkS4class{utime}"}s, whose length must be the same as the number of rows in the matrix or data frame.  Each column of the matrix or data.frame is a different time series variable. Each row is a different observation in time.
@@ -84,7 +84,7 @@ apply(x, 1, max, na.rm=TRUE)
 it = c(utime("2013 oct 13 14:00:30"),utime("2013 oct 13 14:00:59"))
 y = x[it,]
 
-# Use tlocator function to select a time range from a plot, and then replot.
+# Use tlocator function to select a start and end time from a plot, and then replot.
 it = tlocator(2)
 plot(x[it,])
 

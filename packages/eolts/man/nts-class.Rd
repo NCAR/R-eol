@@ -96,24 +96,24 @@ Objects can be created by calls of the form \code{new("nts", ...)}, though the u
 }
 \section{Slots}{
   \describe{
-    \item{\code{weights}:}{Object of class \code{"matrix"} ~~ }
-    \item{\code{weightmap}:}{Object of class \code{"integer"} ~~ }
-    \item{\code{stations}:}{Object of class \code{"integer"} ~~ }
-    \item{\code{deltat}:}{Object of class \code{"numeric"} ~~ }
-    \item{\code{wss}:}{Object of class \code{"numeric"} ~~ }
-    \item{\code{time.format}:}{Object of class \code{"character"} ~~ }
-    \item{\code{time.zone}:}{Object of class \code{"character"} ~~ }
-    \item{\code{fiscal.year.start}:}{Object of class \code{"numeric"} ~~ }
-    \item{\code{type}:}{Object of class \code{"character"} ~~ }
-    \item{\code{data}:}{Object of class \code{"ANY"} ~~ }
-    \item{\code{positions}:}{Object of class \code{"positions"} ~~ }
-    \item{\code{start.position}:}{Object of class \code{"positions"} ~~ }
-    \item{\code{end.position}:}{Object of class \code{"positions"} ~~ }
-    \item{\code{future.positions}:}{Object of class \code{"positions"} ~~ }
-    \item{\code{units}:}{Object of class \code{"character"} ~~ }
-    \item{\code{title}:}{Object of class \code{"character"} ~~ }
-    \item{\code{documentation}:}{Object of class \code{"character"} ~~ }
-    \item{\code{attributes}:}{Object of class \code{"ANY"} ~~ }
+    \item{\code{data}:}{A \code{matrix} or \code{data.frame}, containing a row for each observation in time, and a column for each variable that was sampled.}
+    \item{\code{positions}:}{Object of class \code{"positions"}, containing the times of the observations, whose length should be equal to \code{nrow(data)}. The \code{\link{nts}} function converts the positions to \code{\link{utime}}s.}
+    \item{\code{units}:}{Object of class \code{"character"}, containing the units of each column variable.}
+    \item{\code{weights}:}{Object of class \code{"matrix"}, containing the numeric weights to be assigned each observation. The number of rows in \code{weights} should be the same as \code{nrow(data)} and \code{length(positions)}. \code{weights} is often the number of points in each time average, as read from a NetCDF file, and is used the the \code{\link{average}} method. }
+    \item{\code{weightmap}:}{Object of class \code{"integer"}, with a length equal to \code{ncol(data)}.  For each column in \code{data}, the index of its column in \code{weights}. More than one column in \code{data} can use the same column in \code{weights}.} 
+    \item{\code{stations}:}{Object of class \code{"integer"}, a vector of observation station numbers to be associated with each column in \code{data}, or NULL.}
+    \item{\code{deltat}:}{Object of class \code{"numeric"}, computed for each \code{\link{nts}} with the \code{\link{deltat}} function.}
+    \item{\code{wss}:}{Object of class \code{"numeric"}. Window squared and summed.  A numeric value containing the sum of the squared window coefficients * N.  Windowing data is commonly done in spectral analysis. For a square window of all 1's, wss = N^2.}
+    \item{\code{time.format}:}{Object of class \code{"character"}, containing the \code{\link{utime}} time format to be used when formatting times in methods such as \code{show} and \code{write}.}
+    \item{\code{time.zone}:}{Object of class \code{"character"}, containing the \code{\link{utime}} time zone to be used when formatting times in methods such as \code{show} and \code{write}.}
+    \item{\code{fiscal.year.start}:}{Not used. A remnant of splusTimeSeries::timeSeries.}
+    \item{\code{type}:}{Not used. A remnant of splusTimeSeries::timeSeries.}
+    \item{\code{start.position}:}{Object of class \code{"positions"}.}
+    \item{\code{end.position}:}{Object of class \code{"positions"}.}
+    \item{\code{future.positions}:}{Not used. A remnant of splusTimeSeries::timeSeries. }
+    \item{\code{title}:}{Object of class \code{"character"}. A hack for putting titles on plots.}
+    \item{\code{documentation}:}{Object of class \code{"character"}, generally not used.}
+    \item{\code{attributes}:}{Object of class \code{"ANY"} Any associated attributes.}
   }
 }
 \section{Extends}{
@@ -217,12 +217,39 @@ Gordon Maclean
 \note{
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
 \seealso{
-\code{\linkS4class{utime}}
+\code{\link{nts}}: \code{? nts}
+
+\code{"\linkS4class{utime}"}: \code{class? utime}
+
+\code{\link{utime}}: \code{? utime}
 }
 \examples{
-showClass("nts")
+# create a 20x4 time series of random data, at 10 second time resolution
+options(time.zone="US/Central")
+nr = 20
+nc = 4
+dt = 10
+tx = seq(from=utime("2013 oct 13 14:00"), by=dt, length=nr)
+dx = matrix(runif(nr*nc), ncol=nc)
+x = nts(dx, tx, units=rep("m",nc), names=c("V1","V2","V3","V4"))
+
+# Time series line plot
+plot(x[,c("V1","V3")])
+
+# Medians of each column. For actual data, na.rm argument is commonly used.
+apply(x, 2, median, na.rm=TRUE)
+
+# Max of each row.
+apply(x, 1, max, na.rm=TRUE)
+
+# select rows from x by a range of time
+it = c(utime("2013 oct 13 14:00:30"),utime("2013 oct 13 14:00:59"))
+y = x[it,]
+
+# Use tlocator function to select a start and end time from a plot, and then replot.
+it = tlocator(2)
+plot(x[it,])
+
 }
 \keyword{classes}
