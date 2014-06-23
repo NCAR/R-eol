@@ -92,7 +92,7 @@
 Yet another time series class in R. 
 }
 \section{Objects from the Class}{
-Objects can be created by calls of the form \code{new("nts", ...)}, though the usual way is with \code{\link{nts}}.
+Objects can be created by calls of the form \code{new("nts", ...)}, though the usual way is with the \code{\link{nts}} function.
 }
 \section{Slots}{
   \describe{

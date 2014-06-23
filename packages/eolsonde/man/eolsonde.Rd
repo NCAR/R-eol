@@ -20,21 +20,18 @@ Packaged: \tab 2014-05-20 19:33:44 UTC; maclean\cr
 Built: \tab R 3.0.2; ; 2014-05-20 19:33:45 UTC; unix\cr
 }
 
-Index:
-\preformatted{
-eolsonde        Read and Visualize EOL sounding data
-readDFile       Read a D file.
-readQCFile      Read a QC file.
-readSoundings   Read one or more D or QC files.
-sprofile        Plot profiles one or more variables in one sounding.
-svprofile       Plot profiles of one variable over multiple soundings
-scontour        Plot contours of a variable over X=sounding, Y=pressure or altitude
+Functions:
+\describe{
+\item{readDFile}{Read a D file}
+\item{readQCFile}{Read a QC file}
+\item{readSoundings}{Read one or more D or QC files}
+\item{sprofile}{Plot profiles one or more variables in one sounding}
+\item{svprofile}{Plot profiles of one variable over multiple soundings}
+\item{scontour}{Plot contours of a variable over X=sounding, Y=pressure or altitude}
 }
-~~ An overview of how to use the package, including the most important ~~
-~~ functions ~~
 }
 \author{
-Liangying Zhang
+Liangying Zhang\cr
 Maintainer: Gordon Maclean <maclean@ucar.edu>
 }
 \references{
