@@ -473,7 +473,7 @@ R_netcdf::~R_netcdf()
         int result = 0;
         enum clnt_stat clnt_stat;
 
-        if ((clnt_stat = clnt_call (_clnt, SYNCFILES,
+        if ((clnt_stat = clnt_call (_clnt, SYNC_FILES,
                 (xdrproc_t) xdr_void, (caddr_t) NULL,
                 (xdrproc_t) xdr_int, (caddr_t) &result,
                 _rpcOtherTimeout)) != RPC_SUCCESS)
@@ -481,7 +481,7 @@ R_netcdf::~R_netcdf()
             Rf_warning(clnt_sperror(_clnt,"nc_server sync failed"));
         }
 
-        if ((clnt_stat = clnt_call(_clnt, CLOSECONNECTION,
+        if ((clnt_stat = clnt_call(_clnt, CLOSE_CONNECTION,
                         (xdrproc_t) xdr_int, (caddr_t) &_id,
                         (xdrproc_t) xdr_int, (caddr_t) &result,
                         _rpcOtherTimeout)) != RPC_SUCCESS)
@@ -762,7 +762,7 @@ void R_netcdf::rpcopen(void) throw(RPC_Exception)
 #endif
 
     result = 0;
-    if ((clnt_stat = clnt_call(_clnt, OPENCONNECTION,
+    if ((clnt_stat = clnt_call(_clnt, OPEN_CONNECTION,
                     (xdrproc_t) xdr_connection, (caddr_t) &conn,
                     (xdrproc_t) xdr_int,  (caddr_t) &result,
                     _rpcOtherTimeout)) != RPC_SUCCESS) {
@@ -904,16 +904,16 @@ int R_netcdf::writeHistory(const string& hist) throw(RPC_Exception)
     if (!_clnt) rpcopen();
     int result;
     enum clnt_stat clnt_stat;
-    historyrec outRec;
+    history_attr hattr;
 
-    outRec.connectionId = _id;
-    outRec.history = const_cast<char*>(hist.c_str());
+    hattr.connectionId = _id;
+    hattr.history = const_cast<char*>(hist.c_str());
 
     result = 0;
 
     if (_rpcBatchPeriod > 0) {
-        clnt_stat = clnt_call(_clnt, WRITEHISTORYRECBATCH,
-                (xdrproc_t) xdr_historyrec, (caddr_t) &outRec,
+        clnt_stat = clnt_call(_clnt, WRITE_HISTORY_BATCH,
+                (xdrproc_t) xdr_history_attr, (caddr_t) &hattr,
                 (xdrproc_t) NULL , (caddr_t) NULL,
                 _batchTimeout);
         if (clnt_stat != RPC_SUCCESS) {
@@ -922,8 +922,8 @@ int R_netcdf::writeHistory(const string& hist) throw(RPC_Exception)
         }
     }
     else {
-        clnt_stat = clnt_call(_clnt, WRITEHISTORYREC,
-                (xdrproc_t) xdr_historyrec, (caddr_t) &outRec,
+        clnt_stat = clnt_call(_clnt, WRITE_HISTORY,
+                (xdrproc_t) xdr_history_attr, (caddr_t) &hattr,
                 (xdrproc_t) xdr_int, (caddr_t) &result ,
                 _rpcWriteTimeout);
         if (clnt_stat != RPC_SUCCESS) {
@@ -1026,7 +1026,7 @@ int R_netcdf::write(datarec_float *rec) throw(RPC_Exception)
     if (_rpcBatchPeriod == 0 || (time(0) - _lastNonBatchWrite > _rpcBatchPeriod))
         return nonBatchWrite(rec);
 
-    clnt_stat = clnt_call(_clnt, WRITEDATARECBATCH_FLOAT,
+    clnt_stat = clnt_call(_clnt, WRITE_DATAREC_BATCH_FLOAT,
             (xdrproc_t) xdr_datarec_float, (caddr_t) rec,
             (xdrproc_t) NULL, (caddr_t) NULL,
             _batchTimeout);
@@ -1042,7 +1042,7 @@ int R_netcdf::nonBatchWrite(datarec_float *rec) throw(RPC_Exception)
     int result = 0;
     enum clnt_stat clnt_stat;
     for ( ; ; ) {
-        clnt_stat = clnt_call(_clnt, WRITEDATAREC_FLOAT,
+        clnt_stat = clnt_call(_clnt, WRITE_DATAREC_FLOAT,
                 (xdrproc_t) xdr_datarec_float, (caddr_t) rec,
                 (xdrproc_t) xdr_int, (caddr_t) &result,
                 _rpcWriteTimeout);
@@ -1076,7 +1076,7 @@ int R_netcdf::nonBatchWrite(datarec_float *rec) throw(RPC_Exception)
 void R_netcdf::checkError() throw(RPC_Exception)
 {
     char* errormsg = 0;
-    enum clnt_stat clnt_stat = clnt_call(_clnt,CHECKERROR,
+    enum clnt_stat clnt_stat = clnt_call(_clnt,CHECK_ERROR,
             (xdrproc_t) xdr_int, (caddr_t) &_id,
             (xdrproc_t) xdr_wrapstring, (caddr_t) &errormsg,
             _rpcWriteTimeout);
@@ -1183,11 +1183,8 @@ int R_netcdf::NSVarGroupFloat::open() throw(RPC_Exception)
     }
 
     n = _vars.size();
-    ddef.fields.fields_val = new field[n];
-    ddef.fields.fields_len = n;
-
-    ddef.attrs.attrs_val = new str_attrs[n];
-    ddef.attrs.attrs_len = n;
+    ddef.variables.variables_val = new variable[n];
+    ddef.variables.variables_len = n;
 
 #ifdef DEBUG
     Rprintf("_open _vars.size()=%d\n",n);
@@ -1196,15 +1193,18 @@ int R_netcdf::NSVarGroupFloat::open() throw(RPC_Exception)
 #ifdef DEBUG
         Rprintf("_open i=%d name=%s\n",i,_vars[i].getName().c_str());
 #endif
-        ddef.fields.fields_val[i].name =  (char *) _vars[i].getName().c_str();
-        ddef.fields.fields_val[i].units = (char *) _vars[i].getUnits().c_str();
 
-        ddef.attrs.attrs_val[i].attrs.attrs_val = 0;
-        ddef.attrs.attrs_val[i].attrs.attrs_len = m = _vars[i].getNumAttributes();
-        ddef.attrs.attrs_val[i].attrs.attrs_val = new str_attr[m];
+        struct variable& dvar = ddef.variables.variables_val[i];
+
+        dvar.name =  (char *) _vars[i].getName().c_str();
+        dvar.units = (char *) _vars[i].getUnits().c_str();
+
+        dvar.attrs.attrs_len = m = _vars[i].getNumAttributes();
+        dvar.attrs.attrs_val = new str_attr[m];
+
         for (j = 0; j < m; j++) {
             NcAttrT<string> &a = _vars[i].getAttribute(j);
-            str_attr *s = ddef.attrs.attrs_val[i].attrs.attrs_val + j;
+            str_attr *s = dvar.attrs.attrs_val + j;
             s->name = (char *)a.getName().c_str();
             if (a.getLength() > 0) {
                 const vector<string>& val = a.getValue();
@@ -1224,7 +1224,7 @@ int R_netcdf::NSVarGroupFloat::open() throw(RPC_Exception)
 #endif
     for (ntry = 0; ntry < 5; ntry++) {
         result = 0;
-        clnt_stat = clnt_call(clnt, DEFINEDATAREC,
+        clnt_stat = clnt_call(clnt, DEFINE_DATAREC,
                 (xdrproc_t) xdr_datadef, (caddr_t) &ddef,
                 (xdrproc_t) xdr_int, (caddr_t) &result,
                 _conn->getRPCOtherTimeout());
@@ -1241,12 +1241,12 @@ int R_netcdf::NSVarGroupFloat::open() throw(RPC_Exception)
     if (ntry > 0 && clnt_stat == RPC_SUCCESS) 
         Rprintf("nc_server OK\n");
 
-    delete [] ddef.fields.fields_val;
+    for (i=0; i < n; i++) {
+        struct variable& dvar = ddef.variables.variables_val[i];
+        delete [] dvar.attrs.attrs_val;
+    }
+    delete [] ddef.variables.variables_val;
     delete [] ddef.dimensions.dimensions_val;
-
-    for (i=0; i < n; i++)
-        delete [] ddef.attrs.attrs_val[i].attrs.attrs_val;
-    delete [] ddef.attrs.attrs_val;
 
     if (clnt_stat != RPC_SUCCESS) return -1;
 

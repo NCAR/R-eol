@@ -163,7 +163,7 @@ fi
 # it could be changed to do for windows what AC_CONFIG_FILES does here.
 # That has not been done, and we instead issue a sed command to
 # set the correct value in R/netcdfWrite.R.
-AC_CHECK_LIB([nc_server_rpc],[writedatarec_float_1],
+AC_CHECK_LIB([nc_server_rpc],[write_datarec_float_2],
     [
         HAVE_NC_SERVER=TRUE
         CPPFLAGS+=" -DHAVE_NC_SERVER"
