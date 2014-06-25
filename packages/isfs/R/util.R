@@ -23,6 +23,10 @@ dataset <- function(which,verbose=F,datasets=NULL)
     #   qcdir   directory of cal files, which is copied to the environment variable QC_DIR
     #   sonicdir directory of sonic anemometer cal files, which is copied to the
     #           environment variable SONIC_DIR
+    #   wind3d_horiz_rotation
+    #           copied to the environment variable WIND3D_HORIZ_ROTATION
+    #   wind3d_tilt_correction
+    #           copied to the environment variable WIND3D_TILT_CORRECTION
     #   f       an arbitrary function which can perform any extra settings
     if (is.null(datasets)) {
         if (!exists(".datasets")) return(NULL)
@@ -60,7 +64,14 @@ dataset <- function(which,verbose=F,datasets=NULL)
 
     dpar(datacoords=dset$datacoords,lenfile=dset$lenfile)
     Sys.setenv(QC_DIR=dset$qcdir)
-    Sys.setenv(SONIC_DIR=dset$sonicdir)
+    if (!is.null(dset$sonicdir))
+        Sys.setenv(SONIC_DIR=dset$sonicdir)
+
+    if (!is.null(dset$wind3d_horiz_rotation))
+        Sys.setenv(WIND3D_HORIZ_ROTATION=dset$wind3d_horiz_rotation)
+
+    if (!is.null(dset$wind3d_tilt_correction))
+        Sys.setenv(WIND3D_TILT_CORRECTION=dset$wind3d_tilt_correction)
 
     ncf <- Sys.setenv(NETCDF_FILE=dset$ncf)
     ncd <- Sys.setenv(NETCDF_DIR=dset$ncd)
@@ -79,6 +90,8 @@ dataset <- function(which,verbose=F,datasets=NULL)
                 "dpar(\"lenfile\")=",dpar("lenfile")," sec\n",
                 "QC_DIR=",Sys.getenv("QC_DIR"), "\n",
                 "SONIC_DIR=",Sys.getenv("SONIC_DIR"),"\n",
+                "WIND3D_HORIZ_ROTATION=",Sys.getenv("WIND3D_HORIZ_ROTATION"),"\n",
+                "WIND3D_TILT_CORRECTION=",Sys.getenv("WIND3D_TILT_CORRECTION"),"\n",
                 "dpar(\"datacoords\")=\"", dpar("datacoords"),"\" (coordinates of netcdf data)\n", sep=""))
         cat(paste("************************************************\n"))
     }
