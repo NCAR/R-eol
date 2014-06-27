@@ -38,8 +38,8 @@ dat.azel.sun <- function(what,lat=dpar("lat"),lon=dpar("lon"),dt=dpar("avg"),
             warning('dpar("lat") not set, using lat=NA')
             lat <- NA
         }
-        sunpos <- solar.lha.dec(times,lon)
-        x <- solar.azm.elev(sunpos,lat)
+        sunpos <- solar_lha_dec(times,lon)
+        x <- solar_azm_elev(sunpos,lat)
         x <- nts(matrix(c(x$azm,x$elev),ncol=2,
                 dimnames=list(NULL,c("az.sun","el.sun"))),
             times,units=c("deg","deg"))
@@ -63,7 +63,7 @@ dat.el.sun <- function(what,lat=dpar("lat"),lon=dpar("lon"),dt=dpar("avg"),
     x[,"el.sun"]
 
 }
-solar.lha.dec <- function(times,lon) {
+solar_lha_dec <- function(times,lon) {
     #
     # Computes the position of the sun to within .1 min of arc.   Provides
     # local hour angle (lha) and the earth's declanation (decl) given the
@@ -129,7 +129,7 @@ solar.lha.dec <- function(times,lon) {
 
     list(decl=decl.rad, lha=lha.rad)
 }
-solar.azm.elev <- function(sunpos,lat) {
+solar_azm_elev <- function(sunpos,lat) {
     #
     # Function     AZM_ELEV
     #

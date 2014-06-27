@@ -776,18 +776,6 @@ setMethod("sites","dat",
     }
     )
 
-# The following dimnames replacement function is critical.  Without it,
-# these statements will cause a Splus crash (happens in
-# version 6.0, 6.0.1, 6.1):
-#         x <- nts(matrix(1:10, ncol=2), 1:5)
-#         class(x) <- "dat"
-#         y <- x
-#         dimnames(y) <- list(NULL, rep("quack", ncol(y)))
-#         dimnames(y) <- list(NULL, rep("quack", ncol(y)))
-# However if we define a separate dimnames replacement function for
-# dat, rather than inheriting nts's dimnames function, then the
-# crash doesn't happen.
-
 setReplaceMethod("dimnames", signature(x="dat",value="list"),
     function(x,value)
     {

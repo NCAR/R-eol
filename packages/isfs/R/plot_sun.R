@@ -7,11 +7,12 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-plot.sunangle <- function(browse=F,year=2006,lat=40,lon=-105,yhi=90,twilight=T,localhours=T)
+plot_sunangle <- function(browse=F,year=2006,lat=40,lon=-105,
+    yhi=90,twilight=T,localhours=T)
 {
     cat(paste("\nPlotting Sun Angles For: lat,lon =",lat,"/",lon,"\n"))
     cat("
-        Usage: plot.sunangle(...)	with parameter defaults:
+        Usage: plot_sunangle(...)	with parameter defaults:
         'lat=40'	in degrees (-lat for 'south')
         'lon=-105'	in degrees (-lon for 'west'...ie USA)
         'yhi=90'	upper plot limit for azimuth
@@ -235,40 +236,12 @@ plot.sunangle <- function(browse=F,year=2006,lat=40,lon=-105,yhi=90,twilight=T,l
 
         return()
 }
-plot.sunshadow <- function(year=2006,browse=F,lat=40,lon=-105,range=4,localhours=T,lowest=0,byweeks=1)
-    #----------------------------------------
-    #
-    #  $Source: /code/cvs/S_R/local/isff/plot.sunshadow.q,v $
-    #  $Revision: 1.4 $
-    #  $Date: 2006/12/16 04:41:14 $
-    # 
-    #  Description:
-    #	Plots extent of a vertical structure's shadow
-    #	for the given lat/lon/year
-    #	lat=40,lon=-105 defaults: for Marshall 
-    #
-    #  $Log: plot.sunshadow.q,v $
-    #  Revision 1.4  2006/12/16 04:41:14  maclean
-    #  *** empty log message ***
-    #
-    #  Revision 1.3  2006/10/18 22:39:23  militzer
-    #  Oops changed name back to 'plot.sunshadow' from 'plot.sunshadow1'
-    #  Also fixed some warnings about substitution lengths where the 'sun'
-    #  value from dat function is actually returned as 289 entries long not 288
-    #
-    #  Revision 1.2  2006/10/18 22:20:05  militzer
-    #  Added some more usage messages and notes on the plot.
-    #  Added option for displaying hours in local standard time
-    #  based on lon. (default), or else gmt
-    #  Changed so that it always shows the hour isolines and put
-    #  the color for jun-dec vs jan-jun difference back in
-    #
-    #
-    #----------------------------------------
+plot_sunshadow <- function(year=2006,browse=F,lat=40,lon=-105,
+    range=4,localhours=T,lowest=0,byweeks=1)
 {
     cat(paste("\nPlotting Sun Shadows For: lat,lon =",lat,"/",lon,"\n"))
     cat("
-        Usage: plot.sunshadow(...)	with optional parameter/defaults:
+        Usage: plot_sunshadow(...)	with optional parameter/defaults:
         'lat=40'	in degrees (-lat for 'south')
         'lon=-105'	in degrees (-lon for 'west'...ie USA)
         'lowest=0'	Minimum sun angle elevation to compute

@@ -333,7 +333,7 @@ qctable.html = function(vars,x=NULL,ntper=4,file="",append=F,title=NULL,
             #         mean stdev numnas numclipped
             # We want the fields to be aligned down the column of the table,
             # so that is it easy for the eye to see outliers.
-            # The splus format() function formats all numbers passed to it
+            # The format() function formats all numbers passed to it
             # in a consistent way, with the same number of characters
             # in each result, padding with spaces.
             # Previously the results were then rendered with the <pre>
