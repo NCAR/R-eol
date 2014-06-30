@@ -69,7 +69,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=F,
     yinfo <- plotLimits(x,ylim,one.scale,axs=yaxs)
     nscales <- yinfo$nscales
 
-    if (nscales > 1 && remargin) {
+    if (remargin) {
         mfg <- par("mfg")
         # if identical(mfg[1:2],mfg[3:4]) then
         # the next plot will be the first one in the mfrow matrix
@@ -753,20 +753,9 @@ adjPar <- function(nxscales=1,nyscales=1,prows=NULL,pcols=NULL,rscale=1,lscale=1
     }
 
     # lines of margin on each side of plot
-    # default values
-    mar <- c(5,4,4,2)+.1	
+    mgp <- c(1.7,0.3,0)		# line of axis title, labels, axis
 
-    # outer margin lines
-    oma <- rep(0,4)
-
-    mar[1] <- 0.5
-    mar[3] <- 0.5
-
-    oma[1] <- 4.1 - mar[1]
-    oma[3] <- 4.1 - mar[3]
-
-    oma[2] <- oma[4] <- 1.1
-    mgp <- c(1.2,0.2,0)		# line of axis title, labels, axis
+    mar <- rep(0,4)
 
     # separate Y scales, reserve margin space
     lscales <- (nyscales-1) %/% 2 + 1
@@ -775,13 +764,21 @@ adjPar <- function(nxscales=1,nyscales=1,prows=NULL,pcols=NULL,rscale=1,lscale=1
     if (lscales < lscale) lscales <- lscale
     if (rscales < rscale) rscales <- rscale
 
-    mar[2] <- (mgp[1] + 1.0) * lscales + 0.1
-    mar[4] <- (mgp[1] + 1.0) * rscales + 0.1
+    mar[2] <- (mgp[1] + 1.5) * lscales + 0.1
+    mar[4] <- (mgp[1] + 1.5) * rscales + 0.1
 
     lscales <- (nxscales-1) %/% 2 + 1
     rscales <- nxscales %/% 2
-    mar[1] <- (mgp[1] + 1.0) * lscales + 0.1
-    mar[3] <- (mgp[1] + 1.0) * rscales + 0.1
+    mar[1] <- (mgp[1] + 1.5) * lscales + 0.1
+    mar[3] <- (mgp[1] + 1.5) * rscales + 0.1
+
+    # outer margin lines
+    oma <- rep(0,4)
+
+    oma[1] <- 5.0 - mar[1]
+    oma[3] <- 5.0 - mar[3]
+
+    oma[2] <- oma[4] <- 1.1
 
     # warning:  put cex and mex before mar and oma in this par call.
     # Set cex to original value, and mex to cex, so margin lines are
