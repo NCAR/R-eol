@@ -312,7 +312,7 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
     plot.nts.scale <- list(scale=scalef,off=x0,tlab=tlab,cex=cex)
     assign(".plot.nts.scale",plot.nts.scale,envir=.eoltsEnv)
 
-    if (plotaxes && xlab != "") timelabel(xlab=xlab,cex=cex)
+    if (plotaxes && xlab != "") title(xlab=xlab,cex=cex)
 
     if (nc > 1) {
         ncolor <- length(col)
@@ -389,34 +389,6 @@ timeaxis <- function(side,labels=T,tick=T,time.zone,
         xmtics <- seq(from=xfmtic,to=xrange[2],by=tlab$mdelta)
         axis(side,at=(xmtics-x0)/scalef,labels=F,tick=tick,tck=tck,xaxt="s",...)
     }
-}
-timelabel <- function(side=1,outer=F,line=par("mgp")[1],cex=NULL,xlab=NULL)
-{
-    if (! exists(".plot.nts.scale",envir=.eoltsEnv)) {
-        stop("plot.nts.scale does not exist. Cannot add time label to ordinary plot")
-    }
- 
-    plot.nts.scale = get(".plot.nts.scale",envir=.eoltsEnv)
-
-    if (is.null(cex)) cex <- plot.nts.scale$cex
-    if (is.null(xlab)) {
-        tlab <- plot.nts.scale$tlab
-        xlab <- paste(sep="","Time(",tlab$units,"), tic=",tlab$munits)
-    }
-
-    # check if there is room in margin, if not silently use outer margin
-    if (!outer) {
-        mex <- par("mex")
-        mar <- par("mar")
-        lines.avail <- mar[side] * mex / cex
-        label.space <- (line + 1) * mex / cex
-        if (label.space > lines.avail) {
-          outer <- T
-          line <- -mar[side] + line
-        }
-    }
-
-    mtext(xlab,side=side,line=line,outer=outer,cex=cex)
 }
 
 setGeneric("lines")
