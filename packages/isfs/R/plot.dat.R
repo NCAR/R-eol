@@ -744,17 +744,19 @@ adjPar <- function(nxscales=1,nyscales=1,prows=NULL,pcols=NULL,rscale=1,lscale=1
     if (is.null(prows)) prows <- mfrows[1]
     if (is.null(pcols)) pcols <- mfrows[2]
 
-    cex <- par("cex")		# get cex before calling mfrow
-    # par(mfrow=...) changes cex
+    # get cex before calling mfrow
+    cex <- par("cex")
 
+    # par(mfrow=...) changes cex
     if (any(mfrows != c(prows,pcols))) {
         browser()
         par(mfrow=c(prows,pcols))
     }
 
-    # lines of margin on each side of plot
-    mgp <- c(1.7,0.3,0)		# line of axis title, labels, axis
+    # line of axis title, labels, axis
+    mgp <- c(1.8,0.3,0)
 
+    # lines of margin on each side of plot
     mar <- rep(0,4)
 
     # separate Y scales, reserve margin space
@@ -764,21 +766,20 @@ adjPar <- function(nxscales=1,nyscales=1,prows=NULL,pcols=NULL,rscale=1,lscale=1
     if (lscales < lscale) lscales <- lscale
     if (rscales < rscale) rscales <- rscale
 
-    mar[2] <- (mgp[1] + 1.5) * lscales + 0.1
-    mar[4] <- (mgp[1] + 1.5) * rscales + 0.1
+    mar[2] <- max((mgp[1] + 1.5) * lscales,1.5)
+    mar[4] <- max((mgp[1] + 1.5) * rscales,1.5)
 
     lscales <- (nxscales-1) %/% 2 + 1
     rscales <- nxscales %/% 2
-    mar[1] <- (mgp[1] + 1.5) * lscales + 0.1
-    mar[3] <- (mgp[1] + 1.5) * rscales + 0.1
+    mar[1] <- max((mgp[1] + 1.5) * lscales,1.5)
+    mar[3] <- max((mgp[1] + 1.5) * rscales,1.5)
 
     # outer margin lines
-    oma <- rep(0,4)
+    oma <- rep(1.5,4)
 
-    oma[1] <- 5.0 - mar[1]
-    oma[3] <- 5.0 - mar[3]
-
-    oma[2] <- oma[4] <- 1.1
+    # oma[1] <- max(5.0 - mar[1],1.5)
+    # oma[3] <- max(5.0 - mar[3],1.5)
+    # oma[2] <- oma[4] <- 1.5
 
     # warning:  put cex and mex before mar and oma in this par call.
     # Set cex to original value, and mex to cex, so margin lines are
