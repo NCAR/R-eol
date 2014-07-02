@@ -24,8 +24,6 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
     #	of the axes.
     #
 
-    # Strange, had to use xlimx variable below, if it was xlim,
-    # it complained if it was missing, even though we set it here.
     if (missing(xlim)) {
         t1 <- start(x)
         t2 <- end(x)
@@ -39,17 +37,29 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
     dnames <- dimnames(x)[[2]]
 
     mfg <- par("mfg")
-    nplotted <- (mfg[1] - 1) * mfg[4] + mfg[2]
-    nplot <- mfg[3] * mfg[4]
-    if (nplotted == nplot) nplotted <- 0
-    # cat("nplotted=",nplotted," nplot=",nplot," mfg=",mfg,"\n")
+    cat("mfg1=",paste(mfg,collapse=","),"\n")
+    first_plot <- identical(mfg[1:2],mfg[3:4])
 
-    first.plot <- nplotted == 0
-    first.row <- nplotted < mfg[4]
-    last.plot <- nplotted == (nplot - 1)
-    bottom.row <- nplotted >= (nplot - mfg[4])
+    # Must figure out if this next plot will be on the bottom row
+    # of figures on this page.  If the user specifies par(mfrow=c(r,c))
+    # the figures will be placed by row (column varying most rapidly).
+    # If par(mfcol=c(r,c)) they will be placed by column.
+    # Before the first figure is drawn, mfg[1:2] are the row and
+    # column of the last figure plotted.
+    .
+    if (first_plot) {
+        bottom_row <- mfg[3] == 1   # only one row of figures
+    }
+    else {
+        by_row <- get(".by_row",envir=.isfsEnv)
+        if (by_row) {
+            bottom_row <- (mfg[1] == mfg[3]) ||
+                (mfg[1] == (mfg[3] - 1)) && (mfg[2] == mfg[4])
+        }
+        else bottom_row <- mfg[1] == (mfg[3] - 1)
+    }
 
-    if (first.plot) xaxs <- "i"
+    if (first_plot) xaxs <- "i"
     else xaxs <- "d"                # don't rescale
 
     # unique loses the station names
@@ -69,13 +79,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
     yinfo <- plotLimits(x,ylim,one.scale,axs=yaxs)
     nscales <- yinfo$nscales
 
-    if (remargin) {
-        mfg <- par("mfg")
-        # if identical(mfg[1:2],mfg[3:4]) then
-        # the next plot will be the first one in the mfrow matrix
-        if (identical(mfg[1:2],mfg[3:4]))
-            adjPar(nyscales=nscales)
-    }
+    if (remargin && first_plot) adjPar(nyscales=nscales)
 
     ylim <- yinfo$lim
     yscales <- yinfo$scales
@@ -122,7 +126,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
 
     xaxt.tmp <- "n"
     xlab <- FALSE
-    if (bottom.row) {
+    if (bottom_row) {
         xaxt.tmp <- xaxt
         if (xaxt == "n") xlab <- FALSE
         else xlab <- TRUE
@@ -201,10 +205,22 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
                 xaxt=xaxt.tmp, xaxs=xaxs, xlim=xlim,xlab=xlab,
                 yaxt="n", yaxs=yaxs, ylim=ylim1,ylab="",
                 err=-1,cex=cex,log=log,...)
-            if (!bottom.row && xaxt != "n") timeaxis(1,labels=FALSE,tick=TRUE,time.zone=x@time.zone)
 
-            # put GMT across top of first row
-            if (xaxt != "n") timeaxis(3,labels=first.row,tick=TRUE,time.zone="GMT")
+            # mfg[1:2] have been incremented
+            mfg2 <- par("mfg")
+            # cat("mfg2=",paste(mfg,collapse=","),"\n")
+            top_row <- mfg2[1] == 1
+            bottom_row <- mfg2[1] == mfg2[3]
+            last_plot <- identical(mfg2[1:2],mfg2[3:4])
+
+            # if by_row, the column number changes between plots
+            by_row <- mfg[2] != mfg2[2]
+            assign(".by_row",by_row,envir=.isfsEnv)
+
+            if (!bottom_row && xaxt != "n") timeaxis(1,labels=FALSE,tick=TRUE,time.zone=x@time.zone)
+
+            # put GMT across top of top row
+            if (xaxt != "n") timeaxis(3,labels=top_row,tick=TRUE,time.zone="GMT")
             xaxis.done <- TRUE
         }
 
@@ -391,19 +407,19 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
 
     if (missing(title) || (is.logical(title) && title) || is.character(title)) {
         if (is.null(title.txt) || length(title.txt) == 0) title.txt <- dnames
-        plot.dat.title(title.txt,first.plot,last.plot,t1,t2,plot.stns)
+        plot.dat.title(title.txt,first_plot,last_plot,t1,t2,plot.stns)
     }
 
-    if (logo && last.plot) logo_stamp()
+    if (logo && last_plot) logo_stamp()
     par(new=FALSE)
     invisible(NULL)
 }
 
-plot.dat.title <- function(title="",first.plot,last.plot,
+plot.dat.title <- function(title="",first_plot,last_plot,
     t1=dpar("start"),t2=dpar("end"),stns=NULL)
 {
     this.plot.date <- unlist(as.list(t1)[c("year","mon","day")])
-    if (first.plot) {
+    if (first_plot) {
         plot.dat.title.save <- NULL
         plot.dat.date <- this.plot.date
         plot.dat.stns <- stns
@@ -443,7 +459,7 @@ plot.dat.title <- function(title="",first.plot,last.plot,
             plot.dat.title.save <- title
     }
 
-    if (last.plot) {
+    if (last_plot) {
         stn.str <- ""
         if (!is.null(plot.dat.stns) && length(plot.dat.stns) > 0 &&
             !(length(plot.dat.stns)==1 && plot.dat.stns==0))
@@ -470,7 +486,7 @@ plot.dat.title <- function(title="",first.plot,last.plot,
             mtext(title,outer=TRUE,line=oma[3]-1.5,cex=par("cex")*1.2)
     }
 
-    if (last.plot && !first.plot && exists(".plot.dat.title.save",envir=.isfsEnv))
+    if (last_plot && !first_plot && exists(".plot.dat.title.save",envir=.isfsEnv))
         remove(".plot.dat.title.save",envir=.isfsEnv)
     else assign(".plot.dat.title.save",plot.dat.title.save,envir=.isfsEnv)
 
@@ -636,28 +652,6 @@ plotLimits <- function(data,lim,one.scale=FALSE,axs="i",namesep=".")
 logo_stamp <- function(print.motto=TRUE,cex=0.75)
 {
     oma <- par("oma")
-
-    # Adjust outer margins on left and right side, so that
-    # strings placed by mtext are not too close to those edges.
-    # There is a problem with setting par(oma) here however, as it
-    # resets par(mfg) so that the next plot will be the first
-    # in the mfrow layout, which is a problem if this is called
-    # after other than the last plot in the layout.
-    # cat("logo_stamp, oma=",paste(oma,collapse=","),"\n")
-    newoma <- oma
-    newoma[2] <- max(newoma[2],1)
-    newoma[4] <- max(newoma[4],1)
-    if (!identical(newoma,oma)) {
-        mfg <- par("mfg")
-        nplotted <- (mfg[1] - 1) * mfg[4] + mfg[2]
-        nplot <- mfg[3] * mfg[4]
-        lastplot <- nplotted == (nplot - 1)
-        if (lastplot) {
-            old.par <- par(oma=newoma)
-            on.exit(par(old.par))
-        }
-        else warning(paste0("par(oma)=",paste(oma,collapse=",")," may be too small to put logo in the margins\n"))
-    }
 
     mex <- par("mex")
 
