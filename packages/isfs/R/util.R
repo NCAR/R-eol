@@ -7,6 +7,95 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
+find_datasets <- function(
+    path=file.path(Sys.getenv("ISFF"),"projects",Sys.getenv("PROJECT"),"ISFF"),
+    pattern="^netcdf")
+{
+
+    if (!exists(".projectEnv"))
+        .projectEnv <<- new.env(parent=emptyenv())
+
+    ncds <- list.files(path,pattern,include.dirs=TRUE)
+
+    datasets <- list()
+
+    for (ncd in ncds) {
+
+        ncpath <- file.path(path,ncd)
+        ncdf <- list.files(ncpath,"\\.nc$")
+        if (length(ncdf) == 0) ncdf <- list.files(ncpath,"\\.cdf$")
+
+        if (length(ncdf) > 0) {
+
+            ncpat <- sub("(_?)[12][9012][0-9][0-9]","\\1%Y",ncdf)
+
+            # If couldn't match a 4 digit year, try 2 digits,
+            # assume only in the 90's
+            if (all(ncpat == ncdf))  
+                ncpat <- sub("(_?)[9][0-9]","\\1%y",ncdf)
+
+            ncpat <- sub("(%[yY][^01]*)[01][0-9]","\\1%m",ncpat)
+            ncpat <- sub("(%m[^0-3]*)[0-3][0-9]","\\1%d",ncpat)
+            ncpat <- sub("[0-2][0-9]","%H",ncpat)
+            ncpat <- sub("(%H[^0-5]*)[0-5][0-9]","\\1%M",ncpat)
+            ncpat <- sub("(%M[^0-5]*)[0-5][0-9]","\\1%S",ncpat)
+
+            ncpat <- unique(ncpat)
+            if (length(ncpat) > 1)
+                warning(paste0("Cannot determine a file name pattern from file names:",
+                    paste(ncdf,collapse=",")))
+
+            ix <- seq(from=1,to=length(ncdf),by=ceiling(length(ncdf)/10))
+
+            con <- netcdf(dir=ncpath,file=ncdf[ix])
+            # read global attributes
+            attrs <- readnc(con)
+            close(con)
+
+            if ("dataset" %in% names(attrs)) {
+                dname <- attrs$dataset
+            }
+            else {
+                dname <- sub(pattern,"",ncd)
+                dname <- sub("^_+","",dname)
+                dname <- sub("^\\.+","",dname)
+                if (nchar(dname) == 0) dname <- "default"
+            }
+
+            desc <- ""
+            if ("dataset_description" %in% names(attrs))
+                desc <- attrs$dataset_description
+
+            qcpaths <- ""
+            if ("calibration_file_path" %in% names(attrs))
+                qcpaths <- gsub(",version=[^:]+","",attrs$calibration_file_path)
+
+            datacoords <- "instrument"
+            if (grepl("geo",dname,ignore.case=TRUE)) datacoords <- "geo"
+
+            # check if datacoords is consistent with wind3d_horiz_rotation
+            if ("wind3d_horiz_rotation" %in% names(attrs)) {
+                hrot <- as.logical(attrs$wind3d_horiz_rotation)
+                if (!is.na(hrot)) {
+                    # If no horizontal rotation, coords should be instrument
+                    if (!hrot != (datacoords == "instrument"))
+                        warning(paste0(
+                            "apparent coordintate conflict between wind3d_horiz_rotation=",
+                            hrot," and dataset=",dname))
+                }
+            }
+
+            # if ("calfile_version" %in% names(attrs))
+
+            datasets[[dname]] <- list(enable=TRUE,desc=desc,
+                qcdir=qcpaths,sonicdir=NULL,
+                ncd=ncpath,ncf=ncpat,datacoords=datacoords)
+        }
+    }
+    assign(".datasets",datasets,envir=.projectEnv)
+    datasets
+}
+
 dataset <- function(which,verbose=F,datasets=NULL)
 {
     
@@ -23,16 +112,16 @@ dataset <- function(which,verbose=F,datasets=NULL)
     #   qcdir   directory of cal files, which is copied to the environment variable QC_DIR
     #   sonicdir directory of sonic anemometer cal files, which is copied to the
     #           environment variable SONIC_DIR
-    #   wind3d_horiz_rotation
-    #           copied to the environment variable WIND3D_HORIZ_ROTATION
-    #   wind3d_tilt_correction
-    #           copied to the environment variable WIND3D_TILT_CORRECTION
-    #   f       an arbitrary function which can perform any extra settings
+
+    if (!exists(".projectEnv"))
+        .projectEnv <<- new.env(parent=emptyenv())
+
     if (is.null(datasets)) {
-        if (!exists(".datasets")) return(NULL)
-        datasets <- get(".datasets")
+        if (exists(".datasets",envir=.projectEnv))
+            datasets <- get(".datasets",envir=.projectEnv)
+        else if (exists(".datasets"))
+            datasets <- get(".datasets")
     }
-    if (!exists(".projectEnv")) stop(".projectEnv not found")
 
     current <- "unknown"
     if(exists("dataset.which",envir=get(".projectEnv")))
@@ -76,7 +165,7 @@ dataset <- function(which,verbose=F,datasets=NULL)
     ncf <- Sys.setenv(NETCDF_FILE=dset$ncf)
     ncd <- Sys.setenv(NETCDF_DIR=dset$ncd)
 
-    dset$f()
+    if (!is.null(dset[["f"]])) dset$f()
     if (ncf != dset$ncf || ncd != dset$ncd) clear.cache()
 
     assign("dataset.which",which,envir=get(".projectEnv"))

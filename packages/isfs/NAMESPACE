@@ -50,7 +50,7 @@ export(
     dat.azel.sun,dat.az.sun,dat.el.sun,
     solar_lha_dec,solar_azm_elev,
     plot_sunangle, plot_sunshadow,
-    dataset
+    find_datasets, dataset
 )
 
 exportPattern("^dat\\.")
