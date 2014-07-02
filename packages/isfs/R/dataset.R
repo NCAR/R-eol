@@ -66,9 +66,9 @@ find_datasets <- function(
             if ("dataset_description" %in% names(attrs))
                 desc <- attrs$dataset_description
 
-            qcpaths <- ""
+            calpaths <- ""
             if ("calibration_file_path" %in% names(attrs))
-                qcpaths <- gsub(",version=[^:]+","",attrs$calibration_file_path)
+                calpaths <- gsub(",version=[^:]+","",attrs$calibration_file_path)
 
             datacoords <- "instrument"
             if (grepl("geo",dname,ignore.case=TRUE)) datacoords <- "geo"
@@ -88,8 +88,7 @@ find_datasets <- function(
             # if ("calfile_version" %in% names(attrs))
 
             datasets[[dname]] <- list(enable=TRUE,desc=desc,
-                qcdir=qcpaths,sonicdir=NULL,
-                ncd=ncpath,ncf=ncpat,datacoords=datacoords)
+                calpath=calpaths, ncd=ncpath,ncf=ncpat,datacoords=datacoords)
         }
     }
     assign(".datasets",datasets,envir=.projectEnv)
@@ -151,16 +150,14 @@ dataset <- function(which,verbose=F,datasets=NULL)
 
     # browser()
 
-    dpar(datacoords=dset$datacoords,lenfile=dset$lenfile)
-    Sys.setenv(QC_DIR=dset$qcdir)
+    if (!is.null(dset$lenfile)) dpar(lenfile=dset$lenfile)
+    dpar(datacoords=dset$datacoords)
+
+    if (!is.null(dset$qcdir))
+        Sys.setenv(QC_DIR=dset$qcdir)
+
     if (!is.null(dset$sonicdir))
         Sys.setenv(SONIC_DIR=dset$sonicdir)
-
-    if (!is.null(dset$wind3d_horiz_rotation))
-        Sys.setenv(WIND3D_HORIZ_ROTATION=dset$wind3d_horiz_rotation)
-
-    if (!is.null(dset$wind3d_tilt_correction))
-        Sys.setenv(WIND3D_TILT_CORRECTION=dset$wind3d_tilt_correction)
 
     ncf <- Sys.setenv(NETCDF_FILE=dset$ncf)
     ncd <- Sys.setenv(NETCDF_DIR=dset$ncd)
@@ -174,14 +171,15 @@ dataset <- function(which,verbose=F,datasets=NULL)
         cat(paste("************************************************\n"))
         cat(paste("current dataset is \"", get("dataset.which",envir=get(".projectEnv")),"\"\n",sep=""))
 
-        cat(paste("NETCDF_FILE=",Sys.getenv("NETCDF_FILE"),"\n",
-                "NETCDF_DIR=",Sys.getenv("NETCDF_DIR"),"\n",
-                "dpar(\"lenfile\")=",dpar("lenfile")," sec\n",
-                "QC_DIR=",Sys.getenv("QC_DIR"), "\n",
-                "SONIC_DIR=",Sys.getenv("SONIC_DIR"),"\n",
-                "WIND3D_HORIZ_ROTATION=",Sys.getenv("WIND3D_HORIZ_ROTATION"),"\n",
-                "WIND3D_TILT_CORRECTION=",Sys.getenv("WIND3D_TILT_CORRECTION"),"\n",
-                "dpar(\"datacoords\")=\"", dpar("datacoords"),"\" (coordinates of netcdf data)\n", sep=""))
+        cat(paste0("NETCDF_FILE=",Sys.getenv("NETCDF_FILE"),"\n",
+            "NETCDF_DIR=",Sys.getenv("NETCDF_DIR"),"\n",
+            "dpar(\"datacoords\")=\"", dpar("datacoords"),"\" (coordinates of netcdf data)\n",
+            ifelse(is.null(dset$calpath),"",paste0("calpath=",dset$calpath,"\n")),
+            ifelse(is.null(dset$qcdir),"",paste0("QC_DIR=",dset$qcdir,"\n")),
+            ifelse(is.null(dset$sonicdir),"",paste0("SONIC_DIR=",dset$sonicdir,"\n")),
+            ifelse(is.null(dset$wind3d_horiz_rotation),"",paste0("wind3d_horiz_rotation=",dset$wind3d_horiz_rotation,"\n")),
+            ifelse(is.null(dset$wind3d_tilt_correction),"",paste0("wind3d_tilt_correction=",dset$wind3d_tilt_correction,"\n")),
+            ifelse(is.null(dpar("lenfile")),"",paste0("dpar(\"lenfile\")=",dpar("lenfile")," sec\n"))))
         cat(paste("************************************************\n"))
     }
 
