@@ -37,7 +37,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
     dnames <- dimnames(x)[[2]]
 
     mfg <- par("mfg")
-    cat("mfg1=",paste(mfg,collapse=","),"\n")
+    # cat("mfg1=",paste(mfg,collapse=","),"\n")
     first_plot <- identical(mfg[1:2],mfg[3:4])
 
     # Must figure out if this next plot will be on the bottom row
@@ -46,7 +46,6 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
     # If par(mfcol=c(r,c)) they will be placed by column.
     # Before the first figure is drawn, mfg[1:2] are the row and
     # column of the last figure plotted.
-    .
     if (first_plot) {
         bottom_row <- mfg[3] == 1   # only one row of figures
     }
