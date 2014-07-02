@@ -38,6 +38,8 @@ extern "C" {
 
     SEXP read_netcdf_ts(SEXP args);
 
+    SEXP read_global_attrs(SEXP obj);
+
 #ifdef HAVE_NC_SERVER
     SEXP write_ts_ns(SEXP args);
 
@@ -100,6 +102,8 @@ public:
             const std::string& btname,
             const std::string& timezone,
             int verbose) throw(NcException);
+
+    SEXP readGlobalAttrs() throw(NcException);
 
 #ifdef HAVE_NC_SERVER
 

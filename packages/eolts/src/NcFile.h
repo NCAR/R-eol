@@ -79,8 +79,11 @@ public:
 
     const NcDim* getUnlimitedDimension() throw(NcException);
 
-    // NcAttr* getAttribute(const std::string & name);
-    // std::vector<NcAttr*> getAttributes();
+    int getNumAttrs() throw(NcException);
+
+    const NcAttr* getAttribute(const std::string& name) throw(NcException);
+
+    const std::vector<const NcAttr*> getAttributes() throw(NcException);
 
     const NcDim* getTimeDimension(const std::set<std::string>& possibleNames)
         throw(NcException);
@@ -102,6 +105,8 @@ private:
     void readDimensions() throw(NcException);
 
     int getUnlimitedDimid() throw(NcException);
+
+    void readAttrs() throw(NcException);
 
     void clearVarMap(void);
 
@@ -146,17 +151,17 @@ private:
 
     const NcDim* _timeDim;
 
-    std::map<std::string,NcAttr*> _attrs;		// global attributes
-    // std::map<std::string,NcVar*> _shortNameVars;
-    // std::map<std::string,int> _shortNameVarids;
-    // int _varidsScanned;
-    // int _hasNonStationTSVariables;
-
     std::map<std::string,NcVar*> _tsVars;
 
     bool _hasTSVariableWithoutStationDimension;
 
     size_t _nscannedVars;
+
+    std::map<std::string,NcAttr*> _attrMap;		// global attributes
+
+    std::vector<NcAttr*> _attrVec;
+
+    bool _readAttr;
 
     // no copying, assignment
     NcFile(const NcFile&);

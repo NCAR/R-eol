@@ -7,6 +7,8 @@
  * The license and distribution terms for this file may be found in the
  * file LICENSE in this package.
  */
+
+#include <sstream>
 #include "NcAttrT.h"
 
 namespace eolts {
@@ -33,6 +35,36 @@ template<>
 double NcAttrT<std::string>::getNumericValue(int i) const
 {
     return 0.0;
+}
+
+template<>
+std::string NcAttrT<double>::getStringValue(int i) const
+{
+    std::ostringstream ost;
+    ost << getValue(i);
+    return ost.str();
+}
+
+template<>
+std::string NcAttrT<float>::getStringValue(int i) const
+{
+    std::ostringstream ost;
+    ost << getValue(i);
+    return ost.str();
+}
+
+template<>
+std::string NcAttrT<int>::getStringValue(int i) const
+{
+    std::ostringstream ost;
+    ost << getValue(i);
+    return ost.str();
+}
+
+template<>
+std::string NcAttrT<std::string>::getStringValue(int i) const
+{
+    return getValue(i);
 }
 
 }   // namespace eolts

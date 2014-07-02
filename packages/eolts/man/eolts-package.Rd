@@ -3,7 +3,7 @@
 \alias{eolts}
 \docType{package}
 \title{
-Support for reading, writing, analysis and plotting of time series and spectra.
+Support for reading, writing, analysis and plotting of time series and spectra
 }
 \description{
 This package provides R functions to read, analyse, plot and write time series data, and to generate and plot spectra from time series. Support includes reading time series from NetCDF files, and writing time series to a NetCDF RPC server. Developed at the National Center for Atmospheric Research, Earth Observing Laboratory (NCAR EOL), sponsored by the National Science Foundation.
@@ -11,8 +11,6 @@ This package provides R functions to read, analyse, plot and write time series d
 \details{
 \tabular{ll}{
 Package: \tab eolts\cr
-Version: \tab 0.0-319\cr
-Date: \tab 2013-09-13\cr
 License: \tab BSD_2_clause + file LICENSE\cr
 URL: \tab http://github.com/ncareol/R-eol.git\cr
 Authors@R: \tab person("Gordon","Maclean",role=c("aut","cre"),

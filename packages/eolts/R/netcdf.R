@@ -52,10 +52,10 @@ netcdf <- function(
         timeNames=timeNames,
         server=server,interval=interval,cdlfile=cdlfile)
 
-    # If file length is unknown, scan directory for files, then
-    # if file contains any time descriptors, parse the presumed start
-    # times from the file names
     if (lenfile == 0) {
+        # Scan directory for files, then
+        # if file contains any time descriptors, parse the presumed start
+        # times from the file names
         hastimefmt <- any(sapply(c("%Y","%m","%d","%b","%H","%M","%S"),
                 function(x,str){grepl(x,str,fixed=TRUE)},str=file))
 
@@ -66,6 +66,7 @@ netcdf <- function(
             nmformat <- gsub("%H","[0-2][0-9]",nmformat,fixed=TRUE)
             nmformat <- gsub("%M","[0-5][0-9]",nmformat,fixed=TRUE)
             nmformat <- gsub("%S","[0-5][0-9]",nmformat,fixed=TRUE)
+
             files <- list.files(dir,nmformat)
 
             # Parse file names to get start times
@@ -90,10 +91,10 @@ netcdf <- function(
                     format(start,format="%Y %b %d %H:%M:%S",time.zone="GMT"),"and",
                     format(end,format="%Y %b %d %H:%M:%S %Z",time.zone="GMT")))
         }
-        else {
+        else if (length(file) == 1)
             files <- list.files(dir,file)
-            if (length(files) == 0) warning(paste("no files found in",dir,"matching",file))
-        }
+        else
+            files <- file
     }
     else {
         if (lenfile == 31 * 86400)
@@ -101,6 +102,7 @@ netcdf <- function(
         else times <- seq(from=utime(floor(start/lenfile)*lenfile),to=end-1,by=lenfile)
         files <- unique(format(times,format=as(file,"character"),time.zone="GMT"))
     }
+    if (length(files) == 0) stop(paste("no files found in",dir,"matching",file))
 
     .Call("open_netcdf",obj,files,cdlfile,300L,300L,PACKAGE="eolts")
 }
@@ -215,6 +217,15 @@ setMethod("readnc",
     function(con,variables,start,count,...)
     {
         readnc(con,variables,start=integer(0),count=integer(0),...)
+    }
+)
+
+setMethod("readnc",
+    signature(con="netcdf",variables="missing",start="missing",count="missing"),
+    function(con,variables,start,count,...)
+    {
+        x <- .Call("read_global_attrs",con,PACKAGE="eolts")
+        x
     }
 )
 

@@ -44,6 +44,8 @@ public:
 
     double getNumericValue(int i) const;
 
+    std::string getStringValue(int i) const;
+
 };
 
 }   // namespace eolts

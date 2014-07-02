@@ -140,6 +140,22 @@ SEXP get_stations(SEXP obj)
     return 0;
 }
 
+SEXP read_global_attrs(SEXP obj)
+{
+    R_netcdf *con = R_netcdf::getR_netcdf(obj);
+    if (!con) {
+        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+    }
+
+    try {
+        return con->readGlobalAttrs();
+    }
+    catch (const NcException& nce) {
+        Rf_error(nce.toString().c_str());
+    }
+    return 0;
+}
+
 SEXP read_netcdf(SEXP obj,SEXP variables, SEXP startreq, SEXP countreq)
 {
     int i;
@@ -149,13 +165,11 @@ SEXP read_netcdf(SEXP obj,SEXP variables, SEXP startreq, SEXP countreq)
         Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
 
-    int nvars = Rf_length(variables);
-#ifdef DEBUG
-    Rprintf("::read nvars = %d\n",nvars);
-#endif
-    if (nvars == 0)
-        Rf_error("netcdf read error: length of variables argument is zero");
+    // if (Rf_length(variables) == 0)
+        // Rf_error("netcdf read error: length of variables argument is zero");
 
+    // Rf_length(variables) can be 0, then the user wants to read the global
+    // attributes
     vector<string> vnames;
     for (size_t i = 0; i < (size_t)Rf_length(variables); i++) {
         SEXP dn = STRING_ELT(variables,i);
@@ -424,7 +438,7 @@ R_netcdf::R_netcdf(SEXP con, SEXP files, SEXP cdlfile,
 #ifdef HAVE_NC_SERVER
     slot = Rf_getAttrib(con,serverSlotName);
     if (TYPEOF(slot) != STRSXP || Rf_length(slot) != 1)
-        Rf_error("server slot of netcdf object is not string, length 1");
+        Rf_error("server slot of netcdf object is not character, length 1");
     _server = string(CHAR(STRING_ELT(slot,0)));
 
     slot = Rf_getAttrib(con,intervalSlotName);
@@ -452,13 +466,17 @@ R_netcdf::R_netcdf(SEXP con, SEXP files, SEXP cdlfile,
 #endif
 
     slot = Rf_getAttrib(con,fileSlotName);
-    if (TYPEOF(slot) != STRSXP || Rf_length(slot) != 1)
-        Rf_error("file slot of netcdf object is not string, length 1");
+    if (TYPEOF(slot) != STRSXP)
+        Rf_error("file slot of netcdf object is not character");
+
+    if (TYPEOF(slot) != STRSXP || Rf_length(slot) == 0)
+        Rf_error("file slot of netcdf object is not character, length >= 1");
+    // only used by NC_SERVER, when creating files
     _filenamefmt = string(CHAR(STRING_ELT(slot,0)));
 
     slot = Rf_getAttrib(con,dirSlotName);
     if (TYPEOF(slot) != STRSXP || Rf_length(slot) != 1)
-        Rf_error("directory slot of netcdf object is not string, length 1");
+        Rf_error("directory slot of netcdf object is not character, length 1");
     _dir = string(CHAR(STRING_ELT(slot,0)));
 
     addConnection(this);
@@ -706,6 +724,14 @@ SEXP R_netcdf::getStations() throw(NcException)
 
     namedStations.setNames(names);
     return namedStations.getRObject();
+}
+
+SEXP R_netcdf::readGlobalAttrs() throw(NcException)
+{
+
+    NetcdfReader reader(this);
+
+    return reader.readGlobalAttrs();
 }
 
 SEXP R_netcdf::read(const vector<string> &vnames,

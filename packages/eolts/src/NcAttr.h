@@ -22,7 +22,7 @@
 namespace eolts {
 
 /**
- * Class providing necessary information about a NetCDF variable.
+ * Class providing necessary information about a NetCDF attribute.
  */
 class NcAttr {
 protected:
@@ -31,8 +31,12 @@ protected:
 
 public:
 
-    static NcAttr *createNcAttr(NcVar *var,
-            int attnum) throw(NcException);
+    static NcAttr* readNcAttr(NcVar* var,int attnum) throw(NcException);
+
+    static NcAttr* readNcAttr(NcFile* file,int attnum) throw(NcException);
+
+    static NcAttr* readNcAttr(int ncid, const std::string& filename,
+        int varid, const std::string& varname, int attnum) throw(NcException);
 
     NcAttr(std::string name,nc_type type) : _name(name),_nctype(type) {}
     virtual ~NcAttr();
@@ -44,6 +48,8 @@ public:
     virtual size_t getLength() const = 0;
 
     virtual double getNumericValue(int i) const = 0;
+
+    virtual std::string getStringValue(int i) const = 0;
 
 };
 

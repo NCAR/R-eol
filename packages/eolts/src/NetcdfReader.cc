@@ -369,7 +369,7 @@ int NetcdfReader::checkVarTypeCompatibility(int rmode1, int rmode2) {
 }
 
 /* 
- * Read data from netcdf variables into an array.
+ * Read data from netcdf variables into a list of arrays.
  * Netcdf data is stored "by row", i.e. the last indice varies
  * most rapidly. R data is stored by column, first indice varies
  * most rapidly.
@@ -743,6 +743,103 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
         if (array.get()) SET_VECTOR_ELT(result,ivar,array->getRObject());
         if (var1) SET_STRING_ELT(resnames,ivar,Rf_mkChar(var1->getName().c_str()));
     }
+    Rf_setAttrib(result,R_NamesSymbol,resnames);
+    UNPROTECT(2);   // resnames,result
+    return result;
+}
+
+SEXP NetcdfReader::readGlobalAttrs() throw(NcException)
+{
+    NcFileSet *fileset = _connection->getFileSet();
+
+    int nfiles = fileset->getNFiles();
+
+    std::map<std::string,std::set<std::string> > strAttrs;
+    std::map<std::string,std::set<double> > numAttrs;
+    std::set<std::string> attrNames;
+
+    for (int ifile = 0; ifile < nfiles; ifile++) {
+        NcFile* ncf = fileset->getNcFile(ifile);
+        if (!ncf) continue;
+        if (!ncf->isOpen()) continue;
+
+        std::vector<const NcAttr*> gatts = ncf->getAttributes();
+
+        std::vector<const NcAttr*>::const_iterator ai =  gatts.begin();
+
+        for( ; ai != gatts.end(); ++ai) {
+            const NcAttr* attr = *ai;
+            if (attr->getLength() == 0) continue;
+            if (attr->getLength() > 1) {
+                std::ostringstream ost;
+                ost << "File " << ncf->getName() << ", global attribute " <<
+                    attr->getName() << " has length " << attr->getLength() <<
+                    " which this function is not prepared to handle" << std::endl;
+                Rf_warning(ost.str().c_str());
+                continue;
+            }
+            switch(attr->getNcType()) {
+            case NC_CHAR:
+                {
+                    std::map<std::string,std::set<double> >::const_iterator mi = 
+                        numAttrs.find(attr->getName());
+                    if (mi != numAttrs.end()) {
+                        std::ostringstream ost;
+                        ost << "File " << ncf->getName() << ", global attribute " <<
+                            attr->getName() << " type is not consistently NC_CHAR" << std::endl;
+                        Rf_warning(ost.str().c_str());
+                        continue;
+                    }
+                }
+                strAttrs[attr->getName()].insert(attr->getStringValue(0));
+                break;
+            default:
+                {
+                    std::map<std::string,std::set<string> >::const_iterator ni = 
+                        strAttrs.find(attr->getName());
+                    if (ni != strAttrs.end()) {
+                        std::ostringstream ost;
+                        ost << "File " << ncf->getName() << ", global attribute " <<
+                            attr->getName() << " type is not consistent" << std::endl;
+                        Rf_warning(ost.str().c_str());
+                        continue;
+                    }
+                }
+                numAttrs[attr->getName()].insert(attr->getNumericValue(0));
+                break;
+            }
+        }
+    }
+
+    SEXP result = PROTECT(Rf_allocVector(VECSXP,strAttrs.size() + numAttrs.size()));
+    SEXP resnames = PROTECT(Rf_allocVector(STRSXP,Rf_length(result)));
+
+    size_t i = 0;
+
+    std::map<std::string,std::set<std::string> >::const_iterator si = strAttrs.begin();
+    for ( ; si != strAttrs.end(); ++si,i++) {
+        SET_STRING_ELT(resnames,i,Rf_mkChar(si->first.c_str()));
+        SEXP strs = PROTECT(Rf_allocVector(STRSXP,si->second.size()));
+        std::set<std::string>::const_iterator vi = si->second.begin();
+        for (size_t j = 0; vi != si->second.end(); ++vi,j++)
+            SET_STRING_ELT(strs,j,Rf_mkChar(vi->c_str()));
+        SET_VECTOR_ELT(result,i,strs);
+        UNPROTECT(1);   // strs
+    }
+
+    std::map<std::string,std::set<double> >::const_iterator ni = numAttrs.begin();
+    for ( ; ni != numAttrs.end(); ++ni,i++) {
+        SET_STRING_ELT(resnames,i,Rf_mkChar(ni->first.c_str()));
+        SEXP nums = PROTECT(Rf_allocVector(REALSXP,ni->second.size()));
+
+        std::set<double>::const_iterator vi = ni->second.begin();
+        for (size_t j = 0; vi != ni->second.end(); ++vi,j++)
+            REAL(nums)[j] = *vi;
+
+        SET_VECTOR_ELT(result,i,nums);
+        UNPROTECT(1);   // nums
+    }
+
     Rf_setAttrib(result,R_NamesSymbol,resnames);
     UNPROTECT(2);   // resnames,result
     return result;

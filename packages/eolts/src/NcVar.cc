@@ -102,8 +102,7 @@ const std::vector<const NcAttr*> NcVar::getAttributes() throw(NcException)
 const NcAttr *NcVar::getAttribute(const string& name) throw(NcException)
 {
     if (!_readAttr) readAttrs();
-    string sname(name);
-    map<string,NcAttr *>::iterator itr = _attrMap.find(sname);
+    map<string,NcAttr *>::iterator itr = _attrMap.find(name);
     if (itr != _attrMap.end()) return itr->second;
     else return 0;
 }
@@ -129,7 +128,7 @@ void NcVar::readAttrs() throw(NcException)
     }
 
     for (int i = 0; i < natts; i++) {
-        NcAttr *attr = NcAttr::createNcAttr(this,i);
+        NcAttr *attr = NcAttr::readNcAttr(this,i);
         pair<string,NcAttr *> p(attr->getName(),attr);
         _attrMap.insert(p);
         _attrVec.push_back(attr);

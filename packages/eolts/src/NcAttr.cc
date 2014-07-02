@@ -20,7 +20,19 @@ using std::vector;
 
 using namespace eolts;
 
-NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) throw(NcException)
+NcAttr* NcAttr::readNcAttr(NcVar* var,int attnum) throw(NcException)
+{
+    return readNcAttr(var->getNcid(),var->getFileName(),
+            var->getId(),var->getName(),attnum);
+}
+
+NcAttr* NcAttr::readNcAttr(NcFile* file,int attnum) throw(NcException)
+{
+    return readNcAttr(file->getNcid(),file->getName(), NC_GLOBAL,"NC_GLOBAL",attnum);
+}
+
+NcAttr* NcAttr::readNcAttr(int ncid, const string& filename,
+        int varid, const string& varname, int attnum) throw(NcException)
 {
 
     char name[NC_MAX_NAME];
@@ -28,16 +40,16 @@ NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) throw(NcException)
     size_t len;
 
     int status;
-    status = nc_inq_attname(var->getNcid(),var->getId(),attnum,name);
+    status = nc_inq_attname(ncid,varid,attnum,name);
     if (status != NC_NOERR)  {
-        throw NcException("nc_inq_attname",var->getFileName(),
-                var->getName(),status);
+        throw NcException("nc_inq_attname",filename,
+                varname,status);
     }
 
-    status = nc_inq_att(var->getNcid(),var->getId(),name,&nctype,&len);
+    status = nc_inq_att(ncid,varid,name,&nctype,&len);
     if (status != NC_NOERR) {
-        throw NcException("nc_inq_att",var->getFileName(),
-                var->getName(),status);
+        throw NcException("nc_inq_att",filename,
+                varname,status);
     }
 
     NcAttr *attr = 0;
@@ -45,10 +57,10 @@ NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) throw(NcException)
     case NC_CHAR:
         {
             char *val = new char[len+1];
-            status = nc_get_att_text(var->getNcid(),var->getId(),name,val);
+            status = nc_get_att_text(ncid,varid,name,val);
             if (status != NC_NOERR) {
-                throw NcException("nc_get_att_text",var->getFileName(),
-                        var->getName(),status);
+                throw NcException("nc_get_att_text",filename,
+                        varname,status);
                 delete [] val;
                 return 0;
             }
@@ -70,10 +82,10 @@ NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) throw(NcException)
     case NC_INT:
         {
             int *val = new int[len];
-            status = nc_get_att_int(var->getNcid(),var->getId(),name,val);
+            status = nc_get_att_int(ncid,varid,name,val);
             if (status != NC_NOERR) {
-                throw NcException("nc_get_att_int",var->getFileName(),
-                        var->getName(),status);
+                throw NcException("nc_get_att_int",filename,
+                        varname,status);
                 delete [] val;
                 return 0;
             }
@@ -88,10 +100,10 @@ NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) throw(NcException)
     case NC_FLOAT:
         {
             float *val = new float[len];
-            status = nc_get_att_float(var->getNcid(),var->getId(),name,val);
+            status = nc_get_att_float(ncid,varid,name,val);
             if (status != NC_NOERR) {
-                throw NcException("nc_get_att_float", var->getFileName(),
-                        var->getName(),status);
+                throw NcException("nc_get_att_float", filename,
+                        varname,status);
                 delete [] val;
                 return 0;
             }
@@ -106,10 +118,10 @@ NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) throw(NcException)
     case NC_DOUBLE:
         {
             double *val = new double[len];
-            status = nc_get_att_double(var->getNcid(),var->getId(),name,val);
+            status = nc_get_att_double(ncid,varid,name,val);
             if (status != NC_NOERR) {
-                throw NcException("nc_get_att_double", var->getFileName(),
-                        var->getName(),status);
+                throw NcException("nc_get_att_double", filename,
+                        varname,status);
                 delete [] val;
                 return 0;
             }
@@ -122,7 +134,7 @@ NcAttr* NcAttr::createNcAttr(NcVar* var,int attnum) throw(NcException)
         }
         break;
     default:
-        throw NcException(var->getFileName(),
+        throw NcException(filename,
                 string("unknown type for attribute ") + name);
     }
     return attr;

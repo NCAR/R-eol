@@ -29,7 +29,9 @@ using namespace eolts;
 
 NcFile::NcFile(const string& n): _name(n),_shortname(),_ncid(-1),_nvars(0),_ndims(0),
     _nattrs(0),_varvec(),_vars(),_dimVec(),_dims(),_unlimitedDim(0),_timeDim(0),
-    _attrs(),_tsVars(),_hasTSVariableWithoutStationDimension(false),_nscannedVars(0)
+    _tsVars(),_hasTSVariableWithoutStationDimension(false),_nscannedVars(0),
+    _attrMap(), _attrVec(), _readAttr(false)
+
 {
     size_t i = _name.rfind('/');
     if (i < string::npos)_shortname = _name.substr(i+1);
@@ -115,11 +117,11 @@ void NcFile::clearDimMap(void) {
 }
 void NcFile::clearAttrMap(void) {
     NcAttrMapIterator im;
-    for (im = _attrs.begin(); im != _attrs.end(); ++im) {
+    for (im = _attrMap.begin(); im != _attrMap.end(); ++im) {
         delete im->second;
         im->second = 0;
     }
-    _attrs.clear();
+    _attrMap.clear();
 }
 
 void NcFile::clearMaps(void)
@@ -272,6 +274,43 @@ int NcFile::getUnlimitedDimid() throw(NcException) {
     if (status != NC_NOERR)
         throw NcException("nc_inq_unlimdim",getName(),status);
     return unlimdim;
+}
+
+void NcFile::readAttrs() throw(NcException)
+{
+    int natts;
+    int status = nc_inq_varnatts(getNcid(),NC_GLOBAL,&natts);
+    if (status != NC_NOERR) {
+        throw NcException("nc_inq_varnatts", getName(),"NC_GLOBAL",status);
+    }
+
+    for (int i = 0; i < natts; i++) {
+        NcAttr *attr = NcAttr::readNcAttr(this,i);
+        std::pair<string,NcAttr *> p(attr->getName(),attr);
+        _attrMap.insert(p);
+        _attrVec.push_back(attr);
+    }
+    _readAttr = true;
+}
+
+int NcFile::getNumAttrs() throw(NcException)
+{
+    if (!_readAttr) readAttrs();
+    return _attrVec.size();
+}
+
+const std::vector<const NcAttr*> NcFile::getAttributes() throw(NcException)
+{
+    if (!_readAttr) readAttrs();
+    return std::vector<const NcAttr*>(_attrVec.begin(),_attrVec.end());
+}
+
+const NcAttr *NcFile::getAttribute(const string& name) throw(NcException)
+{
+    if (!_readAttr) readAttrs();
+    map<string,NcAttr *>::iterator itr = _attrMap.find(name);
+    if (itr != _attrMap.end()) return itr->second;
+    else return 0;
 }
 
 void NcFile::addTimeSeriesVariable(const string& name,NcVar* var)

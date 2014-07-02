@@ -52,6 +52,8 @@ public:
     size_t searchTime(NcVar* var,double stime,timeTests test,double timeMult)
         throw(NcException);
 
+    SEXP readGlobalAttrs() throw(NcException);
+
     static int rMode(nc_type type);
 
     static int checkVarTypeCompatibility(int rmode1, int rmode2);

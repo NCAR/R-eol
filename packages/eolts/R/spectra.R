@@ -28,7 +28,7 @@ setMethod("pspectra",signature(x="fftw"),
         #
         # Computation of One-sided Power Spectra density from FFT:
         #
-        # Discrete form of Parseval's Theorem in S notation:
+        # Discrete form of Parseval's Theorem in R notation:
         #     sum (h * Conj(h)) = 1 / N * sum(H * Conj(H))
         #     h is the time series, H are the discrete Fourier transforms from fft()
         #
