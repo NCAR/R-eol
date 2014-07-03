@@ -80,10 +80,10 @@ dpar <- function(...,save.cache=F)
          "platform",		# platform name, used for labeling plots
          "lenfile",		# length of NetCDF file, often 86400 secs
          "gradientevalz",    # height to evaluate gradient functions
-         "fh2os",            # vector of fast h2o sensors (used by calc.o2corr)
-         "sonichts",         # heights of sonics at each station - useful in case heights are not in variable names
-         "sfrac.min"         # minimum fraction of sonic samples, for editing fluxes
-         )
+         "sfrac.min",        # minimum fraction of sonic samples, for editing fluxes
+         "sonic_h2o_separation_corrected",  # have x'h2o' been corrected for sensor separation
+         "sonic_co2_separation_corrected"   # have x'co2' been corrected for sensor separation
+    )
 
     set.names <- c(time.len.names,data.selection.names,data.opt.names,
                    deriv.opt.names,time.names)

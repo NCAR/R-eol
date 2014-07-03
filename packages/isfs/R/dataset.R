@@ -66,6 +66,9 @@ find_datasets <- function(
             if ("dataset_description" %in% names(attrs))
                 desc <- attrs$dataset_description
 
+            int_attrs <- attrs[c("sonic_h2o_separation_corrected", "sonic_co2_separation_corrected")]
+            int_attrs <- int_attrs[!sapply(int_attrs,is.null)]
+
             calpaths <- ""
             if ("calibration_file_path" %in% names(attrs))
                 calpaths <- gsub(",version=[^:]+","",attrs$calibration_file_path)
@@ -80,15 +83,16 @@ find_datasets <- function(
                     # If no horizontal rotation, coords should be instrument
                     if (!hrot != (datacoords == "instrument"))
                         warning(paste0(
-                            "apparent coordintate conflict between wind3d_horiz_rotation=",
+                            "apparent coordinate conflict between wind3d_horiz_rotation=",
                             hrot," and dataset=",dname))
                 }
             }
 
             # if ("calfile_version" %in% names(attrs))
 
-            datasets[[dname]] <- list(enable=TRUE,desc=desc,
-                calpath=calpaths, ncd=ncpath,ncf=ncpat,datacoords=datacoords)
+            datasets[[dname]] <- c(list(enable=TRUE,desc=desc,
+                calpath=calpaths, ncd=ncpath,ncf=ncpat,datacoords=datacoords),
+                int_attrs)
         }
     }
     assign(".datasets",datasets,envir=.projectEnv)
@@ -161,6 +165,9 @@ dataset <- function(which,verbose=F,datasets=NULL)
 
     ncf <- Sys.setenv(NETCDF_FILE=dset$ncf)
     ncd <- Sys.setenv(NETCDF_DIR=dset$ncd)
+
+    for (a in c("sonic_h2o_separation_corrected", "sonic_co2_separation_corrected"))
+        if (!is.null(dset[[a]])) dpar(dset[a])
 
     if (!is.null(dset[["f"]])) dset$f()
     if (ncf != dset$ncf || ncd != dset$ncd) clear.cache()
