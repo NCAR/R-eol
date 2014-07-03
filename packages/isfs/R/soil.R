@@ -553,7 +553,10 @@ dat.Gsoil = function(what,derived=TRUE,lc=0.906,Tp=3.93,Dp=38.56,lp=1.22,...)
 {
     G = dat(what,derived=FALSE,...)
 
-    if (!is.null(dpar("robust")) && !dpar("robust")) {
+    philip_done <- dpar("gsoil_philip_corrected")
+    philip_done <- !is.null(philip_done) && as.logical(philip_done)
+
+    if (!philip_done && !is.null(dpar("robust")) && !dpar("robust")) {
         # If we know the conductivity of the calibration medium,
         # then apply the inverse of the Philip correction at that
         # conductivity.

@@ -20,9 +20,6 @@ setMethod("writets",
 
         dots <- list(...)
 
-        history <- NULL
-        if (hasArg(history)) history <- dots$history
-
         fillvalue <- 1.e37
         if (hasArg(fillvalue)) fillvalue <- dots$fillvalue
 
@@ -38,14 +35,22 @@ setMethod("writets",
             dt <- interval / ndt
         }
 
-        if (!is.null(history) && nzchar(history)) {
+        if ("history" %in% names(dots)) {
+            history <- dots$history
             if (length(history) > 1)
-                history <- paste(paste(history,collapse="\n"),"\n",sep="")
-            if (substring(history,nchar(history)) != "\n")
-                history <- paste(history,"\n",sep="")
+                history <- paste(history,collapse="\n")
 
-            .External("write_history_ns", con,as.character(history),
-                PACKAGE="eolts")
+            if (length(history) > 0 && nzchar(history)) {
+                if (substring(history,nchar(history)) != "\n")
+                    history <- paste0(history,"\n")
+
+                .External("write_history_ns", con,as.character(history), PACKAGE="eolts")
+            }
+        }
+
+        if ("gattrs" %in% names(dots)) {
+            gattrs <- dots$gattrs
+            .External("write_global_attrs_ns", con,as.list(gattrs), PACKAGE="eolts")
         }
 
         x[is.na(x)] <- fillvalue
@@ -139,13 +144,17 @@ setMethod("writets",
         if (!hasArg(history) && !hasArg(gattrs)) stop("history and gattrs arguments not found")
             
         dots <- list(...)
+
         if ("history" %in% names(dots)) {
             history <- dots$history
+            if (length(history) > 1)
+                history <- paste(history,collapse="\n")
+
             if (length(history) > 0 && nzchar(history)) {
                 if (substring(history,nchar(history)) != "\n")
                     history <- paste0(history,"\n")
-                .External("write_history_ns", con,as.character(history),
-                    PACKAGE="eolts")
+
+                .External("write_history_ns", con,as.character(history), PACKAGE="eolts")
             }
         }
 

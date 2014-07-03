@@ -66,7 +66,8 @@ find_datasets <- function(
             if ("dataset_description" %in% names(attrs))
                 desc <- attrs$dataset_description
 
-            int_attrs <- attrs[c("sonic_h2o_separation_corrected", "sonic_co2_separation_corrected")]
+            int_attrs <- attrs[c("sonic_h2o_separation_corrected", "sonic_co2_separation_corrected",
+                "gsoil_philip_corrected")]
             int_attrs <- int_attrs[!sapply(int_attrs,is.null)]
 
             calpaths <- ""
@@ -166,7 +167,8 @@ dataset <- function(which,verbose=F,datasets=NULL)
     ncf <- Sys.setenv(NETCDF_FILE=dset$ncf)
     ncd <- Sys.setenv(NETCDF_DIR=dset$ncd)
 
-    for (a in c("sonic_h2o_separation_corrected", "sonic_co2_separation_corrected"))
+    for (a in c("sonic_h2o_separation_corrected", "sonic_co2_separation_corrected",
+                "gsoil_philip_corrected"))
         if (!is.null(dset[[a]])) dpar(dset[a])
 
     if (!is.null(dset[["f"]])) dset$f()

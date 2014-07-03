@@ -81,8 +81,11 @@ dpar <- function(...,save.cache=F)
          "lenfile",		# length of NetCDF file, often 86400 secs
          "gradientevalz",    # height to evaluate gradient functions
          "sfrac.min",        # minimum fraction of sonic samples, for editing fluxes
-         "sonic_h2o_separation_corrected",  # have x'h2o' been corrected for sensor separation
-         "sonic_co2_separation_corrected"   # have x'co2' been corrected for sensor separation
+         "sonic_h2o_separation_corrected",  # have x'h2o' been corrected for sensor separation?
+         "sonic_co2_separation_corrected",  # have x'co2' been corrected for sensor separation?
+         # has Gsoil been corrected for difference between heat conductivity of
+         # soil and calibration medium?
+         "gsoil_philip_corrected"  
     )
 
     set.names <- c(time.len.names,data.selection.names,data.opt.names,
