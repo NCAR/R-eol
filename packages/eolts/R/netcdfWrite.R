@@ -136,16 +136,22 @@ setMethod("writets",
         # not supported on all architectures
         if (!HAVE_NC_SERVER) stop("sorry, writets not available. No nc_server_rpc support")
 
-        if (!hasArg(history)) stop("history argument not found")
+        if (!hasArg(history) && !hasArg(gattrs)) stop("history and gattrs arguments not found")
             
         dots <- list(...)
-        history <- dots$history
+        if ("history" %in% names(dots)) {
+            history <- dots$history
+            if (length(history) > 0 && nzchar(history)) {
+                if (substring(history,nchar(history)) != "\n")
+                    history <- paste0(history,"\n")
+                .External("write_history_ns", con,as.character(history),
+                    PACKAGE="eolts")
+            }
+        }
 
-        if (!is.null(history) && nzchar(history)) {
-            if (substring(history,nchar(history)) != "\n")
-                history <- paste(history,"\n",sep="")
-            .External("write_history_ns", con,as.character(history),
-                PACKAGE="eolts")
+        if ("gattrs" %in% names(dots)) {
+            gattrs <- dots$gattrs
+            .External("write_global_attrs_ns", con,as.list(gattrs), PACKAGE="eolts")
         }
         invisible(NULL)
     }

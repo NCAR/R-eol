@@ -44,6 +44,8 @@ extern "C" {
     SEXP write_ts_ns(SEXP args);
 
     SEXP write_history_ns(SEXP args);
+
+    SEXP write_global_attrs_ns(SEXP args);
 #endif
 
     SEXP get_variables(SEXP obj, SEXP all);
@@ -113,6 +115,10 @@ public:
             double dt, double fillValue) throw(RPC_Exception);
 
     int writeHistory(const std::string&) throw(RPC_Exception);
+
+    int writeGlobalAttr(const std::string& name, const std::string& val) throw(RPC_Exception);
+
+    int writeGlobalAttr(const std::string& name, int val) throw(RPC_Exception);
 
     int write(datarec_float *rec) throw(RPC_Exception);
 

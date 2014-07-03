@@ -404,6 +404,72 @@ SEXP write_history_ns(SEXP args)
     return ans;
 }
 
+SEXP write_global_attrs_ns(SEXP args)
+{
+    args = CDR(args);
+
+    if (args == R_NilValue) Rf_error("connection not specified");
+    SEXP obj = CAR(args);
+    R_netcdf *con = eolts::R_netcdf::getR_netcdf(obj);
+    if (!con) {
+        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+    }
+
+    args = CDR(args);
+
+    if (args != R_NilValue) {
+        SEXP robj = CAR(args);
+        if (Rf_isVector(robj)) {
+            size_t ndims = Rf_xlength(robj);
+
+            SEXP names = Rf_getAttrib(robj,R_NamesSymbol);
+
+            if (!Rf_isString(names)) Rf_error("gattrs argument does not have names");
+
+            for (size_t i = 0; i < ndims; i++) {
+                const char* name = R_CHAR(STRING_ELT(names,i));
+
+                SEXP robj2 = VECTOR_ELT(robj,i);
+
+                try {
+                    if (Rf_isString(robj2)) {
+                        string val;
+                        for (ssize_t i2 = 0; i2 < Rf_xlength(robj2); i2++)
+                            val += R_CHAR(STRING_ELT(robj2,i2));
+                        con->writeGlobalAttr(name,val.c_str());
+                    }
+                    else {
+                        if (Rf_xlength(robj2) == 0) continue;
+                        if (Rf_xlength(robj2) > 1) {
+                            std::ostringstream ost;
+                            ost << "gattrs[[\"" << name << "\"]] has length " <<
+                                Rf_xlength(robj2) << ". write not supported";
+                            Rf_error(ost.str().c_str());
+                        }
+
+                        int val = 0;
+                        if (Rf_isInteger(robj2)) 
+                            val = INTEGER(robj2)[0];
+                        else if (Rf_isNumeric(robj2)) 
+                            val = (int)REAL(robj2)[0];
+                        con->writeGlobalAttr(name,val);
+                    }
+                }
+                catch (const RPC_Exception& e) {
+                    Rf_error(e.what());
+                }
+            }
+        }
+        args = CDR(args);
+    }
+
+
+    SEXP ans = PROTECT(Rf_allocVector(INTSXP,1));
+    INTEGER(ans)[0] = 0;
+    UNPROTECT(1);
+    return ans;
+}
+
 #endif
 
 R_netcdf::R_netcdf(SEXP con, SEXP files, SEXP cdlfile,
@@ -957,11 +1023,70 @@ int R_netcdf::writeHistory(const string& hist) throw(RPC_Exception)
                             " write history").c_str()));
         }
         else if (result != 0) {
-            Rprintf("nc_server history write status = %d\n",result);
+            Rprintf("server: %s write history status = %d\n",
+                    _server.c_str(),result);
         }
         return result;
     }
     return 0;
+}
+
+int R_netcdf::writeGlobalAttr(const string& name, const string& val) throw(RPC_Exception)
+{
+    if (!_clnt) rpcopen();
+    int result;
+    enum clnt_stat clnt_stat;
+
+    global_attr gattr;
+
+    gattr.connectionId = _id;
+    gattr.attr.name = const_cast<char*>(name.c_str());
+    gattr.attr.value = const_cast<char*>(val.c_str());
+
+    result = 0;
+
+    clnt_stat = clnt_call(_clnt, WRITE_GLOBAL_ATTR,
+            (xdrproc_t) xdr_global_attr, (caddr_t) &gattr,
+            (xdrproc_t) xdr_int, (caddr_t) &result ,
+            _rpcWriteTimeout);
+    if (clnt_stat != RPC_SUCCESS) {
+        throw RPC_Exception(clnt_sperror(_clnt,(string("server: ")+ _server +
+                        " write global attr").c_str()));
+    }
+    else if (result != 0) {
+        Rprintf("server: %s write global attr status = %d\n",
+                _server.c_str(),result);
+    }
+    return result;
+}
+
+int R_netcdf::writeGlobalAttr(const string& name, int val) throw(RPC_Exception)
+{
+    if (!_clnt) rpcopen();
+    int result;
+    enum clnt_stat clnt_stat;
+
+    global_int_attr gattr;
+
+    gattr.connectionId = _id;
+    gattr.name = const_cast<char*>(name.c_str());
+    gattr.value = val;
+
+    result = 0;
+
+    clnt_stat = clnt_call(_clnt, WRITE_GLOBAL_INT_ATTR,
+            (xdrproc_t) xdr_global_int_attr, (caddr_t) &gattr,
+            (xdrproc_t) xdr_int, (caddr_t) &result ,
+            _rpcWriteTimeout);
+    if (clnt_stat != RPC_SUCCESS) {
+        throw RPC_Exception(clnt_sperror(_clnt,(string("server: ")+ _server +
+                        " write global int attr").c_str()));
+    }
+    else if (result != 0) {
+        Rprintf("server: %s write global int attr status = %d\n",
+                _server.c_str(),result);
+    }
+    return result;
 }
 
 R_netcdf::NSVarGroupFloat* R_netcdf::addVarGroupFloat(NS_rectype rectype,
