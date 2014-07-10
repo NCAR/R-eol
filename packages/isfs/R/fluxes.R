@@ -24,13 +24,17 @@ calc.x.t <- function(what)
     robust <- dpar("robust")
     if (!is.null(robust) && !robust) {
 
-        xkh2o <- xh2o <- o2corr <- lo2corr <- scorr <- lscorr <- NULL
+        xkh2o <- xh2o <- o2corr <- scorr <- lscorr <- NULL
+        lo2corr <- 0.0  # no oxygen correction for licors
 
         # Has the separation correction been done?
         scorr_done <- dpar("sonic_h2o_separation_corrected")
         scorr_done <- !is.null(scorr_done) && as.logical(scorr_done)
 
-        if (scorr_done) scorr <- lscorr <- 1.0
+        if (scorr_done) {
+            scorr <- lscorr <- 1.0
+            o2corr <- 0.0
+        }
 
         wvb <- words(variables(),1,1)
 
@@ -48,9 +52,8 @@ calc.x.t <- function(what)
                 if (!all(allna)) xkh2o <- xkh2o[,!allna]
 
                 # dat("o2corr") can return a simple 0, rather than a time series
-                o2corr <- dat(expand("o2corr",what),avg=TRUE,smooth=TRUE)
-                if (!is.null(o2corr)) {
-                    # conform will convert arg to a dat
+                if (is.null(o2corr)) o2corr <- dat(expand("o2corr",what),avg=TRUE,smooth=TRUE)
+                if (is(o2corr,"dat")) {
                     o2corr <- conform(o2corr,xkh2o)
                     o2corr <- approx(o2corr,xout=xkh2o,method="constant",f=0,rule=2)
                 }
@@ -81,8 +84,11 @@ calc.x.t <- function(what)
                     xunits[cvt] <-  rep("m/s g/m^3",sum(cvt))
                     units(xh2o) <- xunits
                 }
-                lo2corr <- xh2o*0
-                units(lo2corr) <- rep("",ncol(xh2o))
+
+                if (is(o2corr,"dat")) {
+                    lo2corr <- lo2corr * xh2o
+                    units(lo2corr) <- rep("",ncol(xh2o))
+                }
 
                 if (is.null(lscorr)) lscorr <- dat(expand("Scorr",what),which="other",avg=T,smooth=T)
                 if (is(lscorr,"dat")) lscorr <- conform(lscorr,xh2o)
@@ -108,11 +114,6 @@ calc.x.t <- function(what)
             }
         }
 
-        if (!is.null(lo2corr)) {
-            if (is.null(o2corr)) o2corr <- lo2corr
-            else o2corr <- Cbind(o2corr,lo2corr)
-        }
-        if (!is.null(o2corr)) o2corr <- conform(o2corr,xh2o)
 
         if (any(xh2o@units != "m/s g/m^3" & xh2o@units != "m/s gm/m^3"))
             warning("units of <w'kh2o'> are not m/s g/m^3")
@@ -129,7 +130,10 @@ calc.x.t <- function(what)
         }
 
         xh2o <- conform(xh2o,xt) * 1.e-3
-        o2corr <- conform(o2corr,xt) * 1.e-3
+        if (is(o2corr,"dat")) {
+            o2corr <- Cbind(o2corr,lo2corr)
+            o2corr <- conform(o2corr,xt) * 1.e-3
+        }
 
         sfxs <- suffixes(xh2o,2)
 
@@ -178,13 +182,17 @@ calc.x.mr <- function(what,derived=TRUE)
     xmr.name <- words(what,1,1,sep=".")
     comp <- words(xmr.name,1,1,sep="'")
 
-    xkh2o <- xh2o <- o2corr <- lo2corr <- scorr <- lscorr <- NULL
+    xkh2o <- xh2o <- o2corr <- scorr <- lscorr <- NULL
+    lo2corr <- 0.0  # no oxygen correction for licors
 
     # Has the separation correction been done?
     scorr_done <- dpar("sonic_h2o_separation_corrected")
     scorr_done <- !is.null(scorr_done) && as.logical(scorr_done)
 
-    if (scorr_done) scorr <- lscorr <- 1.0
+    if (scorr_done) {
+        scorr <- lscorr <- 1.0
+        o2corr <- 0.0
+    }
 
     wvb <- words(variables(),1,1)
     # read krypton data
@@ -200,8 +208,8 @@ calc.x.mr <- function(what,derived=TRUE)
             if (!all(allna)) xkh2o <- xkh2o[,!allna]
 
             if (!robust) {
-                o2corr <- dat(expand("o2corr",what),avg=TRUE,smooth=TRUE)
-                if (!is.null(o2corr)) {
+                if (is.null(o2corr)) o2corr <- dat(expand("o2corr",what),avg=TRUE,smooth=TRUE)
+                if (is(o2corr,"dat")) {
                     o2corr <- conform(o2corr,xkh2o)
                     o2corr <- approx(o2corr,xout=xkh2o,method="constant",f=0,rule=2)
                 }
@@ -233,8 +241,10 @@ calc.x.mr <- function(what,derived=TRUE)
                 units(xh2o) <- xunits
             }
             if (!robust) {
-                lo2corr <- xh2o*0
-                units(lo2corr) <- rep("",ncol(xh2o))
+                if (is(o2corr,"dat")) {
+                    lo2corr <- lo2corr * xh2o
+                    units(lo2corr) <- rep("",ncol(xh2o))
+                }
 
                 if (is.null(lscorr)) lscorr <- dat(expand("Scorr",what),which="other",avg=T,smooth=T)
                 if (is(lscorr,"dat")) lscorr <- conform(lscorr,xh2o)
@@ -249,18 +259,16 @@ calc.x.mr <- function(what,derived=TRUE)
         else xh2o <- Cbind(xkh2o,xh2o)
     }
 
-    if (!is.null(lo2corr)) {
-        if (is.null(o2corr)) o2corr <- lo2corr
-        else o2corr <- Cbind(o2corr,lo2corr)
-    }
-
-    if (!is.null(o2corr)) o2corr <- conform(o2corr,xh2o)
-
     if (any(xh2o@units != "m/s g/m^3" & xh2o@units != "m/s gm/m^3"))
         warning("units of <w'kh2o'> are not m/s g/m^3")
     sfxs <- suffixes(xh2o,2)
 
     if (!is.null(robust) && !robust) {
+
+        if (is(o2corr,"dat")) {
+            o2corr <- Cbind(o2corr,lo2corr)
+            o2corr <- conform(o2corr,xh2o)
+        }
 
         xtc.name <- expand(paste(comp,"tc'",sep="'"),what)	# x'tc' where x is u,v or w
         # Correct <w'kh2o'> for spatial separation  (done above)
@@ -328,12 +336,16 @@ calc.x.h2o <- function(what)
     xh2o.name <- words(what,1,1,sep=".")
     comp <- words(xh2o.name,1,1,sep="'")
 
-    xkh2o <- xh2o <- o2corr <- lo2corr <- scorr <- lscorr <- NULL
+    xkh2o <- xh2o <- o2corr <- scorr <- lscorr <- NULL
+    lo2corr <- 0.0  # no oxygen correction for licors
 
     scorr_done <- dpar("sonic_h2o_separation_corrected")
     scorr_done <- !is.null(scorr_done) && as.logical(scorr_done)
 
-    if (scorr_done) scorr <- lscorr <- 1.0
+    if (scorr_done) {
+        scorr <- lscorr <- 1.0
+        o2corr <- 0.0
+    }
 
     wvb <- words(variables(),1,1)
     # read krypton data
@@ -343,13 +355,13 @@ calc.x.h2o <- function(what)
         if (!is.null(xkh2o) && !is.null(robust) && !robust) {
             # dat("o2corr") can return a simple 0, rather than a time series
             # In that case, conform will just return that 0 again.
-            o2corr <- dat(expand("o2corr",what))
-            if (!is.null(o2corr)) {
+            if (is.null(o2corr)) o2corr <- dat(expand("o2corr",what))
+            if (is(o2corr,"dat")) {
                 o2corr <- conform(o2corr,xkh2o)
                 o2corr <- approx(o2corr,xout=xkh2o,method="constant",f=0,rule=2)
             }
             if (is.null(scorr)) scorr <- dat(expand("Scorr",what),which="krypton",avg=T,smooth=T)
-            if (!is.null(scorr)) scorr <- conform(scorr,xkh2o)
+            if (is(scorr,"dat")) scorr <- conform(scorr,xkh2o)
             # correction for spatial separation between sonic and fast hygrometer
             if (!is.null(scorr)) xkh2o <- xkh2o * scorr
         }
@@ -368,12 +380,14 @@ calc.x.h2o <- function(what)
                 units(xh2o) <- xunits
             }
             if (!is.null(robust) && !robust) {
-                lo2corr <- xh2o*0
-                dimnames(lo2corr)[[2]] <- paste("o2corr",words(dimnames(lo2corr)[[2]],2),sep=".")
-                units(lo2corr) <- rep("",ncol(xh2o))
+
+                if (is(o2corr,"dat")) {
+                    lo2corr <- lo2corr * xh2o
+                    units(lo2corr) <- rep("",ncol(xh2o))
+                }
 
                 if (is.null(lscorr)) lscorr <- dat(expand("Scorr",what),which="other",avg=T,smooth=T)
-                if (!is.null(lscorr)) lscorr <- conform(lscorr,xh2o)
+                if (is(lscorr,"dat")) lscorr <- conform(lscorr,xh2o)
                 # correction for spatial separation between sonic and fast hygrometer
                 if (!is.null(lscorr)) xh2o <- xh2o * lscorr
             }
@@ -385,18 +399,18 @@ calc.x.h2o <- function(what)
         else xh2o <- Cbind(xkh2o,xh2o)
     }
 
-    if (!is.null(lo2corr)) {
-        if (is.null(o2corr)) o2corr <- lo2corr
-        else o2corr <- Cbind(o2corr,lo2corr)
-    }
-    if (!is.null(o2corr)) o2corr <- conform(o2corr,xh2o)
-
     if (any(xh2o@units != "m/s g/m^3" & xh2o@units != "m/s gm/m^3"))
         warning("units of <w'kh2o'> are not m/s g/m^3")
     sfxs <- suffixes(xh2o,2)
     # browser()
 
     if (!is.null(robust) && !robust) {
+
+        if (is(o2corr,"dat")) {
+            o2corr <- Cbind(o2corr,lo2corr)
+            o2corr <- conform(o2corr,xh2o)
+        }
+
         xtc.name <- expand(paste(comp,"tc'",sep="'"),what)	# x'tc' where x is u,v or w
         # Correct <w'kh2o'> for spatial separation 
         # Correct <w'tc'> for <w'h2o'> per Schotanus et al., BLM, 1983
