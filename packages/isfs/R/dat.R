@@ -968,6 +968,9 @@ setMethod("average", signature="dat",
                     x2@weights <- xw@data
                     class(x2) <- "nts"
 
+                    naw <- is.na(xx@weights * fx@data)
+                    if (any(naw)) xx@weights[naw] <- 0
+
                     if (!identical(as.numeric(xx@weights),as.numeric(x1@weights)))
                         warning(paste("average: weights of",dimnames(xx)[[2]],"differ from",dimnames(x1)[[2]]))
                     else if (!identical(as.numeric(xx@weights),as.numeric(x2@weights)))
@@ -1014,6 +1017,9 @@ setMethod("average", signature="dat",
                     x3 <- x3 * fx
                     class(x3) <- "nts"
                     x3a <- average(x3,...,simple=TRUE)
+
+                    naw <- is.na(xx@weights * fx@data)
+                    if (any(naw)) xx@weights[naw] <- 0
 
                     if (!identical(as.numeric(xx@weights),as.numeric(x1@weights)))
                         warning(paste("average: weights of",dimnames(xx)[[2]],"differ from",dimnames(x1)[[2]]))
