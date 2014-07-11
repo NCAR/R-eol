@@ -24,8 +24,7 @@ calc.x.t <- function(what)
     robust <- dpar("robust")
     if (!is.null(robust) && !robust) {
 
-        xkh2o <- xh2o <- o2corr <- scorr <- lscorr <- NULL
-        lo2corr <- 0.0  # no oxygen correction for licors
+        xkh2o <- xh2o <- o2corr <- scorr <- lscorr <- lo2corr <- NULL
 
         # Has the separation correction been done?
         scorr_done <- dpar("sonic_h2o_separation_corrected")
@@ -85,8 +84,9 @@ calc.x.t <- function(what)
                     units(xh2o) <- xunits
                 }
 
+                # no oxygen correction for licors
                 if (is(o2corr,"dat")) {
-                    lo2corr <- lo2corr * xh2o
+                    lo2corr <- xh2o * 0.0
                     units(lo2corr) <- rep("",ncol(xh2o))
                 }
 
@@ -131,7 +131,7 @@ calc.x.t <- function(what)
 
         xh2o <- conform(xh2o,xt) * 1.e-3
         if (is(o2corr,"dat")) {
-            o2corr <- Cbind(o2corr,lo2corr)
+            if (!is.null(lo2corr)) o2corr <- Cbind(o2corr,lo2corr)
             o2corr <- conform(o2corr,xt) * 1.e-3
         }
 
@@ -182,8 +182,7 @@ calc.x.mr <- function(what,derived=TRUE)
     xmr.name <- words(what,1,1,sep=".")
     comp <- words(xmr.name,1,1,sep="'")
 
-    xkh2o <- xh2o <- o2corr <- scorr <- lscorr <- NULL
-    lo2corr <- 0.0  # no oxygen correction for licors
+    xkh2o <- xh2o <- o2corr <- scorr <- lscorr  <- lo2corr <- NULL
 
     # Has the separation correction been done?
     scorr_done <- dpar("sonic_h2o_separation_corrected")
@@ -241,8 +240,9 @@ calc.x.mr <- function(what,derived=TRUE)
                 units(xh2o) <- xunits
             }
             if (!robust) {
+                # no oxygen correction for licors
                 if (is(o2corr,"dat")) {
-                    lo2corr <- lo2corr * xh2o
+                    lo2corr <- xh2o * 0.0
                     units(lo2corr) <- rep("",ncol(xh2o))
                 }
 
@@ -266,7 +266,7 @@ calc.x.mr <- function(what,derived=TRUE)
     if (!is.null(robust) && !robust) {
 
         if (is(o2corr,"dat")) {
-            o2corr <- Cbind(o2corr,lo2corr)
+            if (!is.null(lo2corr)) o2corr <- Cbind(o2corr,lo2corr)
             o2corr <- conform(o2corr,xh2o)
         }
 
@@ -336,8 +336,7 @@ calc.x.h2o <- function(what)
     xh2o.name <- words(what,1,1,sep=".")
     comp <- words(xh2o.name,1,1,sep="'")
 
-    xkh2o <- xh2o <- o2corr <- scorr <- lscorr <- NULL
-    lo2corr <- 0.0  # no oxygen correction for licors
+    xkh2o <- xh2o <- o2corr <- scorr <- lscorr <- lo2corr <- NULL
 
     scorr_done <- dpar("sonic_h2o_separation_corrected")
     scorr_done <- !is.null(scorr_done) && as.logical(scorr_done)
@@ -381,8 +380,9 @@ calc.x.h2o <- function(what)
             }
             if (!is.null(robust) && !robust) {
 
+                # no oxygen correction for licors
                 if (is(o2corr,"dat")) {
-                    lo2corr <- lo2corr * xh2o
+                    lo2corr <- xh2o * 0.0
                     units(lo2corr) <- rep("",ncol(xh2o))
                 }
 
@@ -407,7 +407,7 @@ calc.x.h2o <- function(what)
     if (!is.null(robust) && !robust) {
 
         if (is(o2corr,"dat")) {
-            o2corr <- Cbind(o2corr,lo2corr)
+            if (!is.null(lo2corr)) o2corr <- Cbind(o2corr,lo2corr)
             o2corr <- conform(o2corr,xh2o)
         }
 
