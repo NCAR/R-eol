@@ -31,16 +31,18 @@ calc.x.t <- function(what)
         scorr_done <- !is.null(scorr_done) && as.logical(scorr_done)
 
         if (scorr_done) {
-            scorr <- lscorr <- 1.0
-            o2corr <- 0.0
+            lscorr <- 1.0
         }
 
         wvb <- words(variables(),1,1)
 
         # read krypton data
-        if (sum(wvb=="kh2o")>0) {
+        xh.name <- paste(comp,"kh2o'",sep="'")  # x'kh2o'
+
+        if (!scorr_done && any(wvb == xh.name)) {
+
             # Assume E measured as <w'h2o'> (m/s g/m^3)
-            xh.name <- expand(paste(comp,"kh2o'",sep="'"),what)# x'kh2o'
+            xh.name <- expand(xh.name,what)
 
             # specify derived=F, so make sure we get the uncorrected x'kh2o'
             xkh2o <- dat(xh.name,derived=F,avg=T,smooth=T)	# m/s g/m^3
@@ -64,8 +66,10 @@ calc.x.t <- function(what)
             }
         }
         # read li7500 data
-        if (sum(wvb=="h2o")>0) {
-            xh.name <- expand(paste(comp,"h2o'",sep="'"),what)# x'h2o'
+        xh.name <- paste(comp,"h2o'",sep="'")   # x'h2o'
+
+        if (any(wvb == xh.name)) {
+            xh.name <- expand(xh.name,what)
             # specify derived=F, so that oxygen and spatial corrections
             # are not done in this call to dat
             xh2o <- dat(xh.name,derived=F,avg=T,smooth=T) # m/s mmol/m^3
@@ -143,13 +147,13 @@ calc.x.t <- function(what)
 
         if (comp == "w") {
             factor <- 0.51*(1 + Q*(1/0.622-1))
-            xt <- (xt - factor * TK / rho.air * xh2o)/
-            (1 + factor * (Q + o2corr * (1-Q)))
+            xt <- (xt - factor * TK / rho.air * xh2o) /
+                (1 + factor * (Q + o2corr * (1-Q)))
         }
         else {
             factor <- 0.51*(1 - Q)
-            xt <- (xt - factor * TK / rho.air * xh2o)/
-            (1 + factor * o2corr * (1-Q))
+            xt <- (xt - factor * TK / rho.air * xh2o) /
+                (1 + factor * o2corr * (1-Q))
         }
 
         xt@data[is.infinite(xt@data)] <- NA_real_
@@ -189,15 +193,17 @@ calc.x.mr <- function(what,derived=TRUE)
     scorr_done <- !is.null(scorr_done) && as.logical(scorr_done)
 
     if (scorr_done) {
-        scorr <- lscorr <- 1.0
-        o2corr <- 0.0
+        lscorr <- 1.0
     }
 
     wvb <- words(variables(),1,1)
+
     # read krypton data
-    if (sum(wvb=="kh2o")>0) {
+    xh.name <- paste(comp,"kh2o'",sep="'")  # x'kh2o'
+
+    if (!scorr_done && any(wvb == xh.name)) {
         # Assume E measured as <w'h2o'> (m/s g/m^3)
-        xh.name <- expand(paste(comp,"kh2o'",sep="'"),what)# x'kh2o'
+        xh.name <- expand(xh.name,what)
 
         # specify derived=F, so make sure we get the uncorrected x'kh2o'
         xkh2o <- dat(xh.name,derived=F,avg=T,smooth=T)	# m/s g/m^3
@@ -220,8 +226,10 @@ calc.x.mr <- function(what,derived=TRUE)
         }
     }
     # read li7500 data
-    if (sum(wvb=="h2o")>0) {
-        xh.name <- expand(paste(comp,"h2o'",sep="'"),what)# x'h2o'
+    xh.name <- paste(comp,"h2o'",sep="'")  # x'h2o'
+
+    if (any(wvb == xh.name)) {
+        xh.name <- expand(xh.name,what)
 
         # specify derived=F, so that oxygen and spatial corrections
         # are not done in this call to dat
@@ -298,8 +306,8 @@ calc.x.mr <- function(what,derived=TRUE)
 
         if (comp == "w") {
             factor <- 0.51*(1 + Q*(1/0.622-1))
-            xmr <- (1 + MR/0.622)*(xmr + (MR + o2corr) * xtc / TK)/
-            (1 + factor*(Q + o2corr*(1-Q)))
+            xmr <- (1 + MR/0.622)*(xmr + (MR + o2corr) * xtc / TK) /
+                (1 + factor*(Q + o2corr*(1-Q)))
         }
         else {
             factor <- 0.51*(1-Q)
@@ -342,14 +350,16 @@ calc.x.h2o <- function(what)
     scorr_done <- !is.null(scorr_done) && as.logical(scorr_done)
 
     if (scorr_done) {
-        scorr <- lscorr <- 1.0
-        o2corr <- 0.0
+        lscorr <- 1.0
     }
 
     wvb <- words(variables(),1,1)
+
     # read krypton data
-    if (sum(wvb=="kh2o")>0) {
-        xh.name <- expand(paste(comp,"kh2o'",sep="'"),what)# x'kh2o'
+    xh.name <- paste(comp,"kh2o'",sep="'")  # x'kh2o'
+
+    if (!scorr_done && any(wvb == xh.name)) {
+        xh.name <- expand(xh.name,what)
         xkh2o <- dat(xh.name,avg=T,smooth=T)	# m/s g/m^3
         if (!is.null(xkh2o) && !is.null(robust) && !robust) {
             # dat("o2corr") can return a simple 0, rather than a time series
@@ -366,8 +376,10 @@ calc.x.h2o <- function(what)
         }
     }
     # read li7500 data
-    if (sum(wvb=="h2o")>0) {
-        xh.name <- expand(paste(comp,"h2o'",sep="'"),what)# x'h2o'
+    xh.name <- paste(comp,"h2o'",sep="'")  # x'h2o'
+
+    if (any(wvb == xh.name)) {
+        xh.name <- expand(xh.name,what)# x'h2o'
         xh2o <- dat(xh.name,derived=F,avg=T,smooth=T) # m/s mmol/m^3
         if (!is.null(xh2o)) {
             # ...convert units
@@ -438,13 +450,13 @@ calc.x.h2o <- function(what)
 
         if (comp == "w") {
             factor <- 0.51*(1 + Q*(1/0.622-1))
-            xh2o <- ( (1 + factor*Q) * xh2o + o2corr * xtc * rhod / TK )/
-            (1 + factor*(Q + o2corr * (1-Q)))
+            xh2o <- ( (1 + factor*Q) * xh2o + o2corr * xtc * rhod / TK ) /
+                (1 + factor*(Q + o2corr * (1-Q)))
         }
         else {
             factor <- 0.51*(1-Q)
-            xh2o <- (xh2o + o2corr * xtc * rhod / TK)/
-            (1 + factor* o2corr * (1-Q))
+            xh2o <- (xh2o + o2corr * xtc * rhod / TK) /
+                (1 + factor* o2corr * (1-Q))
         }
         xh2o@data[is.infinite(xh2o@data)] <- NA_real_
     }
