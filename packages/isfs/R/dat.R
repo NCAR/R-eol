@@ -1020,42 +1020,46 @@ setMethod("average", signature="dat",
                     if (any(mx <- (dns == dnames[1]))) x1 <- x[,mx]
                     else x1 <- dat(dnames[1])
                     x1 <- conform(x1,xx)
+
+                    wm <- x1@weightmap
                     xw <- nts(x1@weights,positions(x1)) * fx
                     naw <- is.na(xw@data)
                     if (any(naw)) xw@data[naw] <- 0
                     x1 <- x1 * fx
+                    x1@weights <- xw@data
+                    x1@weightmap <- wm
                     class(x1) <- "nts"
-                    x1a <- average(x1,...,simple=TRUE)
 
                     if (any(mx <- (dns == dnames[2]))) x2 <- x[,mx]
                     else x2 <- dat(dnames[2])
                     x2 <- conform(x2,xx)
+
+                    wm <- x2@weightmap
                     xw <- nts(x2@weights,positions(x2)) * fx
                     naw <- is.na(xw@data)
                     if (any(naw)) xw@data[naw] <- 0
                     x2 <- x2 * fx
+
+                    x2@weights <- xw@data
+                    x2@weightmap <- wm
+
                     class(x2) <- "nts"
-                    x2a <- average(x2,...,simple=TRUE)
 
                     if (any(mx <- (dns == dnames[3]))) x3 <- x[,mx]
                     else x3 <- dat(dnames[3])
                     x3 <- conform(x3,xx)
+
+                    wm <- x3@weightmap
                     xw <- nts(x3@weights,positions(x3)) * fx
                     naw <- is.na(xw@data)
                     if (any(naw)) xw@data[naw] <- 0
                     x3 <- x3 * fx
+                    x3@weights <- xw@data
+                    x3@weightmap <- wm
                     class(x3) <- "nts"
-                    x3a <- average(x3,...,simple=TRUE)
 
                     naw <- is.na(xx@weights * fx@data)
                     if (any(naw)) xx@weights[naw] <- 0
-
-                    if (!identical(as.numeric(xx@weights),as.numeric(x1@weights)))
-                        warning(paste("average: weights of",dimnames(xx)[[2]],"differ from",dimnames(x1)[[2]]))
-                    else if (!identical(as.numeric(xx@weights),as.numeric(x2@weights)))
-                        warning(paste("average: weights of",dimnames(xx)[[2]],"differ from",dimnames(x2)[[2]]))
-                    else if (!identical(as.numeric(xx@weights),as.numeric(x3@weights)))
-                        warning(paste("average: weights of",dimnames(xx)[[2]],"differ from",dimnames(x3)[[2]]))
 
                     # variable names, 'w' from 'w.99m.moon'
                     vnames <- words(dnames,first=1,last=1,sep='.')
@@ -1067,18 +1071,78 @@ setMethod("average", signature="dat",
                     }
 
                     dx1x2 <- paste(vnames[1],"'",vnames[2],"'",".",vsuffixes,sep="")
-                    dx1x3 <- paste(vnames[1],"'",vnames[3],"'",".",vsuffixes,sep="")
-                    dx2x3 <- paste(vnames[2],"'",vnames[3],"'",".",vsuffixes,sep="")
 
-                    x1x2 <- conform(dat(dx1x2),xx) * fx
-                    x1x3 <- conform(dat(dx1x3),xx) * fx
-                    x2x3 <- conform(dat(dx2x3),xx) * fx
-
+                    x1x2 <- conform(dat(dx1x2),xx)
+                    wm <- x1x2@weightmap
+                    xw <- nts(x1x2@weights,positions(x1x2)) * fx
+                    naw <- is.na(xw@data)
+                    if (any(naw)) xw@data[naw] <- 0
+                    x1x2 <- x1x2 * fx
+                    x1x2@weights <- xw@data
+                    x1x2@weightmap <- wm
                     class(x1x2) <- "nts"
+
+                    dx1x3 <- paste(vnames[1],"'",vnames[3],"'",".",vsuffixes,sep="")
+                    x1x3 <- conform(dat(dx1x3),xx)
+                    wm <- x1x3@weightmap
+                    xw <- nts(x1x3@weights,positions(x1x3)) * fx
+                    naw <- is.na(xw@data)
+                    if (any(naw)) xw@data[naw] <- 0
+                    x1x3 <- x1x3 * fx
+                    x1x3@weights <- xw@data
+                    x1x3@weightmap <- wm
                     class(x1x3) <- "nts"
+
+                    dx2x3 <- paste(vnames[2],"'",vnames[3],"'",".",vsuffixes,sep="")
+                    x2x3 <- conform(dat(dx2x3),xx)
+                    wm <- x2x3@weightmap
+                    xw <- nts(x2x3@weights,positions(x2x3)) * fx
+                    naw <- is.na(xw@data)
+                    if (any(naw)) xw@data[naw] <- 0
+                    x2x3 <- x2x3 * fx
+                    x2x3@weights <- xw@data
+                    x2x3@weightmap <- wm
                     class(x2x3) <- "nts"
 
                     class(xx) <- "nts"
+
+                    if (!identical(as.numeric(xx@weights),as.numeric(x1@weights))) {
+                        warning(paste("average: weights of",dimnames(xx)[[2]],"differ from",dimnames(x1)[[2]]))
+                        weights_ok <- FALSE
+                    }
+                    else if (!identical(as.numeric(xx@weights),as.numeric(x2@weights))) {
+                        warning(paste("average: weights of",dimnames(xx)[[2]],"differ from",dimnames(x2)[[2]]))
+                        weights_ok <- FALSE
+                    }
+                    else if (!identical(as.numeric(xx@weights),as.numeric(x3@weights))) {
+                        warning(paste("average: weights of",dimnames(xx)[[2]],"differ from",dimnames(x3)[[2]]))
+                        weights_ok <- FALSE
+                    }
+
+                    if (!weights_ok) {
+                        bad <- (xx@weights != x1@weights) | (xx@weights != x2@weights) |
+                                (xx@weights != x3@weights)
+                        warning(paste0(sum(bad)," (",round(sum(bad)/length(bad)*100,3),
+                                "%) samples with differing weights were set to NA"))
+                        x1[bad] <- NA_real_
+                        x1@weights[bad] <- 0
+                        x2[bad] <- NA_real_
+                        x2@weights[bad] <- 0
+                        x3[bad] <- NA_real_
+                        x3@weights[bad] <- 0
+                        x1x2[bad] <- NA_real_
+                        x1x2@weights[bad] <- 0
+                        x1x3[bad] <- NA_real_
+                        x1x3@weights[bad] <- 0
+                        x2x3[bad] <- NA_real_
+                        x2x3@weights[bad] <- 0
+                        xx[bad] <- NA_real_
+                        xx@weights[bad] <- 0
+                    }
+                    x1a <- average(x1,...,simple=TRUE)
+                    x2a <- average(x2,...,simple=TRUE)
+                    x3a <- average(x3,...,simple=TRUE)
+
                     # browser()
 
                     av <- average(xx + x1*x2x3 + x2*x1x3 + x3*x1x2 + x1*x2*x3,...,simple=TRUE) - 
