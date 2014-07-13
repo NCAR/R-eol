@@ -937,49 +937,78 @@ setMethod("average", signature="dat",
                 else if (nw == 2) {
                     xx <- x[,xcol]
 
-                    # Create a time series containing 1.0 when covariance exists, otherwise NA.
+                    # Create a time series containing 1.0 when covariance exists,
+                    # otherwise NA.
                     # Multiply the individual component means by this time series before
                     # re-computing the covariance. This corrects errors if there
                     # is different data coverage in the components.
                     fx <- xx
                     fx@data[!is.na(fx@data)] <- 1.0
 
-                    # Second-order moment, add in variation of first-order moments
+                    # Second-order moment, add in variance of first-order moments
 
                     # If this average is being called from dat, then
                     # in the following dat call, avg will default to F.
                     if (any(mx <- (dns == dnames[1]))) x1 <- x[,mx]
                     else x1 <- dat(dnames[1])
                     x1 <- conform(x1,xx)
+
+                    wm <- x1@weightmap
                     xw <- nts(x1@weights,positions(x1)) * fx
                     naw <- is.na(xw@data)
                     if (any(naw)) xw@data[naw] <- 0
                     x1 <- x1 * fx
+                    # in above operation, if weights differ, they are
+                    # removed. Restore them
                     x1@weights <- xw@data
+                    x1@weightmap <- wm
+
                     class(x1) <- "nts"
 
                     if (any(mx <- (dns == dnames[2]))) x2 <- x[,mx]
                     else x2 <- dat(dnames[2])
                     x2 <- conform(x2,xx)
+
+                    wm <- x2@weightmap
                     xw <- nts(x2@weights,positions(x2)) * fx
                     naw <- is.na(xw@data)
                     if (any(naw)) xw@data[naw] <- 0
                     x2 <- x2 * fx
+                    # in above operation, if weights differ, they are
+                    # removed. Restore them
                     x2@weights <- xw@data
+                    x2@weightmap <- wm
+
                     class(x2) <- "nts"
 
                     naw <- is.na(xx@weights * fx@data)
                     if (any(naw)) xx@weights[naw] <- 0
 
-                    if (!identical(as.numeric(xx@weights),as.numeric(x1@weights)))
+                    weights_ok <- TRUE
+                    if (!identical(as.numeric(xx@weights),as.numeric(x1@weights))) {
                         warning(paste("average: weights of",dimnames(xx)[[2]],"differ from",dimnames(x1)[[2]]))
-                    else if (!identical(as.numeric(xx@weights),as.numeric(x2@weights)))
+                        weights_ok <- FALSE
+                    }
+                    else if (!identical(as.numeric(xx@weights),as.numeric(x2@weights))) {
                         warning(paste("average: weights of",dimnames(xx)[[2]],"differ from",dimnames(x2)[[2]]))
+                        weights_ok <- FALSE
+                    }
+                    if (!weights_ok) {
+                        bad <- (xx@weights != x1@weights) | (xx@weights != x2@weights)
+                        warning(paste0(sum(bad)," (",round(sum(bad)/length(bad)*100,3),
+                                "%) samples with differing weights were set to NA"))
+                        x1[bad] <- NA_real_
+                        x1@weights[bad] <- 0
+                        x2[bad] <- NA_real_
+                        x2@weights[bad] <- 0
+                        xx[bad] <- NA_real_
+                        xx@weights[bad] <- 0
+                    }
 
                     class(xx) <- "nts"
 
                     av <- average(xx + x1 * x2,...,simple=TRUE) - 
-                    average(x1,...,simple=TRUE) * average(x2,...,simple=TRUE)
+                        average(x1,...,simple=TRUE) * average(x2,...,simple=TRUE)
                     xa[,xcol] <- av
                 }
                 else if (nw == 3) {
