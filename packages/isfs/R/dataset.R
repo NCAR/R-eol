@@ -66,9 +66,13 @@ find_datasets <- function(
             if ("dataset_description" %in% names(attrs))
                 desc <- attrs$dataset_description
 
-            int_attrs <- attrs[c("sonic_h2o_separation_corrected", "sonic_co2_separation_corrected",
-                "gsoil_philip_corrected")]
-            int_attrs <- int_attrs[!sapply(int_attrs,is.null)]
+            anames <- c("sonic_h2o_separation_corrected", "sonic_co2_separation_corrected",
+                "gsoil_philip_corrected")
+
+            int_attrs <- attrs[anames]
+            ix <- sapply(int_attrs,is.null)
+            # for those attributes not found, explicitly set them to NULL
+            int_attrs <- c(int_attrs[!ix],sapply(anames[ix],function(x)list()[x]))
 
             calpaths <- ""
             if ("calibration_file_path" %in% names(attrs))
@@ -90,6 +94,7 @@ find_datasets <- function(
             }
 
             # if ("calfile_version" %in% names(attrs))
+            # browser()
 
             datasets[[dname]] <- c(list(enable=TRUE,desc=desc,
                 calpath=calpaths, ncd=ncpath,ncf=ncpat,datacoords=datacoords),
@@ -169,7 +174,7 @@ dataset <- function(which,verbose=F,datasets=NULL)
 
     for (a in c("sonic_h2o_separation_corrected", "sonic_co2_separation_corrected",
                 "gsoil_philip_corrected"))
-        if (!is.null(dset[[a]])) dpar(dset[a])
+        dpar(dset[a])
 
     if (!is.null(dset[["f"]])) dset$f()
     if (ncf != dset$ncf || ncd != dset$ncd) clear.cache()
