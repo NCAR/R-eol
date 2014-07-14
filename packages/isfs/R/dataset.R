@@ -30,20 +30,20 @@ find_datasets <- function(
             ncpat <- sub("(_?)[12][9012][0-9][0-9]","\\1%Y",ncdf)
 
             # If couldn't match a 4 digit year, try 2 digits,
-            # assume only in the 90's
+            # assume only in the 80 or 90's
             if (all(ncpat == ncdf))  
-                ncpat <- sub("(_?)[9][0-9]","\\1%y",ncdf)
+                ncpat <- sub("(_?)[89][0-9]","\\1%y",ncdf)
 
             ncpat <- sub("(%[yY][^01]*)[01][0-9]","\\1%m",ncpat)
             ncpat <- sub("(%m[^0-3]*)[0-3][0-9]","\\1%d",ncpat)
-            ncpat <- sub("[0-2][0-9]","%H",ncpat)
+            ncpat <- sub("(%d[^0-2]*)[0-2][0-9]","\\1%H",ncpat)
             ncpat <- sub("(%H[^0-5]*)[0-5][0-9]","\\1%M",ncpat)
             ncpat <- sub("(%M[^0-5]*)[0-5][0-9]","\\1%S",ncpat)
 
             ncpat <- unique(ncpat)
             if (length(ncpat) > 1)
-                warning(paste0("Cannot determine a file name pattern from file names:",
-                    paste(ncdf,collapse=",")))
+                warning(paste0("Cannot determine a unique file name pattern from file names:",
+                    paste(ncpat,collapse=",")))
 
             ix <- seq(from=1,to=length(ncdf),by=ceiling(length(ncdf)/10))
 
