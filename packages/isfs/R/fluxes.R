@@ -18,7 +18,10 @@ calc.x.t <- function(what)
     comp <- words(xt.name,1,1,sep="'")	# get x
 
     xtc.name <- expand(paste(comp,"tc'",sep="'"),what)	# x'tc' where x is u,v or w
-    xt <- dat(xtc.name,avg=T,smooth=T)
+    # Note avg=TRUE, which means x'tc' is computed at the
+    # resolution specified in avg, and then corrections are
+    # applied here, after the averaging.
+    xt <- dat(xtc.name,avg=TRUE,smooth=TRUE)
     sfxs <- suffixes(xt,2)
 
     robust <- dpar("robust")
@@ -44,8 +47,11 @@ calc.x.t <- function(what)
             # Assume E measured as <w'h2o'> (m/s g/m^3)
             xh.name <- expand(xh.name,what)
 
-            # specify derived=F, so make sure we get the uncorrected x'kh2o'
-            xkh2o <- dat(xh.name,derived=F,avg=T,smooth=T)	# m/s g/m^3
+            # specify derived=FALSE, so make sure we get the uncorrected x'kh2o'
+            # Note avg=TRUE, which means x'kh2o' is computed at the
+            # resolution specified in avg, and then the o2 and spatial
+            # corrections are applied here, after the averaging.
+            xkh2o <- dat(xh.name,derived=FALSE,avg=TRUE,smooth=TRUE)	# m/s g/m^3
 
             if (!is.null(xkh2o)) {
 
@@ -53,13 +59,13 @@ calc.x.t <- function(what)
                 if (!all(allna)) xkh2o <- xkh2o[,!allna]
 
                 # dat("o2corr") can return a simple 0, rather than a time series
-                if (is.null(o2corr)) o2corr <- dat(expand("o2corr",what),avg=TRUE,smooth=TRUE)
+                if (is.null(o2corr)) o2corr <- dat(expand("o2corr",what))
                 if (is(o2corr,"dat")) {
                     o2corr <- conform(o2corr,xkh2o)
                     o2corr <- approx(o2corr,xout=xkh2o,method="constant",f=0,rule=2)
                 }
 
-                if (is.null(scorr)) scorr <- dat(expand("Scorr",what),which="krypton",avg=T,smooth=T)
+                if (is.null(scorr)) scorr <- dat(expand("Scorr",what),which="krypton",avg=TRUE,smooth=TRUE)
                 if (is(scorr,"dat")) scorr <- conform(scorr,xkh2o)
                 # correction for spatial separation between sonic and fast hygrometer
                 if (!is.null(scorr)) xkh2o <- xkh2o * scorr
@@ -70,9 +76,9 @@ calc.x.t <- function(what)
 
         if (any(wvb == xh.name)) {
             xh.name <- expand(xh.name,what)
-            # specify derived=F, so that oxygen and spatial corrections
+            # specify derived=FALSE, so that oxygen and spatial corrections
             # are not done in this call to dat
-            xh2o <- dat(xh.name,derived=F,avg=T,smooth=T) # m/s mmol/m^3
+            xh2o <- dat(xh.name,derived=FALSE,avg=TRUE,smooth=TRUE) # m/s mmol/m^3
 
             if (!is.null(xh2o)) {
 
@@ -94,7 +100,7 @@ calc.x.t <- function(what)
                     units(lo2corr) <- rep("",ncol(xh2o))
                 }
 
-                if (is.null(lscorr)) lscorr <- dat(expand("Scorr",what),which="other",avg=T,smooth=T)
+                if (is.null(lscorr)) lscorr <- dat(expand("Scorr",what),which="other",avg=TRUE,smooth=TRUE)
                 if (is(lscorr,"dat")) lscorr <- conform(lscorr,xh2o)
                 # correction for spatial separation between sonic and fast hygrometer
                 if (!is.null(lscorr)) xh2o <- xh2o * lscorr
@@ -108,9 +114,9 @@ calc.x.t <- function(what)
 
         # delete data when the fraction of expected sonic samples is lower than sfrac.min
         if (!is.null(dpar("sfrac.min")) && existsFunction("dat.sfrac")) {
-            sonicbad <- !is.na(xh2o) & (conform(dat("sfrac",avg=T,smooth=T),xh2o) < dpar("sfrac.min"))
+            sonicbad <- !is.na(xh2o) & (conform(dat("sfrac",avg=TRUE,smooth=TRUE),xh2o) < dpar("sfrac.min"))
             if (any(!is.na(sonicbad) & sonicbad)) {
-                rmd <- apply(sonicbad,2,function(x){sum(x,na.rm=T)/length(x) * 100})
+                rmd <- apply(sonicbad,2,function(x){sum(x,na.rm=TRUE)/length(x) * 100})
                 cat(paste("calc.x.t: percentage of flux data removed due to dat(\"sfrac\") < dpar(sfrac.min=",
                         dpar("sfrac.min"),"):",
                         paste(dimnames(xh2o)[[2]],"(",round(rmd,1),")",sep="",collapse=", "),"\n"))
@@ -141,9 +147,9 @@ calc.x.t <- function(what)
 
         sfxs <- suffixes(xh2o,2)
 
-        rho.air <- conform(dat("rho.air",avg=T,smooth=T),xt)
-        Q <- conform(dat("Q",avg=T,smooth=T),xt) * 1e-3
-        TK <- conform(dat("T",avg=T,smooth=T),xt) + 273.15
+        rho.air <- conform(dat("rho.air",avg=TRUE,smooth=TRUE),xt)
+        Q <- conform(dat("Q",avg=TRUE,smooth=TRUE),xt) * 1e-3
+        TK <- conform(dat("T",avg=TRUE,smooth=TRUE),xt) + 273.15
 
         if (comp == "w") {
             factor <- 0.51*(1 + Q*(1/0.622-1))
@@ -205,15 +211,18 @@ calc.x.mr <- function(what,derived=TRUE)
         # Assume E measured as <w'h2o'> (m/s g/m^3)
         xh.name <- expand(xh.name,what)
 
-        # specify derived=F, so make sure we get the uncorrected x'kh2o'
-        xkh2o <- dat(xh.name,derived=F,avg=T,smooth=T)	# m/s g/m^3
+        # specify derived=FALSE, so make sure we get the uncorrected x'kh2o'
+        # Note avg=TRUE, which means x'kh2o' is computed at the
+        # resolution specified in avg, and then the o2 and spatial
+        # corrections are applied here, after the averaging.
+        xkh2o <- dat(xh.name,derived=FALSE,avg=TRUE,smooth=TRUE)	# m/s g/m^3
         if (!is.null(xkh2o)) {
 
             allna <- apply(xkh2o,2,function(x)all(is.na(x)))
             if (!all(allna)) xkh2o <- xkh2o[,!allna]
 
             if (!robust) {
-                if (is.null(o2corr)) o2corr <- dat(expand("o2corr",what),avg=TRUE,smooth=TRUE)
+                if (is.null(o2corr)) o2corr <- dat(expand("o2corr",what))
                 if (is(o2corr,"dat")) {
                     o2corr <- conform(o2corr,xkh2o)
                     o2corr <- approx(o2corr,xout=xkh2o,method="constant",f=0,rule=2)
@@ -231,9 +240,9 @@ calc.x.mr <- function(what,derived=TRUE)
     if (any(wvb == xh.name)) {
         xh.name <- expand(xh.name,what)
 
-        # specify derived=F, so that oxygen and spatial corrections
+        # specify derived=FALSE, so that oxygen and spatial corrections
         # are not done in this call to dat
-        xh2o <- dat(xh.name,derived=F,avg=T,smooth=T) # m/s mmol/m^3
+        xh2o <- dat(xh.name,derived=FALSE,avg=TRUE,smooth=TRUE) # m/s mmol/m^3
         if (!is.null(xh2o)) {
 
             allna <- apply(xh2o,2,function(x)all(is.na(x)))
@@ -254,7 +263,7 @@ calc.x.mr <- function(what,derived=TRUE)
                     units(lo2corr) <- rep("",ncol(xh2o))
                 }
 
-                if (is.null(lscorr)) lscorr <- dat(expand("Scorr",what),which="other",avg=T,smooth=T)
+                if (is.null(lscorr)) lscorr <- dat(expand("Scorr",what),which="other",avg=TRUE,smooth=TRUE)
                 if (is(lscorr,"dat")) lscorr <- conform(lscorr,xh2o)
                 # correction for spatial separation between sonic and fast hygrometer
                 if (!is.null(lscorr)) xh2o <- xh2o * lscorr
@@ -284,17 +293,17 @@ calc.x.mr <- function(what,derived=TRUE)
         # Correct <w'tc'> for <w'h2o'> per Schotanus et al., BLM, 1983
         # Correct E for <w't'> per Webb et al., QJRMS, 1980
 
-        rhod <- conform(dat("rhoDry",avg=T,smooth=T),xh2o) * 1e3	# g/m^3
+        rhod <- conform(dat("rhoDry",avg=TRUE,smooth=TRUE),xh2o) * 1e3	# g/m^3
         xmr <- xh2o/rhod
-        Q <- conform(dat("Q",avg=T,smooth=T),xmr) * 1.e-3
+        Q <- conform(dat("Q",avg=TRUE,smooth=TRUE),xmr) * 1.e-3
         MR <- Q/(1-Q)
-        TK <- conform(dat("T",avg=T,smooth=T),xmr) + 273.15
+        TK <- conform(dat("T",avg=TRUE,smooth=TRUE),xmr) + 273.15
 
-        xtc <- conform(dat(xtc.name,avg=T,smooth=T),xmr)
+        xtc <- conform(dat(xtc.name,avg=TRUE,smooth=TRUE),xmr)
 
         # delete data when the fraction of expected sonic samples is lower than sfrac.min
         if (!is.null(dpar("sfrac.min")) && existsFunction("dat.sfrac")) {
-            sonicbad <- !is.na(xmr) & (conform(dat("sfrac",avg=T,smooth=T),xmr) < dpar("sfrac.min"))
+            sonicbad <- !is.na(xmr) & (conform(dat("sfrac",avg=TRUE,smooth=TRUE),xmr) < dpar("sfrac.min"))
             if (any(!is.na(sonicbad) & sonicbad)) {
                 rmd <- apply(sonicbad,2,function(x){sum(x)/length(x) * 100})
                 cat(paste("calc.x.mr: percentage of flux data removed due to dat(\"sfrac\") < dpar(sfrac.min=",
@@ -360,7 +369,11 @@ calc.x.h2o <- function(what)
 
     if (!scorr_done && any(wvb == xh.name)) {
         xh.name <- expand(xh.name,what)
-        xkh2o <- dat(xh.name,avg=T,smooth=T)	# m/s g/m^3
+
+        # Note avg=TRUE, which means x'kh2o' is computed at the
+        # resolution specified in avg, and then the o2 and spatial
+        # corrections are applied here, after the averaging.
+        xkh2o <- dat(xh.name,derived=FALSE,avg=TRUE,smooth=TRUE)	# m/s g/m^3
         if (!is.null(xkh2o) && !is.null(robust) && !robust) {
             # dat("o2corr") can return a simple 0, rather than a time series
             # In that case, conform will just return that 0 again.
@@ -369,7 +382,7 @@ calc.x.h2o <- function(what)
                 o2corr <- conform(o2corr,xkh2o)
                 o2corr <- approx(o2corr,xout=xkh2o,method="constant",f=0,rule=2)
             }
-            if (is.null(scorr)) scorr <- dat(expand("Scorr",what),which="krypton",avg=T,smooth=T)
+            if (is.null(scorr)) scorr <- dat(expand("Scorr",what),which="krypton",avg=TRUE,smooth=TRUE)
             if (is(scorr,"dat")) scorr <- conform(scorr,xkh2o)
             # correction for spatial separation between sonic and fast hygrometer
             if (!is.null(scorr)) xkh2o <- xkh2o * scorr
@@ -380,7 +393,7 @@ calc.x.h2o <- function(what)
 
     if (any(wvb == xh.name)) {
         xh.name <- expand(xh.name,what)# x'h2o'
-        xh2o <- dat(xh.name,derived=F,avg=T,smooth=T) # m/s mmol/m^3
+        xh2o <- dat(xh.name,derived=FALSE,avg=TRUE,smooth=TRUE) # m/s mmol/m^3
         if (!is.null(xh2o)) {
             # ...convert units
             cvt <- units(xh2o) == "m/s mmol/m^3"
@@ -398,7 +411,7 @@ calc.x.h2o <- function(what)
                     units(lo2corr) <- rep("",ncol(xh2o))
                 }
 
-                if (is.null(lscorr)) lscorr <- dat(expand("Scorr",what),which="other",avg=T,smooth=T)
+                if (is.null(lscorr)) lscorr <- dat(expand("Scorr",what),which="other",avg=TRUE,smooth=TRUE)
                 if (is(lscorr,"dat")) lscorr <- conform(lscorr,xh2o)
                 # correction for spatial separation between sonic and fast hygrometer
                 if (!is.null(lscorr)) xh2o <- xh2o * lscorr
@@ -431,7 +444,7 @@ calc.x.h2o <- function(what)
         #
         # delete data when the fraction of expected sonic samples is lower than sfrac.min
         if (!is.null(dpar("sfrac.min")) && existsFunction("dat.sfrac")) {
-            sonicbad <- !is.na(xh2o) & (conform(dat("sfrac",avg=T,smooth=T),xh2o) < dpar("sfrac.min"))
+            sonicbad <- !is.na(xh2o) & (conform(dat("sfrac",avg=TRUE,smooth=TRUE),xh2o) < dpar("sfrac.min"))
             if (any(!is.na(sonicbad) & sonicbad)) {
                 rmd <- apply(sonicbad,2,function(x){sum(x)/length(x) * 100})
                 cat(paste("calc.x.h2o: percentage of flux data removed due to dat(\"sfrac\") < dpar(sfrac.min=",
@@ -442,11 +455,11 @@ calc.x.h2o <- function(what)
         }
 
 
-        rhod <- conform(dat("rhoDry",avg=T,smooth=T),xh2o) * 1e3	# g/m^3
-        Q <- conform(dat("Q",avg=T,smooth=T),xh2o) * 1e-3	# kg/kg
-        TK <- conform(dat("T",avg=T,smooth=T),xh2o) + 273.15
+        rhod <- conform(dat("rhoDry",avg=TRUE,smooth=TRUE),xh2o) * 1e3	# g/m^3
+        Q <- conform(dat("Q",avg=TRUE,smooth=TRUE),xh2o) * 1e-3	# kg/kg
+        TK <- conform(dat("T",avg=TRUE,smooth=TRUE),xh2o) + 273.15
 
-        xtc <- conform(dat(xtc.name,avg=T,smooth=T),xh2o)
+        xtc <- conform(dat(xtc.name,avg=TRUE,smooth=TRUE),xh2o)
 
         if (comp == "w") {
             factor <- 0.51*(1 + Q*(1/0.622-1))
@@ -517,15 +530,15 @@ dat.H <- function(what,derived=TRUE,...)
 {
     robust <- dpar("robust")
     # Turbulent sensible heat flux
-    Td <- dat("T",avg=T,smooth=T)
+    Td <- dat("T",avg=TRUE,smooth=TRUE)
 
     if (is.null(robust) || robust)
-        Td[is.na(Td)] <- median(Td,na.rm=T)
+        Td[is.na(Td)] <- median(Td,na.rm=TRUE)
 
-    wq <- dat(expand("w'h2o'",what),avg=T,smooth=T)*1e-3
-    wt <- dat(expand("w't'",what),avg=T,smooth=T)
+    wq <- dat(expand("w'h2o'",what),avg=TRUE,smooth=TRUE)*1e-3
+    wt <- dat(expand("w't'",what),avg=TRUE,smooth=TRUE)
 
-    x <- calc.H(wt=wt,wq=wq,Td=Td,rho=dat("rho.air",avg=T,smooth=T))
+    x <- calc.H(wt=wt,wq=wq,Td=Td,rho=dat("rho.air",avg=TRUE,smooth=TRUE))
     x
 }
 dat.H.dry <- function(what,derived=TRUE,...)
@@ -533,15 +546,15 @@ dat.H.dry <- function(what,derived=TRUE,...)
     # Turbulent sensible heat flux without contribution from varying Cp 
 
     robust <- dpar("robust")
-    Q <- dat("Q",avg=T,smooth=T)
+    Q <- dat("Q",avg=TRUE,smooth=TRUE)
     if (is.null(robust) || robust) {
         if (all(is.na(Q)))
             Q <- 0
         else
-            Q <- median(Q, na.rm=T)
+            Q <- median(Q, na.rm=TRUE)
     }
-    x <- calc.H(wt=dat(expand("w't'",what),avg=T,smooth=T),
-        Q=dat("Q",avg=T,smooth=T),rho=dat("rho.air",avg=T,smooth=T))
+    x <- calc.H(wt=dat(expand("w't'",what),avg=TRUE,smooth=TRUE),
+        Q=dat("Q",avg=TRUE,smooth=TRUE),rho=dat("rho.air",avg=TRUE,smooth=TRUE))
     x
 }
 
@@ -549,11 +562,11 @@ dat.H.dry <- function(what,derived=TRUE,...)
 dat.LE <- function(what,derived=TRUE,...)
 {
     # Turbulent latent heat flux
-    x <- dat(expand("w'mr'",what),avg=T,smooth=T)
+    x <- dat(expand("w'mr'",what),avg=TRUE,smooth=TRUE)
     sfxs <- suffixes(x,2)
 
-    x <- conform(dat(expand("Lv",what),avg=T,smooth=T),x) *
-    conform(dat("rhoDry",avg=T,smooth=T),x) * x * 1e-3
+    x <- conform(dat(expand("Lv",what),avg=TRUE,smooth=TRUE),x) *
+    conform(dat("rhoDry",avg=TRUE,smooth=TRUE),x) * x * 1e-3
 
     dimnames(x) <- list(NULL,paste("LE",sfxs,sep=""))
     x@units <- rep("W/m^2",ncol(x))
@@ -578,11 +591,11 @@ dat.Lv <- function(what,derived=TRUE,...)
     else x <- 2.5e6
     x
 }
-dat.BR <- function(what,.derived=TRUE,..)
+dat.BR <- function(what,derived=TRUE,..)
 {
     # Bowen ratio
-    x <- dat(expand("H",what),avg=T,smooth=T) / 
-    dat(expand("LE",what),avg=T,smooth=T)
+    x <- dat(expand("H",what),avg=TRUE,smooth=TRUE) / 
+    dat(expand("LE",what),avg=TRUE,smooth=TRUE)
     x@data[is.infinite(x@data)] <- NA_real_
 
     dimnames(x) <- list(NULL,paste("BR",suffixes(x,2),sep=""))
@@ -625,7 +638,7 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
         }
 
 
-        zoL <- conform(dat(expand("L",what),avg=T,smooth=T),S)
+        zoL <- conform(dat(expand("L",what),avg=TRUE,smooth=TRUE),S)
         sfxs <- suffixes(zoL,2)
 
         # need z and d for each sonic
@@ -655,12 +668,12 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
         check.windcoords()
         rcoords <- dpar("coords")
         if (rcoords != "instrument") {
-            on.exit(dpar(coords=rcoords),add=T)
+            on.exit(dpar(coords=rcoords),add=TRUE)
             dpar(coords="instrument")
         }
 
-        u <- conform(dat(expand("u",what),avg=T,smooth=T),zoL)
-        v <- conform(dat(expand("v",what),avg=T,smooth=T),zoL)
+        u <- conform(dat(expand("u",what),avg=TRUE,smooth=TRUE),zoL)
+        v <- conform(dat(expand("v",what),avg=TRUE,smooth=TRUE),zoL)
         spd <- sqrt(u^2 + v^2)
 
         nm <- sqrt((nmx * u/spd)^2 + (nmy * v/spd)^2)
@@ -674,20 +687,22 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
     S
 }
 
-dat.TKE <- function(what,derived=TRUE,cache=F,...)
+dat.TKE <- function(what,derived=TRUE,cache=FALSE,...)
 {
-    x <- sqrt(dat("u'u'")^2 + dat("v'v'")^2 + dat("w'w'")^2)/2
+    x <- sqrt(dat("u'u'",avg=TRUE,smooth=TRUE)^2 +
+        dat("v'v'",avg=TRUE,smooth=TRUE)^2 +
+        dat("w'w'",avg=TRUE,smooth=TRUE)^2)/2
 
     dimnames(x) <- list(NULL,paste("TKE",suffixes(x,2),sep=""))
     x@units <- rep("(m/s)^2",ncol(x))
     x
 }
 
-"dat.w'co2'" <- function(what,cache=F,...)
+"dat.w'co2'" <- function(what,cache=FALSE,...)
 {
     #
     robust <- dpar("robust")
-    wc <- dat("w'co2'",avg=T,smooth=T,derived=F)
+    wc <- dat("w'co2'",avg=TRUE,smooth=TRUE,derived=FALSE)
 
     # Correct, if desired
     if (!is.null(robust) && !robust) {
@@ -705,7 +720,7 @@ dat.TKE <- function(what,derived=TRUE,cache=F,...)
         mu <- 28.97/18
 
         # Get data and convert to kg/m^3 (haven't put in ppmV yet, but open-paths don't use)
-        rhoc <- dat(expand("co2",what),...)
+        rhoc <- dat(expand("co2",what),avg=TRUE,smooth=TRUE)
         uc <- units(rhoc)
         cf <- rep(NA,length(uc))
         cf[uc=="kg/m^3"] <- 1
@@ -716,17 +731,17 @@ dat.TKE <- function(what,derived=TRUE,cache=F,...)
         wc <- conform(wc,rhoc)
         wc@data <- t(t(wc@data)*cf)
 
-        TK <- conform(dat("T",avg=T,smooth=T),wc) + 273.15
-        rhoa <- conform(dat("rhoDry",avg=T,smooth=T),wc)
-        rhov <- 0.001*conform(dat("H2O",avg=T,smooth=T),wc)
+        TK <- conform(dat("T",avg=TRUE,smooth=TRUE),wc) + 273.15
+        rhoa <- conform(dat("rhoDry",avg=TRUE,smooth=TRUE),wc)
+        rhov <- 0.001*conform(dat("H2O",avg=TRUE,smooth=TRUE),wc)
         # the following will pick up Webb, spatial sep, etc. corrections for w't' and w'h2o'
-        wt <- conform(dat("w't'",avg=T,smooth=T),wc)
+        wt <- conform(dat("w't'",avg=TRUE,smooth=TRUE),wc)
 
         # we're now using h2o from the IRGA itself, which should be fine
-        wh2o <- 0.001*conform(dat("w'h2o'",avg=T,smooth=T),wc)
+        wh2o <- 0.001*conform(dat("w'h2o'",avg=TRUE,smooth=TRUE),wc)
 
         # now the correction
-        if (is.null(scorr)) scorr <- dat(expand("Scorr",what),which="other",avg=T,smooth=T)
+        if (is.null(scorr)) scorr <- dat(expand("Scorr",what),which="other",avg=TRUE,smooth=TRUE)
         if (is(scorr,"dat")) scorr <- conform(scorr,wc)
         wc <- wc*scorr + mu*(rhoc/rhoa)*wh2o + (1 + mu*rhov/rhoa)*(rhoc/TK)*wt    
 
