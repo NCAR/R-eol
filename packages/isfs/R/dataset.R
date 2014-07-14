@@ -171,8 +171,11 @@ dataset <- function(which,verbose=F,datasets=NULL)
     ncf <- Sys.setenv(NETCDF_FILE=dset$ncf)
     ncd <- Sys.setenv(NETCDF_DIR=dset$ncd)
 
-    for (a in c("h2o_flux_corrected", "co2_flux_corrected", "gsoil_philip_corrected"))
-        dpar(dset[a])
+    anames <- c("h2o_flux_corrected", "co2_flux_corrected", "gsoil_philip_corrected")
+    for (a in anames) {
+        if (a %in% names(dset)) dpar(dset[a])
+        else dpar(sapply(a,function(x)list()[x]))
+    }
 
     if (!is.null(dset[["f"]])) dset$f()
     if (ncf != dset$ncf || ncd != dset$ncd) clear.cache()
