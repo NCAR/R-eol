@@ -42,8 +42,8 @@ find_datasets <- function(
 
             ncpat <- unique(ncpat)
             if (length(ncpat) > 1)
-                warning(paste0("Cannot determine a unique file name pattern from file names:",
-                    paste(ncpat,collapse=",")))
+                warning(paste("Cannot determine a unique file name pattern from file names:",
+                    paste(ncpat,collapse=", ")))
 
             ix <- seq(from=1,to=length(ncdf),by=ceiling(length(ncdf)/10))
 
@@ -66,8 +66,7 @@ find_datasets <- function(
             if ("dataset_description" %in% names(attrs))
                 desc <- attrs$dataset_description
 
-            anames <- c("sonic_h2o_separation_corrected", "sonic_co2_separation_corrected",
-                "gsoil_philip_corrected")
+            anames <- c("h2o_flux_corrected", "co2_flux_corrected", "gsoil_philip_corrected")
 
             int_attrs <- attrs[anames]
             ix <- sapply(int_attrs,is.null)
@@ -172,8 +171,7 @@ dataset <- function(which,verbose=F,datasets=NULL)
     ncf <- Sys.setenv(NETCDF_FILE=dset$ncf)
     ncd <- Sys.setenv(NETCDF_DIR=dset$ncd)
 
-    for (a in c("sonic_h2o_separation_corrected", "sonic_co2_separation_corrected",
-                "gsoil_philip_corrected"))
+    for (a in c("h2o_flux_corrected", "co2_flux_corrected", "gsoil_philip_corrected"))
         dpar(dset[a])
 
     if (!is.null(dset[["f"]])) dset$f()
