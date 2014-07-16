@@ -41,7 +41,7 @@ A \code{\link{plot}} method has been defined for \code{"\linkS4class{nts}"} prov
 
 \code{\link{dpar}} sets global session values of use in accessing and processing data, such as the desired start and end \code{\link{utime}} when reading data from NetCDF files.
 
-When the eolts package is attached to an R session, the following values are set in the global session \code{options}:
+When the eolts package is attached to an R session, the following values are set in the global session \code{\link{options}}:
 \itemize{
     \item \code{time.in.format=c( "\%Y\%m\%d\%H:\%M:\%OS", "\%Y\%m\%d\%H:\%M", "\%Y\%m\%d\%H\%M\%OS", "\%Y \%b\%d\%H:\%M:\%OS", "\%Y \%b\%d\%H:\%M", "\%Y \%b\%d\%H\%M\%OS")}
     \item \code{time.out.format = "\%Y \%m \%d \%H:\%M:\%OS3 \%Z"}
@@ -58,7 +58,7 @@ When the eolts package is attached to an R session, the following values are set
 }
 }
 \author{
-Gordon Maclean
+Gordon Maclean\cr
 Maintainer: Gordon Maclean <maclean@ucar.edu>
 }
 \references{
@@ -68,19 +68,15 @@ package
 ts
 }
 \seealso{
-Do \code{class?} for help on a class, and \code{?} for help on a function:
-
-\code{"\linkS4class{nts}"}: \code{class? nts}
-
-\code{\link{nts}}: \code{? nts}
-
-\code{"\linkS4class{utime}"}: \code{class? utime}
-
-\code{\link{utime}}: \code{? utime}
-
-\code{\link{dpar}}: \code{? dpar}
-
-\code{\link[isfs:isfs-package]{isfs}}
+\tabular{ll}{
+?command \tab link\cr
+\code{class? nts} \tab \code{\linkS4class{nts}}\cr
+\code{? nts} \tab \code{\link{nts}}\cr
+\code{class? utime} \tab \code{\linkS4class{utime}}\cr
+\code{? utime} \tab \code{\link{utime}}\cr
+\code{? dpar} \tab \code{\link{dpar}}\cr
+\code{package? isfs} \tab \code{\link[isfs:isfs-package]{isfs}}\cr
+}
 }
 \examples{
 

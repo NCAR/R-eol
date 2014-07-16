@@ -226,10 +226,10 @@ Gordon Maclean
 }
 \examples{
 # create a 20x4 time series of random data, at 10 second time resolution
-options(time.zone="US/Central")
 nr = 20
 nc = 4
 dt = 10
+options(time.zone="US/Central")
 tx = seq(from=utime("2013 oct 13 14:00"), by=dt, length=nr)
 dx = matrix(runif(nr*nc), ncol=nc)
 x = nts(dx, tx, units=rep("m",nc), names=c("V1","V2","V3","V4"))
@@ -240,7 +240,7 @@ plot(x[,c("V1","V3")])
 # Medians of each column. For actual data, na.rm argument is commonly used.
 apply(x, 2, median, na.rm=TRUE)
 
-# Max of each row.
+# Maximum of each row.
 apply(x, 1, max, na.rm=TRUE)
 
 # select rows from x by a range of time
