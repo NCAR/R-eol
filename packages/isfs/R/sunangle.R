@@ -32,8 +32,8 @@ dat.azel.sun <- function(what,lat=dpar("lat"),lon=dpar("lon"),dt=dpar("avg"),
             warning('dpar("lon") not set, using lon=NA')
             lon <- NA
         }
-        else if (lon > 0.0)
-            warning(paste("lon=",lon, "is positive. If you want to specify a west longitude, it should be negative"))
+        # else if (lon > 0.0)
+        #     warning(paste("lon=",lon, "is positive. If you want to specify a west longitude, it should be negative"))
         if (is.null(lat)) {
             warning('dpar("lat") not set, using lat=NA')
             lat <- NA
