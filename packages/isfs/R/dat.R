@@ -306,7 +306,7 @@ setMethod("select",signature(x="dat"),
         if (hasArg(hts) && length((hts <- dots$hts)) > 0) {
             # Select heights (exactly)
             hts <- dots$hts
-            if (!is.null(xhts <- heights(x)) && length(xhts) == ncol(x)) {
+            if (!is.null(xhts <- heights(x)) && length(xhts) == ncol(x) && !all(is.na(xhts)) ) {
 
                 # An exact match is susceptible to precision errors.
                 # Match a height if it is within 1.e-5 meters
@@ -1163,7 +1163,7 @@ setMethod("average", signature="dat",
         class(x) <- "dat"
         x
     }
-    )
+)
 
 other.dat.func <- function(what,whine=TRUE)
 {
