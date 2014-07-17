@@ -249,6 +249,7 @@ SEXP cont_sig_prep(SEXP con)
  * Get pointer to C++ R_prep object from R object.
  * Verify that it is valid pointer.
  */
+/* static */
 R_prep *R_prep::getR_prep(SEXP obj)
 {
     SEXP cslot = Rf_getAttrib(obj,R_prep::cppSlotName);
@@ -296,6 +297,7 @@ R_prep::~R_prep()
     return;
 }
 
+/* static */
 bool R_prep::findConnection(R_prep *con)
 {
     // these accesses of _openSet should be protected with a mutex...
@@ -303,6 +305,7 @@ bool R_prep::findConnection(R_prep *con)
     return si != _openSet.end();
 }
 
+/* static */
 bool R_prep::addConnection(R_prep *con) {
 
     // these accesses of _openSet should be protected with a mutex...
@@ -311,6 +314,7 @@ bool R_prep::addConnection(R_prep *con) {
     return true;
 }
 
+/* static */
 bool R_prep::removeConnection(R_prep *con)
 {
     // these accesses of _openSet should be protected with a mutex...

@@ -18,7 +18,7 @@ prep(variables, rate = 0)
 \details{
 }
 \value{
-A \code{\linkS4class{prep}} object for use with \code{\link{readts}} and \code{\link{close}}.
+A \code{\linkS4class{prep}} object for use with \code{\link{readts-methods}} and \code{\link{close-methods}}.
 }
 \references{
 }
@@ -40,9 +40,12 @@ Gordon Maclean
 }
 \examples{
 \dontrun{
+dataset("qc_geo_tiltcor")
 con = prep(c("u.3m.far","v.3m.far","w.3m.far","tc.3m.far","diagbits.3m.far"),rate=20)   
 dpar(start="2013 oct 13 15:00",lenmin=30)
-x = readts(con)
+x1 = readts(con)
+dpar.next()
+x2 = readts(con)
 close(con)
 }
 }

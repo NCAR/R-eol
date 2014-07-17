@@ -25,7 +25,7 @@ setClass("prep",
 prep <- function(variables,rate=0)
 {
     if (!HAVE_PREP) stop("sorry prep not available")
-    obj = new("prep",variables=variables,rate=rate)
+    obj <- new("prep",variables=variables,rate=rate)
     .Call("open_prep",obj,PACKAGE="isfs")
 }
 
@@ -56,15 +56,17 @@ setMethod("readts",
 
         pid <- pid(con)
         if (pid <= 0) {
-            #      vsn = unix("prep -v")
-            newversion =  regexpr("^Version:",system("prep -v",intern=TRUE)) == 1
+            #      vsn <- unix("prep -v")
+            newversion <- regexpr("^Version:",system("prep -v",intern=TRUE)) == 1
             # old version of prep doesn't report Version
-            if (length(newversion)==0) newversion = F
+            if (length(newversion)==0) newversion <- FALSE
             if (newversion) {
                 runargs <- c("-D",paste(con@variables,collapse=","),
                     "-B",format(start,format="%Y %m %d %H%M%OS",time.zone="GMT"),
                     "-C")
-                env = ""
+                dset <- dataset()
+                if (!is.null(dset)) runargs <- c(runargs,"-S",dset)
+                env <- ""
             }
             else {
                 ops <- system(paste("getops",
@@ -87,7 +89,7 @@ setMethod("readts",
                     paste(con@variables,sep=" ",collapse=" "))
                 units <- eval(parse(text=paste("c(",system(com,intern=TRUE),")")))
             }
-            else units = character(0)
+            else units <- character(0)
 
             cat("Executing: prep",runargs,"\n")
             # cat(env,"\n");
@@ -119,12 +121,12 @@ setMethod("readts",
         # cat("dim(x)=",dim(x),"\n")
         # browser()
 
-        positions(x) = utime(positions(x))
+        positions(x) <- utime(positions(x))
         stations(x) <- as.integer(rep(0,ncol(x)))
-        # start(x) = start(x)
-        # end(x) = end(x)
-        x@time.format = getOption("time.out.format")
-        x@time.zone = getOption("time.zone")
+        # start(x) <- start(x)
+        # end(x) <- end(x)
+        x@time.format <- getOption("time.out.format")
+        x@time.zone <- getOption("time.zone")
 
         nrows <- nrow(x)
         if (nrows <= 1L) {
@@ -144,11 +146,11 @@ setMethod("readts",
         # If data is evenly sampled, save period and number of records
         # read, so we can try to read the same number next time
         # if the user asks for the same length of time.
-        dt = deltat(x)
+        dt <- deltat(x)
         # cat("dt=",paste(dt,collapse=","),"\n")
         if (con@rate > 0. && abs(dt[1] - 1/con@rate) < .1/con@rate) {
-          dt[1] = 1/con@rate
-          deltat(x) = dt
+          dt[1] <- 1/con@rate
+          deltat(x) <- dt
         }
         # browser()
         # cat('(dt["max"] - dt["min"])=',(dt["max"] - dt["min"])," dt[1]=",dt[1],
@@ -181,8 +183,8 @@ setMethod("readts",
     signature(con="prep",variables="missing",start="character",end="character"),
     function(con,variables,start,end,...)
     {
-        t1 = utime(start)
-        t2 = utime(end)
+        t1 <- utime(start)
+        t2 <- utime(end)
         readts(con, start=t1,end=t2)
     }
 )

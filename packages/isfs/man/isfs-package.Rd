@@ -24,13 +24,14 @@ Gordon Maclean
 }
 \references{
 }
-\keyword{ package ts }
+\keyword{ package }
+\keyword{ ts }
 \seealso{
 \tabular{ll}{
 ?command \tab link\cr
 \code{package? eolts} \tab \code{\link[eolts:eolts-package]{eolts}}\cr
 \code{class? prep} \tab \code{\linkS4class{prep}}\cr
-\code{class? nts} \tab \code{\linkS4class{nts}}\cr
+\code{? prep} \tab \code{\link{prep}}\cr
 \code{? plot_sunangle} \tab \code{\link{plot_sunangle}}\cr
 \code{? plot_sunshadow} \tab \code{\link{plot_sunshadow}}\cr
 }

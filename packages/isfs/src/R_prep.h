@@ -74,7 +74,6 @@ public:
 
     static void putenv(const char *env);
 
-
     static bool addConnection(R_prep *);
 
     static bool removeConnection(R_prep *);

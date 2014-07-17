@@ -25,11 +25,11 @@ Use the \code{\link{prep}} function to create an object of class \code{prep}, pa
 }
 \section{Methods}{
   \describe{
-    \item{close}{\code{signature(con = "prep")}: Close an existing prep connection, shutting down the prep process. }
-    \item{pid}{\code{signature(con = "prep")}: Return the UNIX process ID of the prep process. Will be -1 if the process is not running. }
-    \item{readts}{\code{signature(con = "prep", variables = "missing", start = "character", end = "character")}: Start the prep process if it hasn't already started, and read an \code{\link{nts}} time series for the variables in the time period [ \code{utime(start)} : \code{utime(end) } )}
-    \item{readts}{\code{signature(con = "prep", variables = "missing", start = "missing", end = "missing")}: Start the prep process if it hasn't already started, and read an \code{\link{nts}} time series in the time period [ \code{dpar("start")} : \code{dpar("end")} )}
-    \item{readts}{\code{signature(con = "prep", variables = "missing", start = "utime", end = "utime")}: Start the prep process if it hasn't already started, and read an \code{\link{nts}} time series in the time period [ \code{start} : \code{end} ) }
+    \item{\code{close(con)}}{\code{signature(con = "prep")}: Close an existing prep connection, shutting down the prep process. }
+    \item{\code{pid(con)}}{\code{signature(con = "prep")}: Return the UNIX process ID of the prep process. Will be -1 if the process is not running. }
+    \item{\code{readts(con,start,end)}}{\code{signature(con = "prep", start = "character", end = "character")}: Start the prep process if it hasn't already started, and read an \code{\link{nts}} time series for the variables in the time period [ \code{utime(start)} : \code{utime(end) } )}
+    \item{\code{readts(con,start,end)}}{\code{signature(con = "prep", start = "missing", end = "missing")}: Start the prep process if it hasn't already started, and read an \code{\link{nts}} time series in the time period [ \code{dpar("start")} : \code{dpar("end")} )}
+    \item{\code{readts(con,start,end)}}{\code{signature(con = "prep", start = "utime", end = "utime")}: Start the prep process if it hasn't already started, and read an \code{\link{nts}} time series in the time period [ \code{start} : \code{end} ) }
 	 }
 }
 \references{
