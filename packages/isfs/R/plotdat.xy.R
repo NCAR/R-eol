@@ -156,54 +156,46 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
                  xlab=xlab, ylab=ylab, ...)
 
 	if (type!="n") {
-          if (ncol(xdata)==1)
-              for (i in 1:ncol(ydata)) 
-                  points(x[,1],y[,i], pch=8, col=i, cex=cex.pts)
-          else
-              for (i in 1:ncol(ydata)) 
-                  points(x[,i],y[,i], pch=8, col=i, cex=cex.pts)
+            for (i in 1:ncol(ydata)) {
+                ix <- min(ncol(xdata),1)
+                points(x[,ix],y[,i], pch=8, col=i, cex=cex.pts)
+            }
         }
     }
     if (lfit) {
-        fit.coeff <- matrix(nrow=2,ncol=ncol(ydata))
+        if (intercept)
+            fit.coeff <- matrix(nrow=ncol(ydata),ncol=2)
+        else
+            fit.coeff <- matrix(nrow=ncol(ydata),ncol=1)
+        rms <- vector(length=ncol(ydata))
         nmr <- vector(length=ncol(ydata))
         for (i in 1:ncol(ydata)) {
-            if (ncol(xdata)==1) {
-                select <- !is.na(x[,1]) & !is.na(y[,i])  
-                if (!missing(xlim) | (!is.null(clipx) && clipx$clip)) 
-                    select = select & xlim[1] < x & x < xlim[2]
-                if (!missing(ylim) | (!is.null(clipy) && clipy$clip)) 
-                    select = select & ylim[1] < y & y < ylim[2]
-                if (intercept)
-                    fit <- quantreg::rq(y[select,1] ~ x[select,1],tau=0.5)
-                else
-                    fit <- quantreg::rq(y[select,1] ~ x[select,1] - 1,tau=0.5)
-                if (intercept)
-                    yfit <- fit$coefficients[1] + x[select,1]*fit$coefficients[2] 
-                else
-                    yfit <- x[select,1]*fit$coefficients[1] 
-            }
-            else {
-                select <- !is.na(x[,i]) & !is.na(y[,i]) 
-                if (!missing(xlim) | (!is.null(clipx) && clipx$clip)) 
-                    select = select & xlim[1] < x[,i] & x[,i] < xlim[2]
-                if (!missing(ylim) | (!is.null(clipy) && clipy$clip)) 
-                    select = select & ylim[1] < y[,i] & y[,i] < ylim[2]
-                if (intercept)
-                    fit <- quantreg::rq(y[select,1] ~ x[select,1],tau=0.5)
-                else
-                    fit <- quantreg::rq(y[select,1] ~ x[select,1] - 1,tau=0.5)
-                if (intercept)
-                    yfit <- fit$coefficients[1] + x[select,i]*fit$coefficients[2] 
-                else
-                    yfit <- x[select,i]*fit$coefficients[1] 
-            }
+
+            # x might be one column
+            ix <- min(ncol(xdata),1)
+
+            select <- !is.na(x[,ix]) & !is.na(y[,i]) 
+            if (!missing(xlim) | (!is.null(clipx) && clipx$clip)) 
+                select = select & xlim[1] < x[,ix] & x[,ix] < xlim[2]
+            if (!missing(ylim) | (!is.null(clipy) && clipy$clip)) 
+                select = select & ylim[1] < y[,i] & y[,i] < ylim[2]
+            if (intercept)
+                fit <- quantreg::rq(y[select,i] ~ x[select,ix],tau=0.5)
+            else
+                fit <- quantreg::rq(y[select,i] ~ x[select,ix] - 1,tau=0.5)
+            if (intercept)
+                yfit <- fit$coefficients[1] + x[select,ix]*fit$coefficients[2] 
+            else
+                yfit <- x[select,ix]*fit$coefficients[1] 
+
             nmr[i] <- mean(abs(y[select,i] - yfit), na.rm=T)/
                       sqrt(var(y[select,i])) 
-            fit.coeff[,i] <- fit$coefficients
-            rms = sqrt(var(fit$residuals))
-            if (plot & type!="n")
-              abline(fit, col=i)
+            fit.coeff[i,] <- fit$coefficients
+            rms[i] <- sqrt(var(fit$residuals))
+            if (plot & type != "n") {
+                abline(fit, col=i,lty=2)
+                if (units(xdata[,ix]) == units(ydata[,i])) abline(0,1)
+            }
             # test yfit
             # points(x[select,i], yfit, pch=3)
         }
@@ -253,17 +245,17 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
             if (intercept) {
                 pm <- c(-1,0,1)
                 names(pm) <- c("-","+","+")
-                pm <- names(pm[match(sign(fit.coeff[1,]),pm)])
-                labels <- paste(labels," ",ylabel,"=",signif(fit.coeff[2,],4),
-                                xlabel, pm, abs(signif(fit.coeff[1,],4)),
-                                ", rms =", signif(rms,3))
+                pm <- names(pm[match(sign(fit.coeff[,1]),pm)])
+                labels <- paste(labels," ",ylabel,"=",signif(fit.coeff[,2],3),
+                                xlabel, pm, abs(signif(fit.coeff[,1],2)),
+                                ", rms =", signif(rms,2))
             }
             else
-                labels <- paste(labels," ",ylabel,"=",signif(fit.coeff[1,],4),
-                                xlabel, ", rms =", signif(rms,3))
+                labels <- paste(labels," ",ylabel,"=",signif(fit.coeff[,1],3),
+                                xlabel, ", rms =", signif(rms,2))
         }
         legend(xleg,yleg, labels, pch=rep(16,ncol(ydata)), col=1:ncol(ydata), 
-                 bg="transparent", bty="n")
+                 lty=2, lwd=1.5, bg="transparent", bty="n")
 
         # print time range, low-pass filter
         t1 <- max(start(xdata[!is.na(xdata),]),start(ydata[!is.na(ydata),]))
