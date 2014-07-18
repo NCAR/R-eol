@@ -10,7 +10,7 @@
 plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth, 
                        plot=T, derived=T, method.smth="mean", 
                        lfit=F, intercept=T, cex.pts=0.5,
-                       chksum=F, logxy, annotate=T, browse=F, type="p", ...)
+                       chksum=F, logxy, annotate=T, dataset=dataset(), browse=F, type="p", ...)
 {
     # Generic function for xy plot of dat objects, per twh.
     #   e.g. plotdat.xy("P","RH")
@@ -288,7 +288,7 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
       
         # print dataset
         if (annotate)
-            mtext(paste0("dataset=", dataset()), 3, adj=1)
+            mtext(paste0("dataset=", dataset), 3, adj=1)
     } 
     if (browse) {
         cat(paste("Plotted data are in objects \"xdata\" and \"ydata\"\n",
