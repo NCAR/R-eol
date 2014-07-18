@@ -10,7 +10,8 @@
 plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth, 
                        plot=T, derived=T, method.smth="mean", 
                        lfit=F, intercept=T, cex.pts=0.5,
-                       chksum=F, logxy, annotate=T, dataset=dataset(), browse=F, type="p", ...)
+                       chksum=F, logxy, annotate=T, dataset=dataset(),
+                       cex.leg = 1, browse=F, type="p", ...)
 {
     # Generic function for xy plot of dat objects, per twh.
     #   e.g. plotdat.xy("P","RH")
@@ -168,7 +169,6 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
         else
             fit.coeff <- matrix(nrow=ncol(ydata),ncol=1)
         rms <- vector(length=ncol(ydata))
-        nmr <- vector(length=ncol(ydata))
         for (i in 1:ncol(ydata)) {
 
             # x might be one column
@@ -188,8 +188,6 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
             else
                 yfit <- x[select,ix]*fit$coefficients[1] 
 
-            nmr[i] <- mean(abs(y[select,i] - yfit), na.rm=T)/
-                      sqrt(var(y[select,i])) 
             fit.coeff[i,] <- fit$coefficients
             rms[i] <- sqrt(var(fit$residuals))
             if (plot & type != "n") {
@@ -255,7 +253,7 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
                                 xlabel, ", rms =", signif(rms,2))
         }
         legend(xleg,yleg, labels, pch=rep(16,ncol(ydata)), col=1:ncol(ydata), 
-                 lty=2, lwd=1.5, bg="transparent", bty="n")
+                 lty=2, lwd=1.5, bg="transparent", bty="n", cex=cex.leg)
 
         # print time range, low-pass filter
         t1 <- max(start(xdata[!is.na(xdata),]),start(ydata[!is.na(ydata),]))
