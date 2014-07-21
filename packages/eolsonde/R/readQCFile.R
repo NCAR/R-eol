@@ -99,19 +99,21 @@ readQCFile <- function(file)
     dnames <- dnames[-(2:4)]
     units <- units[-(2:4)]
 
-    sdng <- sdng[,dnames]
+    sdng <- as.matrix(sdng[,dnames])
 
-    # if any columns are logical, convert to numeric
-    ldata <- sapply(dnames,function(n){is.logical(sdng[1,n])})
+    if (FALSE) {
+        # if any columns are logical, convert to numeric
+        ldata <- sapply(dnames,function(n){is.logical(sdng[1,n])})
 
-    if (any(ldata)) {
-        sapply((1:length(ldata))[ldata],function(i)
-            {
-                sdng[,i] <<- as.numeric(sdng[,i])
-                NULL
-            }
-        )
-        NULL
+        if (any(ldata)) {
+            sapply((1:length(ldata))[ldata],function(i)
+                {
+                    sdng[,i] <<- as.numeric(sdng[,i])
+                    NULL
+                }
+            )
+            NULL
+        }
     }
     
     sdng <- dat(nts(sdng,utime(tx),units=units))
