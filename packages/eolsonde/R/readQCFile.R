@@ -75,7 +75,7 @@ readQCFile <- function(file)
 
     # read data into numeric values
     sdng <- read.table(file=file, skip=lhdr+3,
-        col.names=dnames,row.names=NULL, na.strings=c("-999.00","-999.000000"),
+        col.names=dnames,row.names=NULL, na.strings=c("-999.00","-999.00000","-999.000000"),
         check.names=FALSE)
 
     sod <- sdng[,utcnames[1]] * 3600 + sdng[,utcnames[2]] * 60 + sdng[,utcnames[3]]
