@@ -291,3 +291,44 @@ dat.evap <- function(what,derived=TRUE,...)
     evap@units <- rep("mm",ncol(evap))
     evap
 }
+
+dat.h2o <- function(what,derived=TRUE,...) 
+{
+    robust <- dpar("robust")
+    if (is.null(robust)) robust <- TRUE
+
+    kh2o <- h2o <- NULL
+
+    wvb <- words(variables(),1,1)
+
+    if (any(wvb == "kh2o")) {
+        h2o.name <- expand("kh2o",what)
+
+        kh2o <- dat(h2o.name,derived=FALSE,avg=TRUE,smooth=TRUE)	# g/m^3
+        if (!is.null(kh2o) && !robust) {
+            # dat("o2corr") can return a simple 0, rather than a time series
+            # In that case, conform will just return that 0 again.
+            o2corr <- dat(expand("o2corr",what))
+            if (is(o2corr,"dat")) {
+                o2corr <- conform(o2corr,kh2o)
+                o2corr <- approx(o2corr,xout=kh2o,method="constant",f=0,rule=2)
+            }
+            rhod <- conform(dat("rhoDry",avg=TRUE,smooth=TRUE),kh2o)
+            kh2o <- kh2o - o2corr * rhod
+        }
+    }
+    # read li7500 data
+    if (any(wvb == "h2o")) {
+        h2o.name <- expand("h2o",what)
+        h2o <- dat(h2o.name,derived=FALSE,avg=TRUE,smooth=TRUE)
+    }
+    # combine
+    if (!is.null(kh2o)) {
+        if (is.null(h2o)) h2o <- kh2o
+        else h2o <- Cbind(kh2o,h2o)
+    }
+    sfxs <- suffixes(h2o,2)
+    colnames(h2o) <- paste0("h2o",sfxs)
+    h2o
+}
+
