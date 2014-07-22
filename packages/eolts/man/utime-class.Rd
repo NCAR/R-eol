@@ -112,9 +112,14 @@ Gordon Maclean
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\"? utime\" or \code{\link{utime}}
-\"? nts\" or \code{\link{nts}}
-\"class? nts\" or \code{"\linkS4class{nts}"}
+\tabular{ll}{
+?command \tab link\cr
+\code{? utime} \tab \code{\link{utime}}\cr
+\code{class? nts} \tab \code{\linkS4class{nts}}\cr
+\code{? nts} \tab \code{\link{nts}}\cr
+\code{? dpar} \tab \code{\link{dpar}}\cr
+\code{package? eolts} \tab \code{\link[eolts:eolts-package]{eolts}}\cr
+}
 }
 \examples{
 options(time.zone="US/Central")
@@ -124,7 +129,7 @@ options(time.zone="US/Central")
 t1 = utime("2013 May 13 01:04")
 t1 = t1 + 3600      # add an hour
 
-# format to a string, US pacific time
+# format to a string, US Pacific time
 tstr = format(t1,format="\%F \%T",time.zone="US/Pacific")
 cat("time is",tstr,"\n")
 
