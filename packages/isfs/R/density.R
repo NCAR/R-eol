@@ -7,13 +7,13 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 #
-# Density of air
 # --------------
-dat.rho.air <- function(what,derived=TRUE,cache=F,...)
+dat.rhoAir <- function(what,derived=TRUE,cache=F,...)
 {
+    # compute density of moist air (kg/m^3)
+
     robust <- dpar("robust")
-    # density of (moist) air (kg/m^3)
-    R <- 287		# J/kg-K
+    R <- 287		# specific gas constant for dry air: J/kg-K
     P = dat("P")
     # convert to pascals
     if (any(units(P) == "mb")) P[,units(P)=="mb"] = P[,units(P)=="mb"] * 100
@@ -27,7 +27,7 @@ dat.rho.air <- function(what,derived=TRUE,cache=F,...)
     if (any(im==0)) {
         warning(paste("No variable P at stations",
                 paste(unique(stations(Td)[im==0]),collapse=","),
-                ". dat.rho.air is creating a P from average of other stations"))
+                ". dat.rhoAir is creating a P from average of other stations"))
         Pa <- P[,1]
         nP <- dim(P)[2]
         Pa@data <- P@data %*% rep(1,nP)/nP
@@ -43,7 +43,7 @@ dat.rho.air <- function(what,derived=TRUE,cache=F,...)
     x <- P/R/Tv
     if (!is.null(robust) && robust) x <- median(x, na.rm=T)
     else {
-        dimnames(x) <- list(NULL,expand("rho.air",Tv))
+        dimnames(x) <- list(NULL,expand("rhoAir",Tv))
         x@units <- rep("kg/m^3",ncol(x))
     }
 

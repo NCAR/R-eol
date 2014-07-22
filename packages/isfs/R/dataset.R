@@ -71,7 +71,7 @@ find_datasets <- function(
             int_attrs <- attrs[anames]
             ix <- sapply(int_attrs,is.null)
             # for those attributes not found, explicitly set them to NULL
-            int_attrs <- c(int_attrs[!ix],sapply(anames[ix],function(x)list()[x]))
+            int_attrs <- c(int_attrs[!ix],sapply(anames[ix],function(x)NULL))
 
             calpaths <- ""
             if ("calibration_file_path" %in% names(attrs))
@@ -174,7 +174,7 @@ dataset <- function(which,verbose=F,datasets=NULL)
     anames <- c("h2o_flux_corrected", "co2_flux_corrected", "gsoil_philip_corrected")
     for (a in anames) {
         if (a %in% names(dset)) dpar(dset[a])
-        else dpar(sapply(a,function(x)list()[x]))
+        else dpar(sapply(a,function(x)NULL))
     }
 
     if (!is.null(dset[["f"]])) dset$f()

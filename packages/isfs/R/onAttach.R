@@ -11,4 +11,5 @@
 {
     # cat(paste("hello from libname=",libname,", pkgname=",pkgname," .onAttach\n"))
     options(dcache=TRUE)
+    packageStartupMessage("For help on the isfs package, do: \"package? isfs\"")
 }
