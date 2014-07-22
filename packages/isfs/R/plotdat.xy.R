@@ -239,20 +239,39 @@ plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth,
                     vs.labels <- paste(vs.labels, names(stns))
             labels <- paste(labels, "vs", vs.labels)
         }
+        labels <- ""
         if (lfit) {
+            ylabel <- colnames(ydata)
+            xlabel <- colnames(xdata)
             if (intercept) {
                 pm <- c(-1,0,1)
                 names(pm) <- c("-","+","+")
                 pm <- names(pm[match(sign(fit.coeff[,1]),pm)])
-                labels <- paste(labels," ",ylabel,"=",signif(fit.coeff[,2],3),
+                labels <- paste(ylabel,"=",signif(fit.coeff[,2],3),
                                 xlabel, pm, abs(signif(fit.coeff[,1],2)),
                                 ", rms =", signif(rms,2))
             }
             else
-                labels <- paste(labels," ",ylabel,"=",signif(fit.coeff[,1],3),
+                labels <- paste(ylabel,"=",signif(fit.coeff[,1],3),
                                 xlabel, ", rms =", signif(rms,2))
         }
-        legend(xleg,yleg, labels, pch=rep(16,ncol(ydata)), col=1:ncol(ydata), 
+        else if (ncol(xdata)!=1) {
+            labels <- suffixes(ydata, 1+nwords(ylabel,"."),"")
+            if (!is.null(stns <- stations(ydata)))
+              if (is.null(names(stns)))
+                  labels <- paste(labels,"stn",stns)
+              else
+                  labels <- paste(labels, names(stns))
+            vs.labels <- suffixes(xdata, 1+nwords(xlabel,"."),"")
+            if (!is.null(stns <- stations(xdata)))
+                if (is.null(names(stns)))
+                    vs.labels <- paste(vs.labels,"stn",stns)
+                else
+                    vs.labels <- paste(vs.labels, names(stns))
+            labels <- paste(labels, "vs", vs.labels)
+        }
+        if (!all(labels == "")) # new
+            legend(xleg,yleg, labels, pch=rep(16,ncol(ydata)), col=1:ncol(ydata), 
                  lty=2, lwd=1.5, bg="transparent", bty="n", cex=cex.leg)
 
         # print time range, low-pass filter
