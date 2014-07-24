@@ -6,13 +6,13 @@
 \code{dpar} Sets or gets global parameters for accessing and processing data, in similar manner to \code{\link{par}} for graphics parameters, or session options with \code{\link{options}}.
 }
 \usage{
-dpar(..., save.cache = F)
+dpar(..., save_cache = F)
 }
 \arguments{
   \item{\dots}{
 To set one or more parameters, pass named arguments in the form \code{tag = value}, from the list below, or a list containing named elements. To fetch the value one or more parameters, pass their names in a character vector. If no argument is passed, the current list of options is returned.
 }
-  \item{save.cache}{
+  \item{save_cache}{
 }
 }
 \details{

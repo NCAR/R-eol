@@ -12,7 +12,7 @@ netcdf(file = Sys.getenv("NETCDF_FILE"), dir = Sys.getenv("NETCDF_DIR"), start =
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{file}{
-Character vector, containing either the format of the NetCDF file names or actual file names. A file name format contains time field descriptors such as "\%Y", supported by \code{\link{utime}} and \code{\link{strptime}} }
+Character vector, containing either the format of the NetCDF file names or actual file names. A file name format contains time field descriptors such as "\%Y", supported by \code{\link{utime}} and \code{\link{strptime}}
 }
   \item{dir}{
 Character vector of length 1, the path name of the directory containing the NetCDF files.
@@ -43,7 +43,7 @@ Character string containing the name of a NetCDL file to be used when initializi
 \details{
 }
 \value{
-An object of class \code{\linkS4class{netcdf}}, a connection to a set of NetCDF files, which is then used in calls to \code{\link{readts}}, \code{\link{writets}}, and \code{\link{close}}.
+An object of class \code{\linkS4class{netcdf}}, a connection to a set of NetCDF files, which can then be used in calls to \code{\link{readts}}, \code{\link{writets}}, and \code{\link{close}}.
 }
 \references{
 \url{http://www.unidata.ucar.edu/software/netcdf}

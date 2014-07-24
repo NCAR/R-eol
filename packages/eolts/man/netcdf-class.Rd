@@ -24,8 +24,7 @@
 A connection to a group of NetCDF files
 }
 \section{Objects from the Class}{
-The usual way to create a \code{\linkS4class{netcdf}} object is with the \code{\link{netcdf}} function.
-Objects can be created by calls of the form \code{new("netcdf", ...)}.
+The usual way to create a \code{\linkS4class{netcdf}} object is with the \code{\link{netcdf}} function.  A lower-level alternative is \code{new("netcdf", ...)}.
 }
 \section{Slots}{
   \describe{
@@ -71,8 +70,16 @@ Gordon Maclean
 }
 
 \seealso{
-\code{\linkS4class{nts}}
-\code{\linkS4class{utime}}
+\tabular{ll}{
+?command \tab link\cr
+\code{? netcdf} \tab \code{\link{netcdf}}\cr
+\code{class? nts} \tab \code{\linkS4class{nts}}\cr
+\code{? nts} \tab \code{\link{nts}}\cr
+\code{class? utime} \tab \code{\linkS4class{utime}}\cr
+\code{? utime} \tab \code{\link{utime}}\cr
+\code{? dpar} \tab \code{\link{dpar}}\cr
+\code{package? isfs} \tab \code{\link[isfs:isfs-package]{isfs}}\cr
+}
 }
 \examples{
 }

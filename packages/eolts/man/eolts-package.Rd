@@ -70,10 +70,12 @@ ts
 \seealso{
 \tabular{ll}{
 ?command \tab link\cr
-\code{class? nts} \tab \code{\linkS4class{nts}}\cr
-\code{? nts} \tab \code{\link{nts}}\cr
 \code{class? utime} \tab \code{\linkS4class{utime}}\cr
 \code{? utime} \tab \code{\link{utime}}\cr
+\code{class? nts} \tab \code{\linkS4class{nts}}\cr
+\code{? nts} \tab \code{\link{nts}}\cr
+\code{class? netcdf} \tab \code{\linkS4class{netcdf}}\cr
+\code{? netcdf} \tab \code{\link{netcdf}}\cr
 \code{? dpar} \tab \code{\link{dpar}}\cr
 \code{package? isfs} \tab \code{\link[isfs:isfs-package]{isfs}}\cr
 }
