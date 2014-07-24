@@ -292,7 +292,7 @@ dat.evap <- function(what,derived=TRUE,...)
     evap
 }
 
-dat.h2o <- function(what,derived=TRUE,...) 
+dat.h2o <- function(what,derived=TRUE,avg,smooth,...) 
 {
     robust <- dpar("robust")
     if (is.null(robust)) robust <- TRUE
@@ -304,7 +304,7 @@ dat.h2o <- function(what,derived=TRUE,...)
     if (any(wvb == "kh2o")) {
         h2o.name <- expand("kh2o",what)
 
-        kh2o <- dat(h2o.name,derived=FALSE,avg=TRUE,smooth=TRUE)	# g/m^3
+        kh2o <- dat(h2o.name,derived=FALSE,avg=avg,smooth=smooth)	# g/m^3
         if (!is.null(kh2o) && !robust) {
             # dat("o2corr") can return a simple 0, rather than a time series
             # In that case, conform will just return that 0 again.
@@ -313,14 +313,14 @@ dat.h2o <- function(what,derived=TRUE,...)
                 o2corr <- conform(o2corr,kh2o)
                 o2corr <- approx(o2corr,xout=kh2o,method="constant",f=0,rule=2)
             }
-            rhod <- conform(dat("rhoDry",avg=TRUE,smooth=TRUE),kh2o)
+            rhod <- conform(dat("rhoDry",avg=avg,smooth=smooth),kh2o)
             kh2o <- kh2o - o2corr * rhod
         }
     }
     # read li7500 data
     if (any(wvb == "h2o")) {
         h2o.name <- expand("h2o",what)
-        h2o <- dat(h2o.name,derived=FALSE,avg=TRUE,smooth=TRUE)
+        h2o <- dat(h2o.name,derived=FALSE,avg=avg,smooth=smooth)
     }
     # combine
     if (!is.null(kh2o)) {
