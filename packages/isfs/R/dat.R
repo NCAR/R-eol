@@ -951,7 +951,7 @@ setMethod("average", signature="dat",
                     # If this average is being called from dat, then
                     # in the following dat call, avg will default to F.
                     if (any(mx <- (dns == dnames[1]))) x1 <- x[,mx]
-                    else x1 <- dat(dnames[1])
+                    else x1 <- dat(dnames[1],avg=FALSE,smooth=FALSE)
                     x1 <- conform(x1,xx)
 
                     wm <- x1@weightmap
@@ -971,7 +971,7 @@ setMethod("average", signature="dat",
                     class(x1) <- "nts"
 
                     if (any(mx <- (dns == dnames[2]))) x2 <- x[,mx]
-                    else x2 <- dat(dnames[2])
+                    else x2 <- dat(dnames[2],avg=FALSE,smooth=FALSE)
                     x2 <- conform(x2,xx)
 
                     wm <- x2@weightmap
@@ -1033,48 +1033,62 @@ setMethod("average", signature="dat",
                     fx@data[!is.na(fx@data)] <- 1.0
 
                     if (any(mx <- (dns == dnames[1]))) x1 <- x[,mx]
-                    else x1 <- dat(dnames[1])
+                    else x1 <- dat(dnames[1],avg=FALSE,smooth=FALSE)
                     x1 <- conform(x1,xx)
 
                     wm <- x1@weightmap
-                    xw <- nts(x1@weights,positions(x1)) * fx
-                    naw <- is.na(xw@data)
-                    if (any(naw)) xw@data[naw] <- 0
+                    if (length(wm) > 0) {
+                        xw <- nts(x1@weights,positions(x1)) * fx
+                        naw <- is.na(xw@data)
+                        if (any(naw)) xw@data[naw] <- 0
+                    }
                     x1 <- x1 * fx
-                    x1@weights <- xw@data
-                    x1@weightmap <- wm
+                    if (length(wm) > 0) {
+                        x1@weights <- xw@data
+                        x1@weightmap <- wm
+                    }
                     class(x1) <- "nts"
 
                     if (any(mx <- (dns == dnames[2]))) x2 <- x[,mx]
-                    else x2 <- dat(dnames[2])
+                    else x2 <- dat(dnames[2],avg=FALSE,smooth=FALSE)
                     x2 <- conform(x2,xx)
 
                     wm <- x2@weightmap
-                    xw <- nts(x2@weights,positions(x2)) * fx
-                    naw <- is.na(xw@data)
-                    if (any(naw)) xw@data[naw] <- 0
+                    if (length(wm) > 0) {
+                        xw <- nts(x2@weights,positions(x2)) * fx
+                        naw <- is.na(xw@data)
+                        if (any(naw)) xw@data[naw] <- 0
+                    }
                     x2 <- x2 * fx
 
-                    x2@weights <- xw@data
-                    x2@weightmap <- wm
+                    if (length(wm) > 0) {
+                        x2@weights <- xw@data
+                        x2@weightmap <- wm
+                    }
 
                     class(x2) <- "nts"
 
                     if (any(mx <- (dns == dnames[3]))) x3 <- x[,mx]
-                    else x3 <- dat(dnames[3])
+                    else x3 <- dat(dnames[3],avg=FALSE,smooth=FALSE)
                     x3 <- conform(x3,xx)
 
                     wm <- x3@weightmap
-                    xw <- nts(x3@weights,positions(x3)) * fx
-                    naw <- is.na(xw@data)
-                    if (any(naw)) xw@data[naw] <- 0
+                    if (length(wm) > 0) {
+                        xw <- nts(x3@weights,positions(x3)) * fx
+                        naw <- is.na(xw@data)
+                        if (any(naw)) xw@data[naw] <- 0
+                    }
                     x3 <- x3 * fx
-                    x3@weights <- xw@data
-                    x3@weightmap <- wm
+                    if (length(wm) > 0) {
+                        x3@weights <- xw@data
+                        x3@weightmap <- wm
+                    }
                     class(x3) <- "nts"
 
-                    naw <- is.na(xx@weights * fx@data)
-                    if (any(naw)) xx@weights[naw] <- 0
+                    if (length(xx@weightmap) > 0) {
+                        naw <- is.na(xx@weights * fx@data)
+                        if (any(naw)) xx@weights[naw] <- 0
+                    }
 
                     # variable names, 'w' from 'w.99m.moon'
                     vnames <- words(dnames,first=1,last=1,sep='.')
