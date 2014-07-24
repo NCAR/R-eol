@@ -30,6 +30,8 @@ Gordon Maclean
 \tabular{ll}{
 ?command \tab link\cr
 \code{package? eolts} \tab \code{\link[eolts:eolts-package]{eolts}}\cr
+\code{class? dat} \tab \code{\linkS4class{dat}}\cr
+\code{? dat} \tab \code{\link{dat}}\cr
 \code{class? prep} \tab \code{\linkS4class{prep}}\cr
 \code{? prep} \tab \code{\link{prep}}\cr
 \code{? plot_sunangle} \tab \code{\link{plot_sunangle}}\cr

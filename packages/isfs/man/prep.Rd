@@ -41,7 +41,7 @@ Gordon Maclean
 \examples{
 \dontrun{
 dataset("qc_geo_tiltcor")
-con = prep(c("u.3m.far","v.3m.far","w.3m.far","tc.3m.far","diagbits.3m.far"),rate=20)   
+con = prep(c("u","v","w","tc","diagbits","3m.far",sep="."),rate=20)   
 dpar(start="2013 oct 13 15:00",lenmin=30)
 x1 = readts(con)
 dpar.next()

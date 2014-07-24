@@ -1,6 +1,5 @@
 \name{plot_sunangle}
 \alias{plot_sunangle}
-Make a summary plot of sun elevation vs azimuth at a given latitude, longitude for a given year.
 \title{
 Make a summary plot of sun elevation vs azimuth at a given latitude, longitude for a given year.
 }
