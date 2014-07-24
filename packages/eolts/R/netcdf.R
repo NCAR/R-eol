@@ -340,13 +340,13 @@ setMethod("variables",
         if (all) vname <- "variables.all"
         else vname <- "variables"
 
-        if (!check.cache(vname)) {
+        if (!check_cache(vname)) {
             iod <- netcdf()
             on.exit(close(iod))
             vars <- variables(iod,...)
 
-            cache.object(vname,vars)
+            cache_object(vname,vars)
         }
-        get.cache.object(vname)
+        get_cache_object(vname)
     }
 )

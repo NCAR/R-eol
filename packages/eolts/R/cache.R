@@ -19,12 +19,12 @@
 # <environment: 0x54fec50>
 .eoltsEnv <- new.env(parent=emptyenv())
 
-cache.name <- function(what)
+cache_name <- function(what)
 {
     paste(".",what,".cache",sep="")
 }
 
-clear.cache <- function()
+clear_cache <- function()
 {
     cached <- objects(pattern="^\\..*\\.cache$",envir=.eoltsEnv,all.names=TRUE)
     # browser()
@@ -32,27 +32,27 @@ clear.cache <- function()
         remove(list=cached,envir=.eoltsEnv)
 }
 
-cache.object <- function(what,val)
+cache_object <- function(what,val)
 {
-    nm <- cache.name(what)
+    nm <- cache_name(what)
     assign(nm,val,envir=.eoltsEnv);
 }
 
-get.cache.object <- function(what)
+get_cache_object <- function(what)
 {
-    if (check.cache(what))
-        get(cache.name(what),envir=.eoltsEnv)
+    if (check_cache(what))
+        get(cache_name(what),envir=.eoltsEnv)
     else NULL
 }
 
-rm.cache.object <- function(what)
+rm_cache_object <- function(what)
 {
-    if (check.cache(what))
-        remove(list=cache.name(what),envir=.eoltsEnv)
+    if (check_cache(what))
+        remove(list=cache_name(what),envir=.eoltsEnv)
 }
 
-check.cache <- function(what)
+check_cache <- function(what)
 {
-    nm <- cache.name(what)
+    nm <- cache_name(what)
     exists(nm,envir=.eoltsEnv)
 }

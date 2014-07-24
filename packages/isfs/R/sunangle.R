@@ -12,11 +12,11 @@ dat.azel.sun <- function(what,lat=dpar("lat"),lon=dpar("lon"),dt=dpar("avg"),
 
     # if !missing(data), create dat object synchronized to data
 
-    cacheName <- cache.name("azel.sun")
+    cacheName <- cache_name("azel.sun")
     if (is.null(dt)) dt <- 300
     found <- F
-    if (check.cache(cacheName)) {
-        x <- get.cache.object(cacheName)
+    if (check_cache(cacheName)) {
+        x <- get_cache_object(cacheName)
         xlat <- x@attributes["latitude"]
         xlon <- x@attributes["longitude"]
         if (!is.null(xlat) && xlat == lat && !is.null(xlon) && xlon == lon &&
@@ -45,7 +45,7 @@ dat.azel.sun <- function(what,lat=dpar("lat"),lon=dpar("lon"),dt=dpar("avg"),
             times,units=c("deg","deg"))
         class(x) <- "dat"
         x@attributes <- c(x@attributes,latitude=lat,longitude=lon)
-        if (!is.null(cache) && cache) cache.object(cacheName,x)
+        if (!is.null(cache) && cache) cache_object(cacheName,x)
     }
     x
 }

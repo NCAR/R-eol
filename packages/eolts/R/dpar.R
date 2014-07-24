@@ -7,7 +7,7 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-dpar <- function(...,save.cache=F)
+dpar <- function(...,save_cache=F)
 {
     # dpar function.  Argument handling stolen from par()
 
@@ -227,13 +227,13 @@ dpar <- function(...,save.cache=F)
     # user has specified any of the data.selection.names or data.opt.names,
     # or changed the start or length or stations, then remove
     # all cached dat objects
-    if (!save.cache && (
+    if (!save_cache && (
          any(match(inames,data.selection.names,nomatch=0) != 0) ||
          any(match(inames,data.opt.names,nomatch=0) != 0) ||
          !identical(dpar.list$start,dpar.list.orig$start) ||
          !identical(dpar.list$lensec,dpar.list.orig$lensec) ||
          any(is.na(match(dpar.list$stns,dpar.list.orig$stns)))))
-        clear.cache()
+        clear_cache()
 
 
     assign(".dpar",dpar.list,envir=.eoltsEnv)

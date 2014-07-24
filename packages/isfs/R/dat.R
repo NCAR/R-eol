@@ -107,13 +107,12 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
             names(what) <- what
             # average/smooth these variables before the Cbind
             x <- lapply(what,
-                function(what,derived,cache,avg,smooth,smoothper,simple.avg,avgper,...) {
+                function(what,...) {
                     x <- dat(what,derived=derived,cache=cache,...)
                     if (smooth || avg)
                         x <- smooth_avg_dat(x,smooth,smoothper,avg,simple.avg,avgper)
                     x
-                },derived=derived,cache=cache,avg=avg,smooth=smooth,
-                smoothper=smoothper,simple.avg=simple.avg,avgper=avgper,...)
+                },...)
             x <- x[!unlist(lapply(x,is.null))]
             if (length(x) == 0) return(NULL)
             else if (length(x) == 1) x <- x[[1]]
@@ -178,10 +177,10 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
     }
 
     if (length(what) == 1) {
-        if (check.cache(what)) {
-            if (avg || smooth) return(smooth_avg_dat(get.cache.object(what),
+        if (check_cache(what)) {
+            if (avg || smooth) return(smooth_avg_dat(get_cache_object(what),
                     smooth,smoothper,avg,simple.avg,avgper))
-        else return(get.cache.object(what))
+        else return(get_cache_object(what))
         }
     }
 
@@ -194,10 +193,10 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
     if ((nnames <- length(dnames)) == 0) return(NULL)
 
     if (nnames == 1) {
-        if (check.cache(dnames)) {
-            if (smooth || avg) return(smooth_avg_dat(get.cache.object(dnames),
+        if (check_cache(dnames)) {
+            if (smooth || avg) return(smooth_avg_dat(get_cache_object(dnames),
                     smooth,smoothper,avg,simple.avg,avgper))
-        else return(get.cache.object(dnames))
+        else return(get_cache_object(dnames))
         }
     }
 
@@ -230,7 +229,7 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
     # if (!is.null(dpar("chksum")) && dpar("chksum")) x <- chksumck(x)
 
     if (length(what) == 1 && !is.null(x) &&
-        (is.null(cache) || cache)) cache.object(what,x)
+        (is.null(cache) || cache)) cache_object(what,x)
 
     if (smooth || avg)
         x <- smooth_avg_dat(x,smooth,smoothper,avg,simple.avg,avgper)
@@ -260,7 +259,7 @@ smooth_avg_dat <- function(x,smooth,smoothper,avg,simple.avg,avgper)
 derived <- function()
 {
     dname <- "derivedISFSFunctions"
-    if (check.cache(dname)) return(get.cache.object(dname))
+    if (check_cache(dname)) return(get_cache_object(dname))
 
     attchd <- search()
     # look through attached packages and objects for "package.isfs" and
@@ -279,7 +278,7 @@ derived <- function()
     ignore <- c("default","dat","variables","derived","chksumOK")
     lf <- match(x,ignore,nomatch=0) == 0
     x <- x[lf]
-    cache.object(dname,x)
+    cache_object(dname,x)
     x
 }
 

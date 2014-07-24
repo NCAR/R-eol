@@ -178,7 +178,7 @@ dataset <- function(which,verbose=F,datasets=NULL)
     }
 
     if (!is.null(dset[["f"]])) dset$f()
-    if (ncf != dset$ncf || ncd != dset$ncd) clear.cache()
+    if (ncf != dset$ncf || ncd != dset$ncd) clear_cache()
 
     assign("dataset.which",which,envir=get(".projectEnv"))
 

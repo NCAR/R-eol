@@ -401,7 +401,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         val <- svalue(h$obj)
         if (length(val) > 0) {
             Sys.setenv(NETCDF_DIR=val)
-            clear.cache()
+            clear_cache()
         }
         NULL
     }
@@ -429,7 +429,7 @@ dgui <- function(visible=TRUE,debug=FALSE)
         val <- svalue(h$obj)
         if (length(val) > 0) {
             Sys.setenv(NETCDF_FILE=val)
-            clear.cache()
+            clear_cache()
         }
         NULL
     }
