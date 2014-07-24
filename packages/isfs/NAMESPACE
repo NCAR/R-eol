@@ -6,11 +6,10 @@ useDynLib(isfs)
 export(
     sync,
     dat,
-    smooth.avg.dat,
     d.by.dt,
     derived,
     expand,
-    other.dat.func,
+    other_dat_func,
     lookup,
     components,
     words,

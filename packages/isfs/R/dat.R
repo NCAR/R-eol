@@ -110,7 +110,7 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
                 function(what,derived,cache,avg,smooth,smoothper,simple.avg,avgper,...) {
                     x <- dat(what,derived=derived,cache=cache,...)
                     if (smooth || avg)
-                        x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
+                        x <- smooth_avg_dat(x,smooth,smoothper,avg,simple.avg,avgper)
                     x
                 },derived=derived,cache=cache,avg=avg,smooth=smooth,
                 smoothper=smoothper,simple.avg=simple.avg,avgper=avgper,...)
@@ -128,14 +128,15 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
 
         # Look for a dat function  dat.what
         fcn <- paste("dat",what,sep=".")
-        if (existsFunction(fcn,generic=FALSE)) {
-            f <- getFunction(fcn,generic=FALSE,mustFind=TRUE,where=1)
+        if (exists(fcn,mode="function")) {
+            # browser()
+            f <- get(fcn,mode="function",pos=1,inherits=TRUE)
             x <- f(what=what,derived=derived,cache=cache,...)
             if (inherits(x,"nts")) {
                 x <- select(x,stns=dpar("stns"),hts=dpar("hts"),sfxs=dpar("sfxs"),
                     sites=dpar("sites"))
                 if (smooth || avg)
-                    x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
+                    x <- smooth_avg_dat(x,smooth,smoothper,avg,simple.avg,avgper)
             }
             return(x)
         }
@@ -149,8 +150,8 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
             iw <- nw - 1
             while (iw > 0) {
                 fcn <- paste("dat",words(what,1,iw),sep=".")
-                if (existsFunction(fcn,generic=FALSE)) {
-                    f <- get(fcn,mode="function")
+                if (exists(fcn,mode="function")) {
+                    f <- get(fcn,mode="function",pos=1,inherits=TRUE)
                     x <- f(what=what,derived=derived,cache=cache,...)
 
                     if (inherits(x,"nts")) {
@@ -167,7 +168,7 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
                         x <- select(x,stns=dpar("stns"),hts=dpar("hts"),sfxs=dpar("sfxs"),
                             sites=dpar("sites"))
                         if (smooth || avg)
-                            x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
+                            x <- smooth_avg_dat(x,smooth,smoothper,avg,simple.avg,avgper)
                     }
                     return(x)
                 }
@@ -178,7 +179,7 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
 
     if (length(what) == 1) {
         if (check.cache(what)) {
-            if (avg || smooth) return(smooth.avg.dat(get.cache.object(what),
+            if (avg || smooth) return(smooth_avg_dat(get.cache.object(what),
                     smooth,smoothper,avg,simple.avg,avgper))
         else return(get.cache.object(what))
         }
@@ -194,7 +195,7 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
 
     if (nnames == 1) {
         if (check.cache(dnames)) {
-            if (smooth || avg) return(smooth.avg.dat(get.cache.object(dnames),
+            if (smooth || avg) return(smooth_avg_dat(get.cache.object(dnames),
                     smooth,smoothper,avg,simple.avg,avgper))
         else return(get.cache.object(dnames))
         }
@@ -232,12 +233,12 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
         (is.null(cache) || cache)) cache.object(what,x)
 
     if (smooth || avg)
-        x <- smooth.avg.dat(x,smooth,smoothper,avg,simple.avg,avgper)
+        x <- smooth_avg_dat(x,smooth,smoothper,avg,simple.avg,avgper)
 
     x
 }
 
-smooth.avg.dat <- function(x,smooth,smoothper,avg,simple.avg,avgper)
+smooth_avg_dat <- function(x,smooth,smoothper,avg,simple.avg,avgper)
 {
     if (!inherits(x,"dat")) return(x)
     dt <- deltat(x)[1]
@@ -271,7 +272,7 @@ derived <- function()
     for (pos in seq(along=mtch)[mtch]) {
         dfunc <- objects(pattern="^dat\\.",pos=pos)
         for (f in dfunc)
-            if (existsFunction(f)) x <- c(x,words(f,sep=".",2))
+            if (exists(f,mode="function")) x <- c(x,words(f,sep=".",2))
     }
 
     x <- unique(x)
@@ -954,14 +955,18 @@ setMethod("average", signature="dat",
                     x1 <- conform(x1,xx)
 
                     wm <- x1@weightmap
-                    xw <- nts(x1@weights,positions(x1)) * fx
-                    naw <- is.na(xw@data)
-                    if (any(naw)) xw@data[naw] <- 0
+                    if (length(wm) > 0) {
+                        xw <- nts(x1@weights,positions(x1)) * fx
+                        naw <- is.na(xw@data)
+                        if (any(naw)) xw@data[naw] <- 0
+                    }
                     x1 <- x1 * fx
-                    # in above operation, if weights differ, they are
-                    # removed. Restore them
-                    x1@weights <- xw@data
-                    x1@weightmap <- wm
+                    if (length(wm) > 0) {
+                        # in above operation, if weights differ, they are
+                        # removed. Restore them
+                        x1@weights <- xw@data
+                        x1@weightmap <- wm
+                    }
 
                     class(x1) <- "nts"
 
@@ -970,26 +975,36 @@ setMethod("average", signature="dat",
                     x2 <- conform(x2,xx)
 
                     wm <- x2@weightmap
-                    xw <- nts(x2@weights,positions(x2)) * fx
-                    naw <- is.na(xw@data)
-                    if (any(naw)) xw@data[naw] <- 0
+                    if (length(wm) > 0) {
+                        xw <- nts(x2@weights,positions(x2)) * fx
+                        naw <- is.na(xw@data)
+                        if (any(naw)) xw@data[naw] <- 0
+                    }
                     x2 <- x2 * fx
-                    # in above operation, if weights differ, they are
-                    # removed. Restore them
-                    x2@weights <- xw@data
-                    x2@weightmap <- wm
+                    if (length(wm) > 0) {
+                        # in above operation, if weights differ, they are
+                        # removed. Restore them
+                        x2@weights <- xw@data
+                        x2@weightmap <- wm
+                    }
 
                     class(x2) <- "nts"
 
-                    naw <- is.na(xx@weights * fx@data)
-                    if (any(naw)) xx@weights[naw] <- 0
+                    if (length(xx@weightmap) > 0) {
+                        naw <- is.na(xx@weights * fx@data)
+                        if (any(naw)) xx@weights[naw] <- 0
+                    }
 
                     weights_ok <- TRUE
-                    if (!identical(as.numeric(xx@weights),as.numeric(x1@weights))) {
+                    if (length(xx@weightmap) > 0 && length(x1@weightmap) > 0 &&
+                        !identical(as.numeric(xx@weights[,xx@weightmap]),
+                            as.numeric(x1@weights[,x1@weightmap]))) {
                         warning(paste("average: weights of",dimnames(xx)[[2]],"differ from",dimnames(x1)[[2]]))
                         weights_ok <- FALSE
                     }
-                    else if (!identical(as.numeric(xx@weights),as.numeric(x2@weights))) {
+                    else if (length(xx@weightmap) > 0 && length(x2@weightmap) > 0 &&
+                        !identical(as.numeric(xx@weights[,xx@weightmap]),
+                            as.numeric(x2@weights[,x2@weightmap]))) {
                         warning(paste("average: weights of",dimnames(xx)[[2]],"differ from",dimnames(x2)[[2]]))
                         weights_ok <- FALSE
                     }
@@ -1165,7 +1180,7 @@ setMethod("average", signature="dat",
     }
 )
 
-other.dat.func <- function(what,whine=TRUE)
+other_dat_func <- function(what,whine=TRUE)
 {
     nd <- length(search())
 
