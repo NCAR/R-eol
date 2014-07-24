@@ -984,6 +984,9 @@ setMethod("atan2",signature(y="nts",x="nts"),
             # points in p2 which are within deltat tolerance of p1
             p2 <- p2[nuke.p2[[3]][!nuke.p2[[1]] & !nuke.p2[[2]]]]
 
+            if (length(p1) == 0) stop("no timetags in e1 are within ",tol,"of e2")
+            if (length(p2) == 0) stop("no timetags in e2 are within ",tol,"of e1")
+
             # cat("length(p1) after nuke=",length(p1),", tol=",tol,"\n")
             # cat("length(p2) after nuke=",length(p2),", tol=",tol,"\n")
 
@@ -1099,6 +1102,9 @@ setMethod("Ops",signature(e1="nts",e2="nts"),
 
             # points in p2 which are within deltat tolerance of p1
             p2 <- p2[nuke.p2[[3]][!nuke.p2[[1]] & !nuke.p2[[2]]]]
+
+            if (length(p1) == 0) stop("no timetags in e1 are within ",tol,"of e2")
+            if (length(p2) == 0) stop("no timetags in e2 are within ",tol,"of e1")
 
             # cat("length(p1) after nuke=",length(p1),", dt.eps=",dt.eps,"\n")
             # cat("length(p2) after nuke=",length(p2),", dt.eps=",dt.eps,"\n")

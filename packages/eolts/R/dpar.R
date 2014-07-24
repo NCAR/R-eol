@@ -81,8 +81,8 @@ dpar <- function(...,save.cache=F)
          "lenfile",		# length of NetCDF file, often 86400 secs
          "gradientevalz",    # height to evaluate gradient functions
          "sfrac.min",        # minimum fraction of sonic samples, for editing fluxes
-         "h2o_flux_corrected",  # have O2,separation and Webb corrections been applied to x'h2o'
-         "co2_flux_corrected",  # have separation and Webb corrections been applied to x'co2'
+         "h2o_flux_corrected",  # have O2,separation and WPL corrections been applied to x'h2o'
+         "co2_flux_corrected",  # have separation and WPL corrections been applied to x'co2'
          # has Gsoil been corrected for difference between heat conductivity of
          # soil and calibration medium?
          "gsoil_philip_corrected"  
