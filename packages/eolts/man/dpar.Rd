@@ -50,7 +50,7 @@ The list of settable dpar parameters can be extended by other packages. For exam
 \code{class? utime} \tab \code{\linkS4class{utime}}\cr
 \code{? utime} \tab \code{\link{utime}}\cr
 \code{? netcdf} \tab \code{\link{netcdf}}\cr
-\code{? dpar-isfs} \tab \code{\link{dpar-isfs}}\cr
+\code{? dpar_isfs} \tab \code{\link{dpar_isfs}}\cr
 }
 }
 \examples{

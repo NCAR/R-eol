@@ -1,5 +1,5 @@
-\name{dpar-isfs}
-\alias{dpar-isfs}
+\name{dpar_isfs}
+\alias{dpar_isfs}
 \title{dpar parameters supported by the isfs package}
 \description{
 Use the \code{\link{dpar}} function to set or get global parameters for accessing and processing data, in similar manner to \code{\link{par}} for graphics parameters, or session options with \code{\link{options}}. This help page describes the parameters that are supported by the isfs package.
