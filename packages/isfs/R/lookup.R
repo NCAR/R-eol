@@ -30,7 +30,8 @@ lookup <- function(x,verbose=T)
       cat("names matching",x,":",paste(toc,collapse="  "),"\n")
 
     # more than one match, use secondary search criteria
-    if (length(toc) > 1) {
+    # TODO: get rid of this...
+    if (FALSE && length(toc) > 1) {
         names(toc) <- toc
         toc <- lapply(toc,create.keys)
         keys <- c("sonic","h2o","temp")

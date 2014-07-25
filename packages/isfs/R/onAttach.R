@@ -11,5 +11,12 @@
 {
     # cat(paste("hello from libname=",libname,", pkgname=",pkgname," .onAttach\n"))
     options(dcache=TRUE)
+
+    # Append our dpar options to the list in .eoltsEnv.
+    if (exists(".eoltsEnv",envir=.getNamespace("eolts")) &&
+        exists(".dparDefaults",envir=eolts:::.eoltsEnv)) {
+        dpardefs <- c(get(".dparDefaults",envir=eolts:::.eoltsEnv),.dparDefaults)
+        assign(".dparDefaults",dpardefs,envir=eolts:::.eoltsEnv)
+    }
     packageStartupMessage("For help on the isfs package, do: \"package? isfs\"")
 }

@@ -8,21 +8,12 @@
 # file LICENSE in this package.
 
 plot_sunangle <- function(browse=F,year=2006,lat=40,lon=-105,
-    yhi=90,twilight=T,localhours=T)
+    yhi=90,twilight=T,localhours=T,verbose=FALSE)
 {
-    cat(paste("\nPlotting Sun Angles For: lat,lon =",lat,"/",lon,"\n"))
-    cat("Also see \"? plot_sunangle\"
-        Usage: plot_sunangle(...)	with parameter defaults:
-        'lat=40'	in degrees (-lat for 'south')
-        'lon=-105'	in degrees (-lon for 'west'...ie USA)
-        'yhi=90'	upper plot limit for azimuth
-        'twilight=T'	shows civil,nautical,astronomical 'after sunset'
-        below the horizon
-        'localhours=T'	for Standard Time hour labels, F=GMT hours
-        (assuming the TZone via longitude/15)
-        'year=2006'	for the plot
-        'browse=F'
-        ")
+    if (verbose) {
+        cat(paste("Plotting Sun Angles For: lat,lon =",lat,"/",lon,"\n"))
+        cat("See \"? plot_sunangle\"\n")
+    }
 
     # nominal hour offset from greenwich
     TZoffset<- trunc(lon/15)
@@ -256,21 +247,12 @@ plot_sunangle <- function(browse=F,year=2006,lat=40,lon=-105,
     invisible(NULL)
 }
 plot_sunshadow <- function(year=2006,browse=F,lat=40,lon=-105,
-    range=4,localhours=T,lowest=0)
+    range=4,localhours=T,lowest=0,verbose=FALSE)
 {
-    cat(paste("\nPlotting Sun Shadows For: lat,lon =",lat,"/",lon,"\n"))
-    cat("Also see \"? plot_sunshadow\"
-        Usage: plot_sunshadow(...)	with optional parameter/defaults:
-        'lat=40'	in degrees (-lat for 'south')
-        'lon=-105'	in degrees (-lon for 'west'...ie USA)
-        'lowest=0'	Minimum sun angle elevation to compute
-        'range=4'	plot range height index limit
-        'localhours=T'	for Standard Time hour labels, F=GMT hours
-        (assuming the TZone via longitude/15)
-        'year=2006'	for the plot
-        'browse=F'
-        NOTE:  You must first use 'set_project' before starting R
-        ")
+    if (verbose) {
+        cat(paste("Plotting Sun Shadows For: lat,lon =",lat,"/",lon,"\n"))
+        cat("See \"? plot_sunshadow\"\n")
+    }
 
     # nominal hour offset from greenwich
     TZoffset<- trunc(lon/15)

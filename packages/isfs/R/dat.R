@@ -209,7 +209,7 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
     if(is.null(lenfile)) iod <- netcdf()
     else iod <- netcdf(lenfile=lenfile)
 
-    x <- readts(iod,variables=dnames,start=T1,end=T2)
+    x <- readts(iod,variables=dnames,start=T1,end=T2,stns=stns)
     close(iod)
 
     # cat("class(x)=",class(x),"\n")

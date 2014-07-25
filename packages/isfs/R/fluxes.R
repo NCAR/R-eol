@@ -470,7 +470,7 @@ calc.x.h2o <- function(what)
     }
 
     if (any(xh2o@units != "m/s g/m^3" & xh2o@units != "m/s gm/m^3"))
-        warning("units of <w'kh2o'> are not m/s g/m^3")
+        warning("units of <w'h2o'> are not m/s g/m^3")
     # browser()
 
     if (!fcorr_done && !robust) {

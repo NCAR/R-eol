@@ -8,7 +8,7 @@ Plot shadow lengths over a year at a given latitude and longitude.
 Plot shadow lengths over a year at a given latitude and longitude.
 }
 \usage{
-plot_sunshadow(year = 2006, browse = F, lat = 40, lon = -105, range = 4, localhours = T, lowest = 0)
+plot_sunshadow(year = 2006, browse = F, lat = 40, lon = -105, range = 4, localhours = T, lowest = 0, verbose=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -30,25 +30,25 @@ Plot hours in local time
   \item{lowest}{
 Minimum sun angle.
 }
+  \item{verbose}{
+Print a usage message.
+}
 }
 \details{
 }
 \value{
 }
 \references{
-%% ~put references to the literature/web site here ~
 }
 \author{
-%%  ~~who you are~~
+John Militzer
 }
 \note{
-%%  ~~further notes~~
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
 # Boulder

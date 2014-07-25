@@ -37,13 +37,13 @@ utime <- function(val=as.numeric(Sys.time()),
         res <- new("utime",val)
     }
     else if (is.character(val)) {
-
+        # like setAs("character","utime") but in.format is an argument
         if (is.null(time.zone)) time.zone <- "UTC"
 
         if (length(val) == 1 && val == "now") {
-            res <- as(Sys.time(),"utime")
+            return(as(Sys.time(),"utime"))
         }
-        else for (i in 1:length(in.format)) {
+        for (i in 1:length(in.format)) {
             # cat("trying format",in.format[[i]],"\n")
             res <- strptime(val,format=in.format[[i]],tz=time.zone)
             if (!any(is.na(res))) {
@@ -57,6 +57,7 @@ utime <- function(val=as.numeric(Sys.time()),
             else warning(paste("some dates not parsable with any in.format=",
                     paste("\"",unlist(in.format),"\"",sep="",collapse=", ")))
         }
+        res
     }
     else if (is(val,"POSIXct")) {
         res <- utime(as.numeric(val))
@@ -145,9 +146,28 @@ setAs("utime","character",
 setAs("character","utime",
     function(from)
     {
+        in.format <- getOption("time.in.format")
         time.zone <- getOption("time.zone")
         if (is.null(time.zone)) time.zone <- "UTC"
-        as(as.POSIXct(from,tz=time.zone),"utime")
+
+        if (length(from) == 1 && from == "now") {
+            return(as(Sys.time(),"utime"))
+        }
+        for (i in 1:length(in.format)) {
+            # cat("trying format",in.format[[i]],"\n")
+            res <- strptime(from,format=in.format[[i]],tz=time.zone)
+            if (!any(is.na(res))) {
+                res <- new("utime",as.numeric(res))
+                break
+            }
+        }
+        if (any(is.na(res))) {
+            if (length(from) == 1) warning(paste(from,"not parsable with any in.format=",
+                    paste("\"",unlist(in.format),"\"",sep="",collapse=", ")))
+            else warning(paste("some dates not parsable with any in.format=",
+                    paste("\"",unlist(in.format),"\"",sep="",collapse=", ")))
+        }
+        res
     }
 )
 

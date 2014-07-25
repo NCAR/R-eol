@@ -7,18 +7,6 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-# Empty environment in the eolts namespace for adding session
-# cache variables. This is not in the global environment, and so is
-# not saved on exit. Currently it is not exported, and so
-# isn't in the package:eolts environment.
-# .getNamespace("eolts")
-# ls(all=TRUE,.getNamespace("eolts"))
-# get(".eoltsEnv",envir=.getNamespace("eolts"))
-# <environment: 0x54fec50>
-# eolts:::.eoltsEnv
-# <environment: 0x54fec50>
-.eoltsEnv <- new.env(parent=emptyenv())
-
 cache_name <- function(what)
 {
     paste(".",what,".cache",sep="")

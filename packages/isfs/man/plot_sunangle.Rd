@@ -7,7 +7,7 @@ Make a summary plot of sun elevation vs azimuth at a given latitude, longitude f
 Make a summary plot of sun elevation vs azimuth at a given latitude, longitude for a given year.
 }
 \usage{
-plot_sunangle(browse = F, year = 2006, lat = 40, lon = -105, yhi = 90, twilight = T, localhours = T)
+plot_sunangle(browse = F, year = 2006, lat = 40, lon = -105, yhi = 90, twilight = T, localhours = T, verbose=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -31,6 +31,9 @@ Shows values for civil,nautical and astronomical twilight below the horizon.
   \item{localhours}{
 Use local time, or if FALSE, GMT.
 }
+  \item{verbose}{
+Print a usage message.
+}
 }
 \details{
 }
@@ -39,7 +42,7 @@ Use local time, or if FALSE, GMT.
 \references{
 }
 \author{
-
+John Militzer
 }
 \note{
 }

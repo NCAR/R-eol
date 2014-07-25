@@ -6,7 +6,7 @@
 Support for NCAR EOL ISFS, Integrated Surface Flux System
 }
 \description{
-This package provides R functions to access and manipulate time series from the NCAR EOL Integrated Surface Flux System.
+This package provides R functions to access and manipulate time series from the NCAR EOL Integrated Surface Flux System. Developed at the National Center for Atmospheric Research, Earth Observing Laboratory (NCAR EOL), sponsored by the National Science Foundation. 
 }
 \details{
 \tabular{ll}{

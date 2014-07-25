@@ -23,7 +23,7 @@ Suggests: \tab RUnit\cr
 %% The preformatted macro screws things up, causing the paragraph breaks below to be lost
 %% in html output. According to the "Writing R Extensions", preformatted shouldn't be nested
 %% within other macros.
-The eolts package defines three primary S4 classes, \code{"\linkS4class{utime}"}, \code{"\linkS4class{nts}"} and \code{"\linkS4class{spectra}"}.
+The eolts package defines three primary S4 classes, \code{"\linkS4class{utime}"}, \code{"\linkS4class{nts}"} and \code{"\linkS4class{spectra}"}, as well as a class \code{"\linkS4class{netcdf}"} for accessing time series data from NetCDF files.
 
 \code{"\linkS4class{utime}"} is a class for handling time. Do \code{class? utime} for information on the class, or \code{? utime} for help on the \code{\link{utime}} function.
 
@@ -35,7 +35,7 @@ An object of class \code{"\linkS4class{nts}"} is a matrix or data.frame, with a 
 
 Other \code{spectra} are generated from \code{fftw}s: \code{\link{pspectra}} (power spectra), \code{\link{xspectra}} (cross spectra), \code{\link{cospectra}}, \code{\link{quadspectra}} (quadrature spectra), \code{\link{phase}} and \code{\link{coherence}}.
 
-A \code{\link{plot}} method has been defined for \code{"\linkS4class{nts}"} providing time labels on the X axis. \code{plot} is also available for \code{ink{spectra}}.
+A \code{\link{plot}} method has been defined for \code{"\linkS4class{nts}"} providing time labels on the X axis. \code{plot} is also available for \code{\link{spectra}}.
 
 \code{"\linkS4class{netcdf}"} provides support for reading time series from NetCDF files into nts objects.
 
