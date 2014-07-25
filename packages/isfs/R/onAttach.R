@@ -14,9 +14,10 @@
 
     # Append our dpar options to the list in .eoltsEnv.
     if (exists(".eoltsEnv",envir=.getNamespace("eolts")) &&
-        exists(".dparDefaults",envir=eolts:::.eoltsEnv)) {
-        dpardefs <- c(get(".dparDefaults",envir=eolts:::.eoltsEnv),.dparDefaults)
-        assign(".dparDefaults",dpardefs,envir=eolts:::.eoltsEnv)
+        exists(".dparParams",envir=eolts:::.eoltsEnv)) {
+
+        dpardefs <- c(get(".dparParams",envir=eolts:::.eoltsEnv),.dparParams)
+        assign(".dparParams",dpardefs,envir=eolts:::.eoltsEnv)
     }
     packageStartupMessage("For help on the isfs package, do: \"package? isfs\"")
 }

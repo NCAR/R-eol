@@ -8,7 +8,7 @@
 # file LICENSE in this package.
 
 # Set function called from eolts::dpar to be used when any of the parameters
-# listed in .dparDefaults are set.
+# listed in .dparParams are set.
 setDpar <- function(parm,vals)
 {
     if (length(parm) != 1) stop("parm must be of length 1")
@@ -21,7 +21,7 @@ setDpar <- function(parm,vals)
 
 # dpar parameters supported by this isfs package. See isfs::onAttach(), where these
 # are appended to the list that is used by eolts::dpar().
-.dparDefaults <- list(
+.dparParams <- list(
     accelgrav=list(type="numeric",setf=setDpar,default=9.81,flushCache=FALSE),
     # for simple averages, one value, average interval in seconds
     # for non-simple averages, two values, non-simple interval, simple interval

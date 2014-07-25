@@ -88,7 +88,7 @@ find_datasets <- function(
                     if (!hrot != (datacoords == "instrument"))
                         warning(paste0(
                             "apparent coordinate conflict between wind3d_horiz_rotation=",
-                            hrot," and dataset=",dname))
+                            hrot," and dataset=",dname,". datacoords=\"",datacoords,"\""))
                 }
             }
 

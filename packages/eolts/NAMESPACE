@@ -22,7 +22,6 @@ export(
     match.nts,
     match.delta,
     dpar,
-    dpar2,
     dpar.now,
     dpar.prev,
     dpar.next,

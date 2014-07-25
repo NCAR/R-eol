@@ -35,7 +35,7 @@
             time.zone=time.zone
     )
 
-    assign(".dparDefaults",.dparDefaults,envir=.eoltsEnv)
+    assign(".dparParams",.dparParams,envir=.eoltsEnv)
 
     packageStartupMessage("For help on the eolts package, do: \"package? eolts\"")
 
