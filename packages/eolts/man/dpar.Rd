@@ -1,21 +1,23 @@
 \name{dpar}
 \alias{dpar}
+\alias{dpar_eolts}
 \title{Set/get global session parameters for accessing and processing data}
 \description{
-\code{dpar} Sets or gets global parameters for accessing and processing data, in similar manner to \code{\link{par}} for graphics parameters, or session options with \code{\link{options}}.
+Set or get global parameters for accessing and processing data, in similar manner to \code{\link{par}} for graphics parameters, or session options with \code{\link{options}}.
 }
 \usage{
 dpar(..., save_cache = FALSE)
 }
 \arguments{
   \item{\dots}{
-To set one or more parameters, pass named arguments in the form \code{name = value}, from the list below, or a list containing named elements. To fetch the value one or more parameters, pass their names in a character vector. If no argument is passed, the current list of options is returned.
+To set one or more parameters, pass named arguments in the form \code{name = value} or a list containing named elements. To fetch the value one or more parameters, pass their names in a character vector. If no argument is passed, the current list of options is returned.
 }
   \item{save_cache}{
 Do not flush the data cache when changing a parameter which affects the reading of data from NetCDF. Generally leave it as the default.
 }
 }
 \details{
+The list of dpar parameters that is supported by the eolts package is shown below. The list can be extended by other packages, for example \code{\link[isfs:isfs-package]{isfs}}.
 }
 \value{
 If one or more parameters were changed in the call to \code{dpar}, via arguments of the form \code{name = value}, or with a list argument, then a list is returned containing the previous value of each parameter that was set, by name.
@@ -39,7 +41,6 @@ If no arguments were passed, then a list is returned, containing all current val
 Gordon Maclean
 }
 \note{
-The list of settable dpar parameters can be extended by other packages. For example, see \code{\link{dpar-isfs}} for the parameters supported by the isfs packages.
 }
 
 \seealso{

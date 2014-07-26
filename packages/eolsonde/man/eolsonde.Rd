@@ -11,12 +11,8 @@ This package contains functions for reading EOL sounding files and plotting the 
 \details{
 \tabular{ll}{
 Package: \tab eolsonde\cr
-Version: \tab 2.4-268\cr
 Depends: \tab lattice,maps, eolts, isfs\cr
 License: \tab BSD_2_clause + file LICENSE\cr
-Date: \tab 2014-05-01\cr
-Packaged: \tab 2014-05-20 19:33:44 UTC; maclean\cr
-Built: \tab R 3.0.2; ; 2014-05-20 19:33:45 UTC; unix\cr
 }
 
 Functions:
