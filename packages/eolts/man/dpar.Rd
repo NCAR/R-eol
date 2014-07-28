@@ -53,7 +53,13 @@ Gordon Maclean
 }
 }
 \examples{
-    old.dpar = dpar(start="2014 jun 19 13:00",lenhr=5)
-    on.exit(dpar(old.dpar),add=TRUE)
+    myfunc  <-  function() {
+        # change start time and period length, saving original values
+        old.dpar <- dpar(start="2014 jun 19 13:00",lenhr=5)
+        # restore original values on function exit
+        on.exit(dpar(old.dpar),add=TRUE)
+
+        # ...
+    }
 }
 \keyword{ ts }

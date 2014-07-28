@@ -45,14 +45,20 @@ Gordon Maclean
 \seealso{
 \tabular{ll}{
 ?command \tab link\cr
+\code{? dat} \tab \code{\link{dat}}\cr
 \code{? dpar_eolts} \tab \code{\link{dpar_eolts}}\cr
 \code{package? eolts} \tab \code{\link[eolts:eolts-package]{eolts}}\cr
 }
 }
 \examples{
-    old.dpar = dpar(stns=c(0,5:9),hts=3)
     
-    dpar(stns=NULL,hts=NULL)
-    on.exit(dpar(old.dpar),add=TRUE)
+    myfunc  <-  function() {
+        # change some parameters, saving original values
+        old.dpar = dpar(stns=c(0,5:9),hts=3)
+        # restore original values on function exit
+        on.exit(dpar(old.dpar),add=TRUE)
+
+        # ...
+    }
 }
 \keyword{ ts }

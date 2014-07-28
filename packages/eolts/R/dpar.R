@@ -23,34 +23,47 @@ setDpar <- function(parm,vals)
     mx <- match(pname,timeNames,nomatch=0)
 
     if (mx == 1) {  # lenday
-        vals$lenhr <- pval * 24
-        vals$lenmin <- pval * 24 * 60
-        vals$lensec <- pval * 86400
-        if (!is.null(vals$start)) vals$end = vals$start + vals$lensec
+        if (!is.null(pval)) {
+            vals$lenhr <- pval * 24
+            vals$lenmin <- pval * 24 * 60
+            vals$lensec <- pval * 86400
+            if (!is.null(vals$start)) vals$end = vals$start + vals$lensec
+        }
+        else vals$lenhr <- vals$lenmin <- vals$lensec <- vals$end <- NULL
     }
     else if (mx == 2) { # lenhr
-        vals$lenday <- pval / 24
-        vals$lenmin <- pval * 60
-        vals$lensec <- pval * 3600
-        if (!is.null(vals$start)) vals$end = vals$start + vals$lensec
+        if (!is.null(pval)) {
+            vals$lenday <- pval / 24
+            vals$lenmin <- pval * 60
+            vals$lensec <- pval * 3600
+            if (!is.null(vals$start)) vals$end = vals$start + vals$lensec
+        }
+        else vals$lenday <- vals$lenmin <- vals$lensec <- vals$end <- NULL
     }
     else if (mx == 3) { # lenmin
-        vals$lenday <- pval / (24 * 60)
-        vals$lenhr <- pval / 60
-        vals$lensec <- pval * 60
-        if (!is.null(vals$start)) vals$end = vals$start + vals$lensec
+        if (!is.null(pval)) {
+            vals$lenday <- pval / (24 * 60)
+            vals$lenhr <- pval / 60
+            vals$lensec <- pval * 60
+            if (!is.null(vals$start)) vals$end = vals$start + vals$lensec
+        }
+        else vals$lenday <- vals$lenhr <- vals$lensec <- vals$end <- NULL
     }
     else if (mx == 4) { # lensec
-        vals$lenday <- pval / 86400
-        vals$lenhr <- pval / 3600
-        vals$lenmin <- pval / 60
-        if (!is.null(vals$start)) vals$end = vals$start + vals$lensec
+        if (!is.null(pval)) {
+            vals$lenday <- pval / 86400
+            vals$lenhr <- pval / 3600
+            vals$lenmin <- pval / 60
+            if (!is.null(vals$start)) vals$end = vals$start + vals$lensec
+        }
+        else vals$lenday <- vals$lenhr <- vals$lenmin <- vals$end <- NULL
     }
     else if (mx == 5) { # start
-        if (!is.null(vals$start)) vals$end = vals$start + vals$lensec
+        if (!is.null(pval) && !is.null(vals$lensec))
+            vals$end = vals$start + vals$lensec
     }
     else if (mx == 6) { # end
-        if (!is.null(vals$start)) {
+        if (!is.null(pval) && !is.null(vals$start)) {
             lensec = as.numeric(vals$end - vals$start)
             vals$lensec <- lensec
             vals$lenday <- lensec / 86400
