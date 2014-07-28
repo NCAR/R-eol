@@ -28,9 +28,9 @@ If no arguments were passed, then a list is returned, containing all current val
 }
 \section{Data Parameters}{
     \describe{
-        \item{\code{start}}{start time to be passed to data access commands, such as \code{\link{netcdf}}. This can be character, or any type compatible with \code{\link{utime}}.}
-        \item{\code{end}}{end time to be passed to data access commands, such as \code{\link{netcdf}}. This can be character, or any type compatible with \code{\link{utime}}. Setting \code{end} results in \code{lensec} being set to \code{(end - start)}.}
-        \item{\code{lenday}, \code{lenhr}, \code{lenmin} or \code{lensec}}{Length of the time series period for accessing data. Setting any time length also sets the other lengths, and causes the \code{end} time to be set to \code{start + lensec}}
+        \item{\code{start}}{start time to be passed to data access commands, such as \code{\link{netcdf}}. This is a \code{\linkS4class{utime}}, or any type, such as character, than can be converted to utime with \code{as(x,"utime").}}
+        \item{\code{end}}{end time to be passed to data access commands, such as \code{\link{netcdf}}. As with \code{start}, this is a \code{\linkS4class{utime}} or any compatible type. Setting \code{end} results in \code{lensec} being set to \code{(end - start)}, and also similarly changes \code{lenday}, \code{lenhr} and \code{lenmin}.}
+        \item{\code{lenday}, \code{lenhr}, \code{lenmin} or \code{lensec}}{Length of the time series period for accessing data. Setting any time length also sets the other lengths, and causes the \code{end} time to be set to \code{start + lensec}.}
         \item{\code{lenfile}}{Length of data files in seconds. If \code{lenfile} is non-zero, the data file names are expected to represent times which are integral multiples of \code{lenfile} seconds from Jan 1, 1970. If \code{lenfile} is zero, the file names are not restricted.}
         \item{\code{ncverbose}}{Verbosity level when reading NetCDF variables: 0=quiet, 1=show variable names and times, 2=show vars, filenames, start, count indices.}
     }
