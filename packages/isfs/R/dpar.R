@@ -36,7 +36,7 @@ setDpar <- function(parm,vals)
     lon=list(type="numeric",setf=setDpar,default=NA,flushCache=FALSE),
     platform=list(type="character",setf=setDpar,default="",flushCache=FALSE),
     pyrgeometer.B=list(type="numeric",setf=setDpar,default=NA,flushCache=FALSE),
-    pyrgeometer.Swcor=list(type="numeric",setf=setDpar,default=NA,flushCache=FALSE),
+    pyrgeometer.swcor=list(type="numeric",setf=setDpar,default=NA,flushCache=FALSE),
     RH.ice=list(type="logical",setf=setDpar,default=NA,flushCache=FALSE),
     robust=list(type="logical",setf=setDpar,default=FALSE,flushCache=TRUE),
     sites=list(type="character",setf=setDpar,default=NULL,flushCache=TRUE),
