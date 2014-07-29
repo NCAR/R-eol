@@ -41,8 +41,8 @@ Author of original EOLsounding package: Liangying Zhang
 \code{class? utime} \tab \code{\linkS4class{utime}}\cr
 \code{? utime} \tab \code{\link{utime}}\cr
 \code{? dpar} \tab \code{\link{dpar}}\cr
-\code{package? isfs} \tab \code{\link[isfs:isfs-package]{isfs}}\cr
-\code{package? eolts} \tab \code{\link[eolts:eolts-package]{eolts}}\cr
+\code{? isfs} \tab \code{\link[isfs:isfs-package]{isfs}}\cr
+\code{? eolts} \tab \code{\link[eolts:eolts-package]{eolts}}\cr
 }
 }
 \examples{

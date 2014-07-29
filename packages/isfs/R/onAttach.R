@@ -19,5 +19,5 @@
         dpardefs <- c(get(".dparParams",envir=eolts:::.eoltsEnv),.dparParams)
         assign(".dparParams",dpardefs,envir=eolts:::.eoltsEnv)
     }
-    packageStartupMessage("For help on the isfs package, do: \"package? isfs\"")
+    packageStartupMessage("For help on the isfs package, do: \"? isfs\"")
 }

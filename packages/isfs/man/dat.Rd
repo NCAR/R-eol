@@ -1,7 +1,7 @@
 \name{dat}
 \alias{dat}
 \title{
-Return one or more time series matching a variable name.
+Return one or more time series by variable name.
 }
 \description{
 Read one or more time series which match a variable name.
@@ -31,7 +31,7 @@ Parameters which are passed to derivation functions.
 }
 \details{
 
-If \code{derived} is TRUE, then a search is done for a function to provide the derivation. For a value of \code{dat(what="a.b.c",derived=TRUE)}, then a search is done for a function with the following names
+If \code{derived} is TRUE, a search is done for a function to provide the derivation. For a value of \code{dat(what="a.b.c",derived=TRUE)}, a search is done for a function with the following names
 \itemize{
     \item dat.a.b.c
     \item dat.a.b
@@ -40,13 +40,13 @@ If \code{derived} is TRUE, then a search is done for a function to provide the d
 
 The first function that is found is called to perform the derivation.
 
-Then the current set of NetCDF files is searched for variables with names, or short_name attributes matching \code{what}. For a value of \code{what="RH"}, then a variable with a name or short_name attribute of "RH" is read from the NetCDF files. Also any variables with a short_name beginning with "RH." are read.
+Next, the current set of NetCDF files is searched for variables with names, or short_name attributes matching \code{what}. For a value of \code{what="RH"}, a variable with a name or short_name attribute of "RH" is read from the NetCDF files. Also any variables with a short_name beginning with "RH.", such as "RH.3m.rim" are read.
 
-The result of the derivation, if done, and the NetCDF reads are combined with Cbind into a multi-column time series.
+Any result of the derivation and the NetCDF reads are combined with Cbind into a multi-column time series.
 
-Averaging
+\strong{Averaging}
 
-Averaging is controlled by two parameters:
+Averaging of the time series is controlled by two parameters:
 \enumerate{
     \item the "avg" dpar parameter:
         \itemize{
@@ -56,30 +56,30 @@ Averaging is controlled by two parameters:
     \item the avg=TRUE/FALSE parameter to the \code{dat} function.
 }
 
-If dpar("avg") is non-zero, and avg=TRUE in the call to dat, then averaging
-is done.
+If dpar("avg") is a numeric vector, and avg=TRUE in the call to \code{\link{dat}},
+then averaging is done before the time series is returned by \code{\link{dat}}.
 
-The avg argument to dat defaults to FALSE, unless this is the top-most call to dat,
-in which case it defaults to TRUE.  The top-most call is detected by checking
-\code{sys.nframe}, and placing it in \code{.isfsEnv}.
+The avg argument to \code{\link{dat}} defaults to FALSE, unless this is the
+first call to dat in the stack, in which case it defaults to TRUE.
+The top-most call is detected by checking \code{sys.nframe}, and placing
+it in \code{.isfsEnv}.
 
-If a derived function exists for \code{what}, then \code{avg} is not passed
-to the derived function, defaulting to FALSE.  The result returned by
-the derived function will be averaged by \code{dat} if avg is TRUE.
+If a derivation function exists for \code{what}, then \code{avg} is not passed
+to the derivation function, which then defaults to FALSE.  The result returned by
+the derivation function will then be averaged by \code{dat}, if avg is TRUE.
 
-This scheme results in derived variables being computed from non-reduced data,
+This scheme results in derived variables being computed from non-averaged values,
 then averaged after the derivation: i.e. lazy, at the last minute, averaging.
-For example, this dat function does the default in deriving a \code{dat("X")}
-from \code{dat("Y")}^2:\cr
+For example, this dat function derives a value for \code{dat("X")} from
+\code{dat("Y")^2}:\cr
 
 \code{dat.X <- function(what,...) \{ dat("Y") ^ 2 \}}\cr
 
-and results in \code{average(Y^2)}, if \code{dpar(avg=nonzero)}, where Y is the value
-returned by \code{dat("Y"}.
+and if the user has requested averaging, with \code{dpar(avg=non_zero)},
+this will result in \code{average(Y^2)}, where Y is the value returned by \code{dat("Y")}.
 
-To override this behavior within a dat function, specify \code{avg=TRUE}
-in the dat calls for the input variables.
-
+To average values before the derivation, specify \code{avg=TRUE}
+in the dat calls for the input variables within the derivation function.
 This function:\cr
 
 \code{dat.X <- function(what,...) \{ dat("Y",avg=TRUE,smooth=TRUE) ^ 2 \}}\cr
@@ -88,6 +88,12 @@ would result in \code{average(Y)^2}.
 
 Therefore each dat function must consider if it wants to work with averaged
 inputs or average the result.
+
+\emph{Averaging Higher Moments}
+
+See \code{\link{dpar_isfs}} for details about averaging and higher moments.
+
+\strong{Smoothing}
 
 The same treatment applies to the smooth argument to dat except that
 it always defaults to FALSE, even in the top frame, i.e. the user must
@@ -99,12 +105,6 @@ Like averaging, smoothing is accomplished by computing means.  However
 specifying smooth=TRUE, and a smooth time period in dpar results in
 simple running averages of the selected data variables, with an output
 interval equal to the current deltaT of the data.
-
-Specifying avg=TRUE and the avg time periods in dpar results in more
-complicated processing, where for example, averages of
-second moments will include the deviation of the means.
-
-Data is cached before smoothing or averaging.
 
 }
 \value{

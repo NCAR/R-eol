@@ -118,7 +118,7 @@ Gordon Maclean
 \code{class? nts} \tab \code{\linkS4class{nts}}\cr
 \code{? nts} \tab \code{\link{nts}}\cr
 \code{? dpar} \tab \code{\link{dpar}}\cr
-\code{package? eolts} \tab \code{\link[eolts:eolts-package]{eolts}}\cr
+\code{? eolts} \tab \code{\link[eolts:eolts-package]{eolts}}\cr
 }
 }
 \examples{

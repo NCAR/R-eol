@@ -37,6 +37,6 @@
 
     assign(".dparParams",.dparParams,envir=.eoltsEnv)
 
-    packageStartupMessage("For help on the eolts package, do: \"package? eolts\"")
+    packageStartupMessage("For help on the eolts package, do: \"? eolts\"")
 
 }

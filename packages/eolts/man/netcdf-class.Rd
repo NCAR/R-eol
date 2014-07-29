@@ -78,7 +78,6 @@ Gordon Maclean
 \code{class? utime} \tab \code{\linkS4class{utime}}\cr
 \code{? utime} \tab \code{\link{utime}}\cr
 \code{? dpar} \tab \code{\link{dpar}}\cr
-\code{package? isfs} \tab \code{\link[isfs:isfs-package]{isfs}}\cr
 }
 }
 \examples{

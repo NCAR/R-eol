@@ -77,7 +77,7 @@ ts
 \code{class? netcdf} \tab \code{\linkS4class{netcdf}}\cr
 \code{? netcdf} \tab \code{\link{netcdf}}\cr
 \code{? dpar} \tab \code{\link{dpar}}\cr
-\code{package? isfs} \tab \code{\link[isfs:isfs-package]{isfs}}\cr
+\code{? isfs} \tab \code{\link[isfs:isfs-package]{isfs}}\cr
 }
 }
 \examples{

@@ -7,7 +7,7 @@ Use the \code{\link{dpar}} function to set or get global parameters for accessin
 }
 \section{Data Parameters}{
     \describe{
-        \item{\code{avg}}{Numeric value, the time series averaging period in seconds.}
+        \item{\code{avg}}{Either NULL, or a numeric vector of length 1 or 2, indicating the time series averaging periods in seconds. See below in the Note section for more details.}
         \item{\code{accelgrav}}{Acceleration of gravity, in m/s^2 (in case you analyze data from the moon).}
         \item{\code{co2_flux_corrected}}{Logical value indicating whether the covariances of co2 with the 3D wind coordinates in the current NetCDF dataset have been corrected for WPL80 and spatial decorrelation}
         \item{\code{coords}}{Character value, either "geo" or "instrument" indicating what 3D wind coordinates the user wants. If \code{coords} is not equal to \code{datacoords}, then the \code{dat.u} and \code{dat.v} functions will apply rotations to u and v, using the current value of \code{Vazimuth}. "geo" indicates geographic coordinates, where a  +U is wind to the east, +V is wind to the north.}
@@ -33,6 +33,12 @@ Use the \code{\link{dpar}} function to set or get global parameters for accessin
 \code{co2_flux_correction}, \code{h2o_flux_correction} and \code{gsoil_philip_correction} are read from global attributes in NetCDF files, when a dataset is selected.
 
 \code{datacoords} is determined by checking the value of the dataset name. If it contains the string "geo" it will be set to "geo", otherwise "instrument". This needs further thought.
+
+If \code{dpar("avg")} is a single, numeric value, then simple time averaging is done on each time series variable, if the value of avg, in units of seconds, is greater than the time-spacing of the time series that was derived or read from NetCDF.
+
+If \code{dpar("avg")} is a numeric vector of length 2, then the first value is the number of seconds for non-simple time averaging.  For first moments, all averaging is simple. For higher moments, non-simple averaging also includes the variance of the first moments, so that for example a non-simple average of a variable called \code{w'h2o'} would include the addition of the covariance of \code{w} and \code{h2o}.  If the second element of avg is greater than the first, then simple time averaging at \code{dpar("avg")[2]} seconds is done on the results of the first average.
+
+For non-simple averaging of higher moments to be successful, then the first moments must be available to be read. All the variables which are combined into an average should also have the same weight for each observation. The observation weights are typically read from the corresponding "counts" variable in the NetCDF dataset for each time-series.
 }
 \references{
 }
@@ -47,7 +53,7 @@ Gordon Maclean
 ?command \tab link\cr
 \code{? dat} \tab \code{\link{dat}}\cr
 \code{? dpar_eolts} \tab \code{\link{dpar_eolts}}\cr
-\code{package? eolts} \tab \code{\link[eolts:eolts-package]{eolts}}\cr
+\code{? eolts} \tab \code{\link[eolts:eolts-package]{eolts}}\cr
 }
 }
 \examples{
