@@ -8,7 +8,7 @@ Use the \code{\link{dpar}} function to set or get global parameters for accessin
 \section{Data Parameters}{
     \describe{
         \item{\code{avg}}{Either NULL, or a numeric vector of length 1 or 2, indicating the time series averaging periods in seconds. See below in the Note section for more details.}
-        \item{\code{accelgrav}}{Acceleration of gravity, in m/s^2 (in case you analyze data from the moon).}
+        \item{\code{accelgrav}}{Acceleration of gravity, in m/s^2 (in case you analyze data from the moon). Default: 9.81}
         \item{\code{co2_flux_corrected}}{Logical value indicating whether the covariances of co2 with the 3D wind coordinates in the current NetCDF dataset have been corrected for WPL80 and spatial decorrelation}
         \item{\code{coords}}{Character value, either "geo" or "instrument" indicating what 3D wind coordinates the user wants. If \code{coords} is not equal to \code{datacoords}, then the \code{dat.u} and \code{dat.v} functions will apply rotations to u and v, using the current value of \code{Vazimuth}. "geo" indicates geographic coordinates, where a  +U is wind to the east, +V is wind to the north.}
         \item{\code{datacoords}}{Character value, either "geo" or "instrument" indicating the coordinates of the 3D wind vectors in the current NetCDF dataset.}
@@ -18,7 +18,7 @@ Use the \code{\link{dpar}} function to set or get global parameters for accessin
         \item{\code{lat}}{Latitude in degrees north. Use negative values for southern latitudes. This value is used by \code{dat("az.sun")} and \code{dat("el.sun")}}
         \item{\code{lon}}{Longitude in degrees east of Greenwich. Use negative values for west longitudes. This value is used by \code{dat("az.sun")} and \code{dat("el.sun")}}
         \item{\code{platform}}{Character value for the observing platform, used to annotate plots.}
-        \item{\code{pyrgeometer.B}}{Numeric value used for the B coefficient in correcting longwave radiation (Rlw) for the pyrgeometer dome temperature (Tdome)}.
+        \item{\code{pyrgeometer.B}}{Numeric value used for the B coefficient in correcting longwave radiation (Rlw) for the pyrgeometer dome temperature, (Tdome).}
         \item{\code{pyrgeometer.swcor}}{Numeric factor used to correct longwave radiation for short wave contamination.}
         \item{\code{RH.ice}}{Logical value. Should the saturation vapor pressure (dat.satvp) be calculated wrt to ice or liquid water?}
         \item{\code{robust}}{Logical value used by ISFS data processing. When robust=TRUE, simple algorithms are used in derivations by the various \code{\link{dat}} functions. When robust=FALSE, more complicated algorithms, which may be less robust in terms of run-time errors, are used.}
@@ -26,7 +26,7 @@ Use the \code{\link{dpar}} function to set or get global parameters for accessin
         \item{\code{sfxs}}{Character vector of variable name suffixes, the last field in the name, separated by dots, which is used to screen data read by \code{\link{dat}}. This parameter should be avoided, use "sites" instead.}
         \item{\code{sites}}{Character vector of containing ISFS site names, which is used to screen data read by \code{\link{dat}}. The site name is the field in the variable name which follows the height, or if no height, as the last field in the variable name, where the fields are separated by dots.  E.g.  "far" in  "u.3m.far", or "Rpile.in.far".}
         \item{\code{stns}}{Integer vector of ISFS station numbers, which is used to screen data read by \code{\link{dat}}. 0 (zero) is the non-station index, for those variables which are not sampled at multiple stations.}
-        \item{\code{vonKarman}}{Numeric value of the vonKarman coefficient, used in calculation of the Monin-Obukhov length (\code{dat.L}), displacement height (\code{dat.D}) and roughness (\code{dat.z0}).}
+        \item{\code{vonKarman}}{Numeric value of the dimensionless vonKarman constant, used in calculation of the Monin-Obukhov length (\code{dat.L}), roughness (\code{dat.z0}), and neutral displacement height (\code{dat.Draw}). Default: 0.4}
     }
 }
 \note{
