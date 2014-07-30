@@ -94,9 +94,9 @@ plot_sunangle <- function(browse=F,year=2006,lat=40,lon=-105,
     # adding labels as we go
     #----------------------------------------
     if (lat > 0)
-        tlist <- list(year=year,mon=6,day=21,hour=0,min=0,sec=0)
+        tlist <- list(year=year,mon=6,day=21,hour=0,min=0,sec=0,TZ=timezone)
     else
-        tlist <- list(year=year,mon=12,day=21,hour=0,min=0,sec=0)
+        tlist <- list(year=year,mon=12,day=21,hour=0,min=0,sec=0,TZ=timezone)
     dpar(start=utime(tlist),lenday=1)
     sun <- dat("azel.sun")
 
@@ -166,7 +166,7 @@ plot_sunangle <- function(browse=F,year=2006,lat=40,lon=-105,
     #----------------------------------------
     # Plot Hour Iso-Lines
     #----------------------------------------
-    message("PLEASE WAIT: Getting Hour Iso-Line Data..." )
+    # message("PLEASE WAIT: Getting Hour Iso-Line Data..." )
 
     # Establish hourly data 
     # Using weeks instead of months to provide a more resolution
@@ -335,7 +335,7 @@ plot_sunshadow <- function(year=2006,browse=F,lat=40,lon=-105,
     # 5-min Data for the months, centered on the 21st
     #
     for(i in c(1:6,12)) {
-        tlist <- list(year=year,mon=i,day=21,hour=0,min=0,sec=0)
+        tlist <- list(year=year,mon=i,day=21,hour=0,min=0,sec=0,TZ=timezone)
         dpar(start=utime(tlist))
         sun <- dat("azel.sun")
 
@@ -434,7 +434,7 @@ plot_sunshadow <- function(year=2006,browse=F,lat=40,lon=-105,
     # Plot Hour Iso-Lines
     # If So Desired
     #----------------------------------------
-    message("PLEASE WAIT: Getting Hour Iso-Line Data..." )
+    # message("PLEASE WAIT: Getting Hour Iso-Line Data..." )
 
     nweeks <- 52
     midweek <- nweeks/2
