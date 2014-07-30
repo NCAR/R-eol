@@ -198,7 +198,7 @@ setAs("list","utime",
     {
         time.zone <- as.character(from$TZ)
         if (is.null(time.zone)) time.zone <- getOption("time.zone")
-        if (is.null(time.zone)) time.zone <- "UTC"
+        if (length(time.zone) == 0) time.zone <- "UTC"
 
         if (!is.null(from$yday) && is.null(from$mon) && is.null(from$day)) {
             utime(paste(from$year,from$yday-1,from$hour,from$min,from$sec),
