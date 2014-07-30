@@ -70,31 +70,31 @@ Class \code{"\linkS4class{positions}"}, by class "numeric", distance 3.
     \item{all}{\code{signature(x = "utime")}: implementation of all() function for utime }
     \item{any}{\code{signature(x = "utime")}: implementation of any() function for utime }
     \item{c}{\code{signature(x = "utime")}: combine utimes }
-    \item{coerce}{\code{signature(from = "character", to = "utime")}: convert from character to POSIXct to utime, using options("time.zone") }
-    \item{coerce}{\code{signature(from = "list", to = "utime")}: convert from a list to utime, using options("time.zone") }
-    \item{coerce}{\code{signature(from = "numeric", to = "utime")}: ... }
+    \item{coerce}{\code{signature(from = "character", to = "utime")}: Use \code{as(x,"utime")} to create a utime from a character string, using \code{getOption("time.in.format")} and \code{getOption("time.zone")}.}
+    \item{coerce}{\code{signature(from = "list", to = "utime")}: Use \code{as(x,"utime")} to create a utime from a list.}
+    \item{coerce}{\code{signature(from = "numeric", to = "utime")}: Use \code{as(x,"utime")} to create a utime from a numeric number of seconds since 1970 Jan 1 00:00 UTC.}
     \item{coerce}{\code{signature(from = "POSIXct", to = "utime")}: ... }
     \item{coerce}{\code{signature(from = "timeDate", to = "utime")}: ... }
-    \item{coerce}{\code{signature(from = "utime", to = "character")}: ... }
-    \item{coerce}{\code{signature(from = "utime", to = "list")}: ... }
+    \item{coerce}{\code{signature(from = "utime", to = "character")}: \code{as(x,"character")} gives the same result as \code{format(x,format=getOption("time.out.format"),time.zone=getOption("time.zone")}.}
+    \item{coerce}{\code{signature(from = "utime", to = "list")}: Use \code{as(x,"list")} to create a list from a utime.}
     \item{coerce}{\code{signature(from = "utime", to = "POSIXct")}: ... }
     \item{coerce}{\code{signature(from = "utime", to = "timeDate")}: ... }
-    \item{deltat}{\code{signature(x = "utime")}: ... }
-    \item{end<-}{\code{signature(x = "nts", value = "utime")}: ... }
-    \item{end<-}{\code{signature(x = "spectra", value = "utime")}: ... }
-    \item{format}{\code{signature(x = "utime")}: ... }
-    \item{Math}{\code{signature(x = "utime")}: ... }
+    \item{deltat}{\code{signature(x = "utime")}: Create a summary of the time differences of successive values in x, as a named vector, containing the elements: median, min, max, mean and trimmed.mean.}
+    \item{end<-}{\code{signature(x = "nts", value = "utime")}: Assign an end time to a time series.}
+    \item{end<-}{\code{signature(x = "spectra", value = "utime")}: Assign an end time to a spectra.}
+    \item{format}{\code{signature(x = "utime",format="character",time.zone="character")}: Convert a utime to a string, using an optional format supported by \code{\link{strftime}} and an optional time.zone. If format is missing, it defaults to \code{getOption("time.out.format")}. If time.zone is missing, it defaults to \code{getOption("time.zone")}.}
+    \item{Math}{\code{signature(x = "utime")}: Support some one-argument mathematical functions with a utime, typically functions such as \code{\link{ceiling}} or \code{\link{floor}}. }
     \item{monthly}{\code{signature(from = "utime", to = "utime")}: ... }
-    \item{Ops}{\code{signature(e1 = "numeric", e2 = "utime")}: ... }
-    \item{Ops}{\code{signature(e1 = "utime", e2 = "numeric")}: ... }
-    \item{Ops}{\code{signature(e1 = "utime", e2 = "utime")}: ... }
+    \item{Ops}{\code{signature(e1 = "numeric", e2 = "utime")}: Support for arithmetic operations with a utime, such as plus and minus. \code{x+y} of a utime and numeric results in a utime. Other operations result in a numeric. }
+    \item{Ops}{\code{signature(e1 = "utime", e2 = "numeric")}: Support for arithmetic operations with a utime. }
+    \item{Ops}{\code{signature(e1 = "utime", e2 = "utime")}: Support for arithmetic operations with two utimes. Results in a numeric, not a utime. }
     \item{positions<-}{\code{signature(object = "nts", value = "utime")}: ... }
     \item{prod}{\code{signature(x = "utime")}: ... }
     \item{readts}{\code{signature(con = "netcdf", variables = "character", start = "utime", end = "utime")}: ... }
     \item{readts}{\code{signature(con = "netcdf", variables = "list", start = "utime", end = "utime")}: ... }
     \item{show}{\code{signature(object = "utime")}: ... }
-    \item{start<-}{\code{signature(x = "nts", value = "utime")}: ... }
-    \item{start<-}{\code{signature(x = "spectra", value = "utime")}: ... }
+    \item{start<-}{\code{signature(x = "nts", value = "utime")}: Assign a start time to a time series. }
+    \item{start<-}{\code{signature(x = "spectra", value = "utime")}: Assign a start time to a spectra. }
     \item{sum}{\code{signature(x = "utime")}: ... }
     \item{summary}{\code{signature(object = "utime")}: ... }
     \item{Summary}{\code{signature(x = "utime")}: ... }
@@ -102,6 +102,8 @@ Class \code{"\linkS4class{positions}"}, by class "numeric", distance 3.
 }
 \references{
 \url{http://en.wikipedia.org/wiki/Unix_time}.
+
+
 }
 \author{
 Gordon Maclean
@@ -115,11 +117,16 @@ Gordon Maclean
 \tabular{ll}{
 ?command \tab link\cr
 \code{? utime} \tab \code{\link{utime}}\cr
+\code{? strftime} \tab \code{\link{strftime}}\cr
+\code{? timezones} \tab \code{\link{timezones}}\cr
 \code{class? nts} \tab \code{\linkS4class{nts}}\cr
 \code{? nts} \tab \code{\link{nts}}\cr
 \code{? dpar} \tab \code{\link{dpar}}\cr
 \code{? eolts} \tab \code{\link[eolts:eolts-package]{eolts}}\cr
 }
+For valid US time zones on GNU/Linux or MacOSX, see the names of files in \file{/usr/share/zoneinfo/US}. For example "US/Central" is a valid time zone name.
+
+See \file{/usr/share/zoneinfo} for other time zones.
 }
 \examples{
 options(time.zone="US/Central")
@@ -137,7 +144,7 @@ t1 = t1 + 0.2584      # fractional seconds
 
 # Use \%OSn to print n digits of fractional seconds
 # If n is not specified, it defaults to getOption("digits.secs")
-format(t1,format="\%F \%H:\%M\%OS4",time.zone="US/Pacific")
+format(t1,format="\%F \%H:\%M:\%OS4",time.zone="US/Pacific")
 
 options(digits.secs=6)
 format(t1,format="\%F \%H:\%M\%OS",time.zone="UTC")
@@ -147,6 +154,9 @@ t1 = utime("2014 87 20:43:19.993",in.format="\%Y \%j \%H:\%M:\%OS",time.zone="UT
 
 # display fractional amount using modulus operator
 t1 \%\% 1
+
+# Convert to a list, using getOption("time.zone")
+t1l = as(t1,"list")
 
 # class details
 showClass("utime")
