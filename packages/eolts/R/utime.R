@@ -134,11 +134,13 @@ setAs("utime","timeDate",
 setAs("utime","character",
     function(from) 
     {
+        format <- getOption("time.out.format")
         time.zone <- getOption("time.zone")
         if (is.null(time.zone)) time.zone <- "UTC"
+
         from <- as(from,"POSIXct")
         attr(from,"tzone") <- time.zone
-        as(from,"character")
+        format(from,format=format,tz=time.zone)
     }
 )
 
@@ -194,20 +196,18 @@ setAs("utime","list",
 setAs("list","utime",
     function(from)
     {
-        time.zone <- getOption("time.zone")
+        time.zone <- as.character(from$TZ)
+        if (is.null(time.zone)) time.zone <- getOption("time.zone")
         if (is.null(time.zone)) time.zone <- "UTC"
 
         if (!is.null(from$yday) && is.null(from$mon) && is.null(from$day)) {
             utime(paste(from$year,from$yday-1,from$hour,from$min,from$sec),
-                in.format="%Y%j%H%M%OS",
-                time.zone =
-                if (is.null(from$TZ)) time.zone else time.zone=as.character(from$TZ))
+                in.format="%Y%j%H%M%OS",time.zone = time.zone)
         }
         else {
             utime(paste(from$year,from$mon,from$day,
                 from$hour,from$min,from$sec),
-                in.format="%Y%m%d%H%M%OS",
-                if (is.null(from$TZ)) time.zone else time.zone=as.character(from$TZ))
+                in.format="%Y%m%d%H%M%OS", time.zone=time.zone)
         }
     }
 )
@@ -222,18 +222,9 @@ setMethod("format","utime",
         else time.zone <- getOption("time.zone")
         if (is.null(time.zone)) time.zone <- "UTC"
 
-        if (FALSE) {
-            x <- as(x,"timeDate")
-
-            x@format <- format
-            x@time.zone <- time.zone
-            format(x)
-        }
-        else {
-            x <- as(x,"POSIXct")
-            attr(x,"tzone") <- time.zone
-            format(x,format=format,tz=time.zone)
-        }
+        x <- as(x,"POSIXct")
+        attr(x,"tzone") <- time.zone
+        format(x,format=format,tz=time.zone)
     }
 )
 
