@@ -32,7 +32,7 @@ Use the \code{\link{dpar}} function to set or get global parameters for accessin
 \note{
 \code{co2_flux_correction}, \code{h2o_flux_correction} and \code{gsoil_philip_correction} are read from global attributes in NetCDF files, when a dataset is selected.
 
-\code{datacoords} is determined by checking the value of the dataset name. If it contains the string "geo" it will be set to "geo", otherwise "instrument". This needs further thought.
+To determine the \code{datacoords} of the 3D winds, the \code{find_datasets} function looks for a global NetCDF attribute called "wind3d_horiz_coordinates" in the any of the files in the dataset. If the attribute exists, then datacoords is set to its value (shortening "geographic" to "geo"). Otherwise if the dataset name contains the string "geo", datacoords is set to "geo", and to "instrument" otherwise.
 
 If \code{dpar("avg")} is a single, numeric value, then simple time averaging is done on each time series variable, if the value of avg, in units of seconds, is greater than the time-spacing of the time series that was derived or read from NetCDF.
 

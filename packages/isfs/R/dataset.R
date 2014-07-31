@@ -78,19 +78,13 @@ find_datasets <- function(
                 calpaths <- gsub(",version=[^:]+","",attrs$calibration_file_path)
 
             datacoords <- "instrument"
-            if (grepl("geo",dname,ignore.case=TRUE)) datacoords <- "geo"
 
-            # check if datacoords is consistent with wind3d_horiz_rotation
-            if ("wind3d_horiz_rotation" %in% names(attrs)) {
-                hrot <- as.logical(attrs$wind3d_horiz_rotation)
-                if (!is.na(hrot)) {
-                    # If no horizontal rotation, coords should be instrument
-                    if (!hrot != (datacoords == "instrument"))
-                        warning(paste0(
-                            "apparent coordinate conflict between wind3d_horiz_rotation=",
-                            hrot," and dataset=",dname,". datacoords=\"",datacoords,"\""))
-                }
-            }
+            # check wind3d_horiz_coordinates to see if it contains "geo"
+            if ("wind3d_horiz_coordinates" %in% names(attrs))
+                datacoords <- attrs$wind3d_horiz_coordinates
+            else if (grepl("geo",dname,ignore.case=TRUE)) datacoords <- "geo"
+
+            if (datacoords == "geographic") datacoords <- "geo"
 
             # if ("calfile_version" %in% names(attrs))
             # browser()
