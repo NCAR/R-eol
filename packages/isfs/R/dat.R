@@ -737,7 +737,8 @@ setMethod("heights","ANY",
                 if (length(m) < 3 || m[1] == -1) return(NA_real_)
                 ht <- as.numeric(substr(x,m[2],m[2]+attr(m,"match.length")[2]-1))
                 mc <- substr(x,m[3],m[3]+attr(m,"match.length")[3]-1)
-                if (mc == "cm") ht <- ht / 100.
+                # if height is in cm, treat it as a depth: convert to meters, flip sign
+                if (mc == "cm") ht <- -ht / 100.
                 ht
             }
             )
