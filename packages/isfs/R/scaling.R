@@ -126,8 +126,8 @@ dat.Draw <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),...)
 
     ustar <- dat(expand("u*",what))
     #  x <- z1 - (z2-z1)/(exp(k*(U2-U1)/ustar) - 1)
-    x <- (z1*exp(-k*U1/ustar) - z2*exp(-k*U2/ustar))/
-    (exp(-k*U1/ustar) - exp(-k*U2/ustar))
+    x <- (z1*exp(-k*U1/ustar) - z2*exp(-k*U2/ustar)) /
+        (exp(-k*U1/ustar) - exp(-k*U2/ustar))
 
     check <- (U2 - U1) / (z2 - z1) > 0
     x@data[!check@data] <- NA_real_

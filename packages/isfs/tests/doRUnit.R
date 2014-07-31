@@ -1,5 +1,6 @@
 # -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
 # vim: set shiftwidth=4 softtabstop=4 expandtab:
+
 #### doRUnit.R --- Run RUnit tests
 ####------------------------------------------------------------------------
 
@@ -20,7 +21,6 @@ if(require("RUnit", quietly = TRUE)) {
 
   source(file.path(path, "runTests.R"), echo = TRUE)
 }
-
 
 ################################################################################
 

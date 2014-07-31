@@ -18,7 +18,7 @@ Often a character string, which is converted to a \code{"\linkS4class{utime}"}, 
 Vector of one or more character strings describing the input time format, see \code{\link{strptime}}.  If \code{val} is character, the \code{strptime} function is used to parse it, using each element of \code{in.format} until success.
 }
   \item{time.zone}{
-Character string describing the time zone. See \code{\link{timezones}}.
+Character string name of a time zone. See \code{\link{timezones}}.
 }
 }
 \details{

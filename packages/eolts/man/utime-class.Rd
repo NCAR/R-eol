@@ -147,7 +147,7 @@ t1 = t1 + 0.2584      # fractional seconds
 format(t1,format="\%F \%H:\%M:\%OS4",time.zone="US/Pacific")
 
 options(digits.secs=6)
-format(t1,format="\%F \%H:\%M\%OS",time.zone="UTC")
+format(t1,format="\%F \%H:\%M:\%OS",time.zone="UTC")
 
 # Example using \%OS to read fractional seconds, \%j to read day of year, 1-366:
 t1 = utime("2014 87 20:43:19.993",in.format="\%Y \%j \%H:\%M:\%OS",time.zone="UTC")
