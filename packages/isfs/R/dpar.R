@@ -29,6 +29,7 @@ setDpar <- function(parm,vals)
     co2_flux_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=FALSE),
     coords=list(type="character",setf=setDpar,default=NA,flushCache=FALSE),
     datacoords=list(type="character",setf=setDpar,default=NA,flushCache=FALSE),
+    emissivity.sfc=list(type="numeric",setf=setDpar,default=0.98,flushCache=FALSE),
     gsoil_philip_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=FALSE),
     h2o_flux_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=FALSE),
     hts=list(type="numeric",setf=setDpar,default=NULL,flushCache=TRUE),

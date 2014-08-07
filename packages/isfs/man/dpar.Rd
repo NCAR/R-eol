@@ -12,6 +12,7 @@ Use the \code{\link{dpar}} function to set or get global parameters for accessin
         \item{\code{co2_flux_corrected}}{Logical value indicating whether the covariances of co2 with the 3D wind coordinates in the current NetCDF dataset have been corrected for WPL80 and spatial decorrelation}
         \item{\code{coords}}{Character value, either "geo" or "instrument" indicating what 3D wind coordinates the user wants. If \code{coords} is not equal to \code{datacoords}, then the \code{dat.u} and \code{dat.v} functions will apply rotations to u and v, using the current value of \code{Vazimuth}. "geo" indicates geographic coordinates, where a  +U is wind to the east, +V is wind to the north.}
         \item{\code{datacoords}}{Character value, either "geo" or "instrument" indicating the coordinates of the 3D wind vectors in the current NetCDF dataset.}
+        \item{\code{emissivity.sfc}}{Numeric value, for the surface emissivity, used by \code{dat.Tsfc} to calculate the surface temperature from \code{Rlw.out} and \code{Rlw.in}. Default: 0.98}
         \item{\code{gsoil_philip_corrected}}{Logical value indicating whether the "Gsoil" variables from heat flux plate in the current NetCDF dataset have been corrected for the heat conductivity of the soil, per Philip, 1961.}
         \item{\code{h2o_flux_corrected}}{Logical value indicating whether the covariances of water vapor density (variable name "h2o") with the 3D wind coordinates in the current NetCDF dataset have been corrected for WPL80 and spatial decorrelation}
         \item{\code{hts}}{Numeric vector of measurement heights in meters, which is used to screen data read by \code{\link{dat}}. The height field is parsed from the variable name as a numeric field followed by "m" or "cm", where the fields in the name are separated by dots.  For example, "u.2.5m.far" has a height of 2.5 meters. A height field with a "cm" suffix is interpreted as a depth, and will be negative. "Tsoil.3.2cm.grass" has a "height" of -.032 meters.}
@@ -34,7 +35,7 @@ Use the \code{\link{dpar}} function to set or get global parameters for accessin
 
 To determine the \code{datacoords} of the 3D winds, the \code{find_datasets} function looks for a global NetCDF attribute called "wind3d_horiz_coordinates" in the any of the files in the dataset. If the attribute exists, then datacoords is set to its value (shortening "geographic" to "geo"). Otherwise if the dataset name contains the string "geo", datacoords is set to "geo", and to "instrument" otherwise.
 
-If \code{dpar("avg")} is a single, numeric value, then simple time averaging is done on each time series variable, if the value of avg, in units of seconds, is greater than the time-spacing of the time series that was derived or read from NetCDF.
+If \code{dpar("avg")} is a numeric vector of length 1 and its value, in seconds, is greater than the time-spacing of the time series that was derived or read from NetCDF, then simple time averaging is done by \code{dat}.
 
 If \code{dpar("avg")} is a numeric vector of length 2, then the first value is the number of seconds for non-simple time averaging.  For first moments, all averaging is simple. For higher moments, non-simple averaging also includes the variance of the first moments, so that for example a non-simple average of a variable called \code{w'h2o'} would include the addition of the covariance of \code{w} and \code{h2o}.  If the second element of avg is greater than the first, then simple time averaging at \code{dpar("avg")[2]} seconds is done on the results of the first average.
 
@@ -45,9 +46,6 @@ For non-simple averaging of higher moments to be successful, then the first mome
 \author{
 Gordon Maclean
 }
-\note{
-}
-
 \seealso{
 \tabular{ll}{
 ?command \tab link\cr
