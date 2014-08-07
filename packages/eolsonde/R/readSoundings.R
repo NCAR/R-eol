@@ -79,7 +79,8 @@ readSoundings <- function(
                     " but none are within times: ",
                     eolts::format(start,"%Y %m %d %H:%M:%S"),"-",
                     eolts::format(end,"%Y %m %d %H:%M:%S"),". For example=",timeMisMatch[1]))
-        else warning(paste("no files matching",paste(file,collapse=",")))
+        else warning(paste("no files matching",paste(file,collapse=", "),"in directories",
+                paste(dir,collapse=", ")))
         return(NULL)
     }
 
