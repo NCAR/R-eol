@@ -65,7 +65,7 @@ Class \code{"\linkS4class{seriesVirtual}"}, by class "nts", distance 3.
     \item{heights}{\code{signature(x = "dat")}: ... }
     \item{match.columns}{\code{signature(y = "dat", x = "dat")}: ... }
     \item{plot}{\code{signature(x = "dat", y = "missing")}: ... }
-    \item{select}{\code{signature(x = "dat")}: ... }
+    \item{select}{\code{signature(x = "dat", stns = "numeric", hts = "numeric", sites = "character", sfxs = "character")}: Select columns of a \code{\linkS4class{dat}} time series by stations, sampling heights, site names or suffixes. See \code{\link{select-methods}} for details. }
     \item{seriesConcat}{\code{signature(x1 = "dat", x2 = "dat")}: ... }
     \item{sites}{\code{signature(x = "dat")}: ... }
     \item{suffixes}{\code{signature(x = "dat")}: ... }
@@ -83,7 +83,7 @@ Gordon Maclean
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{dat}}
+\code{\link{dat}}, \code{\link{select-methods}} 
 }
 \examples{
 }
