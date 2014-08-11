@@ -10,7 +10,7 @@
 #
 check.windcoords = function()
 {
-    # dpar("datacoords") is coordinates of dat("u",derived=F)
+    # dpar("datacoords") is coordinates of dat("u",derived=FALSE)
     dcoords = dpar("datacoords")
     if (is.null(dcoords)) {
         warning("dpar(\"datacoords\") not set, assuming dpar(datacoords=\"instrument\")")
@@ -38,21 +38,21 @@ check.windcoords = function()
 }
 # Winds
 # -----
-dat.u <- function(what,derived=TRUE,cache=F,...)
+dat.u <- function(what,derived=TRUE,cache=FALSE,...)
 {
-    # dat("u",derived=F) forces reading "u" from NetCDF
+    # dat("u",derived=FALSE) forces reading "u" from NetCDF
     # otherwise calling dat("u") here would be an infinite loop
-    u <- dat(what,derived=F)
+    u <- dat(what,derived=FALSE)
 
     check.windcoords();
-    # dcoords is coordinates of dat("u",derived=F)
+    # dcoords is coordinates of dat("u",derived=FALSE)
     dcoords = dpar("datacoords")
     # requested coordinate system
     rcoords = dpar("coords")
 
     # Rotate from instrument to geographic coordinates (or back)
     if (rcoords != dcoords) {
-        v <- dat(expand("v",what),derived=F)
+        v <- dat(expand("v",what),derived=FALSE)
         if (is.null(u) || is.null(v)) return(NULL)
 
         # vazm is the geographic compass angle of the sonic +V axis
@@ -88,7 +88,7 @@ dat.u <- function(what,derived=TRUE,cache=F,...)
             vazm = vazm[,order(asfx)]
         }
 
-        if (any(is.na(vazm))) vazm <- replace.nas(vazm,warn=F)
+        if (any(is.na(vazm))) vazm <- replace.nas(vazm,warn=FALSE)
 
         # count number of non-NAs in each column
         vazm.ok <- as.vector(t(!is.na(vazm@data)) %*% rep(1,nrow(vazm))) > 0
@@ -118,14 +118,14 @@ dat.u <- function(what,derived=TRUE,cache=F,...)
     }
     u
 }
-dat.v <- function(what,derived=TRUE,cache=F,...)
+dat.v <- function(what,derived=TRUE,cache=FALSE,...)
 {
-    # dat("v",derived=F) forces reading "v" from NetCDF
+    # dat("v",derived=FALSE) forces reading "v" from NetCDF
     # otherwise calling dat("v") here would be an infinite loop
-    v <- dat(what,derived=F)
+    v <- dat(what,derived=FALSE)
 
     check.windcoords();
-    # dcoords is coordinates of dat("u",derived=F)
+    # dcoords is coordinates of dat("u",derived=FALSE)
     dcoords = dpar("datacoords")
     # requested coordinate system
     rcoords = dpar("coords")
@@ -133,7 +133,7 @@ dat.v <- function(what,derived=TRUE,cache=F,...)
     # Rotate from instrument to geographic coordinates (or back)
     if (rcoords != dcoords) {
 
-        u <- dat(expand("u",what),derived=F)
+        u <- dat(expand("u",what),derived=FALSE)
         if (is.null(u) || is.null(v)) return(NULL)
 
         vazm <- dat(expand("Vazimuth",what))
@@ -168,7 +168,7 @@ dat.v <- function(what,derived=TRUE,cache=F,...)
             vazm = vazm[,order(asfx)]
         }
 
-        if (any(is.na(vazm))) vazm <- replace.nas(vazm,warn=F)
+        if (any(is.na(vazm))) vazm <- replace.nas(vazm,warn=FALSE)
 
         # count number of non-NAs in each column
         vazm.ok <- as.vector(t(!is.na(vazm@data)) %*% rep(1,nrow(vazm))) > 0
@@ -198,7 +198,7 @@ dat.v <- function(what,derived=TRUE,cache=F,...)
     }
     v
 }
-dat.spd <- function(what,derived=TRUE,cache=F,...)
+dat.spd <- function(what,derived=TRUE,cache=FALSE,...)
 {
     x <- sqrt(dat(expand("u",what),avg=TRUE,smooth=TRUE)^2 +
         dat(expand("v",what),avg=TRUE,smooth=TRUE)^2)
@@ -208,7 +208,7 @@ dat.spd <- function(what,derived=TRUE,cache=F,...)
     x@units <- rep("m/s",ncol(x))
     x
 }
-dat.spd.uvw <- function(what,derived=TRUE,cache=F,...)
+dat.spd.uvw <- function(what,derived=TRUE,cache=FALSE,...)
 {
     x <- sqrt(dat(expand("u",what),avg=TRUE,smooth=TRUE)^2 +
         dat(expand("v",what),avg=TRUE,smooth=TRUE)^2 +
@@ -219,7 +219,7 @@ dat.spd.uvw <- function(what,derived=TRUE,cache=F,...)
     x@units <- rep("m/s",ncol(x))
     x
 }
-dat.dir <- function(what,derived=TRUE,cache=F,...)
+dat.dir <- function(what,derived=TRUE,cache=FALSE,...)
 {
     x <- dat(expand("u",what),avg=TRUE,smooth=TRUE)
     if (length(x) == 0) return(NULL)
@@ -232,7 +232,7 @@ dat.dir <- function(what,derived=TRUE,cache=F,...)
     x@units <- rep("deg",ncol(x))
     x
 }
-dat.Spd <- function(what,derived=TRUE,cache=F,...)
+dat.Spd <- function(what,derived=TRUE,cache=FALSE,...)
 {
     x <- sqrt(dat(expand("U",what),avg=TRUE,smooth=TRUE)^2 +
         dat(expand("V",what),avg=TRUE,smooth=TRUE)^2)
@@ -243,7 +243,7 @@ dat.Spd <- function(what,derived=TRUE,cache=F,...)
     x@units <- rep("m/s",ncol(x))
     x
 }
-dat.Dir <- function(what,derived=TRUE,cache=F,...)
+dat.Dir <- function(what,derived=TRUE,cache=FALSE,...)
 {
     x <- dat("U",avg=TRUE,smooth=TRUE)
     if (length(x) == 0) return(NULL)
@@ -255,7 +255,7 @@ dat.Dir <- function(what,derived=TRUE,cache=F,...)
     x@units <- rep("deg",ncol(x))
     x
 }
-dat.elev.u <- function(what,derived=TRUE,cache=F,...)
+dat.elev.u <- function(what,derived=TRUE,cache=FALSE,...)
 {
     x <- atan(dat("w")/dat("u"))*180/pi
     if (length(x) == 0) return(NULL)
@@ -264,7 +264,7 @@ dat.elev.u <- function(what,derived=TRUE,cache=F,...)
     x@units <- rep("deg",ncol(x))
     x
 }
-dat.elev.v <- function(what,derived=TRUE,cache=F,...)
+dat.elev.v <- function(what,derived=TRUE,cache=FALSE,...)
 {
     x <- atan(dat("w")/dat("v"))*180/pi
     if (length(x) == 0) return(NULL)
@@ -276,12 +276,12 @@ dat.elev.v <- function(what,derived=TRUE,cache=F,...)
 
 # velocity variances in streamwise coordinates
 
-"dat.us" <- function(what,derived=TRUE,cache=F,...)
+"dat.us" <- function(what,derived=TRUE,cache=FALSE,...)
 {
     # mean streamwise wind required to calculate non-simple average of
     # us'us'
-    u <- dat(expand("u",what), avg=T,smooth=T, derived=F)
-    v <- dat(expand("v",what), avg=T,smooth=T, derived=F)
+    u <- dat(expand("u",what), avg=TRUE,smooth=TRUE, derived=FALSE)
+    v <- dat(expand("v",what), avg=TRUE,smooth=TRUE, derived=FALSE)
     x = sqrt(u^2 + v^2)
 
     dimnames(x) <- list(NULL,paste("us",suffixes(x,2),sep=""))
@@ -289,7 +289,7 @@ dat.elev.v <- function(what,derived=TRUE,cache=F,...)
     x
 }
 
-"dat.vs" <- function(what,derived=TRUE,cache=F,...)
+"dat.vs" <- function(what,derived=TRUE,cache=FALSE,...)
 {
     # mean cross-stream wind required to calculate non-simple average of
     # us'us'
@@ -299,28 +299,28 @@ dat.elev.v <- function(what,derived=TRUE,cache=F,...)
     x
 }
 
-"dat.us'us'" <- function(what,derived=TRUE,cache=F,...)
+"dat.us'us'" <- function(what,derived=TRUE,cache=FALSE,...)
 {
     # calculate streamwise variance
-    u <- dat(expand("u",what), avg=T,smooth=T, derived=F)
-    v <- dat(expand("v",what), avg=T,smooth=T, derived=F)
-    x <- (u^2*dat(expand("u'u'",what), avg=T,smooth=T) +
-        2*u*v*dat(expand("u'v'",what), avg=T,smooth=T) +
-        v^2*dat(expand("v'v'",what), avg=T,smooth=t))/ (u^2 + v^2)
+    u <- dat(expand("u",what), avg=TRUE,smooth=TRUE, derived=FALSE)
+    v <- dat(expand("v",what), avg=TRUE,smooth=TRUE, derived=FALSE)
+    x <- (u^2*dat(expand("u'u'",what), avg=TRUE,smooth=T) +
+        2*u*v*dat(expand("u'v'",what), avg=TRUE,smooth=T) +
+        v^2*dat(expand("v'v'",what), avg=TRUE,smooth=T))/ (u^2 + v^2)
 
     dimnames(x) <- list(NULL,paste("us'us'",suffixes(x,2),sep=""))
     x@units <- rep("(m/s)^2",ncol(x))
     x
 }
 
-"dat.vs'vs'" <- function(what,derived=TRUE,cache=F,...)
+"dat.vs'vs'" <- function(what,derived=TRUE,cache=FALSE,...)
 {
     # calculate cross-stream variance
-    u <- dat(expand("u", what),avg=T,smooth=T, derived=F)
-    v <- dat(expand("v", what),avg=T,smooth=T, derived=F)
-    x <- (v^2*dat(expand("u'u'",what), avg=T,smooth=T) -
-        2*u*v*dat(expand("u'v'",what), avg=T,smooth=T) +
-        u^2*dat(expand("v'v'",what), avg=T,smooth=t))/ (u^2 + v^2)
+    u <- dat(expand("u", what),avg=TRUE,smooth=TRUE, derived=FALSE)
+    v <- dat(expand("v", what),avg=TRUE,smooth=TRUE, derived=FALSE)
+    x <- (v^2*dat(expand("u'u'",what), avg=TRUE,smooth=T) -
+        2*u*v*dat(expand("u'v'",what), avg=TRUE,smooth=T) +
+        u^2*dat(expand("v'v'",what), avg=TRUE,smooth=T))/ (u^2 + v^2)
 
     dimnames(x) <- list(NULL,paste("vs'vs'",suffixes(x,2),sep=""))
     x@units <- rep("(m/s)^2",ncol(x))
