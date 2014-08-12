@@ -165,6 +165,8 @@ dataset <- function(which,verbose=F,datasets=NULL)
     ncf <- Sys.setenv(NETCDF_FILE=dset$ncf)
     ncd <- Sys.setenv(NETCDF_DIR=dset$ncd)
 
+    Sys.setenv(DATASET=which)
+
     anames <- c("h2o_flux_corrected", "co2_flux_corrected", "gsoil_philip_corrected")
     for (a in anames) {
         if (a %in% names(dset)) dpar(dset[a])

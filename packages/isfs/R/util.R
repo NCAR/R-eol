@@ -7,19 +7,18 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-sync <- function(pos)
+sync <- function(pos,root="ISFF")
 {
     # There may be an .projectEnv environment object in the
     # $ISFF/projects/$PROJECT/ISFF/R/.RData. Save it before detaching/re-attaching
     projectEnv <- NULL
     sl <- search()
     if (missing(pos)) {
-        projdata1 <- paste(Sys.getenv("ISFF"),"projects",Sys.getenv("PROJECT"),
-            "ISFF/R",sep=.Platform$file.sep)
+        projdata1 <- file.path(Sys.getenv(root),"projects",Sys.getenv("PROJECT"),
+            "ISFF","R")
         pos <- grepl(projdata1,sl)
         if (!any(pos)) {
-            projdata2 <- paste(Sys.getenv("ISFF"),"projects",Sys.getenv("PROJECT"),
-                "R",sep=.Platform$file.sep)
+            projdata2 <- file.path(Sys.getenv(root),"projects",Sys.getenv("PROJECT"),"R")
             pos <- grepl(projdata2,sl)
         }
         if (!any(pos)) stop(paste("pos is missing and can't find",projdata1,"or",projdata2))
