@@ -17,6 +17,9 @@ set_project <- function(root="ISFF",project=NULL)
     projpath <- file.path(rootpath,"projects")
     projects <- list.dirs(projpath,recursive=FALSE,full.names=FALSE)
 
+    hidden <- grepl("^\\.",projects)
+    if (any(hidden)) projects <- projects[!hidden]
+
     if (is.null(project)) {
 
         if (length(projects) < 1) stop(paste("No directories found in",projpath))
