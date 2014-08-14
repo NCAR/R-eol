@@ -29,7 +29,7 @@ set_sproject <- function(root="SONDE_ROOT",project=NULL,platform=NULL)
                 cat("Choose a project by number (0 to quit):\n")
                 cat(paste0(paste(1:length(projects),projects,sep=": "),"\n",collapse=""))
                 ip <- as.integer(readLines(n=1))
-                if (is.na(ip) || ip == 0) return()
+                if (is.na(ip) || ip == 0) return(invisible(NULL))
                 if (ip > length(projects)) cat("Invalid entry\n")
             }
             project <- projects[ip]
@@ -50,7 +50,7 @@ set_sproject <- function(root="SONDE_ROOT",project=NULL,platform=NULL)
                 cat("Choose a platform by number (0 to quit):\n")
                 cat(paste0(paste(1:length(platforms),platforms,sep=": "),"\n",collapse=""))
                 ip <- as.integer(readLines(n=1))
-                if (is.na(ip) || ip == 0) return()
+                if (is.na(ip) || ip == 0) return(invisible(NULL))
                 if (ip > length(platforms)) cat("Invalid entry\n")
             }
             platform <- platforms[ip]
