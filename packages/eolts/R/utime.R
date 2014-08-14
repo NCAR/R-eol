@@ -52,10 +52,10 @@ utime <- function(val=as.numeric(Sys.time()),
             }
         }
         if (any(is.na(res))) {
-            if (length(val) == 1) warning(paste(val,"not parsable with any in.format=",
-                    paste("\"",unlist(in.format),"\"",sep="",collapse=", ")))
-            else warning(paste("some dates not parsable with any in.format=",
-                    paste("\"",unlist(in.format),"\"",sep="",collapse=", ")))
+            if (length(val) == 1) warning(paste0("\"",val,"\" not parsable with any in.format=c(",
+                    paste("\"",unlist(in.format),"\"",sep="",collapse=", "),")"))
+            else warning(paste("some dates not parsable with any in.format=c(",
+                    paste("\"",unlist(in.format),"\"",sep="",collapse=", "),")"))
         }
         res
     }
@@ -164,10 +164,10 @@ setAs("character","utime",
             }
         }
         if (any(is.na(res))) {
-            if (length(from) == 1) warning(paste(from,"not parsable with any in.format=",
-                    paste("\"",unlist(in.format),"\"",sep="",collapse=", ")))
-            else warning(paste("some dates not parsable with any in.format=",
-                    paste("\"",unlist(in.format),"\"",sep="",collapse=", ")))
+            if (length(from) == 1) warning(paste0("\"",from,"\" not parsable with any in.format=c(",
+                    paste("\"",unlist(in.format),"\"",sep="",collapse=", "),")"))
+            else warning(paste("some dates not parsable with any in.format=c(",
+                    paste("\"",unlist(in.format),"\"",sep="",collapse=", "),")"))
         }
         res
     }

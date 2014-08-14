@@ -44,7 +44,7 @@
 A class for manipulating time, based on POSIX time, see \url{http://en.wikipedia.org/wiki/Unix_time}.
 }
 \section{Objects from the Class}{
-Objects can be created by calls of the form \code{utime(val)}, where \code{val} is numeric, character, utime, POSIXct, splusTimeDate::timeDate or a list.
+Objects can be created by calls of the form \code{\link{utime}(val)}, where \code{val} is numeric, character, utime, POSIXct, splusTimeDate::timeDate or a list.
 
 Since utime is represented by a number of seconds since Jan 1, 1970 00:00 UTC, math operations with utimes, such as adding or subtracting, are performed numerically in terms of seconds, unless indicated otherwise.
 }

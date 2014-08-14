@@ -12,7 +12,7 @@ utime(val = as.numeric(Sys.time()), in.format = getOption("time.in.format"), tim
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{val}{
-Often a character string, which is converted to a \code{"\linkS4class{utime}"}, using \code{\link{strptime}} with \code{in.format} and \code{time.zone}. If \code{val} is numeric, it should represent the number of non-leap seconds since Jan 1, 1970 00:00 UTC and is converted directly to a \code{\linkS4class{utime}} without requiring a format or time zone.  \code{val} can also be a POSIXct, splusTimeDate::timeDate, utime or a list, with a year, mon, day, hour,min and sec member.
+Often a character string, which is converted to a \code{"\linkS4class{utime}"}, using \code{\link{strptime}(val,format=in.format,tz=time.zone)}. If \code{val} is numeric, it should represent the number of non-leap seconds since Jan 1, 1970 00:00 UTC and is converted directly to a \code{\linkS4class{utime}} without requiring a format or time zone.  \code{val} can also be a POSIXct, splusTimeDate::timeDate, utime or a list, with year, mon, day (or yday), hour, min, sec and TZ members.
 }
   \item{in.format}{
 Vector of one or more character strings describing the input time format, see \code{\link{strptime}}.  If \code{val} is character, the \code{strptime} function is used to parse it, using each element of \code{in.format} until success.
@@ -39,7 +39,7 @@ When the \code{eolts} package is attached to an R session, the following values 
 }
 }
 \value{
-An object of type \code{"\linkS4class{utime}"}. If the \code{val} string could not be parsed successfully with any \code{in.format} the result will be NA.
+An object of type \code{"\linkS4class{utime}"}. If the \code{val} string could not be parsed successfully with any \code{in.format}, a warning is issued and the result will be NA.
 }
 \references{
 \url{http://en.wikipedia.org/wiki/Unix_time}
@@ -55,7 +55,7 @@ Gordon Maclean
 \seealso{
 \tabular{ll}{
 ?command \tab link\cr
-\code{class? utime} \tab \code{"\linkS4class{utime}"}\cr
+\code{class? utime} \tab \code{\linkS4class{utime}}\cr
 \code{? strftime} \tab \code{\link{strftime}}\cr                                        
 \code{? timezones} \tab \code{\link{timezones}}\cr                                      
 }                                        
