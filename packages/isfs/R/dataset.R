@@ -52,14 +52,16 @@ find_datasets <- function(
             attrs <- readnc(con)
             close(con)
 
+            dname <- sub(pattern,"",ncd)    # remove netcdf
+            dname <- sub("^_+","",dname)    # remove leading underscores
+            dname <- sub("^\\.+","",dname)  # remove periods (why?)
+            if (nchar(dname) == 0) dname <- "default"
+
             if ("dataset" %in% names(attrs)) {
+                if (attrs$dataset != dname) warning(paste0("files in directory ",
+                        ncd," have global attribute \"dataset\" of \"",attrs$dataset,
+                        "\", which does not match the directory suffix. Setting datasetname to \"",attrs$dataset,"\""))
                 dname <- attrs$dataset
-            }
-            else {
-                dname <- sub(pattern,"",ncd)
-                dname <- sub("^_+","",dname)
-                dname <- sub("^\\.+","",dname)
-                if (nchar(dname) == 0) dname <- "default"
             }
 
             desc <- ""

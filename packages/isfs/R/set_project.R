@@ -7,7 +7,7 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-set_project <- function(root="ISFF",project=NULL)
+set_project <- function(root="ISFF",project=NULL,platform="ISFF")
 {
     curproj <- Sys.getenv("PROJECT",unset=NA)
 
@@ -15,12 +15,14 @@ set_project <- function(root="ISFF",project=NULL)
     if (is.na(rootpath)) stop(paste(root,"environment variable not found"))
 
     projpath <- file.path(rootpath,"projects")
-    projects <- list.dirs(projpath,recursive=FALSE,full.names=FALSE)
-
-    hidden <- grepl("^\\.",projects)
-    if (any(hidden)) projects <- projects[!hidden]
-
+    
     if (is.null(project)) {
+        projects <- list.dirs(projpath,recursive=FALSE,full.names=FALSE)
+
+        hidden <- grepl("^\\.",projects)
+        if (any(hidden)) projects <- projects[!hidden]
+        if ("CVS" %in% projects)
+            projects <- projects[-match("CVS",projects)]
 
         if (length(projects) < 1) stop(paste("No directories found in",projpath))
         if (length(projects) > 1) {
@@ -29,7 +31,7 @@ set_project <- function(root="ISFF",project=NULL)
                 cat("Choose a project by number (0 to quit):\n")
                 cat(paste0(paste(1:length(projects),projects,sep=": "),"\n",collapse=""))
                 ip <- as.integer(readLines(n=1))
-                if (is.na(ip) || ip == 0) return()
+                if (is.na(ip) || ip == 0) return(invisible(NULL))
                 if (ip > length(projects)) cat("Invalid entry\n")
             }
             project <- projects[ip]
@@ -37,7 +39,7 @@ set_project <- function(root="ISFF",project=NULL)
         else project <- projects
     }
     
-    projdata <- file.path(projpath,project,"ISFF","R",".RData")
+    projdata <- file.path(projpath,project,platform,"R",".RData")
     if (!file.exists(projdata)) {
         projdata <- file.path(projpath,project,"R",".RData")
     }
@@ -45,7 +47,7 @@ set_project <- function(root="ISFF",project=NULL)
     curpos <- NULL
     if (!is.na(curproj)) {
         sl <- search()
-        curdata <- file.path(projpath,curproj,"ISFF","R",".RData")
+        curdata <- file.path(projpath,curproj,platform,"R",".RData")
         pos <- grepl(curdata,sl)
         if (!any(pos)) {
             curdata <- file.path(projpath,curproj,"R",".RData")
@@ -59,11 +61,11 @@ set_project <- function(root="ISFF",project=NULL)
         if (curproj == project && !is.null(curpos)) sync(pos=curpos)
         else {
             if (!is.null(curpos)) {
-                cat("detaching",curdata,"pos=",curpos,"\n")
+                cat("detaching",curdata,", pos=",curpos,"\n")
                 detach(pos=curpos)
             }
             else curpos <- 2L
-            cat("attaching",projdata,"\n")
+            cat("attaching",projdata,", pos=",curpos,"\n")
             attach(projdata,pos=curpos)
 
             if (existsFunction("project_init")) {
