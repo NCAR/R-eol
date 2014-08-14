@@ -88,7 +88,7 @@ dat.Ct <- function(what,derived=TRUE,cache=F,speed=dpar("bulk.speed"),...)
     u <- dat(expand("u",what), avg=T,smooth=T, derived=F)
     v <- dat(expand("v",what), avg=T,smooth=T, derived=F)
     x = (u*dat(expand("u'tc'",what), avg=T,smooth=T) +
-        v*dat(expand("v'tc'",what), avg=T,smooth=T))/sqrt(u*2 + v^2)
+        v*dat(expand("v'tc'",what), avg=T,smooth=T))/sqrt(u^2 + v^2)
 
     dimnames(x) <- list(NULL,paste("us'tc'",suffixes(x,2),sep=""))
     x@units <- rep("m/s-degK",ncol(x))
