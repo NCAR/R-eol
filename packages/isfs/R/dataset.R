@@ -13,7 +13,7 @@ find_datasets <- function(
 {
 
     if (!exists(".projectEnv"))
-        .projectEnv <<- new.env(parent=emptyenv())
+        stop(".projectEnv not found. Should be located in project .RData")
 
     ncds <- list.files(path,pattern,include.dirs=TRUE)
 
@@ -118,7 +118,7 @@ dataset <- function(which,verbose=F,datasets=NULL)
     #           environment variable SONIC_DIR
 
     if (!exists(".projectEnv"))
-        .projectEnv <<- new.env(parent=emptyenv())
+        stop(".projectEnv not found. Should be located in project .RData")
 
     if (is.null(datasets)) {
         if (exists(".datasets",envir=.projectEnv))
@@ -128,8 +128,8 @@ dataset <- function(which,verbose=F,datasets=NULL)
     }
 
     current <- "unknown"
-    if(exists("dataset.which",envir=get(".projectEnv")))
-        current <- get("dataset.which",envir=get(".projectEnv"))
+    if(exists("dataset.which",envir=.projectEnv))
+        current <- get("dataset.which",.projectEnv)
 
     # discard datasets that are not enabled.
     datasets <- datasets[sapply(datasets,function(x) { ifelse (is.null(x$enable),FALSE,x$enable) })]
@@ -178,11 +178,11 @@ dataset <- function(which,verbose=F,datasets=NULL)
     if (!is.null(dset[["f"]])) dset$f()
     if (ncf != dset$ncf || ncd != dset$ncd) clear_cache()
 
-    assign("dataset.which",which,envir=get(".projectEnv"))
+    assign("dataset.which",which,envir=.projectEnv)
 
     if (verbose) {
         cat(paste("************************************************\n"))
-        cat(paste("current dataset is \"", get("dataset.which",envir=get(".projectEnv")),"\"\n",sep=""))
+        cat(paste("current dataset is \"", get("dataset.which",envir=.projectEnv),"\"\n",sep=""))
 
         cat(paste0("NETCDF_FILE=",Sys.getenv("NETCDF_FILE"),"\n",
             "NETCDF_DIR=",Sys.getenv("NETCDF_DIR"),"\n",
