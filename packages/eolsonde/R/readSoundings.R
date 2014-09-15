@@ -103,7 +103,7 @@ readSoundings <- function(
             if (grepl("AVAPS",ftype,fixed=TRUE)) {
                 sdng <- readDFile(fp)
 
-                ptuok <- sum((sdng@data[,"status"] %% 10,na.rm=TRUE) < 2)          # 00, 01
+                ptuok <- sum((sdng@data[,"status"] %% 10) < 2,na.rm=TRUE)  # 00, 01
                 gpsok <- sum(sdng@data[,"status"] %% 2 == 0,na.rm=TRUE)    # 00, 10
 
                 if (dpar("checkSondeStatus")) {

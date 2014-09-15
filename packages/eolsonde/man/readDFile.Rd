@@ -82,7 +82,7 @@ From the variable names in the D file header, the following translation from "He
 
 }
 \value{
-A sorted time series containing all data columns read from the D file.
+A sorted time series containing the data columns read from the D file.
 }
 \references{
 }
