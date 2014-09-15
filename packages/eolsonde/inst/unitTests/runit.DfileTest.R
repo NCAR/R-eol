@@ -23,7 +23,9 @@ test_dfile <- function()
     dfile <- file.path(datadir,"D20080815_172011_P.1.gz")
     cat("dfile=",dfile,"\n")
 
-    sdng <- readDFile(dfile,sta_clean=FALSE)
+    dpar(checkSondeStatus=FALSE,sondeRecords=c("A","P","S"))
+
+    sdng <- readDFile(dfile)
     cat("dim(sdng)=",paste(dim(sdng),collapse=","),"\n")
     cat("colnames(sdng)=",paste(colnames(sdng),collapse=","),"\n")
 
@@ -49,9 +51,10 @@ test_dfile <- function()
     checkEquals(as.numeric(sdng[nr,"Alt_gps"]),67.01)
 
 
-    # read dfile with sta_clean=TRUE
+    # read dfile with checkSondeStatus=TRUE
+    dpar(checkSondeStatus=TRUE,sondeRecords="S")
 
-    sdng <- readDFile(dfile,sta_clean=TRUE)
+    sdng <- readDFile(dfile)
     cat("dim(sdng)=",paste(dim(sdng),collapse=","),"\n")
     cat("colnames(sdng)=",paste(colnames(sdng),collapse=","),"\n")
 

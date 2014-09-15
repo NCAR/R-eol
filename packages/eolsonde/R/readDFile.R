@@ -7,7 +7,7 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-readDFile <- function (file,sta_clean=TRUE) 
+readDFile <- function (file, checkStatus=dpar("checkSondeStatus"), sondeRecords=dpar("sondeRecords"))
 {
     # if (file.access(file,4) != 0)
     #     stop(paste("Error:",file,"does not exist or is not readable"))
@@ -15,13 +15,13 @@ readDFile <- function (file,sta_clean=TRUE)
     # grab first two columns, which look like:
     #   AVAPS-T04 COM
     #   AVAPS-D04 ???
-    cols <- scan(file=file,what=list(ava="",sta=""),flush=TRUE,quiet=TRUE)
+    cols <- scan(file=file,what=list(avaps="",type=""),flush=TRUE,quiet=TRUE)
 
     # AVAPS-Txx COM lines
-    com <- grepl("AVAPS-T",cols$ava,fixed=TRUE) & grepl("COM",cols$sta,fixed=TRUE)
+    com <- grepl("AVAPS-T",cols$avaps,fixed=TRUE) & grepl("COM",cols$type,fixed=TRUE)
 
     # AVAPS-Dxx lines are data
-    drows <- grepl("AVAPS-D",cols$ava,fixed=TRUE)
+    drows <- grepl("AVAPS-D",cols$avaps,fixed=TRUE)
 
     # Variable names are in COM lines 1 and 2.
     hdr <- seq(along=com)[com][1]
@@ -68,9 +68,10 @@ readDFile <- function (file,sta_clean=TRUE)
         "GPSAltitude"="Alt_gps")
 
     # character columns
-    # sta:  Spw:  p=0 good PTU checksum, p=1 bad PTU checksum
-    # sta:  Spw:  w=0 good wind checksum, w=1 bad wind checksum
-    strnames <- c("ava","sta")
+    # type:  Spw:  p=0 good PTU checksum, p=1 bad PTU checksum
+    #             w=0 good wind checksum, w=1 bad wind checksum
+
+    strnames <- c("avaps","status")
     utcnames <- c("UTCDate","UTCTime")
 
     # names of the data columns in the D file, in order
@@ -115,7 +116,7 @@ readDFile <- function (file,sta_clean=TRUE)
     numnames <- dnames[is.na(match(dnames,c(strnames,utcnames)))]
 
     # convert data columns to numeric
-    d2 <- lapply(numnames,function(n)
+    d2 <- sapply(numnames,function(n)
         {
             # if (n == "Alt_gp") browser()
             x <- type.convert(sdng[,n],as.is=TRUE)
@@ -128,11 +129,27 @@ readDFile <- function (file,sta_clean=TRUE)
             x
         })
 
-    names(d2) <- numnames
+    # browser()
 
-    # sdng <- data.frame(sdng[,strnames],utc=utc,d2)
-    # sta <- sdng[,"sta"]
-    sdng <- data.frame(sdng[,strnames],d2,check.names=FALSE)
+    # extract digits NN in AVAPS-DNN, presumably the channel number
+    avaps <- as.integer(substring(sdng[,"avaps"],8))
+
+    # type of record, A= from aircraft data system, P=pre-launch, S=sounding
+    rectypes <- c("A","P","S")
+
+    rectype <- match(substring(sdng[,"status"],1,1),rectypes) - 1
+    matchtype <- 1:length(rectypes) - 1
+    if (!is.null(dpar("sondeRecords")) && !is.na(dpar("sondeRecords")))
+        matchtype <- match(dpar("sondeRecords"),rectypes) - 1
+
+    # must have two digits after leading character
+    # PTU and GPS status
+    status <- match(substring(sdng[,"status"],2,3),c("00","01","10","11")) - 1
+
+    rectype[is.na(status)] <- NA
+
+    sdng <- matrix(c(avaps,status + rectype * 10,as.vector(d2)),ncol=ncol(d2)+2,dimnames=list(NULL,c(strnames,numnames)))
+
     units <- rep("",length(colnames(sdng)))
     mu <- match(names(hunits),colnames(sdng),nomatch=0)
     units[mu] <- hunits[mu!=0]
@@ -140,21 +157,21 @@ readDFile <- function (file,sta_clean=TRUE)
     units <- sub(")","",units,fixed=TRUE)
     sdng <- dat(nts(sdng,utc,units=units))
 
-    if (sta_clean) {
-        sta <- unlist(sdng@data[,"sta"])
-        ok <- substring(sta,1,1) == "S"
+    if (checkStatus) {
+        ok <- !is.na(rectype) & !is.na(match(rectype,matchtype)) & !is.na(avaps)
+
         sdng <- sdng[ok,]
-        sta <- sta[ok]
+        status <- status[ok]
 
-        # If first digit of sta is not zero, set PTU values to NA
-        ok  <- grepl("S0",sta,fixed=TRUE)
-        ptuqc <- c("P","T","RH","RH1","RH2")
-        sdng@data[!ok,match(ptuqc,colnames(sdng))] <- NA_real_
+        # If first digit of status is not zero, set PTU values to NA
+        badptu  <- status > 1
+        ptunames <- c("P","T","RH","RH1","RH2")
+        sdng@data[badptu,match(ptunames,colnames(sdng))] <- NA_real_
 
-        # If second digit of sta is not zero, set wind/gps values to NA
-        ok <- grepl("S00",sta,fixed=TRUE) | grepl("S10",sta,fixed=TRUE)
-        windqc <- c("Wdir","Wspd","Vz","lon","lat","Alt_gp","wsat","ssat","Werr","Alt_gps")
-        sdng@data[!ok,match(windqc,colnames(sdng))] <- NA_real_
+        # If second digit of status is not zero, set wind and GPS values to NA
+        badgps  <- (status %% 2) != 0
+        windnames <- c("Wdir","Wspd","Vz","lon","lat","Alt_gp","wsat","ssat","Werr","Alt_gps")
+        sdng@data[badgps,match(windnames,colnames(sdng))] <- NA_real_
     }
 
     # check for unique sid, save it as attribute

@@ -12,7 +12,7 @@ readSoundings <- function(
         Sys.getenv("PLATFORM"),"data",Sys.getenv("DATASET")),
         Sys.getenv("SONDE_DATA")),
     file=c("D%Y%m%d_%H%M%S_P"),
-    start=dpar("start"),end=dpar("end"),sta_clean=TRUE
+    start=dpar("start"),end=dpar("end")
     )
 {
 
@@ -101,18 +101,19 @@ readSoundings <- function(
             # read first string of the file. If it contains "AVAPS", call readDFile
             ftype <- scan(fp,nmax=1,what="",quiet=TRUE)
             if (grepl("AVAPS",ftype,fixed=TRUE)) {
-                sdng <- readDFile(fp,sta_clean=sta_clean)
-                srec <- sum(substr(sdng@data[,"sta"],1,1) == "S")
-                ptuok <- sum(substr(sdng@data[,"sta"],1,2) == "S0")
-                gpsok <- sum(substr(sdng@data[,"sta"],1,3) == "S00"
-                        | substr(sdng@data[,"sta"],1,3) == "S10")
+                sdng <- readDFile(fp)
 
-                if (sta_clean) {
+                ptuok <- sum((sdng@data[,"status"] %% 10,na.rm=TRUE) < 2)          # 00, 01
+                gpsok <- sum(sdng@data[,"status"] %% 2 == 0,na.rm=TRUE)    # 00, 10
+
+                if (dpar("checkSondeStatus")) {
                     cat(paste0(fpshort,": (",paste(dim(sdng),collapse="x"),
                         "), #PTUOK=",ptuok,", #GPSOK=",gpsok),"\n")
                 } else {
-                    prec <- sum(substr(sdng@data[,"sta"],1,1) == "P")
-                    arec <- sum(substr(sdng@data[,"sta"],1,1) == "A")
+                    tendig <- sdng@data[,"status"] %/% 10
+                    arec <- sum(tendig == 0,na.rm=TRUE)
+                    prec <- sum(tendig == 1,na.rm=TRUE)
+                    srec <- sum(tendig == 2,na.rm=TRUE)
                     cat(paste0(fpshort,": (",paste(dim(sdng),collapse="x"),
                         "), #A=",arec,", #P=",prec,", #S=",srec,
                         ", #PTUOK=",ptuok,", #GPSOK=",gpsok),"\n")

@@ -9,5 +9,12 @@
 
 .onAttach = function(libname,pkgname)
 {
+    # Append our dpar options to the list in .eoltsEnv.
+    if (exists(".eoltsEnv",envir=.getNamespace("eolts")) &&
+        exists(".dparParams",envir=eolts:::.eoltsEnv)) {
+
+        dpardefs <- c(get(".dparParams",envir=eolts:::.eoltsEnv),.dparParams)
+        assign(".dparParams",dpardefs,envir=eolts:::.eoltsEnv)
+    }
     packageStartupMessage("For help on the eolsonde package, do: \"? eolsonde\"")
 }

@@ -12,7 +12,7 @@ readSoundings(
             Sys.getenv("PLATFORM"), "data", Sys.getenv("DATASET")),
         Sys.getenv("SONDE_DATA")),
     file = c("D\%Y\%m\%d_\%H\%M\%S_P"),
-    start = dpar("start"), end = dpar("end"), sta_clean = TRUE)
+    start = dpar("start"), end = dpar("end"))
 }
 \arguments{
   \item{dir}{
@@ -31,7 +31,6 @@ A \code{\link{utime}} object containing the beginning time of files to be matche
   \item{end}{
 A \code{\link{utime}} object containing the end time of files to be matched. This will only work if one uses a file name pattern containing \code{\link{strptime}} time descriptors.
 }
-  \item{sta_clean}{Passed as an argument to \code{\link{readDFile}}.}
 }
 \details{
 From a Unix shell the default setting of dir translates to:
