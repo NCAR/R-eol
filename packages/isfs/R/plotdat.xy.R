@@ -10,7 +10,7 @@
 plotdat.xy <- function(xdata,ydata, rfrnc, select.data, xlim, ylim, nsmth, 
                        plot=T, derived=T, method.smth="mean", 
                        lfit=F, intercept=T, cex.pts=0.5,
-                       chksum=F, logxy, annotate=T, dataset=dataset(),
+                       chksum=F, logxy, annotate=T, dataset=isfs::dataset(),
                        cex.leg = 1, browse=F, type="p", ...)
 {
     # Generic function for xy plot of dat objects, per twh.
