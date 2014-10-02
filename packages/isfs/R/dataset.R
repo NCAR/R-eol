@@ -16,12 +16,12 @@ find_datasets <- function(
         stop(".projectEnv not found. Should be located in project .RData")
 
     if (!file.exists(path))
-        stop(paste0("directory $ISFF/projects/$PROJECT/ISFF=",path," does not exist"))
+        warning(paste0("directory $ISFF/projects/$PROJECT/ISFF=",path," does not exist"))
 
     ncds <- list.files(path,pattern,include.dirs=TRUE)
 
     if (length(ncds) == 0)
-        stop(paste0("no directories found on",path," matching: \"",pattern,"\""))
+        warning(paste0("no directories found on",path," matching pattern: \"",pattern,"\""))
 
     datasets <- list()
 
