@@ -142,14 +142,14 @@ dataset <- function(which,verbose=F,datasets=NULL)
         else datasets <- get(".datasets",envir=.projectEnv)
     }
 
-    current <- "unknown"
-    if(exists("current_dataset",envir=.projectEnv))
-        current <- get("current_dataset",.projectEnv)
-
     # discard datasets that are not enabled.
     datasets <- datasets[sapply(datasets,function(x) { ifelse (is.null(x$enable),FALSE,x$enable) })]
 
     if (missing(which)) {
+        current <- "unknown"
+        if(exists("current_dataset",envir=.projectEnv))
+            current <- get("current_dataset",.projectEnv)
+
         if (verbose) {
             cat(paste("************************************************\n",
                 'Choose one of the following by number or name: dataset(1), dataset("name"):\n',
@@ -211,5 +211,5 @@ dataset <- function(which,verbose=F,datasets=NULL)
         cat(paste("************************************************\n"))
     }
 
-    which
+    invisible(dset)
 }
