@@ -135,15 +135,16 @@ dataset <- function(which,verbose=F,datasets=NULL)
         stop(".projectEnv not found. Should be located in project .RData")
 
     if (is.null(datasets)) {
-        if (exists(".datasets",envir=.projectEnv))
-            datasets <- get(".datasets",envir=.projectEnv)
-        else if (exists(".datasets"))
-            datasets <- get(".datasets")
+        if (!exists(".datasets",envir=.projectEnv)) {
+            warning(".datasets not found on .projectEnv. Do find_datasets() to create the list")
+            datasets <- list()
+        }
+        else datasets <- get(".datasets",envir=.projectEnv)
     }
 
     current <- "unknown"
-    if(exists("dataset.which",envir=.projectEnv))
-        current <- get("dataset.which",.projectEnv)
+    if(exists("current_dataset",envir=.projectEnv))
+        current <- get("current_dataset",.projectEnv)
 
     # discard datasets that are not enabled.
     datasets <- datasets[sapply(datasets,function(x) { ifelse (is.null(x$enable),FALSE,x$enable) })]
@@ -192,11 +193,11 @@ dataset <- function(which,verbose=F,datasets=NULL)
     if (!is.null(dset[["f"]])) dset$f()
     if (ncf != dset$ncf || ncd != dset$ncd) clear_cache()
 
-    assign("dataset.which",which,envir=.projectEnv)
+    assign("current_dataset",which,envir=.projectEnv)
 
     if (verbose) {
         cat(paste("************************************************\n"))
-        cat(paste("current dataset is \"", get("dataset.which",envir=.projectEnv),"\"\n",sep=""))
+        cat(paste("current dataset is \"", get("current_dataset",envir=.projectEnv),"\"\n",sep=""))
 
         cat(paste0("NETCDF_FILE=",Sys.getenv("NETCDF_FILE"),"\n",
             "NETCDF_DIR=",Sys.getenv("NETCDF_DIR"),"\n",

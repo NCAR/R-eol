@@ -9,8 +9,9 @@
 
 sync <- function(pos,root="ISFF")
 {
-    # There may be an .projectEnv environment object in the
-    # $ISFF/projects/$PROJECT/ISFF/R/.RData. Save it before detaching/re-attaching
+    # detach/attach $ISFF/projects/$PROJECT/ISFF/R/.RData so that the
+    # user's R session has the latest copy.
+
     sl <- search()
     if (missing(pos)) {
         projdata1 <- file.path(Sys.getenv(root),"projects",Sys.getenv("PROJECT"),
@@ -26,6 +27,8 @@ sync <- function(pos,root="ISFF")
 
     rd <- sl[pos]
 
+    # There may be an .projectEnv environment object in the
+    # $ISFF/projects/$PROJECT/ISFF/R/.RData. Save it before detaching/re-attaching
     if (exists(".projectEnv",where=pos,inherits=FALSE)) projectEnv <- get(".projectEnv",pos=pos)
     else projectEnv <- NULL
 
