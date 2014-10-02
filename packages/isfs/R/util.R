@@ -11,7 +11,6 @@ sync <- function(pos,root="ISFF")
 {
     # There may be an .projectEnv environment object in the
     # $ISFF/projects/$PROJECT/ISFF/R/.RData. Save it before detaching/re-attaching
-    projectEnv <- NULL
     sl <- search()
     if (missing(pos)) {
         projdata1 <- file.path(Sys.getenv(root),"projects",Sys.getenv("PROJECT"),
@@ -23,10 +22,12 @@ sync <- function(pos,root="ISFF")
         }
         if (!any(pos)) stop(paste("pos is missing and can't find",projdata1,"or",projdata2))
         pos <- base::seq(along=pos)[pos][1]
-        if (exists(".projectEnv",where=pos)) projectEnv <- get(".projectEnv",pos=pos)
     }
 
     rd <- sl[pos]
+
+    if (exists(".projectEnv",where=pos,inherits=FALSE)) projectEnv <- get(".projectEnv",pos=pos)
+    else projectEnv <- NULL
 
     if (grepl(".RData",rd)) {
         rd <- sub("^file:","",rd)
