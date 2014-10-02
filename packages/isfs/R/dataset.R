@@ -12,6 +12,10 @@ find_datasets <- function(
     pattern="^netcdf")
 {
 
+    # remove duplicate .projectEnv from .GlobalEnv
+    if (exists(".projectEnv",where=1,inherits=FALSE) && exists(".projectEnv",where=2,inherits=TRUE))
+        rm(".projectEnv",pos=1,inherits=FALSE)
+
     if (!exists(".projectEnv"))
         stop(".projectEnv not found. Should be located in project .RData")
 
@@ -122,6 +126,10 @@ dataset <- function(which,verbose=F,datasets=NULL)
     #   qcdir   directory of cal files, which is copied to the environment variable QC_DIR
     #   sonicdir directory of sonic anemometer cal files, which is copied to the
     #           environment variable SONIC_DIR
+
+    # remove duplicate .projectEnv from .GlobalEnv
+    if (exists(".projectEnv",where=1,inherits=FALSE) && exists(".projectEnv",where=2,inherits=TRUE))
+        rm(".projectEnv",pos=1,inherits=FALSE)
 
     if (!exists(".projectEnv"))
         stop(".projectEnv not found. Should be located in project .RData")
