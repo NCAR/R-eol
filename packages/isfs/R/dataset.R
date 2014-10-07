@@ -211,5 +211,6 @@ dataset <- function(which,verbose=F,datasets=NULL)
         cat(paste("************************************************\n"))
     }
 
-    invisible(dset)
+    # return a list of length one, so that it has a name
+    invisible(datasets[which])
 }

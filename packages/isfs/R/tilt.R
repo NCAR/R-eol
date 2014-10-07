@@ -330,7 +330,7 @@ plot_tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
             "; stn=",stations(u),sep=""),cex=0.7)
 
     # notate dataset()
-    mtext(paste0("dataset=",dataset()),side=3, adj=1)
+    mtext(paste0("dataset=",names(dataset())),side=3, adj=1)
 
     # Plot fitted curve:
     az <- seq(-180,180,5)

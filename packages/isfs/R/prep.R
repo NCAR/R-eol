@@ -64,7 +64,7 @@ setMethod("readts",
                 runargs <- c("-D",paste(con@variables,collapse=","),
                     "-B",format(start,format="%Y %m %d %H%M%OS",time.zone="GMT"),
                     "-C")
-                dset <- dataset()
+                dset <- names(dataset())
                 if (!is.null(dset)) runargs <- c(runargs,"-S",dset)
                 env <- ""
             }
