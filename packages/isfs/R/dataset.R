@@ -37,12 +37,19 @@ find_datasets <- function(
 
         if (length(ncdf) > 0) {
 
-            ncpat <- sub("(_?)[12][9012][0-9][0-9]","\\1%Y",ncdf)
+            # first try to match 4 digit year, looking like 20xx or 1[3-9]xx
+            # Don't try 10xx, 11xx, or 12xx since that is most likely
+            # month and day.
+            ncpat <- sub("(20[0-9][0-9])|(1[3-9][0-9][0-9])","%Y",ncdf)
 
-            # If couldn't match a 4 digit year, try 2 digits,
-            # assume only in the 80 or 90's
-            if (all(ncpat == ncdf))  
-                ncpat <- sub("(_?)[89][0-9]","\\1%y",ncdf)
+            # If no match, try a 2 digit year starting with 8 or 9
+            if (all(ncpat == ncdf)) {
+                ncpat <- sub("[8-9][0-9]","%Y",ncdf)
+
+                # If no match try any 2 digit year
+                if (all(ncpat == ncdf))
+                    ncpat <- sub("[0-9][0-9]","%Y",ncdf)
+            }
 
             ncpat <- sub("(%[yY][^01]*)[01][0-9]","\\1%m",ncpat)
             ncpat <- sub("(%m[^0-3]*)[0-3][0-9]","\\1%d",ncpat)
@@ -55,14 +62,15 @@ find_datasets <- function(
                 warning(paste("Cannot determine a unique file name pattern from file names:",
                     paste(ncpat,collapse=", ")))
 
+            # parse at most 10 files
             ix <- seq(from=1,to=length(ncdf),by=ceiling(length(ncdf)/10))
 
-            con <- netcdf(dir=ncpath,file=ncdf[ix])
+            con <- netcdf(dir=ncpath,file=sort(ncdf)[ix])
             # read global attributes
             attrs <- readnc(con)
             close(con)
 
-            dname <- sub(pattern,"",ncd)    # remove netcdf
+            dname <- sub(pattern,"",ncd)    # remove pattern from directory
             dname <- sub("^_+","",dname)    # remove leading underscores
             dname <- sub("^\\.+","",dname)  # remove periods (why?)
             if (nchar(dname) == 0) dname <- "default"
