@@ -146,9 +146,9 @@ dataset <- function(which,verbose=F,datasets=NULL)
     datasets <- datasets[sapply(datasets,function(x) { ifelse (is.null(x$enable),FALSE,x$enable) })]
 
     if (missing(which)) {
-        current <- "unknown"
         if(exists("current_dataset",envir=.projectEnv))
             current <- get("current_dataset",.projectEnv)
+        else current <- "unknown"
 
         if (verbose) {
             cat(paste("************************************************\n",
@@ -161,7 +161,7 @@ dataset <- function(which,verbose=F,datasets=NULL)
                 "************************************************\n",
                 "current dataset is \"",current,"\"\n",sep=""))
         }
-        return(current)
+        return(datasets[current])
     }
 
     if (!is.character(which)) which <- names(datasets)[which]
