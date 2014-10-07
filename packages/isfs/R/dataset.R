@@ -164,7 +164,11 @@ dataset <- function(which,verbose=F,datasets=NULL)
         return(datasets[current])
     }
 
-    if (!is.character(which)) which <- names(datasets)[which]
+    if (is.list(which)) {
+        if (length(which) != 0) stop("which should be character or a named list of length 1")
+        which <- names(which)
+    }
+    else if (!is.character(which)) which <- names(datasets)[which]
     dset <- datasets[[which]]
     if (is.null(dset)) stop(paste("dataset",which,"not found"))
 
