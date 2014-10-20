@@ -12,19 +12,19 @@ vcross <- function(x,y)
 
 vmag <- function(x) sqrt(x[1]*x[1] + x[2]*x[2] + x[3]*x[3])
 
-sonic_tilt_matrix <- function(lean,leanaz,sonic.w.is.up=F)
+sonic_tilt_matrix <- function(tilt,fnaz,sonic.w.is.up=F)
 {
 
-    # return sonic tilt matrix, given lean and lean azimuth
+    # return sonic tilt matrix, given tilt and tilt azimuth
     # For info, see $ASTER/app/calib/sonic_tilt_matrix.c
 
-    lean <- lean * pi / 180
-    leanaz <- leanaz * pi / 180
+    tilt <- tilt * pi / 180
+    fnaz <- fnaz * pi / 180
 
-    sinlean <- sin(lean)
-    coslean <- cos(lean)
-    sinaz <- sin(leanaz)
-    cosaz <- cos(leanaz)
+    sintilt <- sin(tilt)
+    costilt <- cos(tilt)
+    sinaz <- sin(fnaz)
+    cosaz <- cos(fnaz)
 
     #
     # Uf,Vf,Wf flow coordinate axes, in sonic coords
@@ -33,13 +33,13 @@ sonic_tilt_matrix <- function(lean,leanaz,sonic.w.is.up=F)
     #
     # This is Wf, the flow W axis in the sonic UVW system
     #
-    Wf <- c(sinlean * cosaz,sinlean * sinaz, coslean)
+    Wf <- c(sintilt * cosaz,sintilt * sinaz, costilt)
 
     if (sonic.w.is.up) {
         #
         # Vs cross Wf
         # Uf <- vcross(c(0,1,0),Wf)
-        Uf <- c(coslean,0,-sinlean * cosaz)
+        Uf <- c(costilt,0,-sintilt * cosaz)
 
         # Uf is normal to Vs, therefore it is in Us,Ws plane
         # and is normal to Wf.  This uses sonic normal as
@@ -48,7 +48,7 @@ sonic_tilt_matrix <- function(lean,leanaz,sonic.w.is.up=F)
     else {
         # Wf cross Us is normal to plane containing Wf & Us.
         # WfXUs <- vcross(Wf,c(1,0,0))
-        WfXUs <- c(0, coslean, -sinlean *sinaz)
+        WfXUs <- c(0, costilt, -sintilt *sinaz)
 
         # Uf is in plane of Us and Wf, and is normal to Wf
         # This uses flow normal as best guess of "UP" direction.
