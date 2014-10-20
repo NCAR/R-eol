@@ -59,8 +59,9 @@ find_datasets <- function(
 
             ncpat <- unique(ncpat)
             if (length(ncpat) > 1)
-                warning(paste("Cannot determine a unique file name pattern from file names:",
-                    paste(ncpat,collapse=", ")))
+                warning(paste("In directory",ncd,
+                        "cannot determine a unique file name pattern from file names:",
+                        paste(ncpat,collapse=", ")))
 
             # parse at most 10 files
             ix <- seq(from=1,to=length(ncdf),by=ceiling(length(ncdf)/10))

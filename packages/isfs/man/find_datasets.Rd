@@ -78,11 +78,11 @@ The following global attributes are then read from a selection of 10 of the matc
 \value{
 A list of datasets, each dataset is a list with the following named elements:
 \itemize{
-    \item{enable }{Logical value, TRUE.}
-    \item{desc}{Value of dataset_description global attribute}
-    \item{ncd}{Directory path of NetCDF files}
-    \item{ncf}{File name pattern of NetCDF files with "\%X" descriptors for parsing date and time.}
-    \item{datacoords}{Coordinate system of 3d winds}
+    \item{enable}{: Logical value, TRUE.}
+    \item{desc}{: Value of dataset_description global attribute}
+    \item{ncd}{: Directory path of NetCDF files}
+    \item{ncf}{: File name pattern of NetCDF files with "\%X" descriptors for parsing date and time.}
+    \item{datacoords}{: Coordinate system of 3d winds}
     \item{h2o_flux_corrected}
     \item{co2_flux_corrected}
     \item{gsoil_philip_corrected}
