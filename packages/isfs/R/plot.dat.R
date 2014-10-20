@@ -14,7 +14,7 @@ setMethod("plot",signature(x="dat",y="missing"),
     }
     )
 
-plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
+plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
     log="",tlwd=par("lwd"),remargin=TRUE,title,logo=TRUE,
     xaxt="s",yaxt="s",yaxs=par("yaxs"),cols,...)
 {
@@ -73,9 +73,9 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
     }
 
     dunits <- x@units
-    names(dunits) = dnames
+    names(dunits) <- dnames
 
-    yinfo <- plotLimits(x,ylim,one.scale,axs=yaxs)
+    yinfo <- plotLimits(x,ylim,one_scale,axs=yaxs)
     nscales <- yinfo$nscales
 
     if (remargin && first_plot) adjPar(nyscales=nscales)
@@ -112,16 +112,16 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
             assemble.legend <- FALSE
         }
     }
-    all.same.vars <- all(dnames == dnames[1])
-    if (all.same.vars) {
+    all_same_vars <- all(dnames == dnames[1])
+    multunits <- length(unique(dunits)) > 1
+    if (all_same_vars) {
         # perhaps they have different units
-        multunits = length(unique(dunits)) > 1
-        if (multunits) all.same.vars = F
+        if (multunits) all_same_vars <- F
     }
 
     args <- list(...)
 
-    logy = any(substring(log,1:nchar(log),1:nchar(log)) == "y")
+    logy <- any(substring(log,1:nchar(log),1:nchar(log)) == "y")
 
     xaxt.tmp <- "n"
     xlab <- FALSE
@@ -138,7 +138,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
     on.exit(par(old.par),add=TRUE)
 
     tckadj <- par("tck")
-    if (is.na(tckadj)) tckadj = -0.01
+    if (is.na(tckadj)) tckadj <- -0.01
     if (tckadj < 0) {	# outside ticks, move axis labels 1/2 char width
         mgp[1:2] <- mgp[1:2] + .3
         par(mgp=mgp)
@@ -147,7 +147,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
     yaxis.done <- NULL
     xaxis.done <- FALSE
 
-    if (missing(cols)) cols = seq(from=2,length=ncol(x))
+    if (missing(cols)) cols <- seq(from=2,length=ncol(x))
 
     for (colnum in 1:ncol(x)) {
         varname <- dnames[colnum]
@@ -155,13 +155,9 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
         vunits <- dunits[colnum]
         if (is.null(vunits) || length(vunits) == 0) vunits <- "?"
 
-        # Check if this varname has multiple units
-        umatch = !is.na(match(names(dunits),varname))
-        multunits = length(unique(dunits[umatch])) > 1
+        varnameunits <- paste0(varname,"(",vunits,")")
 
-        varnameunits = paste0(varname,"(",vunits,")")
-
-        dupunits = ydupunits[varnameunits]
+        dupunits <- ydupunits[varnameunits]
 
         datacol <- x[c(t1,t2),colnum]
         if (is.null(datacol)) next
@@ -172,7 +168,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
         ylim1 <- ylim
         if (is.list(ylim1)) {
             ylim1 <- ylim[[varname]]
-            if (is.null(ylim1)) ylim1 = ylim[[varnameunits]]
+            if (is.null(ylim1)) ylim1 <- ylim[[varnameunits]]
         }
 
         wind.dir <- words(varname,1,1,sep=".")
@@ -195,8 +191,8 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
             clipped <- TRUE
         }
 
-        if (colnum > length(cols))  col = cols[colnum %% length(cols)]
-        else col = cols[colnum]
+        if (colnum > length(cols))  col <- cols[colnum %% length(cols)]
+        else col <- cols[colnum]
 
         # First trace, create scale, box and xaxis label
         if (! xaxis.done) {
@@ -232,7 +228,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
                 side <- 2
                 line <- 0
                 if (missing(ylab)) {
-                    if (all.same.vars) ylab.txt <- paste(varname," (",vunits,")",sep="")
+                    if (all_same_vars) ylab.txt <- paste(varname," (",vunits,")",sep="")
                     else ylab.txt <- paste("(",vunits,")",sep="")
                 }
             }
@@ -357,7 +353,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
             }
             else if (is.null(names(stns)) || all(names(stns) == "") ||
                 all(names(stns) == stns)) {
-                if (all.same.vars)
+                if (all_same_vars)
                     legv <- c(legv,ifelse(stns==0 | is.na(stns),"",paste("stn",stns,sep="")))
                 else {
                     if (multunits)
@@ -367,7 +363,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one.scale=FALSE,
                 }
             }
         else {
-            if (all.same.vars)
+            if (all_same_vars)
                 legv <- c(legv,paste(names(stns),
                         ifelse(stns==0 | is.na(stns),"",paste("(",stns,")",sep="")),sep=""))
             else {
@@ -424,24 +420,24 @@ plot.dat.title <- function(title="",first_plot,last_plot,
         plot.dat.stns <- stns
     }
     else {
-        plot.dat.date = NULL
+        plot.dat.date <- NULL
         if (exists(".plot.dat.date",envir=.isfsEnv))
-            plot.dat.date = get(".plot.dat.date",envir=.isfsEnv)
+            plot.dat.date <- get(".plot.dat.date",envir=.isfsEnv)
         if (!is.null(plot.dat.date) && any(this.plot.date != plot.dat.date))
             plot.dat.date <- NULL	# if date changes, don't put in title
 
-        plot.dat.stns = NULL
+        plot.dat.stns <- NULL
         if (exists(".plot.dat.stns",envir=.isfsEnv))
-            plot.dat.stns = get(".plot.dat.stns",envir=.isfsEnv)
+            plot.dat.stns <- get(".plot.dat.stns",envir=.isfsEnv)
 
         if (is.null(plot.dat.stns) != is.null(stns) ||
             (!is.null(stns) && (length(stns) != length(plot.dat.stns) ||
                     any(sort(stns) != sort(plot.dat.stns)))))
             plot.dat.stns <- NULL	# if stns change, don't put in title
 
-        plot.dat.title.save = NULL
+        plot.dat.title.save <- NULL
         if (exists(".plot.dat.title.save",envir=.isfsEnv))
-            plot.dat.title.save = get(".plot.dat.title.save",envir=.isfsEnv)
+            plot.dat.title.save <- get(".plot.dat.title.save",envir=.isfsEnv)
     }
 
 
@@ -495,7 +491,7 @@ plot.dat.title <- function(title="",first_plot,last_plot,
     invisible(title)
 }
 
-plotLimits <- function(data,lim,one.scale=FALSE,axs="i",namesep=".")
+plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".")
 {
 
     # unique variable names.
@@ -504,22 +500,22 @@ plotLimits <- function(data,lim,one.scale=FALSE,axs="i",namesep=".")
 
     # Sometimes two data colums may have the same name, but different units
     # e.g.:  P as mb and Pa
-    dnameunits = paste0(dnames,"(",dunits,")")
-    dnameunits.u = unique(dnameunits)
+    dnameunits <- paste0(dnames,"(",dunits,")")
+    dnameunits_unique <- unique(dnameunits)
 
-    scales <- rep(1,length(dnameunits.u))
-    names(scales) <- dnameunits.u
+    scales <- rep(1,length(dnameunits_unique))
+    names(scales) <- dnameunits_unique
 
     # TRUE for variables with different limits but the same units,
     # where the Y axis label should have the variable name
-    dupunits <- rep(FALSE,length(dnameunits.u))
-    names(dupunits) <- dnameunits.u
+    dupunits <- rep(FALSE,length(dnameunits_unique))
+    names(dupunits) <- dnameunits_unique
 
     # Fixed limits for all traces on plot
     if (!is.null(lim) && !is.list(lim))
         return(list(nscales=1,lim=lim,scales=scales))
 
-    if (one.scale) {
+    if (one_scale) {
         lim <- range(unlist(sapply(unique(dnames),
                     function(n)
                     {
@@ -566,11 +562,6 @@ plotLimits <- function(data,lim,one.scale=FALSE,axs="i",namesep=".")
         # logical vector along dunits of variables that have units equal to
         # unit.str
         umtch <- !is.na(match(dunits,units.str))
-
-        # variable names with units equal to units.str
-        dnames.u <- unique(dnames[umtch])
-        dnames1.u <- words(dnames.u,1,1,sep=namesep)
-        dnameunits.u <- paste0(dnames.u,"(",units.str,")")
 
         # variable names with units equal to units.str
         dnu <- unique(dnames[umtch])
