@@ -62,14 +62,14 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
     else xaxs <- "d"                # don't rescale
 
     # unique loses the station names
-    plot.stns <- stations(x)
-    if (!is.null(plot.stns)) {
-        i <- sort(unique(plot.stns))
-        if (!is.null(nstns <- names(plot.stns))) {
-            names(i) <- nstns[match(i,plot.stns)]
+    plot_stns <- stations(x)
+    if (!is.null(plot_stns)) {
+        i <- sort(unique(plot_stns))
+        if (!is.null(nstns <- names(plot_stns))) {
+            names(i) <- nstns[match(i,plot_stns)]
             if (all(names(i) == as.character(i))) names(i) <- NULL
         }
-        plot.stns <- i
+        plot_stns <- i
     }
 
     dunits <- x@units
@@ -98,18 +98,18 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
 
     colv <- NULL
 
-    assemble.legend <- TRUE
-    plot.legend <- TRUE
+    assemble_legend <- TRUE
+    plot_legend <- TRUE
 
     legv <- x@attributes$legend
     if (!is.null(legv)) {
         if (is.logical(legv)) {
-            assemble.legend <- plot.legend <- legv
+            assemble_legend <- plot_legend <- legv
             legv <- NULL
         }
         else {
             legv <- as.character(legv)
-            assemble.legend <- FALSE
+            assemble_legend <- FALSE
         }
     }
     all_same_vars <- all(dnames == dnames[1])
@@ -123,10 +123,10 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
 
     logy <- any(substring(log,1:nchar(log),1:nchar(log)) == "y")
 
-    xaxt.tmp <- "n"
+    xaxt_tmp <- "n"
     xlab <- FALSE
     if (bottom_row) {
-        xaxt.tmp <- xaxt
+        xaxt_tmp <- xaxt
         if (xaxt == "n") xlab <- FALSE
         else xlab <- TRUE
     }
@@ -134,8 +134,8 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
     if (is.null(args$cex)) cex <- par("cex")
     else cex <- args$cex
 
-    old.par <- par(c("mgp","mgp"))
-    on.exit(par(old.par),add=TRUE)
+    old_par <- par(c("mgp","mgp"))
+    on.exit(par(old_par),add=TRUE)
 
     tckadj <- par("tck")
     if (is.na(tckadj)) tckadj <- -0.01
@@ -144,8 +144,8 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
         par(mgp=mgp)
     }
 
-    yaxis.done <- NULL
-    xaxis.done <- FALSE
+    yaxis_done <- NULL
+    xaxis_done <- FALSE
 
     if (missing(cols)) cols <- seq(from=2,length=ncol(x))
 
@@ -163,7 +163,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
         if (is.null(datacol)) next
 
         # 1: left hand side, 2: rhs, 3:second axis on lhs, etc
-        yaxis.num <- yscales[[varnameunits]]
+        yaxis_num <- yscales[[varnameunits]]
 
         ylim1 <- ylim
         if (is.list(ylim1)) {
@@ -171,8 +171,8 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
             if (is.null(ylim1)) ylim1 <- ylim[[varnameunits]]
         }
 
-        wind.dir <- words(varname,1,1,sep=".")
-        wind.dir <- wind.dir == "Dir" || wind.dir == "dir"
+        wind_dir <- words(varname,1,1,sep=".")
+        wind_dir <- wind_dir == "Dir" || wind_dir == "dir"
 
         # All data is NAs
         if (any(is.na(ylim1)) || any(is.infinite(ylim1))) ylim1 <- c(-1,1)
@@ -195,9 +195,9 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
         else col <- cols[colnum]
 
         # First trace, create scale, box and xaxis label
-        if (! xaxis.done) {
+        if (! xaxis_done) {
             plot.nts(datacol,type="n",col=1, axes=TRUE,
-                xaxt=xaxt.tmp, xaxs=xaxs, xlim=xlim,xlab=xlab,
+                xaxt=xaxt_tmp, xaxs=xaxs, xlim=xlim,xlab=xlab,
                 yaxt="n", yaxs=yaxs, ylim=ylim1,ylab="",
                 err=-1,cex=cex,log=log,...)
 
@@ -216,29 +216,29 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
 
             # put GMT across top of top row
             if (xaxt != "n") timeaxis(3,labels=top_row,tick=TRUE,time.zone="GMT")
-            xaxis.done <- TRUE
+            xaxis_done <- TRUE
         }
 
         par(new=TRUE)
 
-        side <- line <- ylab.txt <- NULL
-        if (!missing(ylab)) ylab.txt <- ylab
-        if (do.yaxis <- (yaxt != "n" && is.na(match(yaxis.num,yaxis.done)))) {
+        side <- line <- ylab_txt <- NULL
+        if (!missing(ylab)) ylab_txt <- ylab
+        if (do.yaxis <- (yaxt != "n" && is.na(match(yaxis_num,yaxis_done)))) {
             if (nscales == 1) {
                 side <- 2
                 line <- 0
                 if (missing(ylab)) {
-                    if (all_same_vars) ylab.txt <- paste(varname," (",vunits,")",sep="")
-                    else ylab.txt <- paste("(",vunits,")",sep="")
+                    if (all_same_vars) ylab_txt <- paste(varname," (",vunits,")",sep="")
+                    else ylab_txt <- paste("(",vunits,")",sep="")
                 }
             }
             else {
-                iplot <- yaxis.num
+                iplot <- yaxis_num
                 side <- if (iplot %% 2) 2 else 4
                 line <- (mgp[1] + 1) * ((iplot-1) %/% 2)
                 if (missing(ylab)) {
-                    if (dupunits) ylab.txt <- paste(varname," (",vunits,")",sep="")
-                    else ylab.txt <- paste("(",vunits,")",sep="")
+                    if (dupunits) ylab_txt <- paste(varname," (",vunits,")",sep="")
+                    else ylab_txt <- paste("(",vunits,")",sep="")
                 }
             }
         }
@@ -285,20 +285,20 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
                     axis(side=side,at=l0lab:lnlab,labels=10^(l0lab:lnlab),
                         xaxt="s",yaxt="s",col=1,cex=cex*.8,srt=-90)
                     axis(side=side,at=mtics,line=line,labels=FALSE,col=1,xaxt="s",yaxt="s")
-                    mtext(side=side,line=line+mgp[1]*.8,ylab.txt,col=1,
+                    mtext(side=side,line=line+mgp[1]*.8,ylab_txt,col=1,
                         at=mean(usr[3:4]),srt=-90,cex=cex)
                 }
                 else {
                     axis(side=side,at=l0lab:lnlab,labels=10^(l0lab:lnlab),
                         xaxt="s",yaxt="s",col=1,cex=cex*.8,srt=90)
                     axis(side=side,at=mtics,line=line,labels=FALSE,col=1,xaxt="s",yaxt="s")
-                    mtext(side=side,line=line+mgp[1]*.8,ylab.txt,col=1,cex=cex)
+                    mtext(side=side,line=line+mgp[1]*.8,ylab_txt,col=1,cex=cex)
                 }
                 if (nscales == 1 || length(dnames) == 1) axis(4,labels=FALSE,at=l0lab:lnlab)
             }
             else {
                 # special wind direction tic marks
-                if (wind.dir) {
+                if (wind_dir) {
                     tic <- diff(pretty(ylim1,nint=4))[1]
                     if (((ylim1[2] - ylim1[1]) / tic) < 2) 
                         tic <- diff(pretty(ylim1,nint=5))[1]
@@ -325,26 +325,26 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
                 }
                 # rotate right hand side labels so they're easier to read
                 # (must use at= argument for srt to work)
-                # cat("nscales=",nscales,"length(yaxis.done)=",length(yaxis.done),"side=",side,"at=",at,"line=",line,"ylabels=",paste(ylabels,collapse=","),"\n")
+                # cat("nscales=",nscales,"length(yaxis_done)=",length(yaxis_done),"side=",side,"at=",at,"line=",line,"ylabels=",paste(ylabels,collapse=","),"\n")
                 if (side == 4) {    # right
                     axis(side=side,at=at,line=line,col=1,srt=-90,cex=cex*.8,labels=ylabels)
-                    mtext(side=side,line=line+mgp[1]*.8,ylab.txt,col=1,
+                    mtext(side=side,line=line+mgp[1]*.8,ylab_txt,col=1,
                         at=mean(usr[3:4]),srt=-90,cex=cex)
                 }
-                else if (nscales > 1 || length(yaxis.done) == 0) {
+                else if (nscales > 1 || length(yaxis_done) == 0) {
                     # axis(side=side,line=line,col=1,cex=cex*.8,at=at,labels=ylabels,adj=1)
                     axis(side=side,at=at,line=line,col=1,srt=90,cex=cex*.8,labels=ylabels)
-                    mtext(side=side,line=line+mgp[1]*.8,ylab.txt,col=1,cex=cex)
+                    mtext(side=side,line=line+mgp[1]*.8,ylab_txt,col=1,cex=cex)
                 }
                 if (nscales == 1 || length(dnames) == 1) axis(4,labels=FALSE,at=at)
             }
-            yaxis.done <- c(yaxis.done,yaxis.num)
+            yaxis_done <- c(yaxis_done,yaxis_num)
         }
 
 
         colv <- c(colv,col)
 
-        if (assemble.legend) {
+        if (assemble_legend) {
             if (is.null(stns <- stations(datacol)) || length(stns) == 0 || all(is.na(stns))) {
                 if (multunits)
                     legv <- c(legv,varnameunits)
@@ -379,7 +379,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
 
         icol <- icol + 1
     }
-    if (plot.legend && !is.null(legv)) {
+    if (plot_legend && !is.null(legv)) {
         if (length(legv) != length(colv))
             warning(paste("legend and color vectors are not same length: legend=",
                     paste(legv,collapse=",")," cols=",paste(cols,collapse=",")))
@@ -397,12 +397,12 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
         }
     }
 
-    if (!missing(title) && is.character(title)) title.txt <- title
-    else title.txt <- x@title
+    if (!missing(title) && is.character(title)) title_txt <- title
+    else title_txt <- x@title
 
     if (missing(title) || (is.logical(title) && title) || is.character(title)) {
-        if (is.null(title.txt) || length(title.txt) == 0) title.txt <- dnames
-        plot.dat.title(title.txt,first_plot,last_plot,t1,t2,plot.stns)
+        if (is.null(title_txt) || length(title_txt) == 0) title_txt <- dnames
+        plot_dat_title(title_txt,first_plot,last_plot,t1,t2,plot_stns)
     }
 
     if (logo && last_plot) logo_stamp()
@@ -410,64 +410,64 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
     invisible(NULL)
 }
 
-plot.dat.title <- function(title="",first_plot,last_plot,
+plot_dat_title <- function(title="",first_plot,last_plot,
     t1=dpar("start"),t2=dpar("end"),stns=NULL)
 {
-    this.plot.date <- unlist(as.list(t1)[c("year","mon","day")])
+    this_plot_date <- unlist(as.list(t1)[c("year","mon","day")])
     if (first_plot) {
-        plot.dat.title.save <- NULL
-        plot.dat.date <- this.plot.date
-        plot.dat.stns <- stns
+        plot_dat_title_save <- NULL
+        plot_dat_date <- this_plot_date
+        plot_dat_stns <- stns
     }
     else {
-        plot.dat.date <- NULL
-        if (exists(".plot.dat.date",envir=.isfsEnv))
-            plot.dat.date <- get(".plot.dat.date",envir=.isfsEnv)
-        if (!is.null(plot.dat.date) && any(this.plot.date != plot.dat.date))
-            plot.dat.date <- NULL	# if date changes, don't put in title
+        plot_dat_date <- NULL
+        if (exists(".plot_dat_date",envir=.isfsEnv))
+            plot_dat_date <- get(".plot_dat_date",envir=.isfsEnv)
+        if (!is.null(plot_dat_date) && any(this_plot_date != plot_dat_date))
+            plot_dat_date <- NULL	# if date changes, don't put in title
 
-        plot.dat.stns <- NULL
-        if (exists(".plot.dat.stns",envir=.isfsEnv))
-            plot.dat.stns <- get(".plot.dat.stns",envir=.isfsEnv)
+        plot_dat_stns <- NULL
+        if (exists(".plot_dat_stns",envir=.isfsEnv))
+            plot_dat_stns <- get(".plot_dat_stns",envir=.isfsEnv)
 
-        if (is.null(plot.dat.stns) != is.null(stns) ||
-            (!is.null(stns) && (length(stns) != length(plot.dat.stns) ||
-                    any(sort(stns) != sort(plot.dat.stns)))))
-            plot.dat.stns <- NULL	# if stns change, don't put in title
+        if (is.null(plot_dat_stns) != is.null(stns) ||
+            (!is.null(stns) && (length(stns) != length(plot_dat_stns) ||
+                    any(sort(stns) != sort(plot_dat_stns)))))
+            plot_dat_stns <- NULL	# if stns change, don't put in title
 
-        plot.dat.title.save <- NULL
-        if (exists(".plot.dat.title.save",envir=.isfsEnv))
-            plot.dat.title.save <- get(".plot.dat.title.save",envir=.isfsEnv)
+        plot_dat_title_save <- NULL
+        if (exists(".plot_dat_title_save",envir=.isfsEnv))
+            plot_dat_title_save <- get(".plot_dat_title_save",envir=.isfsEnv)
     }
 
 
     # If title is anything other than length 1 or "",
-    # append title to plot.dat.title.save 
-    # That is, append title to plot.dat.title.save if it is a normal
+    # append title to plot_dat_title_save 
+    # That is, append title to plot_dat_title_save if it is a normal
     # string, like "xxxx", or of length > 1
 
     havetitle <- length(title) != 1 || title != ""
     if (havetitle) {
-        if (length(plot.dat.title.save) != 1 || plot.dat.title.save != "")
-            plot.dat.title.save <- unique(c(plot.dat.title.save,title))
+        if (length(plot_dat_title_save) != 1 || plot_dat_title_save != "")
+            plot_dat_title_save <- unique(c(plot_dat_title_save,title))
         else
-            plot.dat.title.save <- title
+            plot_dat_title_save <- title
     }
 
     if (last_plot) {
-        stn.str <- ""
-        if (!is.null(plot.dat.stns) && length(plot.dat.stns) > 0 &&
-            !(length(plot.dat.stns)==1 && plot.dat.stns==0))
-            if (is.null(names(plot.dat.stns)))
-                stn.str <- paste(stns,collapse=",")
+        stn_str <- ""
+        if (!is.null(plot_dat_stns) && length(plot_dat_stns) > 0 &&
+            !(length(plot_dat_stns)==1 && plot_dat_stns==0))
+            if (is.null(names(plot_dat_stns)))
+                stn_str <- paste(stns,collapse=",")
             else
-                stn.str <- paste(paste(names(stns),"(",stns,")",sep=""),collapse=",")
-            if (nchar(stn.str > 30)) stn.str <- ""
+                stn_str <- paste(paste(names(stns),"(",stns,")",sep=""),collapse=",")
+            if (nchar(stn_str > 30)) stn_str <- ""
 
-            title <- paste(stn.str,"  ",
-                paste(plot.dat.title.save,collapse=","),sep=" ")
+            title <- paste(stn_str,"  ",
+                paste(plot_dat_title_save,collapse=","),sep=" ")
 
-            if (!is.null(plot.dat.date)) {
+            if (!is.null(plot_dat_date)) {
                 t1@time.zone <- t2@time.zone <- getOption("time.zone")
                 date.text <- format(t1,format="%Y %b %d")
                 day1 <- as.list(t1)[["day"]]
@@ -481,12 +481,12 @@ plot.dat.title <- function(title="",first_plot,last_plot,
             mtext(title,outer=TRUE,line=oma[3]-1.5,cex=par("cex")*1.2)
     }
 
-    if (last_plot && !first_plot && exists(".plot.dat.title.save",envir=.isfsEnv))
-        remove(".plot.dat.title.save",envir=.isfsEnv)
-    else assign(".plot.dat.title.save",plot.dat.title.save,envir=.isfsEnv)
+    if (last_plot && !first_plot && exists(".plot_dat_title_save",envir=.isfsEnv))
+        remove(".plot_dat_title_save",envir=.isfsEnv)
+    else assign(".plot_dat_title_save",plot_dat_title_save,envir=.isfsEnv)
 
-    assign(".plot.dat.date",plot.dat.date,envir=.isfsEnv)
-    assign(".plot.dat.stns",plot.dat.stns,envir=.isfsEnv)
+    assign(".plot_dat_date",plot_dat_date,envir=.isfsEnv)
+    assign(".plot_dat_stns",plot_dat_stns,envir=.isfsEnv)
 
     invisible(title)
 }
@@ -555,20 +555,20 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".")
     udunits <- unique(dunits)
 
     # We may need more scales because of the requested lims
-    lim.res <- list()
+    lim_res <- list()
 
     iscale <- 0
-    for (units.str in udunits) {
+    for (units_str in udunits) {
         # logical vector along dunits of variables that have units equal to
         # unit.str
-        umtch <- !is.na(match(dunits,units.str))
+        umtch <- !is.na(match(dunits,units_str))
 
-        # variable names with units equal to units.str
+        # variable names with units equal to units_str
         dnu <- unique(dnames[umtch])
         dnu1 <- words(dnu,1,1,sep=namesep)
-        dnuu <- paste0(dnu,"(",units.str,")")
+        dnuu <- paste0(dnu,"(",units_str,")")
 
-        # ylmtch: for each variable with units equal to units.str,
+        # ylmtch: for each variable with units equal to units_str,
         # the index in lim of its limits
         ylmtch <- match(dnu,names(lim),nomatch=0)
         ylmtch1 <- match(dnu1,names(lim),nomatch=0)
@@ -577,7 +577,7 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".")
         ylmtch[ylmtch == 0] <- ylmtch1[ylmtch == 0]
 
         if (any(ylmtch != 0)) {
-            lim.res[dnuu[ylmtch!=0]] <- lim[ylmtch]
+            lim_res[dnuu[ylmtch!=0]] <- lim[ylmtch]
             iscale <- iscale + 1
             scales[dnuu[ylmtch!=0]] <- iscale
 
@@ -594,7 +594,7 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".")
                 if (FALSE) {
                     warning("variables ",paste(dnu[ylmtch!=0],collapse=","),	
                         " have units \"",
-                        units.str, "\" but have different limits=",
+                        units_str, "\" but have different limits=",
                         paste(names(lim[ylmtch]),lim[ylmtch],sep="=",collapse=","),"\n")
                 }
                 ylmtchk <- ylmtch[ylmtch!=0][-1][chk]	# indices into lim
@@ -626,14 +626,14 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".")
                         })),na.rm=TRUE)
 
 
-            lim.res[dnuu[ylmtch==0]] <- list(lim)
+            lim_res[dnuu[ylmtch==0]] <- list(lim)
             iscale <- iscale + 1
             scales[dnuu[ylmtch==0]] <- iscale
         }
     }
 
-    # dn <- names(lim.res)
-    lim <- list(nscales=iscale,lim=lim.res,scales=scales,dupunits=dupunits)
+    # dn <- names(lim_res)
+    lim <- list(nscales=iscale,lim=lim_res,scales=scales,dupunits=dupunits)
     cat("nscales=",iscale," units=",paste("\"",dunits,"\"",sep="",collapse=","),"\n")
 
     lim
