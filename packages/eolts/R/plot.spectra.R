@@ -74,7 +74,7 @@ setMethod("plot","quadspectra",
 
 plot.spectra <- function(x,log,multfreq=T,falloff,
     grid=F,type="b",xlab,ylab,xlim,ylim,
-    xaxt,yaxt,tlwd=par("lwd"),col,logo=T,mgp,
+    xaxt,yaxt,tlwd=par("lwd"),col,logo=T,mgp,tlab=TRUE,
     ...)
 {
 
@@ -220,8 +220,10 @@ plot.spectra <- function(x,log,multfreq=T,falloff,
         }
     }
 
-    tlab <- paste(format(start(x),format="%Y %b %d %H:%M:%OS"),"-",format(end(x),format="%Y %b %d %H:%M:%OS %Z"))
-    mtext(tlab,side=1,line=mgp[1]+1,adj=0.5)
+    if (tlab) {
+        tlab <- paste(format(start(x),format="%Y %b %d %H:%M:%OS"),"-",format(end(x),format="%Y %b %d %H:%M:%OS %Z"))
+        mtext(tlab,side=1,line=mgp[1]+1,adj=0.5)
+    }
 
     lim <- par("usr")
 
