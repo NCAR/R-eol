@@ -27,7 +27,7 @@ find_datasets <- function(
     if (length(ncds) == 0)
         warning(paste0("no directories found on",path," matching pattern: \"",pattern,"\""))
 
-    datasets <- list()
+    dsets <- list()
 
     for (ncd in ncds) {
 
@@ -110,16 +110,37 @@ find_datasets <- function(
             # if ("calfile_version" %in% names(attrs))
             # browser()
 
-            datasets[[dname]] <- c(list(enable=TRUE,desc=desc,
+            dsets[[dname]] <- c(list(enable=TRUE,desc=desc,
                 calpath=calpaths, ncd=ncpath,ncf=ncpat,datacoords=datacoords),
                 int_attrs)
         }
     }
-    assign(".datasets",datasets,envir=.projectEnv)
-    datasets
+    assign(".datasets",dsets,envir=.projectEnv)
+    dsets
 }
 
-dataset <- function(which,verbose=F,datasets=NULL)
+datasets <- function(all=FALSE)
+{
+    if (exists(".projectEnv",where=1,inherits=FALSE) && exists(".projectEnv",where=2,inherits=TRUE))
+        rm(".projectEnv",pos=1,inherits=FALSE)
+
+    if (!exists(".projectEnv"))
+        stop(".projectEnv not found. Should be located in project .RData")
+
+    if (!exists(".datasets",envir=.projectEnv)) {
+        warning(".datasets not found on .projectEnv. Do find_datasets() to create the list")
+        dsets <- list()
+    }
+    else dsets <- get(".datasets",envir=.projectEnv)
+
+    # discard datasets that are not enabled.
+    if (!all) 
+        dsets <- dsets[sapply(dsets,function(x) { ifelse (is.null(x$enable),FALSE,x$enable) })]
+
+    dsets
+}
+
+dataset <- function(which,verbose=F)
 {
     
     # select one from a collection of datasets.
@@ -136,23 +157,7 @@ dataset <- function(which,verbose=F,datasets=NULL)
     #   sonicdir directory of sonic anemometer cal files, which is copied to the
     #           environment variable SONIC_DIR
 
-    # remove duplicate .projectEnv from .GlobalEnv
-    if (exists(".projectEnv",where=1,inherits=FALSE) && exists(".projectEnv",where=2,inherits=TRUE))
-        rm(".projectEnv",pos=1,inherits=FALSE)
-
-    if (!exists(".projectEnv"))
-        stop(".projectEnv not found. Should be located in project .RData")
-
-    if (is.null(datasets)) {
-        if (!exists(".datasets",envir=.projectEnv)) {
-            warning(".datasets not found on .projectEnv. Do find_datasets() to create the list")
-            datasets <- list()
-        }
-        else datasets <- get(".datasets",envir=.projectEnv)
-    }
-
-    # discard datasets that are not enabled.
-    datasets <- datasets[sapply(datasets,function(x) { ifelse (is.null(x$enable),FALSE,x$enable) })]
+    dsets <- isfs::datasets()
 
     if (missing(which)) {
         if(exists("current_dataset",envir=.projectEnv))
@@ -163,22 +168,22 @@ dataset <- function(which,verbose=F,datasets=NULL)
             cat(paste("************************************************\n",
                 'Choose one of the following by number or name: dataset(1), dataset("name"):\n',
                 paste(
-                    sapply(1:length(datasets),function(i) sprintf("%2d",i)),
-                    sapply(names(datasets),function(s) sprintf("%-12s",paste("\"",s,"\"",sep=""))),
-                    sapply(datasets,function(s) sprintf("%s",s$desc)),
+                    sapply(1:length(dsets),function(i) sprintf("%2d",i)),
+                    sapply(names(dsets),function(s) sprintf("%-12s",paste("\"",s,"\"",sep=""))),
+                    sapply(dsets,function(s) sprintf("%s",s$desc)),
                     sep=" ",collapse="\n"),"\n",
                 "************************************************\n",
                 "current dataset is \"",current,"\"\n",sep=""))
         }
-        return(datasets[current])
+        return(dsets[current])
     }
 
     if (is.list(which)) {
         if (length(which) != 0) stop("which should be character or a named list of length 1")
         which <- names(which)
     }
-    else if (!is.character(which)) which <- names(datasets)[which]
-    dset <- datasets[[which]]
+    else if (!is.character(which)) which <- names(dsets)[which]
+    dset <- dsets[[which]]
     if (is.null(dset)) stop(paste("dataset",which,"not found"))
 
     # browser()
@@ -225,5 +230,5 @@ dataset <- function(which,verbose=F,datasets=NULL)
     }
 
     # return a list of length one, so that it has a name
-    invisible(datasets[which])
+    invisible(dsets[which])
 }
