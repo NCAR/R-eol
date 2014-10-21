@@ -1214,7 +1214,7 @@ other_dat_func <- function(what,whine=TRUE)
     NULL
 }
 
-d.by.dt <- function(x,dtmax=NULL,lag=2,differences=1)
+d.by.dt <- function(x,dtmax=NULL,lag=2,differences=1,time=0)
 {
     # Compute time derivative (per second) of a time series:
     #    dx/dt(i) <- (x(i+1) - x(i-1)) / (t(i+1) - t(i-1))
@@ -1226,14 +1226,27 @@ d.by.dt <- function(x,dtmax=NULL,lag=2,differences=1)
     # arbitrary
     if (is.null(dtmax)) dtmax <- deltat(x)[1] * 10
 
-    ts <- as.numeric(tspar(x))
+    ts <- as.numeric(positions(x))
 
     dx <- diff(x@data,lag=lag)
     dt <- diff(ts,lag=lag)
 
-    mx <- -(1:(lag-1))
-    if (lag > 1) mx <- c(mx,-((nr-lag+2):nr))
-    ts <- ts[mx]
+    # result of diff is lag points shorter
+    if (time == 0) {
+        # middle times
+        mx <- -((nr-lag-1):nr)
+        ts <- ts[mx] + dt / 2
+    }
+    else if (time == -1) {
+        # first times
+        mx <- -((nr-lag-1):nr)
+        ts <- ts[mx]
+    }
+    else if (time == 1) {
+        # end times
+        mx <- -(1:lag)
+        ts <- ts[mx]
+    }
 
     keep <- dt > 0 & dt < dtmax
     dx <- dx[keep,]
@@ -1247,7 +1260,7 @@ d.by.dt <- function(x,dtmax=NULL,lag=2,differences=1)
             as(ts,"utime"),units=dunits,stations=stns))
     #
     # recursively call again if differences > 1
-    if (differences > 1) x <- d.by.dt(x,dtmax=dtmax,lag=lag,differences=differences-1)
+    if (differences > 1) x <- d.by.dt(x,dtmax=dtmax,lag=lag,differences=differences-1,time=time)
     x
 }
 
