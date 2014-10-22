@@ -211,12 +211,9 @@ plot.spectra <- function(x,log,multfreq=T,falloff,
     legv <- dns
     ncolor <- length(col)
     for (ic in 1:nc) {
-        par(new=T)
         if (any(!is.na(x@data[,ic]))) {
             # browser()
-            plot(x@frequencies,x@data[,ic],log=logarg,axes=F,xaxt=xaxt,yaxt=yaxt,
-                xlab="",ylab="",col=col[(ic-1)%%ncolor+1],
-                xlim=frange,ylim=yrange,type=type,lwd=tlwd,...)
+            lines(x@frequencies,x@data[,ic],type=type, col=col[(ic-1)%%ncolor+1],lwd=tlwd,...)
         }
     }
 

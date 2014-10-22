@@ -218,11 +218,12 @@ subscript.op.xspectra = function(x,i,j,k,...,drop=FALSE)
     has.j <- !missing(j)
     if(!has.j) j <- NULL
 
+
     has.k <- !missing(k)
     if(has.k) {
         if (is.null(j)) j = x@combinations[,k]
         else {
-            dns <- dimnames(x@combinations)[[1]]
+            dns <- rownames(x@combinations)
             if (is.character(j)) j <- match(j,dns,nomatch=0)
             if (is.character(k)) k <- match(k,dns,nomatch=0)
             mx <- k > j
@@ -241,6 +242,7 @@ subscript.op.xspectra = function(x,i,j,k,...,drop=FALSE)
     }
 
     if (is.null(j)) j = 1:ncol(x)
+    else if (is.character(j)) j <- match(j,colnames(x),nomatch=0)
 
     combs = x@combinations
     combs[match(combs,j,nomatch=0)==0] = NA
