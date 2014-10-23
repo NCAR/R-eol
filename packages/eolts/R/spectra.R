@@ -242,7 +242,11 @@ subscript.op.xspectra = function(x,i,j,k,...,drop=FALSE)
     }
 
     if (is.null(j)) j = 1:ncol(x)
-    else if (is.character(j)) j <- match(j,colnames(x),nomatch=0)
+    else {
+        # character string j may match more than one column
+        if (is.character(j)) j <- !is.na(match(colnames(x),j))
+        j <- (1:ncol(x))[j]
+    }
 
     combs = x@combinations
     combs[match(combs,j,nomatch=0)==0] = NA
