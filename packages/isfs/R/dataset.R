@@ -43,12 +43,12 @@ find_datasets <- function(
             ncpat <- sub("(20[0-9][0-9])|(1[3-9][0-9][0-9])","%Y",ncdf)
 
             # If no match, try a 2 digit year starting with 8 or 9
-            if (all(ncpat == ncdf)) {
-                ncpat <- sub("[8-9][0-9]","%Y",ncdf)
+            if (!all(grepl("%Y",ncpat,fixed=TRUE))) {
+                ncpat <- sub("[8-9][0-9]","%y",ncdf)
 
-                # If no match try any 2 digit year
-                if (all(ncpat == ncdf))
-                    ncpat <- sub("[0-9][0-9]","%Y",ncdf)
+                # If not all files match, try any leading 2 digit year
+                if (!all(grepl("%y",ncpat,fixed=TRUE)))
+                    ncpat <- sub("[0-9][0-9]","%y",ncdf)
             }
 
             ncpat <- sub("(%[yY][^01]*)[01][0-9]","\\1%m",ncpat)
