@@ -24,12 +24,21 @@ set_project <- function(root="ISFF",project=NULL,platform="ISFF")
         if ("CVS" %in% projects)
             projects <- projects[-match("CVS",projects)]
 
-        if (length(projects) < 1) stop(paste("No directories found in",projpath))
-        if (length(projects) > 1) {
+        lp <- length(projects)
+        if (lp < 1) stop(paste("No directories found in",projpath))
+        if (lp > 1) {
             ip <- character(0)
             while(length(ip) == 0) {
                 cat("Choose a project by number (0 to quit):\n")
-                cat(paste0(paste(1:length(projects),projects,sep=": "),"\n",collapse=""))
+                # add number, use format so they're all the same length
+                strs <- format(paste(1:lp,projects,sep=": "))
+                # 3 to a line
+                strs <- paste0(unlist(sapply(seq(from=1,to=lp,by=3),
+                    function(i){
+                        ix <- i:(min(i+2,lp))
+                        paste0(paste0(strs[ix],collapse=" "),"\n")
+                    })),collapse="")
+                cat(strs)
                 ip <- as.integer(readLines(n=1))
                 if (is.na(ip) || ip == 0) return(invisible(NULL))
                 if (ip > length(projects)) cat("Invalid entry\n")
