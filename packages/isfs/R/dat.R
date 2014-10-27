@@ -1214,7 +1214,7 @@ other_dat_func <- function(what,whine=TRUE)
     NULL
 }
 
-d.by.dt <- function(x,dtmax=NULL,lag=2,differences=1,time=0)
+d_by_dt <- function(x,dtmax=NULL,lag=2,differences=1,time=0)
 {
     # Compute time derivative (per second) of a time series:
     #    dx/dt(i) <- (x(i+1) - x(i-1)) / (t(i+1) - t(i-1))
@@ -1260,7 +1260,12 @@ d.by.dt <- function(x,dtmax=NULL,lag=2,differences=1,time=0)
             as(ts,"utime"),units=dunits,stations=stns))
     #
     # recursively call again if differences > 1
-    if (differences > 1) x <- d.by.dt(x,dtmax=dtmax,lag=lag,differences=differences-1,time=time)
+    if (differences > 1) x <- d_by_dt(x,dtmax=dtmax,lag=lag,differences=differences-1,time=time)
     x
 }
 
+d.by.dt <- function(x,dtmax=NULL,lag=2,differences=1,time=0)
+    # old name for this function
+{
+    d_by_dt(x,dtmax=dtmax,lag=lag,differences=differences,time=time)
+}

@@ -148,8 +148,8 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
             }
 
             if (doderiv) {
-                txss <- d.by.dt(txss)
-                # ......smooth d.by.dt(Tsoil) by center averaging over 35 minutes
+                txss <- d_by_dt(txss,time=1)
+                # ......smooth d_by_dt(Tsoil) by center averaging over 35 minutes
                 if (is.null(dpar("avg"))) txss <- average(txss,35*60,5*60)
             }
 

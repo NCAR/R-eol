@@ -6,7 +6,7 @@ useDynLib(isfs)
 export(
     sync,
     dat,
-    d.by.dt,
+    d_by_dt, d.by.dt,
     derived,
     expand,
     other_dat_func,
