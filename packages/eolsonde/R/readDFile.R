@@ -116,7 +116,7 @@ readDFile <- function (file, checkStatus=dpar("checkSondeStatus"), sondeRecords=
     numnames <- dnames[is.na(match(dnames,c(strnames,utcnames)))]
 
     # convert data columns to numeric
-    d2 <- sapply(numnames,function(n)
+    numdata <- sapply(numnames,function(n)
         {
             # if (n == "Alt_gp") browser()
             x <- type.convert(sdng[,n],as.is=TRUE)
@@ -137,18 +137,18 @@ readDFile <- function (file, checkStatus=dpar("checkSondeStatus"), sondeRecords=
     # type of record, A= from aircraft data system, P=pre-launch, S=sounding
     rectypes <- c("A","P","S")
 
+    # zero-based index into rectypes of the type of each sounding record,
+    # matching the first character in sdng[,"status"] with rectypes
     rectype <- match(substring(sdng[,"status"],1,1),rectypes) - 1
-    matchtype <- 1:length(rectypes) - 1
-    if (!is.null(dpar("sondeRecords")) && !is.na(dpar("sondeRecords")))
-        matchtype <- match(dpar("sondeRecords"),rectypes) - 1
 
-    # must have two digits after leading character
+    # must have two digits, 0 or 1, after leading character
     # PTU and GPS status
     status <- match(substring(sdng[,"status"],2,3),c("00","01","10","11")) - 1
 
     rectype[is.na(status)] <- NA
 
-    sdng <- matrix(c(avaps,status + rectype * 10,as.vector(d2)),ncol=ncol(d2)+2,dimnames=list(NULL,c(strnames,numnames)))
+    sdng <- matrix(c(avaps,status + rectype * 10,as.vector(numdata)),
+        ncol=ncol(numdata)+2,dimnames=list(NULL,c(strnames,numnames)))
 
     units <- rep("",length(colnames(sdng)))
     mu <- match(names(hunits),colnames(sdng),nomatch=0)
@@ -158,6 +158,11 @@ readDFile <- function (file, checkStatus=dpar("checkSondeStatus"), sondeRecords=
     sdng <- dat(nts(sdng,utc,units=units))
 
     if (checkStatus) {
+        # zero-based indices into rectype for the types that are to be kept
+        matchtype <- 1:length(rectypes) - 1
+        if (!is.null(dpar("sondeRecords")) && !is.na(dpar("sondeRecords")))
+            matchtype <- match(dpar("sondeRecords"),rectypes) - 1
+
         ok <- !is.na(rectype) & !is.na(match(rectype,matchtype)) & !is.na(avaps)
 
         sdng <- sdng[ok,]
