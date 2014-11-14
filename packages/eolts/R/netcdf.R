@@ -53,11 +53,12 @@ netcdf <- function(
         server=server,interval=interval,cdlfile=cdlfile)
 
     if (length(file) == 1) {
-        hastimefmt <- any(sapply(c("%Y","%m","%d","%b","%H","%M","%S"),
+        hastimefmt <- any(sapply(c("%Y","%y","%m","%d","%b","%H","%M","%S"),
                 function(x,str){grepl(x,str,fixed=TRUE)},str=file))
         if (lenfile == 0) {
             if (hastimefmt) {
                 nmformat <- gsub("%Y","[12][0-9]{3}",file[1],fixed=TRUE)
+                nmformat <- gsub("%y","[0-9]{2}",nmformat,fixed=TRUE)
                 nmformat <- gsub("%m","[01][0-9]",nmformat,fixed=TRUE)
                 nmformat <- gsub("%d","[0-3][0-9]",nmformat,fixed=TRUE)
                 nmformat <- gsub("%H","[0-2][0-9]",nmformat,fixed=TRUE)
@@ -314,7 +315,9 @@ setMethod("variables",
         names.only <- TRUE
         if (hasArg(names.only)) names.only <- args$names.only
 
-        x <- .Call("get_variables",con,all,PACKAGE="eolts")
+        ncverbose <- dpar("ncverbose")
+
+        x <- .Call("get_variables",con,all,as.integer(ncverbose),PACKAGE="eolts")
         # browser()
         if (names.only) {
             x <- sapply(x,function(x)

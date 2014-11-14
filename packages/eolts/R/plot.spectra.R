@@ -261,9 +261,7 @@ plot.spectra <- function(x,log,multfreq=T,falloff,
         horiz_legend(lx,ly,legv,col=colv,lty=rep(1,length(colv)),bty="n",cex=cex*1.0)
     }
 
-    assign("spectra.multfreq",multfreq,envir=.eoltsEnv);
-    # assign("spectra.logx",logx,0);
-    # assign("spectra.logy",logy,0);
+    assign("spectra_multfreq",multfreq,envir=.eoltsEnv);
 
     # lim <- par("usr")
     # cat("logarg=",logarg,"lim=",lim,"xaxt=",par("xaxt"),"yaxt=",par("yaxt"),"\n")
@@ -286,7 +284,7 @@ lines.spectra <- function(x,xaxt=par("xaxt"),...)
 {
     if (ncol(x) > 1) stop("lines cannot plot more than one column of spectra")
 
-    multfreq <- get("spectra.multfreq",envir=.eoltsEnv)
+    multfreq <- get("spectra_multfreq",envir=.eoltsEnv)
     if (multfreq) x <- x * x@frequencies
 
     if (xaxt == "l") {
@@ -306,7 +304,7 @@ points.spectra <- function(x,xaxt=par("xaxt"),...)
 {
     if (ncol(x) > 1) stop("points cannot plot more than one column of spectra")
 
-    multfreq <- get("spectra.multfreq",envir=.eoltsEnv)
+    multfreq <- get("spectra_multfreq",envir=.eoltsEnv)
     if (multfreq) x <- x * x@frequencies
 
     if (xaxt == "l") {

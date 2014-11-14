@@ -97,7 +97,7 @@ SEXP close_netcdf(SEXP obj)
     return ans;
 }
 
-SEXP get_variables(SEXP obj, SEXP allobj)
+SEXP get_variables(SEXP obj, SEXP allobj, SEXP ncverbose)
 {
 #ifdef DEBUG
     Rprintf("get_variables\n");
@@ -109,10 +109,13 @@ SEXP get_variables(SEXP obj, SEXP allobj)
     }
 
     bool all = LOGICAL(allobj)[0];
+    int verbose = 0;
+
+    if (Rf_length(ncverbose) > 0) verbose = INTEGER(ncverbose)[0];
 
     try {
-        if (all) return con->getVariables();
-        else return con->getTimeSeriesVariables();
+        if (all) return con->getVariables(verbose);
+        else return con->getTimeSeriesVariables(verbose);
     }
     catch (const NcException& nce) {
         Rf_error(nce.toString().c_str());
@@ -655,7 +658,7 @@ void R_netcdf::openFileSet(SEXP obj,SEXP files)
     _fileset = new NcFileSet(fullnames,tnames);
 }
 
-SEXP R_netcdf::getVariables() throw(NcException)
+SEXP R_netcdf::getVariables(int verbose) throw(NcException)
 {
 #ifdef DEBUG
     Rprintf("getVariables\n");
@@ -674,6 +677,9 @@ SEXP R_netcdf::getVariables() throw(NcException)
         Rprintf("file=%s, open=%d\n",ncf->getName().c_str(),ncf->isOpen());
 #endif
         if (!ncf->isOpen()) continue;
+
+        if (verbose > 0)
+            Rprintf("Reading %s for variable names\n", ncf->getName().c_str());
 
         int nvars = ncf->getNumVariables();
         for (int ivar = 0; ivar < nvars; ivar++) {
@@ -718,7 +724,7 @@ SEXP R_netcdf::getVariables() throw(NcException)
     return result;
 }
 
-SEXP R_netcdf::getTimeSeriesVariables() throw(NcException)
+SEXP R_netcdf::getTimeSeriesVariables(int verbose) throw(NcException)
 {
 
     int nfiles = _fileset->getNFiles();
@@ -732,6 +738,9 @@ SEXP R_netcdf::getTimeSeriesVariables() throw(NcException)
         NcFile* ncf = _fileset->getNcFile(ifile);
         if (!ncf) continue;
         if (!ncf->isOpen()) continue;
+
+        if (verbose > 0)
+            Rprintf("Reading %s for time series variable names\n", ncf->getName().c_str());
 
         const NcDim* timeDim = ncf->getTimeDimension(timeDimensionNames);
 
