@@ -520,9 +520,13 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".")
                     function(n)
                     {
                         lim <- tryCatch(
-                            range(clip(data[,dnames==n]),na.rm=TRUE),
-                            warning=function(e)c(Inf,-Inf)
-                        )
+                            range(clip(data[,dnames==n]),na.rm=TRUE,finite=TRUE),
+                                warning=function(e)e)
+                        if (is(lim,"warning")) {
+                            # can check if (lim$call[1] == call("clip")
+                            if (lim$call[1] == call("min")) lim <- c(Inf,-Inf)
+                            else lim <- range(clip(data[,dnames==n]),na.rm=TRUE,finite=TRUE)
+                        }
                         if (axs == "r") {
                             dl <- lim[2] - lim[1]
                             lim[1] <- lim[1] - 0.04 * dl
@@ -531,7 +535,7 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".")
                         l <- list()
                         l[[n]] <- lim
                         l
-                    })),na.rm=TRUE)
+                    })),na.rm=TRUE,finite=TRUE)
         # if xaxs or yaxs is "r", extend axis by 4% on each end
         return(list(nscales=1,lim=lim,scales=scales))
     }
@@ -612,9 +616,13 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".")
                         function(n)
                         {
                             lim <- tryCatch(
-                                range(clip(data[,dnames==n]),na.rm=TRUE),
-                                warning=function(e)c(Inf,-Inf)
-                            )
+                                range(clip(data[,dnames==n]),na.rm=TRUE,finite=TRUE),
+                                    warning=function(e)e)
+                            if (is(lim,"warning")) {
+                                # can check if (lim$call[1] == call("clip")
+                                if (lim$call[1] == call("min")) lim <- c(Inf,-Inf)
+                                else lim <- range(clip(data[,dnames==n]),na.rm=TRUE,finite=TRUE)
+                            }
                             if (axs == "r") {
                                 dl <- lim[2] - lim[1]
                                 lim[1] <- lim[1] - 0.04 * dl
@@ -623,7 +631,7 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".")
                             l <- list()
                             l[[n]] <- lim
                             l
-                        })),na.rm=TRUE)
+                        })),na.rm=TRUE,finite=TRUE)
 
 
             lim_res[dnuu[ylmtch==0]] <- list(lim)
