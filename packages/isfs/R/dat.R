@@ -1234,12 +1234,12 @@ d_by_dt <- function(x,dtmax=NULL,lag=2,differences=1,time=0)
     # result of diff is lag points shorter
     if (time == 0) {
         # middle times
-        mx <- -((nr-lag-1):nr)
+        mx <- -((nr-lag+1):nr)
         ts <- ts[mx] + dt / 2
     }
     else if (time == -1) {
         # first times
-        mx <- -((nr-lag-1):nr)
+        mx <- -((nr-lag+1):nr)
         ts <- ts[mx]
     }
     else if (time == 1) {
