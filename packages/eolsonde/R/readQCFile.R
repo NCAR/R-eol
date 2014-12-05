@@ -135,9 +135,9 @@ writeQCFile <- function(sdng,file)
 
     if (is.null(attr(sdng,"header"))) stop("sdng has no header attribute")
 
-    if (grepl(".gz$",file)) {
+    if (grepl(".gz$",file))
         con <- gzfile(file,open="w")
-    else if (grepl(".bz2$",file)) {
+    else if (grepl(".bz2$",file))
         con <- bzfile(file,open="w")
     else
         con <- file(file,open="w")
