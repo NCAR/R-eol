@@ -17,11 +17,35 @@ readDFile <- function (file, checkStatus=dpar("checkSondeStatus"), sondeRecords=
     #   AVAPS-D04 ???
     cols <- scan(file=file,what=list(avaps="",type=""),flush=TRUE,quiet=TRUE)
 
+    # AVAPS-T01
+    txt <- grepl("AVAPS-T",cols$avaps,fixed=TRUE)
+
     # AVAPS-Txx COM lines
-    com <- grepl("AVAPS-T",cols$avaps,fixed=TRUE) & grepl("COM",cols$type,fixed=TRUE)
+    com <- txt & grepl("COM",cols$type,fixed=TRUE)
 
     # AVAPS-Dxx lines are data
     drows <- grepl("AVAPS-D",cols$avaps,fixed=TRUE)
+
+    con <- file(file,open="r")
+
+    header <- ""
+    trailer <- ""
+
+    # header is all txt lines before data
+    dn <- (1:length(drows))[drows]  # line numbers of data lines
+    if (dn[1] > 1)
+        header <- readLines(con,n=dn[1]-1)
+
+    # read rest of file. R man page warns against using seek on Windows.
+    trailer <- readLines(con,n=-1)
+    close(con)
+
+    ntrail <- length(drows) - dn[length(dn)]
+
+    if (ntrail > 0) {
+        lt <- length(trailer)
+        trailer <- trailer[(lt-ntrail+1):lt]
+    }
 
     # Variable names are in COM lines 1 and 2.
     hdr <- seq(along=com)[com][1]
@@ -193,5 +217,7 @@ readDFile <- function (file, checkStatus=dpar("checkSondeStatus"), sondeRecords=
     if (any(diff(di) < 0))
         sdng <- sdng[di,]
 
+    attr(sdng,"header") <- header
+    attr(sdng,"trailer") <- trailer
     sdng
 }
