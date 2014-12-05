@@ -129,11 +129,19 @@ readQCFile <- function(file)
     sdng
 }
 
-writeQCFile <- function(file,sdng)
+writeQCFile <- function(sdng,file)
 {
+    if (missing(file)) stop("file argument must be specified")
+
     if (is.null(attr(sdng,"header"))) stop("sdng has no header attribute")
 
-    con <- file(file,open="w")
+    if (grepl(".gz$",file)) {
+        con <- gzfile(file,open="w")
+    else if (grepl(".bz2$",file)) {
+        con <- bzfile(file,open="w")
+    else
+        con <- file(file,open="w")
+
     writeLines(attr(sdng,"header"),con)
 
     for (i in 1:nrow(sdng)) {
