@@ -4,7 +4,7 @@ import(eolts, isfs, lattice, maps)
 # exported functions
 export(
     set_sproject,
-    sdataset,
+    sdataset, sdatasets,
     readDFile,
     readQCFile, writeQCFile,
     readSoundings,

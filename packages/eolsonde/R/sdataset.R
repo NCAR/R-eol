@@ -19,9 +19,9 @@ sdataset <- function(dataset=NULL,
     path=file.path(Sys.getenv("SONDE_ROOT"),"projects",Sys.getenv("SPROJECT"),Sys.getenv("SPLATFORM"),"data"))
 {
 
-    if (is.null(dataset)) {
+    if (is.null(dataset) || is.numeric(dataset)) {
         datasets <- sdatasets(path=path)
-        if (length(datasets) > 1) {
+        if (is.null(dataset) && length(datasets) > 1) {
             ip <- character(0)
             while(length(ip) == 0) {
                 cat("Choose a dataset by number (0 to quit):\n")
@@ -32,6 +32,8 @@ sdataset <- function(dataset=NULL,
             }
             dataset <- datasets[ip]
         }
+        else if (is.numeric(dataset))
+            dataset <- datasets[dataset]
         else dataset <- datasets
     }
 
