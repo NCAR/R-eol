@@ -9,8 +9,8 @@
 
 set_sproject <- function(root="SONDE_ROOT",project=NULL,platform=NULL)
 {
-    curproj <- Sys.getenv("PROJECT",unset=NA)
-    curplat <- Sys.getenv("PLATFORM",unset=NA)
+    curproj <- Sys.getenv("SPROJECT",unset=NA)
+    curplat <- Sys.getenv("SPLATFORM",unset=NA)
 
     rootpath <- Sys.getenv(root,unset=NA)
     if (is.na(rootpath)) stop(paste(root,"environment variable not found"))
@@ -58,8 +58,8 @@ set_sproject <- function(root="SONDE_ROOT",project=NULL,platform=NULL)
         else platform <- platforms
     }
 
-    Sys.setenv(PROJECT=project)
-    Sys.setenv(PLATFORM=platform)
+    Sys.setenv(SPROJECT=project)
+    Sys.setenv(SPLATFORM=platform)
     projdata <- file.path(projpath,platform,"R",".RData")
 
     curpos <- NULL
@@ -81,9 +81,9 @@ set_sproject <- function(root="SONDE_ROOT",project=NULL,platform=NULL)
             cat("attaching",projdata,", pos=",curpos,"\n")
             attach(projdata,pos=curpos)
 
-            if (existsFunction("project_init")) {
-                cat("doing: project_init()\n")
-                project_init()
+            if (existsFunction("sproject_init")) {
+                cat("doing: sproject_init()\n")
+                sproject_init()
             }
             else if (existsFunction("project.init")) {
                 cat("doing: project.init()\n")

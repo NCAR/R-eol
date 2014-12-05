@@ -6,7 +6,7 @@ export(
     set_sproject,
     sdataset,
     readDFile,
-    readQCFile,
+    readQCFile, writeQCFile,
     readSoundings,
     sprofile,
     svprofile,

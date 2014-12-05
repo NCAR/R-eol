@@ -8,8 +8,8 @@
 # file LICENSE in this package.
 
 readSoundings <- function(
-    dir=c(file.path(Sys.getenv("SONDE_ROOT"),"projects",Sys.getenv("PROJECT"),
-        Sys.getenv("PLATFORM"),"data",Sys.getenv("DATASET")),
+    dir=c(file.path(Sys.getenv("SONDE_ROOT"),"projects",Sys.getenv("SPROJECT"),
+        Sys.getenv("SPLATFORM"),"data",Sys.getenv("SDATASET")),
         Sys.getenv("SONDE_DATA")),
     file=c("D%Y%m%d_%H%M%S_P"),
     start=dpar("start"),end=dpar("end")

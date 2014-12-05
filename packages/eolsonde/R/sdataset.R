@@ -7,17 +7,20 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
+sdatasets <- function(
+    path=file.path(Sys.getenv("SONDE_ROOT"),"projects",Sys.getenv("SPROJECT"),Sys.getenv("SPLATFORM"),"data"))
+{
+    datasets <- list.dirs(path,full.names=FALSE,recursive=FALSE)
+    if (length(datasets) < 1) stop(paste("No directories found in",path))
+    datasets
+}
+
 sdataset <- function(dataset=NULL,
-    path=file.path(Sys.getenv("SONDE_ROOT"),"projects",Sys.getenv("PROJECT"),Sys.getenv("PLATFORM"),"data"))
+    path=file.path(Sys.getenv("SONDE_ROOT"),"projects",Sys.getenv("SPROJECT"),Sys.getenv("SPLATFORM"),"data"))
 {
 
-    if (!exists(".projectEnv"))
-        .projectEnv <<- new.env(parent=emptyenv())
-
     if (is.null(dataset)) {
-        datasets <- list.dirs(path,full.names=FALSE,recursive=FALSE)
-
-        if (length(datasets) < 1) stop(paste("No directories found in",path))
+        datasets <- sdatasets(path=path)
         if (length(datasets) > 1) {
             ip <- character(0)
             while(length(ip) == 0) {
@@ -32,7 +35,6 @@ sdataset <- function(dataset=NULL,
         else dataset <- datasets
     }
 
-    Sys.setenv(DATASET=dataset)
-
+    Sys.setenv(SDATASET=dataset)
     dataset
 }
