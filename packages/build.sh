@@ -128,6 +128,10 @@ fi
 
 if $do_eolsonde; then
 
+    cd eolsonde
+    autoreconf
+    cd -
+
     rm -f eolsonde_*.tar.gz
 
     # make a backup of the eolsonde/DESCRIPTION file before changing the Version field

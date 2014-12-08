@@ -1,6 +1,8 @@
 
 import(eolts, isfs, lattice, maps)
 
+useDynLib(eolsonde)
+
 # exported functions
 export(
     set_sproject,
@@ -16,6 +18,8 @@ export(
 
     get.sounding.histograms,
     get.sounding.weathersymbols,
-    station.symbol
+    station.symbol,
+
+    geoid_height
 )
 
