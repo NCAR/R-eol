@@ -6,7 +6,7 @@ Return geoid height in meters at a point.
 \description{
 This function uses the \href{http://geographiclib.sourceforge.net/}{GeographicLib} C++ library and associated geoid datasets to compute the height of the geoid at a given latitude and longitude.
 
-From the GeographicLib web site: \dQuote{The geoid height, N, can be used to convert a height above the ellipsoid, h, to the corresponding height above the geoid (roughly the height above mean sea level), H, using the relations: \eqn{h = N + H} and \eqn{H = −N + h}}.
+From the GeographicLib web site: \dQuote{The geoid height, N, can be used to convert a height above the ellipsoid, h, to the corresponding height above the geoid (roughly the height above mean sea level), H, using the relations: \eqn{h = N + H} and \eqn{H = -N + h}}.
 }
 \usage{
 geoid_height(lat, lon, name = "egm96-5", cubic = TRUE)
