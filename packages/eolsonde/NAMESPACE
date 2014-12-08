@@ -6,9 +6,9 @@ useDynLib(eolsonde)
 # exported functions
 export(
     set_sproject,
-    sdataset,
+    sdataset, sdatasets,
     readDFile,
-    readQCFile,
+    readQCFile, writeQCFile,
     readSoundings,
     sprofile,
     svprofile,

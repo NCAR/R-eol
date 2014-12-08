@@ -9,7 +9,7 @@
 
 readQCFile <- function(file)
 {
-    hdrw1 <- scan(file=file,what=list(w1=""),flush=TRUE,quiet=TRUE,nlines=30)
+    hdrw1 <- scan(file=file,what=list(w1=""),flush=TRUE,quiet=TRUE,nlines=50)
 
     # Find line containing launch time
     # UTC Launch Time (y,m,d,h,m,s):             2008, 08, 15, 17:38:56
@@ -32,6 +32,9 @@ readQCFile <- function(file)
 
     # line number starting with /
     lhdr <- seq(along=lhdr)[lhdr][1]
+
+    # save all of header, assume 3 lines after line wth '/'
+    header <- scan(file=file,what="",sep='\n',nlines=lhdr+3,quiet=TRUE)
 
     # read header line containing variable names
     varnames <- unlist(read.table(file=file,skip=lhdr,nrows=1,row.names=NULL,stringsAsFactors=FALSE))
@@ -122,5 +125,36 @@ readQCFile <- function(file)
     di <- order(positions(sdng))
     if (any(diff(di) < 0))
         sdng <- sdng[di,]
+    attr(sdng,"header") <- header
     sdng
+}
+
+writeQCFile <- function(sdng,file)
+{
+    if (missing(file)) stop("file argument must be specified")
+
+    if (is.null(attr(sdng,"header"))) stop("sdng has no header attribute")
+
+    if (grepl(".gz$",file))
+        con <- gzfile(file,open="w")
+    else if (grepl(".bz2$",file))
+        con <- bzfile(file,open="w")
+    else
+        con <- file(file,open="w")
+
+    writeLines(attr(sdng,"header"),con)
+
+    for (i in 1:nrow(sdng)) {
+        d <- sdng@data[i,]
+        d[is.na(d)] <- -999
+        names(d) <- colnames(sdng)
+        hms <- format(positions(sdng)[i],format="%H %M %OS2",time.zone="UTC")
+
+        line <- sprintf("%7.2f %s %7.2f %7.2f %7.2f %7.2f %7.2f %7.2f %7.2f %7.2f %8.2f %9.2f %11.6f %12.6f %8.2f",
+            d["toff"],hms,d["P"],d["T"],d["Dewpt"],d["RH"],
+            d["U"],d["V"],d["Wspd"],d["Wdir"],d["Vz"],
+            d["Alt_gp"],d["lon"],d["lat"],d["Alt_gps"])
+        writeLines(line,con,sep="\n")
+    }
+    close(con)
 }

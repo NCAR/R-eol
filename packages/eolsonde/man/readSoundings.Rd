@@ -8,8 +8,8 @@ This function scans a directory for one or more files matching a name format giv
 }
 \usage{
 readSoundings(
-    dir = c(file.path(Sys.getenv("SONDE_ROOT"), "projects", Sys.getenv("PROJECT"),
-            Sys.getenv("PLATFORM"), "data", Sys.getenv("DATASET")),
+    dir = c(file.path(Sys.getenv("SONDE_ROOT"), "projects", Sys.getenv("SPROJECT"),
+            Sys.getenv("SPLATFORM"), "data", Sys.getenv("SDATASET")),
         Sys.getenv("SONDE_DATA")),
     file = c("D\%Y\%m\%d_\%H\%M\%S_P"),
     start = dpar("start"), end = dpar("end"))
@@ -35,12 +35,12 @@ A \code{\link{utime}} object containing the end time of files to be matched. Thi
 \details{
 From a Unix shell the default setting of dir translates to:
 \itemize{
-    \item $SONDE_ROOT/projects/$PROJECT/$PLATFORM/data/$DATASET
+    \item $SONDE_ROOT/projects/$SPROJECT/$SPLATFORM/data/$SDATASET
     \item $SONDE_DATA
 }
 From a Windows command interpreter it translates to:
 \itemize{
-    \item \%SONDE_ROOT\%\\projects\\\%PROJECT\%\\\%PLATFORM\%\\data\\\%DATASET\%
+    \item \%SONDE_ROOT\%\\projects\\\%SPROJECT\%\\\%SPLATFORM\%\\data\\\%SDATASET\%
     \item \%SONDE_DATA\%
 }
 

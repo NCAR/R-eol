@@ -17,11 +17,35 @@ readDFile <- function (file, checkStatus=dpar("checkSondeStatus"), sondeRecords=
     #   AVAPS-D04 ???
     cols <- scan(file=file,what=list(avaps="",type=""),flush=TRUE,quiet=TRUE)
 
+    # AVAPS-T01
+    txt <- grepl("AVAPS-T",cols$avaps,fixed=TRUE)
+
     # AVAPS-Txx COM lines
-    com <- grepl("AVAPS-T",cols$avaps,fixed=TRUE) & grepl("COM",cols$type,fixed=TRUE)
+    com <- txt & grepl("COM",cols$type,fixed=TRUE)
 
     # AVAPS-Dxx lines are data
     drows <- grepl("AVAPS-D",cols$avaps,fixed=TRUE)
+
+    con <- file(file,open="r")
+
+    header <- ""
+    trailer <- ""
+
+    # header is all txt lines before data
+    dn <- (1:length(drows))[drows]  # line numbers of data lines
+    if (dn[1] > 1)
+        header <- readLines(con,n=dn[1]-1)
+
+    # read rest of file. R man page warns against using seek on Windows.
+    trailer <- readLines(con,n=-1)
+    close(con)
+
+    ntrail <- length(drows) - dn[length(dn)]
+
+    if (ntrail > 0) {
+        lt <- length(trailer)
+        trailer <- trailer[(lt-ntrail+1):lt]
+    }
 
     # Variable names are in COM lines 1 and 2.
     hdr <- seq(along=com)[com][1]
@@ -116,7 +140,7 @@ readDFile <- function (file, checkStatus=dpar("checkSondeStatus"), sondeRecords=
     numnames <- dnames[is.na(match(dnames,c(strnames,utcnames)))]
 
     # convert data columns to numeric
-    d2 <- sapply(numnames,function(n)
+    numdata <- sapply(numnames,function(n)
         {
             # if (n == "Alt_gp") browser()
             x <- type.convert(sdng[,n],as.is=TRUE)
@@ -137,18 +161,18 @@ readDFile <- function (file, checkStatus=dpar("checkSondeStatus"), sondeRecords=
     # type of record, A= from aircraft data system, P=pre-launch, S=sounding
     rectypes <- c("A","P","S")
 
+    # zero-based index into rectypes of the type of each sounding record,
+    # matching the first character in sdng[,"status"] with rectypes
     rectype <- match(substring(sdng[,"status"],1,1),rectypes) - 1
-    matchtype <- 1:length(rectypes) - 1
-    if (!is.null(dpar("sondeRecords")) && !is.na(dpar("sondeRecords")))
-        matchtype <- match(dpar("sondeRecords"),rectypes) - 1
 
-    # must have two digits after leading character
+    # must have two digits, 0 or 1, after leading character
     # PTU and GPS status
     status <- match(substring(sdng[,"status"],2,3),c("00","01","10","11")) - 1
 
     rectype[is.na(status)] <- NA
 
-    sdng <- matrix(c(avaps,status + rectype * 10,as.vector(d2)),ncol=ncol(d2)+2,dimnames=list(NULL,c(strnames,numnames)))
+    sdng <- matrix(c(avaps,status + rectype * 10,as.vector(numdata)),
+        ncol=ncol(numdata)+2,dimnames=list(NULL,c(strnames,numnames)))
 
     units <- rep("",length(colnames(sdng)))
     mu <- match(names(hunits),colnames(sdng),nomatch=0)
@@ -158,6 +182,11 @@ readDFile <- function (file, checkStatus=dpar("checkSondeStatus"), sondeRecords=
     sdng <- dat(nts(sdng,utc,units=units))
 
     if (checkStatus) {
+        # zero-based indices into rectype for the types that are to be kept
+        matchtype <- 1:length(rectypes) - 1
+        if (!is.null(dpar("sondeRecords")) && !is.na(dpar("sondeRecords")))
+            matchtype <- match(dpar("sondeRecords"),rectypes) - 1
+
         ok <- !is.na(rectype) & !is.na(match(rectype,matchtype)) & !is.na(avaps)
 
         sdng <- sdng[ok,]
@@ -188,5 +217,7 @@ readDFile <- function (file, checkStatus=dpar("checkSondeStatus"), sondeRecords=
     if (any(diff(di) < 0))
         sdng <- sdng[di,]
 
+    attr(sdng,"header") <- header
+    attr(sdng,"trailer") <- trailer
     sdng
 }

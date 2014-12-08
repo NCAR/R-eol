@@ -48,9 +48,7 @@ extern "C" {
     SEXP write_global_attrs_ns(SEXP args);
 #endif
 
-    SEXP get_variables(SEXP obj, SEXP all);
-
-    SEXP get_ts_variables(SEXP obj);
+    SEXP get_variables(SEXP obj, SEXP all, SEXP ncverbose);
 
     SEXP get_stations(SEXP obj);
 
@@ -151,9 +149,9 @@ public:
 
 #endif
 
-    SEXP getVariables() throw(NcException);
+    SEXP getVariables(int verbose) throw(NcException);
 
-    SEXP getTimeSeriesVariables() throw(NcException);
+    SEXP getTimeSeriesVariables(int verbose) throw(NcException);
 
     SEXP getStations() throw(NcException);
 
