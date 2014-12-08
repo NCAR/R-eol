@@ -61,6 +61,7 @@ AC_TRY_LINK([#include <GeographicLib/Geoid.hpp>],
     [
         HAVE_GEOGRAPHICLIB=TRUE
         CPPFLAGS+=" -DHAVE_GEOGRAPHICLIB"
+        AC_OUTPUT_COMMANDS([${SED} -i -e 's/HAVE_GEOGRAPHICLIB <- FALSE/HAVE_GEOGRAPHICLIB <- TRUE/' R/geoid.R])
     ],
     [
         HAVE_GEOGRAPHICLIB=FALSE

@@ -7,8 +7,10 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
+HAVE_GEOGRAPHICLIB <- FALSE
 
 geoid_height <- function(lat, lon, name="egm96-5", cubic=TRUE)
 {
-    .Call("geoid", lat, lon, name, cubic, PACKAGE="eolsonde")
+    if (HAVE_GEOGRAPHICLIB) .Call("geoid", lat, lon, name, cubic, PACKAGE="eolsonde")
+    else stop("GeographicLib is not avaiable")
 }
