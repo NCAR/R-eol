@@ -48,15 +48,16 @@ AS_IF([test -n "$netcdf_lib_path"],
 AC_CHECK_LIB(sz, SZ_CompressInit)
 
 #-- Check for NetCDF library ---------------------------------------#
-AC_CHECK_LIB(netcdf, nc_open, [],
-[
-    AC_CHECK_LIB(netcdf, nc_create, [have_netcdf_hdf5=TRUE],
-                 AC_MSG_ERROR(netcdf library not found),
-                 [-lhdf5 -lhdf5_hl -lcurl -lz])
-    if test "${have_netcdf_hdf5}" = TRUE; then
-        LIBS="-lnetcdf -lhdf5 -lhdf5_hl -lcurl -lz ${LIBS}"
-    fi
-])
+AC_CHECK_LIB(netcdf, nc_create, [have_netcdf_hdf5=TRUE],
+            [
+                AC_CHECK_LIB(netcdf, nc_open, [],
+                     AC_MSG_ERROR(netcdf library not found))
+            ],
+            [-lhdf5 -lhdf5_hl -lcurl -lz])
+
+if test "${have_netcdf_hdf5}" = TRUE; then
+    LIBS="-lnetcdf -lhdf5 -lhdf5_hl -lcurl -lz ${LIBS}"
+fi
 
 AC_CHECK_HEADER([netcdf.h], [], AC_MSG_ERROR(netcdf header netcdf.h not found))
 
