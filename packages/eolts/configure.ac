@@ -44,6 +44,9 @@ AS_IF([test -n "$netcdf_lib_path"],
     [LDFLAGS+=" -L${netcdf_lib_path}"]
 )
 
+#-- Check for SZIP (libsz) library. May be used by hdf5 ------------------#
+AC_CHECK_LIB(sz, SZ_CompressInit)
+
 #-- Check for NetCDF library ---------------------------------------#
 AC_CHECK_LIB(netcdf, nc_open, [],
 [
