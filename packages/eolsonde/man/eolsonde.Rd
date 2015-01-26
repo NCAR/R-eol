@@ -43,6 +43,7 @@ Author of original EOLsounding package: Liangying Zhang
 \code{? dpar} \tab \code{\link{dpar}}\cr
 \code{? isfs} \tab \code{\link[isfs:isfs-package]{isfs}}\cr
 \code{? eolts} \tab \code{\link[eolts:eolts-package]{eolts}}\cr
+\code{? geoid_height} \tab \code{\link{geoid_height}}\cr
 }
 }
 \examples{

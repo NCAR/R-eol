@@ -3,6 +3,11 @@ import(eolts, isfs, lattice, maps)
 
 useDynLib(eolsonde)
 
+# Without the following importFrom, or a full import of Rcpp,
+# you get this error when trying to use code that uses Rcpp:
+#   "function 'dataptr' not provided by package 'Rcpp'"
+importFrom(Rcpp, evalCpp)
+
 # exported functions
 export(
     set_sproject,
@@ -20,6 +25,6 @@ export(
     get.sounding.weathersymbols,
     station.symbol,
 
-    geoid_height
+    geoid_height, geodesic_headings
 )
 

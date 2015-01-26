@@ -14,3 +14,9 @@ geoid_height <- function(lat, lon, name="egm96-5", cubic=TRUE)
     if (HAVE_GEOGRAPHICLIB) .Call("geoid", lat, lon, name, cubic, PACKAGE="eolsonde")
     else stop("GeographicLib is not avaiable")
 }
+
+geodesic_headings <- function(lat, lon)
+{
+    if (HAVE_GEOGRAPHICLIB) .Call("geodesicHeadings", lat, lon, PACKAGE="eolsonde")
+    else stop("GeographicLib is not avaiable")
+}

@@ -26,7 +26,11 @@ Interpolation method; FALSE means bilinear, TRUE (the default) means cubic.
 }
 }
 \details{
-On RedHat linux systems, the GeographicLib RPM package can be installed with yum:
+The GeographicLib software, including shareable libraries and data files, must be installed on the system running R.
+
+If you are building the eolsonde package from source, the C++ header files must also be installed, typically on /usr/include, or /usr/local/include.
+
+On RedHat Linux systems, the GeographicLib RPM packages can be installed with yum:
 \samp{
     sudo yum install GeographicLib GeographicLib-devel
 }
@@ -43,14 +47,19 @@ Multiple geoid datasets of different geoid models and resolutions are available 
   egm2008-1   \tab EGM2008 \tab  1'   \tab   170    \tab  470 \cr
 }
 
-On Linux systems, the geoid data are stored as .pgm files on \emph{/usr/share/GeographicLib/geoids}.
-
+On Linux systems, the geoid data are stored in .pgm files on \emph{/usr/share/GeographicLib/geoids}.
 The  \emph{geographiclib-get-geoids} command (which is part of the GeographicLib RPM),
-can then be used to download and install these files:
+can then be used to download and install the geoid data files:
+
 \samp{
     geographiclib-get-geoids -h
+}
+
+\samp{
     sudo geographiclib-get-geoids egm2008-5
 }
+
+On Macs, the geoid files should be downloaded from \href{http://geographiclib.sourceforge.net/}{GeographicLib} and un-tar'd to \emph{/usr/local/share/GeographicLib/geoids}. 
 }
 \value{
 Vector containing the heights in meters of the geoid at the given points.
