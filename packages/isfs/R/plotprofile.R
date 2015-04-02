@@ -67,12 +67,12 @@ plotprofile <- function(x, every=3600, ntraces=6, smooth=deltat(x)[1],
     cmax <- xinfo$lim[2]
     clip.min <- x < cmin & !is.na(x)
     if (any(clip.min)) {
-      x@data[clip.min] <- NA_real_
+      x[clip.min] <- NA_real_
       clipped <- T
     }
     clip.max <- x > cmax & !is.na(x)
     if (any(clip.max)) {
-        x@data[clip.max] <- NA_real_
+        x[clip.max] <- NA_real_
         clipped <- T
     }
     
