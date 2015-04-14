@@ -16,7 +16,7 @@ setMethod("plot",signature(x="dat",y="missing"),
 
 plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
     log="",tlwd=par("lwd"),remargin=TRUE,title,logo=TRUE,
-    xaxt="s",yaxt="s",yaxs=par("yaxs"),cols,...)
+    xaxt="s",yaxt="s",yaxs=par("yaxs"),cols,cex=1.0,...)
 {
 
     # tlwd: trace line width.  Use that option if you want to
@@ -131,8 +131,6 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
         else xlab <- TRUE
     }
     mgp <- par("mgp")
-    if (is.null(args$cex)) cex <- par("cex")
-    else cex <- args$cex
 
     old_par <- par(c("mgp","mgp"))
     on.exit(par(old_par),add=TRUE)
@@ -212,10 +210,10 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
             by_row <- mfg[2] != mfg2[2]
             assign(".by_row",by_row,envir=.isfsEnv)
 
-            if (!bottom_row && xaxt != "n") timeaxis(1,labels=FALSE,tick=TRUE,time.zone=x@time.zone)
+            if (!bottom_row && xaxt != "n") timeaxis(1,labels=FALSE,tick=TRUE,time.zone=x@time.zone,cex=cex*par("cex"))
 
             # put GMT across top of top row
-            if (xaxt != "n") timeaxis(3,labels=top_row,tick=TRUE,time.zone="GMT")
+            if (xaxt != "n") timeaxis(3,labels=top_row,tick=TRUE,time.zone="GMT",cex=cex*par("cex"))
             xaxis_done <- TRUE
         }
 
@@ -247,7 +245,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
         cat("plot.nts, varname=",varname," ylim1=",signif(ylim1,4),"\n")
         plot.nts(datacol,xlim=xlim,ylim=ylim1,type=type,xaxs=xaxs,
             col=col,pch=col,lty=1,ylab="",
-            axes=FALSE,err=-1,log=log,lwd=tlwd,...)
+            axes=FALSE,err=-1,log=log,lwd=tlwd,cex=cex,...)
 
         usr <- par("usr")	# used in various places below
 
@@ -283,16 +281,16 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
                 mtics <- l0tic + as.vector(outer(log10(2:9),(0:ndec-1),"+"))
                 if (side == 4) {
                     axis(side=side,at=l0lab:lnlab,labels=10^(l0lab:lnlab),
-                        xaxt="s",yaxt="s",col=1,cex=cex*.8,srt=-90)
+                        xaxt="s",yaxt="s",col=1,cex=cex*par("cex"),srt=-90)
                     axis(side=side,at=mtics,line=line,labels=FALSE,col=1,xaxt="s",yaxt="s")
                     mtext(side=side,line=line+mgp[1]*.8,ylab_txt,col=1,
-                        at=mean(usr[3:4]),srt=-90,cex=cex)
+                        at=mean(usr[3:4]),srt=-90,cex=cex*par("cex"))
                 }
                 else {
                     axis(side=side,at=l0lab:lnlab,labels=10^(l0lab:lnlab),
-                        xaxt="s",yaxt="s",col=1,cex=cex*.8,srt=90)
+                        xaxt="s",yaxt="s",col=1,cex=cex*par("cex"),srt=90)
                     axis(side=side,at=mtics,line=line,labels=FALSE,col=1,xaxt="s",yaxt="s")
-                    mtext(side=side,line=line+mgp[1]*.8,ylab_txt,col=1,cex=cex)
+                    mtext(side=side,line=line+mgp[1]*.8,ylab_txt,col=1,cex=cex*par("cex"))
                 }
                 if (nscales == 1 || length(dnames) == 1) axis(4,labels=FALSE,at=l0lab:lnlab)
             }
@@ -327,14 +325,14 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
                 # (must use at= argument for srt to work)
                 # cat("nscales=",nscales,"length(yaxis_done)=",length(yaxis_done),"side=",side,"at=",at,"line=",line,"ylabels=",paste(ylabels,collapse=","),"\n")
                 if (side == 4) {    # right
-                    axis(side=side,at=at,line=line,col=1,srt=-90,cex=cex*.8,labels=ylabels)
+                    axis(side=side,at=at,line=line,col=1,srt=-90,cex=cex*par("cex"),labels=ylabels)
                     mtext(side=side,line=line+mgp[1]*.8,ylab_txt,col=1,
-                        at=mean(usr[3:4]),srt=-90,cex=cex)
+                        at=mean(usr[3:4]),srt=-90,cex=cex*par("cex"))
                 }
                 else if (nscales > 1 || length(yaxis_done) == 0) {
-                    # axis(side=side,line=line,col=1,cex=cex*.8,at=at,labels=ylabels,adj=1)
-                    axis(side=side,at=at,line=line,col=1,srt=90,cex=cex*.8,labels=ylabels)
-                    mtext(side=side,line=line+mgp[1]*.8,ylab_txt,col=1,cex=cex)
+                    # axis(side=side,line=line,col=1,cex=cex*par("cex"),at=at,labels=ylabels,adj=1)
+                    axis(side=side,at=at,line=line,col=1,srt=90,cex=cex*par("cex"),labels=ylabels)
+                    mtext(side=side,line=line+mgp[1]*.8,ylab_txt,col=1,cex=cex*par("cex"))
                 }
                 if (nscales == 1 || length(dnames) == 1) axis(4,labels=FALSE,at=at)
             }
@@ -384,16 +382,16 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
             warning(paste("legend and color vectors are not same length: legend=",
                     paste(legv,collapse=",")," cols=",paste(cols,collapse=",")))
         else {
-            cxy <- par("cxy") * cex * 1.0
+            cxy <- par("cxy") * cex * par("cex") * 1.0
             lx <- usr[1] + cxy[1] * 1.0
             ly <- usr[4] - cxy[2] * .3
 
             if (type == "l")
                 horiz_legend(lx,ly,legv,col=colv,lty=rep(1,length(colv)),
-                    bty="n",cex=cex*1.0)
+                    bty="n",cex=cex)
             else
                 horiz_legend(lx,ly,legv,col=colv,marks=colv,
-                    bty="n", cex=cex*1.0)
+                    bty="n", cex=cex)
         }
     }
 
@@ -402,7 +400,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
 
     if (missing(title) || (is.logical(title) && title) || is.character(title)) {
         if (is.null(title_txt) || length(title_txt) == 0) title_txt <- dnames
-        plot_dat_title(title_txt,first_plot,last_plot,t1,t2,plot_stns)
+        plot_dat_title(title_txt,first_plot,last_plot,t1,t2,plot_stns,cex=cex*par("cex"))
     }
 
     if (logo && last_plot) logo_stamp()
@@ -411,7 +409,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
 }
 
 plot_dat_title <- function(title="",first_plot,last_plot,
-    t1=dpar("start"),t2=dpar("end"),stns=NULL)
+    t1=dpar("start"),t2=dpar("end"),stns=NULL,cex=par("cex"))
 {
     this_plot_date <- unlist(as.list(t1)[c("year","mon","day")])
     if (first_plot) {
@@ -478,7 +476,7 @@ plot_dat_title <- function(title="",first_plot,last_plot,
             }
 
             oma <- par("oma")
-            mtext(title,outer=TRUE,line=oma[3]-1.5,cex=par("cex")*1.2)
+            mtext(title,outer=TRUE,line=oma[3]-1.5,cex=cex)
     }
 
     if (last_plot && !first_plot && exists(".plot_dat_title_save",envir=.isfsEnv))
@@ -647,7 +645,7 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".")
     lim
 }
 
-logo_stamp <- function(print.motto=TRUE,cex=0.75)
+logo_stamp <- function(print.motto=TRUE,cex=0.75 * par("cex"))
 {
     oma <- par("oma")
 
@@ -676,7 +674,7 @@ logo_stamp <- function(print.motto=TRUE,cex=0.75)
 
 }
 
-trellis_logo <- function(print.motto=TRUE,cex=0.75)
+trellis_logo <- function(print.motto=TRUE,cex=0.75 * par("cex"))
 {
     # add a logo to a trellis (lattice) plot
     # this function should be called from the

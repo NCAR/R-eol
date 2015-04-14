@@ -35,9 +35,8 @@ setMethod("plot",signature(x="nts",y="numeric"),
 )
 
 plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
-	xaxs="i",xaxt,yaxt,
-	tck=par("tck"),
-        col,pch,lty,time.zone=x@time.zone,axes=T,log="",...)
+	xaxs="i",xaxt,yaxt,tck=par("tck"),
+        col,pch,lty,time.zone=x@time.zone,axes=T,log="",cex=1.0,...)
 {
 
     # get the axes argument. 
@@ -47,8 +46,6 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
     plotaxes <- axes
 
     args <- list(...)
-
-    if (is.null(cex <- args$cex)) cex <- par("cex")
 
     nc <- dim(x)[2]
 
@@ -176,18 +173,21 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
 
     # character expansion of x axis labels
     # number of 12 character labels on xaxis
-    tlabcex <- par("cex")
+    tlabcex <- cex * par("cex")
+
     nlab <- pwidth / (cwidth * 12)
     if (nlab < 4) {
         tlabcex <- tlabcex * nlab / 4
+        cex <- cex * nlab / 4
         nlab <- 4
     }
     else if (nlab > 6) {
         tlabcex <- tlabcex * nlab / 6
+        cex <- cex * nlab / 6
         if (tlabcex > 1.0) tlabcex <- 1.0
+        if (cex > 1.0) cex <- 1.0
         nlab <- 6
     }
-    if (is.null(cex)) cex <- tlabcex
 
     tlab <- xlabel.nts((xrange[2] - xrange[1]) / nlab)
     # cat("cwidth=",cwidth," pwidth=",pwidth," nlab=",nlab,
@@ -240,11 +240,11 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
     if (all.is.na)
         plot.nas(type=type,axes=plotaxes,xlim=xlim.scaled,xlab="",
             ylim=ylim,ylab=ylab,xaxs=xaxs,xaxt="n",yaxt=yaxt,tck=tck,
-            col=col[1],pch=pch[1],lty=lty[1],...)
+            col=col[1],pch=pch[1],lty=lty[1],cex=cex,...)
     else
         plot((tx-x0)/scalef,x@data[,1],type=type,axes=plotaxes,
             xlim=xlim.scaled,xlab="",ylim=ylim,ylab=ylab,xaxs=xaxs,
-            xaxt="n",yaxt=yaxt,tck=tck,col=col[1],pch=pch[1],lty=lty[1],log=log,...)
+            xaxt="n",yaxt=yaxt,tck=tck,col=col[1],pch=pch[1],lty=lty[1],log=log,cex=cex,...)
 
     if (plotaxes) {
         if (xaxt != "n") {
@@ -285,8 +285,8 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
             line <- 0
             mex <- par("mex")
             mar <- par("mar")
-            lines.avail <- mar[1] * mex / cex		# in units of cex
-            label.space <- (par("mgp")[2] + line + 1) * mex / cex
+            lines.avail <- mar[1] * mex / tlabcex		# in units of cex
+            label.space <- (par("mgp")[2] + line + 1) * mex / tlabcex
 
             if (label.space > lines.avail) {
                 outer <- T
@@ -295,7 +295,7 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
             }
 
             # Try to make major tic marks noticeable
-            axis(1,at=(xtics-x0)/scalef,labels=tlabels,tck=mtck,cex=cex,xaxt="s",
+            axis(1,at=(xtics-x0)/scalef,labels=tlabels,tck=mtck,cex=tlabcex,xaxt="s",
               outer=outer,line=line,hadj=0.5,padj=c(0.6,rep(0,length(tlabels)-1)))
             axis(3,at=(xtics-x0)/scalef,labels=F,tck=mtck,xaxt="s")
 
@@ -309,10 +309,10 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
         }
     }
 
-    plot.nts.scale <- list(scale=scalef,off=x0,tlab=tlab,cex=cex)
+    plot.nts.scale <- list(scale=scalef,off=x0,tlab=tlab,cex=cex*par("cex"))
     assign(".plot.nts.scale",plot.nts.scale,envir=.eoltsEnv)
 
-    if (plotaxes && xlab != "") title(xlab=xlab,cex=cex)
+    if (plotaxes && xlab != "") title(xlab=xlab,cex=cex*par("cex"))
 
     if (nc > 1) {
         ncolor <- length(col)
@@ -342,6 +342,7 @@ timeaxis <- function(side,labels=T,tick=T,time.zone,
 
     tlab <- plot.nts.scale$tlab
     if (is.null(cex)) cex <- plot.nts.scale$cex
+    if (is.null(cex)) cex <- par("cex")
     # cat("cex=",cex," plot.nts.scale$cex=",plot.nts.scale$cex,"\n")
     scalef <- plot.nts.scale$scale
 
@@ -572,7 +573,7 @@ error.bar.nts <- function(x,lower,upper,incr=T,bar.ends=T,gap=T,add=F,
     
     if (! exists(".plot.nts.scale",envir=.eoltsEnv))
         sc <- list(scale=1.,off=0.)
-    else sc = get(".plot.nts.scale",envir=.eoltsEnv)
+    else sc <- get(".plot.nts.scale",envir=.eoltsEnv)
 
     tx <- (x@positions - sc$off) / sc$scale
 
@@ -608,7 +609,7 @@ setMethod("abline",signature(a="missing",b="missing",h="missing",v="utime"),
         # cat("in abline, v=utime\n")
         if (! exists(".plot.nts.scale",envir=.eoltsEnv))
             sc <- list(scale=1.,off=0.)
-        else sc = get(".plot.nts.scale",envir=.eoltsEnv)
+        else sc <- get(".plot.nts.scale",envir=.eoltsEnv)
         vx <- (as.numeric(v) - sc$off) / sc$scale
         graphics::abline(v=vx,...)
         v
@@ -639,15 +640,15 @@ tlocator <- function(n=1,type="n",...)
     times
 }
 
-horiz_legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,cex=par("cex"),bty,xaxt="s",yaxt="s")
+horiz_legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,cex=1.0,bty,xaxt="s",yaxt="s")
 {
     # this makes a more compact legend than legend()
     uxy <- par("usr")
-    parcex <- par("cex")
-    # cxy <- par("cxy") * cex / parcex
-    cxy <- c(strwidth("X"),strheight("X")) * cex / parcex
+    if (is.null(cex)) cex <- par("cex")
+    # cxy <- par("cxy") * cex / cex
+    cxy <- c(strwidth("X"),strheight("X")) * cex / cex
 
-    # cat("cex=",cex,",parcex=",parcex,"\n")
+    # cat("cex=",cex,",cex=",cex,"\n")
     # cat("cxy=",cxy,",dy=",(uxy[4]-uxy[3]),",nrows=",(uxy[4]-uxy[3])/cxy[2],"\n")
 
     nl <- length(legend)
@@ -678,9 +679,9 @@ horiz_legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,cex=par("cex"),
         if (ptln.size > 0) {
             if (is.null(marks))
               lines(putx(c(x,x+ptln.size*2)),puty(c(y,y)),col=col[i],lty=lty[i],
-                      xaxt=xaxt,yaxt=yaxt)
+                      xaxt=xaxt,yaxt=yaxt,cex=cex)
             else
-              points(putx(x+ptln.size),puty(y),col=col[i],pch=marks[i],xaxt=xaxt,yaxt=yaxt)
+              points(putx(x+ptln.size),puty(y),col=col[i],pch=marks[i],xaxt=xaxt,yaxt=yaxt,cex=cex)
         }
 
         text(putx(x+2.5*ptln.size),puty(y),legend[i],col=col[i],adj=0,cex=cex,
