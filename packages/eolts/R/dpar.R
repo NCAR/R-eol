@@ -81,7 +81,7 @@ setDpar <- function(parm,vals)
     lenhr=list(type="numeric",setf=setDpar,default=NULL,flushCache=TRUE),
     lenmin=list(type="numeric",setf=setDpar,default=NULL,flushCache=TRUE),
     lensec=list(type="numeric",setf=setDpar,default=86400,flushCache=TRUE),
-    lenfile=list(type="numeric",setf=setDpar,default=86400,flushCache=FALSE),
+    lenfile=list(type="numeric",setf=setDpar,default=0,flushCache=FALSE),
     # verbosity level when reading NetCDF variables
     # 0=quiet, 1=show variable names and times, 2=show vars, filenames, start, count indices
     ncverbose=list(type="integer",setf=setDpar,default=1,flushCache=FALSE)
