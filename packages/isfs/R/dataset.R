@@ -87,7 +87,7 @@ find_datasets <- function(
             if ("dataset_description" %in% names(attrs))
                 desc <- attrs$dataset_description
 
-            anames <- c("h2o_flux_corrected", "co2_flux_corrected", "gsoil_philip_corrected")
+            anames <- c("h2o_flux_corrected", "co2_flux_corrected", "gsoil_philip_corrected","file_length_seconds")
 
             int_attrs <- attrs[anames]
             ix <- sapply(int_attrs,is.null)
@@ -207,6 +207,9 @@ dataset <- function(which,verbose=F)
         if (a %in% names(dset)) dpar(dset[a])
         else dpar(sapply(a,function(x)NULL))
     }
+
+    a <- "file_length_seconds"
+    if (a %in% names(dset)) dpar(filelength=dset[[a]])
 
     if (!is.null(dset[["f"]])) dset$f()
     if (ncf != dset$ncf || ncd != dset$ncd) clear_cache()
