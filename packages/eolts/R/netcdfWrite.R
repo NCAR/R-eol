@@ -52,6 +52,9 @@ setMethod("writets",
             gattrs <- dots$gattrs
             .External("write_global_attrs_ns", con,as.list(gattrs), PACKAGE="eolts")
         }
+        if (!is.null(con@lenfile) && con@lenfile != 0)
+            .External("write_global_attrs_ns", con,
+                list(file_length_seconds=con@lenfile), PACKAGE="eolts")
 
         x[is.na(x)] <- fillvalue
 

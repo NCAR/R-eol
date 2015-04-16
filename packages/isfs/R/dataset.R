@@ -209,7 +209,7 @@ dataset <- function(which,verbose=F)
     }
 
     a <- "file_length_seconds"
-    if (a %in% names(dset)) dpar(filelength=dset[[a]])
+    if (a %in% names(dset)) dpar(lenfile=dset[[a]])
 
     if (!is.null(dset[["f"]])) dset$f()
     if (ncf != dset$ncf || ncd != dset$ncd) clear_cache()
