@@ -37,7 +37,7 @@ On RedHat Linux systems, the GeographicLib RPM packages can be installed with yu
 
 Multiple geoid datasets of different geoid models and resolutions are available from GeographicLib, with the following names:
 \tabular{lllll}{
-  name        \tab geoid   \tab grid  \tab  tar.bz2 \tab disk \cr
+  name        \tab geoid   \tab grid  \tab  tar.bz2(MB) \tab disk(MB) \cr
   egm84-30    \tab EGM84   \tab 30'   \tab   0.5    \tab  0.6 \cr
   egm84-15    \tab EGM84   \tab 15'   \tab   1.5    \tab  2.1 \cr
   egm96-15    \tab EGM96   \tab 15'   \tab   1.5    \tab  2.1 \cr
@@ -76,9 +76,10 @@ Gordon Maclean
 \seealso{
 }
 \examples{
-
 geoid_height(0,0)
 ## [1] 17.163
+geoid <- height(0,0,"egm2008-1")
+## [1] 17.226
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -15,6 +15,8 @@
 
 #include <Rcpp.h>
 
+#include <sstream>
+
 // using namespace Rcpp;
 
 extern "C" {
@@ -46,7 +48,17 @@ SEXP geoid(SEXP latp, SEXP lonp, SEXP geoidNamep, SEXP cubicp)
         const double* lons = REAL(lonp);
 
         for (size_t i = 0; i < nvals; i++) {
-            heights[i] = geoid(lats[i],lons[i]);
+            try {
+                heights[i] = geoid(lats[i],lons[i]);
+            }
+            catch (const GeographicLib::GeographicErr& e) {
+                // add offending lat,lon to error message
+                std::ostringstream ost;
+                ost.precision(5);
+                ost << ": lat=" << lats[i] << ", lon=" << lons[i];
+                GeographicLib::GeographicErr e2(std::string(e.what()) + ost.str());
+                forward_exception_to_r(e2);
+            }
         }
     }
     catch (const GeographicLib::GeographicErr& e) {
