@@ -41,28 +41,29 @@ SEXP geoid(SEXP latp, SEXP lonp, SEXP geoidNamep, SEXP cubicp)
 
     Rcpp::NumericVector heights(nvals);
 
+    const double* lats = 0;
+    const double* lons = 0;
+
     try {
         GeographicLib::Geoid geoid(geoidName,"",cubic);
 
-        const double* lats = REAL(latp);
-        const double* lons = REAL(lonp);
+        lats = REAL(latp);
+        lons = REAL(lonp);
 
-        for (size_t i = 0; i < nvals; i++) {
-            try {
-                heights[i] = geoid(lats[i],lons[i]);
-            }
-            catch (const GeographicLib::GeographicErr& e) {
-                // add offending lat,lon to error message
-                std::ostringstream ost;
-                ost.precision(5);
-                ost << ": lat=" << lats[i] << ", lon=" << lons[i];
-                GeographicLib::GeographicErr e2(std::string(e.what()) + ost.str());
-                forward_exception_to_r(e2);
-            }
+        for (size_t i = 0; i < nvals; i++,lats++,lons++) {
+            heights[i] = geoid(*lats,*lons);
         }
     }
     catch (const GeographicLib::GeographicErr& e) {
-        forward_exception_to_r(e);
+        if (lats) {
+            // add offending lat,lon to error message
+            std::ostringstream ost;
+            ost.precision(5);
+            ost << ": lat=" << *lats << ", lon=" << *lons;
+            GeographicLib::GeographicErr e2(std::string(e.what()) + ost.str());
+            forward_exception_to_r(e2);
+        }
+        else forward_exception_to_r(e);
     }
 
     return Rcpp::wrap(heights);
