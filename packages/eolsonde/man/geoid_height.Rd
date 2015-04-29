@@ -78,7 +78,7 @@ Gordon Maclean
 \examples{
 geoid_height(0,0)
 ## [1] 17.163
-geoid <- height(0,0,"egm2008-1")
+geoid_height(0,0,"egm2008-1")
 ## [1] 17.226
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
