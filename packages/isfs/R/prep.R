@@ -13,19 +13,21 @@ setClass("prep",
     slots=c(
 	variables="character",
 	rate="numeric",
+        dsm="character",
 	cppPtr="raw"
     ),
     prototype=list(
 	variables="",
         rate=0,
+	dsm="",
 	cppPtr=raw(8)
     )
 )
 
-prep <- function(variables,rate=0)
+prep <- function(variables, rate=0, dsm="")
 {
     if (!HAVE_PREP) stop("sorry prep not available")
-    obj <- new("prep",variables=variables,rate=rate)
+    obj <- new("prep",variables=variables, rate=rate, dsm=dsm)
     .Call("open_prep",obj,PACKAGE="isfs")
 }
 
@@ -66,6 +68,7 @@ setMethod("readts",
                     "-C")
                 dset <- names(dataset())
                 if (!is.null(dset)) runargs <- c(runargs,"-S",dset)
+                if (con@dsm != "") runargs <- c(runargs,"-d",con@dsm)
                 env <- ""
             }
             else {

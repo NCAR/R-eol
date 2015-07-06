@@ -20,6 +20,7 @@ Use the \code{\link{prep}} function to create an object of class \code{prep}, pa
   \describe{
     \item{\code{variables}:}{Object of class \code{"character"} The names of the variables to be read. }
     \item{\code{rate}:}{Object of class \code{"numeric"} The re-sampling rate, in Hz. A value of zero means resample the variables at the raw rate of the first variable specified. }
+    \item{\code{dsm}:}{Object of class \code{"character"} If the raw-data files for a particular dsm have not been merged for the project, this can be used to indicate the name of the DSM. which will be passed as the value of the -d option to the prep program. With this option, prep will look in the <dsm> section of the XML for an archive <output> element, in order to determine the raw-data file names. }
     \item{\code{cppPtr}:}{Object of class \code{"raw"} Slot for a pointer to a C++ object, only used by the underlying C++ code.}
   }
 }
