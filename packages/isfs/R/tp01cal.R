@@ -30,21 +30,21 @@ dat.lambdasoil = function(what,derived=TRUE,cache=F,...)
     # (Note (9/13/2010): With Wisard, should never need this code, but decided
     # to add probes 589--592 for completeness anyway.)
     #
-    #       s/n     Re      E.lambda (e-6)  L.tp
+    #   s/n     Re      E.lambda(e-6)  L.tp
     tp01 = matrix(c(
-            200234,  14.7,     97.9,  0.060,
-            200235,  14.8,    104.6,  0.060,
-            200236,  14.8,    104.9,  0.060,
-            200238,  15.4,    154.0,  0.060,
-            200239,  16.2,    175.8,  0.060,
-            200240,  15.0,    160.8,  0.060,
-            200241,  16.2,    141.5,  0.060,
-            200242,  15.9,    152.4,  0.060,
-            200243,  15.6,    160.5,  0.060,
-            200589,	 16.1,    158.0,  0.060,
-            200590,	 15.4,    136.0,  0.060,
-            200591,	 16.7,    140.0,  0.060,
-            200592,	 15.5,    162.0,  0.060),
+        200234,     14.7,     97.9,  0.060,
+        200235,     14.8,    104.6,  0.060,
+        200236,     14.8,    104.9,  0.060,
+        200238,     15.4,    154.0,  0.060,
+        200239,     16.2,    175.8,  0.060,
+        200240,     15.0,    160.8,  0.060,
+        200241,     16.2,    141.5,  0.060,
+        200242,     15.9,    152.4,  0.060,
+        200243,     15.6,    160.5,  0.060,
+        200589,     16.1,    158.0,  0.060,
+        200590,     15.4,    136.0,  0.060,
+        200591,     16.7,    140.0,  0.060,
+        200592,     15.5,    162.0,  0.060),
         ncol=4,byrow=T)
     dimnames(tp01)[[2]] = c("SN","Re","E.lambda","L")
 
@@ -59,6 +59,8 @@ dat.lambdasoil = function(what,derived=TRUE,cache=F,...)
     #
     # match recorded values by either stations or suffixes
     #
+    tp01.stns = get("tp01.stns",envir=.projectEnv)
+
     if (all(stns==0)) ix = match(sufs,tp01.stns)
     else ix = match(stns,tp01.stns)
 
