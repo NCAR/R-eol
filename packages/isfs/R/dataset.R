@@ -87,7 +87,8 @@ find_datasets <- function(
             if ("dataset_description" %in% names(attrs))
                 desc <- attrs$dataset_description
 
-            anames <- c("h2o_flux_corrected", "co2_flux_corrected", "gsoil_philip_corrected","file_length_seconds")
+            anames <- c("h2o_flux_corrected", "co2_flux_corrected", "gsoil_philip_corrected",
+                "file_length_seconds","lambdasoil_fat_corrected")
 
             int_attrs <- attrs[anames]
             ix <- sapply(int_attrs,is.null)
@@ -202,7 +203,8 @@ dataset <- function(which,verbose=F)
 
     Sys.setenv(DATASET=which)
 
-    anames <- c("h2o_flux_corrected", "co2_flux_corrected", "gsoil_philip_corrected")
+    anames <- c("h2o_flux_corrected", "co2_flux_corrected", "gsoil_philip_corrected",
+            "lambdasoil_fat_corrected")
     for (a in anames) {
         if (a %in% names(dset)) dpar(dset[a])
         else dpar(sapply(a,function(x)NULL))

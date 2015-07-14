@@ -7,31 +7,68 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-# Generic [hopefully!] version which knows what to do given a mapping
-# of probe to location (provided by tp01.stns in project.init.q):
-#
-#tp01.stns = c(5,9,8,1,2,3,4,6,7) # HVAMS03
-#tp01.stns = c(0,1,0,0,0,2,0,0,3) # TREX
-#tp01.stns = c(0,3,5,0,0,10,0,0,2) # CuPIDO
-#tp01.stns = c(".rim",".el",".wl",0,".flr",".wu",".sw",".eu",0) # METCRAX [suffixes]
-#
-# This is my implementation of a routine to obtain TP01 data.
-# It:
-# - grabs Vheat and Vpile
-# - computes (thermal diffusivity), lambda (thermal conductivity), and Cp (heat capacity)
-#   (needs sensor calibration values)
-# - creates an dat-object
-#
 
-dat.lambdasoil = function(what,derived=TRUE,cache=F,...)
+dat.Lambdasoil <- function(what,derived=TRUE,...)
 {
+    if (any(words(variables(),1,1) == "Lambdasoil")) {
+        lambda <- dat(what,derived=FALSE,...)
+        if (is.null(lambda)) return(NULL)
+
+        fat_done <- dpar("lambdasoil_fat_corrected")
+        fat_done <- !is.null(fat_done) && as.logical(fat_done)
+
+    } else {
+        lambda <- calc.Lambdasoil(what,...)
+        fat_done  <- FALSE
+    }
+    # Compute F(a*t), where a is the soil diffusivity.
+    if (!fat_done) {
+        asoil <- dat(expand("asoil",what),...)
+        lambda <- lambda * conform(Fat.tp01(asoil),lambda)
+    }
+    lambda
+}
+
+calc_Lambdasoil <- function(what="Lambdasoil",...)
+{
+    # Function to calculate Lambdasoil from Tau, Vheat and Vpile values from a
+    # Huksefulx TP01 soil thermal properties probe.
+    #
+    # A TP01 interfaced through a Wisard sensor reports a derived Lambdasoil.
+    # This function can be used to double check that computation.
+    # 
+    # This uses a list to map site name or character station number
+    # to TP01 serial numbers. This list should be given the name
+    # "tp01_serial_numbers" and assigned in the .projectEnv,
+    # typically in the project_init function:
+    #
+    # CHATS:
+    #   assign("tp01_serial_numbers",list(vt=200239),envir=.projectEnv)
+    # HVAMS03:
+    #   assign("tp01_serial_numbers",list(
+    #     "5"=200234, "9"=200235, "8"=200236, "1"=200238,
+    #     "2"=200239, "3"=200240, "4"=200241, "6"=200242, "7"=200243
+    #     ), envir=.projectEnv)
+    # TREX:
+    #   assign("tp01_serial_numbers",list(
+    #       "1"=200235, "2"=200240, "3"=200243
+    #       ), envir=.projectEnv)
+    # CuPIDO:
+    #   assign("tp01_serial_numbers",list(
+    #       "3"=200235, "5"=200236, "10"=200240, "2"=200243
+    #       ), envir=.projectEnv)
+    # METCRAX:
+    #   assign("tp01_serial_numbers",list(
+    #       rim=200234, el=200235, wl=200236, flr=200239, wu=200240,
+    #       sw=200241, eu=200242),
+    #       ), envir=.projectEnv)
     #
     # The calibrations for all TP01 probes (by serial number):
     # (Note (9/13/2010): With Wisard, should never need this code, but decided
     # to add probes 589--592 for completeness anyway.)
     #
     #   s/n     Re      E.lambda(e-6)  L.tp
-    tp01 = matrix(c(
+    tp01 <- matrix(c(
         200234,     14.7,     97.9,  0.060,
         200235,     14.8,    104.6,  0.060,
         200236,     14.8,    104.9,  0.060,
@@ -45,80 +82,136 @@ dat.lambdasoil = function(what,derived=TRUE,cache=F,...)
         200590,     15.4,    136.0,  0.060,
         200591,     16.7,    140.0,  0.060,
         200592,     15.5,    162.0,  0.060),
-        ncol=4,byrow=T)
-    dimnames(tp01)[[2]] = c("SN","Re","E.lambda","L")
+        ncol=4,byrow=T,
+        dimnames=list(NULL,c("SN","Re","E.lambda","L")))
 
-    tau = dat("Tau63_max")
-    if (is.null(tau)) return(NULL)
-    tau[tau<0] = NA_real_
-    pile = dat("Vpile_max")
-    heat = dat("Vheat_max")
-    stns = stations(tau)
-    nstns = length(stns)
-    sufs = suffixes(tau)	
+
+    if (any(words(variables(),1,1) == "Vpile_max")) {
+        wisard_mode <- FALSE
+        # Campbell logger reporting Tau63, Vpile and Vheat.
+        # statsproc computes the max values in 5 minutes.
+
+        tau <- dat(expand("Tau63_max",what),...)
+        if (is.null(tau)) return(NULL)
+        tau[tau<0] <- NA_real_
+
+        pile <- dat(expand("Vpile_max",what),...)
+        mv <- units(pile) == "mV"
+        if (any(mv)) {
+            pile[,mv] <- pile[,mv] * 0.001
+            heat <- dat(expand("Vheat_max",what),...)
+        }
+    } else if (any(words(variables(),1,2) == "Vpile.on")) {
+        # Wisard sensor reports Tau63, Vheat, Vpile.on, Vpile.off
+        # Compute thermopile response as Vpile.on - Vpile.off
+        wisard_mode <- TRUE
+
+        tau <- dat(expand("Tau63",what),...)
+        if (is.null(tau)) return(NULL)
+        tau[tau<0] <- NA_real_
+
+        pile_on <- dat(expand("Vpile.on",what),...)
+        pile_off <- dat(expand("Vpile.off",what),...)
+        uv <- units(pile_on) == "uV"
+        if (any(uv)) {
+            pile_on[,uv] <- pile_on[,uv] * 0.000001
+            pile_off[,uv] <- pile_off[,uv] * 0.000001
+        }
+        heat <- dat(expand("Vheat",what),...)
+    }
+    else return(NULL)
+
+
+    sites <- sites(tau)	
+    stns <- stations(tau)
     #
     # match recorded values by either stations or suffixes
     #
-    tp01.stns = get("tp01.stns",envir=.projectEnv)
+    tp01sns <- get("tp01_serial_numbers",envir=.projectEnv)
 
-    if (all(stns==0)) ix = match(sufs,tp01.stns)
-    else ix = match(stns,tp01.stns)
+    if (is.list(tp01sns)) {
+        sites[stns > 0] <- as.character(stns[stns > 0])
+        ix <- match(sites,names(tp01sns),nomatch=0)
+        sns <- rep(0,length(sites))
+        sns[ix] <- unlist(tp01sns[sites])  # serial numbers
+        # row numbers in tp01 for the sensors in tau
+        ix <- match(sns,tp01[,"SN"],nomatch=0)
+    }
+    cat("TP01 serial numbers=",sns,"\n")
 
-    Re.tp = tp01[ix,"Re"]
-    E.lambda = tp01[ix,"E.lambda"]*1e-6
-    L.tp = tp01[ix,"L"]
-
-    lambda = pile*NA_real_
-
-    for (i in 1:nstns) {
-        nt = nrow(tau[,i])
-        ig = (1:nt)[!is.na(tau[,i])]
-        if (sum(ig)!=0) {
-            igm1 = ig-1
-            if (igm1[1]<1) igm1[1] = ig[1]
-            igp2 = ig+2
-            ng = length(ig)
-            if (any(igp2>nt)) igp2[igp2>nt] = ig[ng]
-
-            il = as.logical(heat@data[igm1,i]>heat@data[ig,i])
-            il[is.na(il)] = F
-            heatm = as.vector(heat[ig,i])
-            heatm[il] = heat[igm1,i][il]
-
-            il = as.logical(pile@data[igm1,i]>pile@data[ig,i])
-            il[is.na(il)] = F
-            pilem = as.vector(pile[ig,i])
-            pilem[il] = pile[igm1,i][il]
-            pilem = pilem - as.vector(pile[igp2,i])
-
-            Q = (heatm^2)/(Re.tp[i]*L.tp[i])
-            lambda[ig,i] = E.lambda[i]*Q/(pilem*0.001)
+    if (any(ix == 0)) {
+        tau <- tau[,ix!=0]
+        heat <- heat[,ix!=0]
+        if (wisard_mode) {
+            pile <- pile[,ix!=0]
+        } else {
+            pile_on <- pile_on[,ix!=0]
+            pile_off <- pile_off[,ix!=0]
         }
     }
-    dimnames(lambda)[[2]] =
-    paste(rep("lambdasoil",ncol(lambda)),sufs,sep="")
-    lambda@units = rep("W/(m K)",nstns)
-    lambda[lambda<=0] = NA_real_
-    lambda[is.infinite(lambda)] = NA_real_
+
+    Re.tp <- tp01[ix,"Re"]
+    E.lambda <- tp01[ix,"E.lambda"] * 1e-6
+    L.tp <- tp01[ix,"L"]
+
+    lambda <- tau * NA_real_
+
+    sapply(1:ncol(tau),function(ic) {
+
+        lx <- nrow(tau)
+        if (wisard_mode) {
+            ig <- 1:lx
+            heatm <- heat@data[,ic]
+            pilev <- pile_on@data[,ic] - pile_off@data[,ic]
+        }
+        else {
+            lx <- nrow(tau)
+            ig <- (1:lx)[!is.na(tau@data[,ic])]
+            lig <- length(ig)
+            if (lig > 0) return()
+            igm1 <- ig - 1
+            if (igm1[1] <1 ) igm1[1] <- ig[1]
+
+            igp2 <- ig + 2
+            if (any(igp2 > lx)) igp2[igp2 > lx] <- ig[lig]
+
+            # Max heater voltage
+            heatm <- pmax(heat@data[igm1,ic], heat@data[ig,ic],na.rm=T)
+
+            # Max change in thermopile voltage
+            pilev <- pmax(pile@data[igm1,ic], pile@data[ig,ic],na.rm=T)
+            pilev <- pilem - as.vector(pile[igp2,ic])
+        }
+
+        Q <- (heatm^2)/(Re.tp[ic]*L.tp[ic])
+        lambda[ig,ic] <<- E.lambda[ic] * Q / pilev
+        NULL
+    })
+    
+    colnames(lambda) <- paste(rep("Lambdasoil",ncol(lambda)),
+        suffixes(lambda),sep="")
+    lambda@units <- rep("W/(m K)",ncol(lambda))
+    lambda[lambda<=0] <- NA_real_
+    lambda[is.infinite(lambda)] <- NA_real_
     lambda
 }
 
-dat.Cvsoil = function(what, cache=F,...) {
+dat.Cvsoil <- function(what, cache=F,...) {
     #
     # Below 2 lines should allow this code to be used for both Wisard
     # (Lambdasoil reported by motes) and pre-Wisard deployments
     # (lambdasoil derived from above)
     #
-    vars = words(variables(),1,1)
-    if (any(vars=="Lambdasoil")) lambda = dat("Lambdasoil") else lambda = dat("lambdasoil")
+    vars <- words(variables(),1,1)
+    lambda <- dat(expand("Lambdasoil",what),...)
     if (is.null(lambda)) return(NULL)
-    Cv = lambda/dat("asoil")
-    sufs = suffixes(Cv)
-    dimnames(Cv)[[2]] = paste(rep("Cvsoil",ncol(Cv)),sufs,sep="")
-    Cv@units = rep("J/(m3 K)",ncol(Cv))
+    Cv <- lambda/dat("asoil")
+    sufs <- suffixes(Cv)
+    colnames(Cv) <- paste(rep("Cvsoil",ncol(Cv)),sufs,sep="")
+    Cv@units <- rep("J/(m3 K)",ncol(Cv))
     Cv
 }
-dat.asoil = function(what,derived=TRUE,cache=F,...)
+dat.asoil <- function(what,derived=TRUE,cache=F,...)
 {
     # TP01 manual suggests limits of 0.05e-6 and 1.0e-6 for
     # diffusivity.  The user should apply those limits
@@ -126,46 +219,38 @@ dat.asoil = function(what,derived=TRUE,cache=F,...)
     #
 
     # These 2 values implied from the TP01 manual for agar gel
-    a.ref = 0.14e-6
-    dt.ref = 19
+    a.ref <- 0.14e-6
+    dt.ref <- 19
     #
     # Below 2 lines should allow this code to be used for both Wisard (Tau63) and 
     # pre-Wisard (max) deployments
     #
-    vars = words(variables(),1,1)
-    if (any(vars=="Lambdasoil")) tau = dat("Tau63") else tau = dat("Tau63_max")
+    vars <- words(variables(),1,1)
+    if (any(vars=="Lambdasoil")) tau <- dat("Tau63") else tau <- dat("Tau63_max")
     if (is.null(tau)) return(NULL)
 
-    a = a.ref * dt.ref / tau
-    a[is.infinite(a)] = NA_real_
-    a[a<=0] = NA_real_
+    a <- a.ref * dt.ref / tau
+    a[is.infinite(a)] <- NA_real_
+    a[a<=0] <- NA_real_
 
-    sufs = suffixes(tau)
-    dimnames(a)[[2]] = paste(rep("asoil",ncol(a)),sufs,sep="")
-    a@units = rep("m2/s",ncol(a))
+    sufs <- suffixes(tau)
+    colnames(a) <- paste(rep("asoil",ncol(a)),sufs,sep="")
+    a@units <- rep("m2/s",ncol(a))
     a
 }
 
-Fat.tp01 = function(a,tsec=180,rc=0.005,rh=0.001)
+Fat.tp01 <- function(a,tsec=180,rc=0.005,rh=0.001)
 {
     # Compute dimensionless F(at) for Hukseflux TP01
     # a: soil heat diffusivity
     # tsec: time in seconds of heating cycle
     # rh: distance of hot junctions of the thermopile from the heating wire in meters
     # rc: distance of cold junctions of the thermopile from the heating wire in meters
-    at = a * tsec
-    ok = !is.na(at) & (at >= (rc^2 - rh^2))
+    at <- a * tsec
+    ok <- !is.na(at) & (at >= (rc^2 - rh^2))
     # first two terms
-    fat = 1 - 1 / (8 * log(rc/rh)) * ((rc^2 - rh^2)/at - (rc^4 - rh^4)/(16 * at * at))
-    if (any(!ok)) fat[!ok] = 1
+    fat <- 1 - 1 / (8 * log(rc/rh)) * ((rc^2 - rh^2)/at - (rc^4 - rh^4)/(16 * at * at))
+    if (any(!ok)) fat[!ok] <- 1
     fat
 }
 
-dat.Lambdasoil = function(what,derived=TRUE,...)
-{
-    # Compute F(a*t), where a is the soil diffusivity.
-    x = dat(what,derived=FALSE,...)
-    if (is.null(x)) return(NULL)
-    asoil = dat(expand("asoil",what),...)
-    x * conform(Fat.tp01(asoil),x)
-}

@@ -33,6 +33,7 @@ setDpar <- function(parm,vals)
     gsoil_philip_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=FALSE),
     h2o_flux_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=FALSE),
     hts=list(type="numeric",setf=setDpar,default=NULL,flushCache=TRUE),
+    lambdasoil_fat_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=FALSE),
     lat=list(type="numeric",setf=setDpar,default=NA,flushCache=FALSE),
     lon=list(type="numeric",setf=setDpar,default=NA,flushCache=FALSE),
     platform=list(type="character",setf=setDpar,default="",flushCache=FALSE),

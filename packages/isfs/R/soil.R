@@ -208,7 +208,7 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
 
             # get soil heat capacity (J/(m^3 degK))
             vars <- words(variables(),1,1)
-            if (any(vars=="Lambdasoil") || any(vars=="lambdasoil"))
+            if (any(vars=="Lambdasoil") || any(vars=="Tau63_max"))
                 Cs <- dat(expand("Cvsoil",what))
             else
                 Cs <- dat(expand("Csoil",what))
