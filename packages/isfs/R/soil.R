@@ -116,6 +116,7 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
             # heights function returns negative values, in meters,
             # for soil depths
             depths <- -heights(txss)
+            depths[is.na(depths)] <- -0.025 # 2.5 cm
 
             # re-arrange columns by increasing depth
             txss <- txss[,sort.list(depths)]
@@ -154,9 +155,12 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
             }
 
             # determine depth of Gsoil heat flux plate
-            g <- select(dat(expand("Gsoil",what),derived=FALSE),stns=stn,sites=st)
+            g <- conform(dat(expand("Gsoil",what),derived=FALSE),txss)
             depthg <- NULL
-            if (!is.null(g)) depthg <- unique(-heights(g))
+            if (!is.null(g)) {
+                depthg <- unique(-heights(g))
+                depthg[is.na(depthg)] <- -0.05 # 5 cm
+            }
 
             if (is.null(depthg) || length(depthg) == 0) {
                 if (is.null(g)) warning(paste("Gsoil not found at station=",stn,", site=\"",st,"\". Assuming 5cm as bottom limit of Tsoil",sep=""))
@@ -212,7 +216,8 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
                 Cs <- dat(expand("Cvsoil",what))
             else
                 Cs <- dat(expand("Csoil",what))
-            Cs <- select(Cs,stns=stn,sites=st)
+
+            Cs <- approx(conform(Cs,txss),xout=positions(txss))
 
             # Units:   J/(m^3 degK) * d(degK)/d(sec) * m =  W/m^2
             x <- Cs * txss
@@ -576,7 +581,7 @@ dat.Gsoil <- function(what,derived=TRUE,lc=0.906,Tp=3.93,Dp=38.56,lp=1.22,...)
 
         # then apply the Philip correction with the measured soil conductivity.
         lambda <- dat(expand("Lambdasoil",what),...)
-        lambda <- conform(lambda,G)
+        lambda <- approx(conform(lambda,G),xout=positions(G))
         G <- G / philip(lambda,Tp=Tp,Dp=Dp,lp=lp)
     }
     G
