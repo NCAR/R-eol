@@ -8,7 +8,7 @@
 # file LICENSE in this package.
 
 
-dat.Lambdasoil <- function(what,derived=TRUE,...)
+dat.Lambdasoil <- function(what,derived=TRUE,tsec=180,rc=0.005,rh=0.001,...)
 {
     if (any(words(variables(),1,1) == "Lambdasoil")) {
         lambda <- dat(what,derived=FALSE,...)
@@ -18,13 +18,13 @@ dat.Lambdasoil <- function(what,derived=TRUE,...)
         fat_done <- !is.null(fat_done) && as.logical(fat_done)
 
     } else {
-        lambda <- calc.Lambdasoil(what,...)
+        lambda <- calc_Lambdasoil(what,...)
         fat_done  <- FALSE
     }
     # Compute F(a*t), where a is the soil diffusivity.
     if (!fat_done) {
-        asoil <- dat(expand("asoil",what),...)
-        lambda <- lambda * conform(Fat.tp01(asoil),lambda)
+        lambda <- lambda * conform(
+            dat(expand("Fat_tp01",what),tsec=tsec,rc=rc,rh=rh,...),lambda)
     }
     lambda
 }
@@ -99,8 +99,8 @@ calc_Lambdasoil <- function(what="Lambdasoil",...)
         mv <- units(pile) == "mV"
         if (any(mv)) {
             pile[,mv] <- pile[,mv] * 0.001
-            heat <- dat(expand("Vheat_max",what),...)
         }
+        heat <- dat(expand("Vheat_max",what),...)
     } else if (any(words(variables(),1,2) == "Vpile.on")) {
         # Wisard sensor reports Tau63, Vheat, Vpile.on, Vpile.off
         # Compute thermopile response as Vpile.on - Vpile.off
@@ -121,6 +121,7 @@ calc_Lambdasoil <- function(what="Lambdasoil",...)
     }
     else return(NULL)
 
+    # browser()
 
     sites <- sites(tau)	
     stns <- stations(tau)
@@ -143,10 +144,10 @@ calc_Lambdasoil <- function(what="Lambdasoil",...)
         tau <- tau[,ix!=0]
         heat <- heat[,ix!=0]
         if (wisard_mode) {
-            pile <- pile[,ix!=0]
-        } else {
             pile_on <- pile_on[,ix!=0]
             pile_off <- pile_off[,ix!=0]
+        } else {
+            pile <- pile[,ix!=0]
         }
     }
 
@@ -165,10 +166,10 @@ calc_Lambdasoil <- function(what="Lambdasoil",...)
             pilev <- pile_on@data[,ic] - pile_off@data[,ic]
         }
         else {
-            lx <- nrow(tau)
             ig <- (1:lx)[!is.na(tau@data[,ic])]
             lig <- length(ig)
-            if (lig > 0) return()
+            if (lig == 0) return()
+
             igm1 <- ig - 1
             if (igm1[1] <1 ) igm1[1] <- ig[1]
 
@@ -180,10 +181,11 @@ calc_Lambdasoil <- function(what="Lambdasoil",...)
 
             # Max change in thermopile voltage
             pilev <- pmax(pile@data[igm1,ic], pile@data[ig,ic],na.rm=T)
-            pilev <- pilem - as.vector(pile[igp2,ic])
+            pilev <- pilev - as.vector(pile[igp2,ic])
+            # browser()
         }
 
-        Q <- (heatm^2)/(Re.tp[ic]*L.tp[ic])
+        Q <- (heatm^2) / (Re.tp[ic] * L.tp[ic])
         lambda[ig,ic] <<- E.lambda[ic] * Q / pilev
         NULL
     })
@@ -239,18 +241,24 @@ dat.asoil <- function(what,derived=TRUE,cache=F,...)
     a
 }
 
-Fat.tp01 <- function(a,tsec=180,rc=0.005,rh=0.001)
+dat.Fat_tp01 <- function(what,derived=TRUE,tsec=180,rc=0.005,rh=0.001,...)
 {
-    # Compute dimensionless F(at) for Hukseflux TP01
-    # a: soil heat diffusivity
+    # Compute dimensionless F(at) for Hukseflux TP01 from
+    # soil heat diffusivity
     # tsec: time in seconds of heating cycle
-    # rh: distance of hot junctions of the thermopile from the heating wire in meters
-    # rc: distance of cold junctions of the thermopile from the heating wire in meters
-    at <- a * tsec
-    ok <- !is.na(at) & (at >= (rc^2 - rh^2))
+    # rh: distance of hot junctions of the thermopile from the heating
+    #   wire in meters
+    # rc: distance of cold junctions of the thermopile from the heating
+    #   wire in meters
+
+    x <- dat(expand("asoil",what),...)
+    x <- x * tsec
+    ok <- !is.na(x) & (x >= (rc^2 - rh^2))
     # first two terms
-    fat <- 1 - 1 / (8 * log(rc/rh)) * ((rc^2 - rh^2)/at - (rc^4 - rh^4)/(16 * at * at))
-    if (any(!ok)) fat[!ok] <- 1
-    fat
+    x <- 1 - 1 / (8 * log(rc/rh)) *
+        ((rc^2 - rh^2)/x - (rc^4 - rh^4)/(16 * x * x))
+    if (any(!ok)) x[!ok] <- 1
+    x@units <- rep("",ncol(x))
+    x
 }
 
