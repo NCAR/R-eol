@@ -79,7 +79,7 @@ nts <- function(data,positions,
     }
 
     if (is.null(stations) || length(stations) == 0)
-        stations <- rep(0,ncol(ret@data))
+        stations <- rep(0L,ncol(ret@data))
     else if (!is.integer(stations)) stations <- as.integer(stations)
 
     ret@stations <- stations
