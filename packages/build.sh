@@ -11,6 +11,13 @@ do_isfs=false
 do_eolsonde=false
 do_install=false
 
+is_mac=fa
+if [ $(uname) == Darwin ]; then
+	is_mac=true
+else
+	is_mac=false
+fi
+
 while [ $# -gt 0 ]; do
     case $1 in
     -e)
@@ -43,7 +50,7 @@ done
 # rm -rf /home/maclean/R/x86_64-redhat-linux-gnu-library/3.0/eolts
 # rm -rf /home/maclean/R/x86_64-redhat-linux-gnu-library/3.0/isfs
 
-if [ $(uname) == Darwin ]; then
+if $is_mac; then
 	rlib=$(R --vanilla --slave -e 'cat(.Library[1])' )
 else
 	rlib=$(R --vanilla --slave -e 'cat(.Library.site[1])' )
@@ -69,7 +76,7 @@ if $do_eolts; then
     tmpdesc=$(mktemp /tmp/${0##*/}_XXXXXX)
     cp eolts/DESCRIPTION $tmpdesc
 
-    if [ $(uname) == Darwin ]; then
+    if $is_mac; then
 	sed -i "" -E "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" eolts/DESCRIPTION
     else
 	sed -i -r "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" eolts/DESCRIPTION
@@ -82,6 +89,14 @@ if $do_eolts; then
     [ $bstatus -ne 0 ] && exit $bstatus
 
     R $rargs CMD INSTALL -l $rlib eolts_[0-9].[0-9]-*.tar.gz || exit $?
+
+    if $is_mac; then
+        # Check that the package does not have dependencies on /usr/local/lib
+        if R $rargs CMD otool -L $rlib/eolts/libs/eolts.so | fgrep -q /usr/local/lib; then
+            echo "otool -L $rlib/eolts/libs/eolts.so indicates it is using a shareable library on /usr/local/lib"
+            exit 1
+        fi
+    fi
 
     if $do_check; then
         R $rargs CMD check -o /tmp eolts_[0-9].[0-9]-*.tar.gz || exit $?
@@ -101,7 +116,7 @@ if $do_isfs; then
     tmpdesc=$(mktemp /tmp/${0##*/}_XXXXXX)
     cp isfs/DESCRIPTION $tmpdesc
 
-    if [ $(uname) == Darwin ]; then
+    if $is_mac; then
         sed -i "" -E "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" isfs/DESCRIPTION
     else
 	sed -i -r "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" isfs/DESCRIPTION
@@ -115,6 +130,14 @@ if $do_isfs; then
 
 
     R $rargs CMD INSTALL -l $rlib isfs_[0-9].[0-9]-*.tar.gz || exit $?
+
+    if $is_mac; then
+        # Check that the package does not have dependencies on /usr/local/lib
+        if R $rargs CMD otool -L $rlib/isfs/libs/isfs.so | fgrep -q /usr/local/lib; then
+            echo "otool -L $rlib/isfs/libs/isfs.so indicates it is using a shareable library on /usr/local/lib"
+            exit 1
+        fi
+    fi
 
     if $do_check; then
         R $rargs CMD check -o /tmp isfs_[0-9].[0-9]*.tar.gz || exit $?
@@ -138,7 +161,7 @@ if $do_eolsonde; then
     tmpdesc=$(mktemp /tmp/${0##*/}_XXXXXX)
     cp eolsonde/DESCRIPTION $tmpdesc
 
-    if [ $(uname) == Darwin ]; then
+    if $is_mac; then
 	sed -i "" -E "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" eolsonde/DESCRIPTION
     else
 	sed -i -r "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" eolsonde/DESCRIPTION
@@ -151,6 +174,14 @@ if $do_eolsonde; then
     [ $bstatus -ne 0 ] && exit $bstatus
 
     R $rargs CMD INSTALL -l $rlib eolsonde_[0-9].[0-9]-*.tar.gz || exit $?
+
+    if $is_mac; then
+        # Check that the package does not have dependencies on /usr/local/lib
+        if R $rargs CMD otool -L $rlib/eolsonde/libs/eolsonde | fgrep -q /usr/local/lib; then
+            echo "otool -L $rlib/eolsonde/libs/eolsonde indicates it is using a shareable library on /usr/local/lib"
+            exit 1
+        fi
+    fi
 
     if $do_check; then
         R $rargs CMD check -o /tmp eolsonde_[0-9].[0-9]-*.tar.gz || exit $?
