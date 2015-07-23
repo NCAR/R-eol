@@ -14,7 +14,7 @@ setMethod("conform",signature(x="dat",y="dat"),
     function(x,y)
     {
 
-        xcols <- match.columns(y,x,warn="Creating time series of NAs")
+        xcols <- match_columns(y,x,warn="Creating time series of NAs")
         if (any(xbad <- (xcols == 0))) {
             xcols[xbad] <- 1
             x <- x[,xcols]
@@ -79,10 +79,10 @@ setMethod("conform",signature(x="ANY",y="ANY"),
     }
     )
 
-setGeneric("match.columns",function(y,x,warn)
-    standardGeneric("match.columns"))
+setGeneric("match_columns",function(y,x,warn)
+    standardGeneric("match_columns"))
 
-setMethod("match.columns",signature(y="dat",x="dat"),
+setMethod("match_columns",signature(y="dat",x="dat"),
     function(y,x,warn=FALSE)
     {
 
@@ -162,38 +162,39 @@ setMethod("match.columns",signature(y="dat",x="dat"),
                     # x has one or more than 1 column for this station.
                     # conform along the heights
 
-                    # if same number of columns for this station, then
-                    # the default conformation is one to one
-                    # if (lssx == lssy) xcols[ssy] <- ssx
-
-                    for (ht in unique(htsy[ssy])) {
-                        # cat("ht=",ht,"\n")
-                        # hx is vector of x column numbers of ht and stn
-                        # hy is vector of y column numbers of ht and stn
-                        if (is.na(ht)) {
-                            hx <- (1:ncx)[ssx]
-                            hy <- (1:ncy)[ssy]
-                        }
-                        else {
-                            hx <- (1:ncx)[ssx][!is.na(match(htsx[ssx],ht)) | is.na(htsx[ssx])]
-                            hy <- (1:ncy)[ssy][!is.na(match(htsy[ssy],ht))]
-                        }
+                    for (hty in unique(htsy[ssy])) {
+                        # cat("hty=",hty,"\n")
+                        # hx is vector of x column numbers of hty and stn
+                        # hy is vector of y column numbers of hty and stn
+                        hx <- (1:ncx)[ssx][!is.na(match(htsx[ssx],hty))]
+                        hy <- (1:ncy)[ssy][!is.na(match(htsy[ssy],hty))]
                         lhx <- length(hx)
                         lhy <- length(hy)
-                        if (lhx == 0) {
+                        if (lhx == 0 && !is.na(hty)) {
                             # no exact match for this height at stn
                             # find minimum difference
-                            hd = abs(htsx[ssx]-ht)
+                            hd = abs(htsx[ssx]-hty)
                             hdm = min(hd,na.rm=T)
                             # cat("height differences=",hd," minimum=",hdm,"\n")
                             if (!is.na(hdm)) {
                                 hx <- (1:ncx)[ssx][!is.na(hd) & hd == hdm]
                                 lhx <- length(hx)
+                                if (length(lhx) > 0 && ((is.logical(warn) && warn) || is.character(warn))) {
+                                    warning(paste("conforming",dnx[hx],", (stns=",stnsx[hx],") to",
+                                            paste(dny[hy],"(stn=",stnsy[hy],")",sep="",collapse=", "),
+                                            "(matching minimum height difference)"))
+                                }
                             }
-                            if (lhx == 1 && ((is.logical(warn) && warn) || is.character(warn))) {
-                                warning(paste("conforming",dnx[hx],", (stns=",stnsx[hx],") to",
-                                        paste(dny[hy],"(stn=",stnsy[hy],")",sep="",collapse=", "),
-                                        "(matching minimum height difference)"))
+                            else {
+                                # all height differences are NA, but hty
+                                # is not NA. Therefore all heights of x are NA
+                                hx <- (1:ncx)[ssx][is.na(htsx[ssx])]
+                                lhx <- length(hx)
+                                if (length(lhx) > 0 && ((is.logical(warn) && warn) || is.character(warn))) {
+                                    warning(paste("conforming",dnx[hx],", (stns=",stnsx[hx],") to",
+                                            paste(dny[hy],"(stn=",stnsy[hy],")",sep="",collapse=", "),
+                                            "(matching NA heights in x to non-NA heights in y)"))
+                                }
                             }
                         }
 
@@ -205,7 +206,7 @@ setMethod("match.columns",signature(y="dat",x="dat"),
                             if ((is.logical(warn) && warn) || is.character(warn)) {
                                 warning(paste("No data in x (dimnames=",paste(dnx,collapse=","),
                                         ", stns=",paste(stnsx,collapse=","),") for station",stn,
-                                        "at height",ht))
+                                        "at height",hty))
                             }
                         }
                         else {
@@ -251,7 +252,7 @@ setMethod("match.columns",signature(y="dat",x="dat"),
             if ((is.logical(warn) && warn) || is.character(warn))
                 warning(msg)
         }
-        # cat(paste("match.columns of",paste(dny,collapse=","),"to",
+        # cat(paste("match_columns of",paste(dny,collapse=","),"to",
         #         paste(dnx,collapse=","),"is",
         #         paste(xcols,collapse=",")),"\n")
         # if (any(is.na(xcols))) browser()

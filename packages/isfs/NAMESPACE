@@ -83,6 +83,6 @@ exportMethods(
     "pid",
     "readts",
     "conform",
-    "match.columns",
+    "match_columns",
     "tilt"
 )
