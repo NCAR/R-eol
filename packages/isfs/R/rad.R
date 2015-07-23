@@ -9,7 +9,7 @@
 
 #  Description: dat functions for derived radiation variables.
 #
-calc.Rlw <- function(Rpile,Tcase,Tdome=NULL,B=4,swcor=0,Rsw=NULL)
+calcRlw <- function(Rpile,Tcase,Tdome=NULL,B=4,swcor=0,Rsw=NULL)
 {
     # Long wave calculation for either in or out.
     # Temperatures in degK
@@ -31,10 +31,11 @@ calc.Rlw <- function(Rpile,Tcase,Tdome=NULL,B=4,swcor=0,Rsw=NULL)
             if (any(misstd)) Tdome[,misstd] = Tcase[,misstd]
 
             # B can be a simple vector, one for each column of Tcase or Tdome
-            Bvec <- !inherits(B,"nts") && (length(B) == ncol(Tcase))
+            Bvec <- !inherits(B,"nts") &&
+                (length(B) == ncol(Tcase) || (length(B) == 1))
             if (Bvec) {
                 Rpile <- Rpile + SB *
-                nts(t(((1 + B) * t(Tcase^4) - B * t(Tdome^4))),Tcase@positions)
+                    nts(t(((1 + B) * t(Tcase^4) - B * t(Tdome^4))),Tcase@positions)
                 class(Rpile) <- "dat"
             }
             else {
@@ -101,7 +102,7 @@ dat.Rlw.either <- function(what="Rlw.out",B=dpar("pyrgeometer.B"),
     x = dat(Rpile.name,...)
     if (inherits(tcase,"dat")) tcase = conform(tcase,x)
 
-    if (is.null(robust) || robust) x <- calc.Rlw(x,tcase)
+    if (is.null(robust) || robust) x <- calcRlw(x,tcase)
     else {
         nwarn <- getOption("warn")
         options(warn=-1)
@@ -156,7 +157,7 @@ dat.Rlw.either <- function(what="Rlw.out",B=dpar("pyrgeometer.B"),
         if (inherits(B,"dat")) B = conform(B,x)
         if (inherits(swcor,"dat")) swcor = conform(swcor,x)
         if (inherits(sw,"dat")) sw = conform(sw,x)
-        x <- calc.Rlw(x,tcase,tdome,B=B,swcor=swcor,Rsw=sw)
+        x <- calcRlw(x,tcase,tdome,B=B,swcor=swcor,Rsw=sw)
     }
 
     # Check if Rlw is available without being derived.
