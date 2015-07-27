@@ -178,12 +178,17 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
         clipped <- FALSE
         cmin <- ylim1[1]
         cmax <- ylim1[2]
-        clip.min <- datacol < cmin & !is.na(datacol)
+
+        # Use !is.na(datacol@data) for the second operand here so that
+        # it is a simple matrix, not an nts.
+        # Then the times are not aligned in the '&' expression, which
+        # raises warnings if they are not sorted.
+        clip.min <- datacol < cmin & !is.na(datacol@data)
         if (any(clip.min)) {
             datacol@data[clip.min@data] <- NA_real_
             clipped <- TRUE
         }
-        clip.max <- datacol > cmax & !is.na(datacol)
+        clip.max <- datacol > cmax & !is.na(datacol@data)
         if (any(clip.max)) {
             datacol@data[clip.max@data] <- NA_real_
             clipped <- TRUE
