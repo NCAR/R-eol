@@ -279,6 +279,8 @@ setReplaceMethod("positions", signature(object="nts",value="utime"),
     function(object,value)
     {
         object@positions <- value
+        object@start.position <- min(value)
+        object@end.position <- max(value)
         object
     }
     )
