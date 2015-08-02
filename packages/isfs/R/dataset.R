@@ -27,6 +27,13 @@ find_datasets <- function(
     if (length(ncds) == 0)
         warning(paste0("no directories found on",path," matching pattern: \"",pattern,"\""))
 
+    # If a directory called simply "netcdf" found, look in it for directories
+    # cat("ncds=",ncds,"\n")
+    if (identical(ncds,"netcdf")) {
+        ncds = file.path(ncds,list.dirs(file.path(path,ncds),full.names=FALSE))
+        # cat("ncds=",ncds,"\n")
+    }
+
     dsets <- list()
 
     for (ncd in ncds) {
@@ -73,13 +80,15 @@ find_datasets <- function(
 
             dname <- sub(pattern,"",ncd)    # remove pattern from directory
             dname <- sub("^_+","",dname)    # remove leading underscores
+            dname <- sub("^/+","",dname)    # remove leading slashes (/x from netcdf/x)
             dname <- sub("^\\.+","",dname)  # remove periods (why?)
             if (nchar(dname) == 0) dname <- "default"
 
             if ("dataset" %in% names(attrs)) {
                 if (attrs$dataset != dname) warning(paste0("files in directory ",
                         ncd," have global attribute \"dataset\" of \"",attrs$dataset,
-                        "\", which does not match the directory suffix. Setting datasetname to \"",attrs$dataset,"\""))
+                        "\", which does not match the directory suffix, ", dname,
+                        ". Setting datasetname to \"",attrs$dataset,"\""))
                 dname <- attrs$dataset
             }
 
