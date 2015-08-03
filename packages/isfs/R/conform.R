@@ -113,7 +113,10 @@ setMethod("match_columns",signature(y="dat",x="dat"),
         sfxsy <- words(dny,2,sep=".")
 
         htsx <- heights(x)
+        # Remove names so that "identical(htsx[ssx], NA_real_)" works
+        names(htsx) <- NULL
         htsy <- heights(y)
+        names(htsy) <- NULL
 
         sitesx <- sites(x)
         sitesy <- sites(y)
@@ -159,16 +162,22 @@ setMethod("match_columns",signature(y="dat",x="dat"),
                     }
                 }
                 else {
-                    # x has one or more than 1 column for this station.
                     # conform along the heights
-
                     for (hty in unique(htsy[ssy])) {
                         # cat("hty=",hty,"\n")
                         # hx is vector of x column numbers of hty and stn
                         # hy is vector of y column numbers of hty and stn
-                        hx <- (1:ncx)[ssx][!is.na(match(htsx[ssx],hty))]
-                        hy <- (1:ncy)[ssy][!is.na(match(htsy[ssy],hty))]
+
+                        # If x at this point has one column, with NA height, it matches against anyting
+                        if (identical(htsx[ssx], NA_real_)) {
+                            # one column, no height information
+                            hx = (1:ncx)[ssx]
+                        }
+                        else {
+                            hx <- (1:ncx)[ssx][!is.na(match(htsx[ssx],hty))]
+                        }
                         lhx <- length(hx)
+                        hy <- (1:ncy)[ssy][!is.na(match(htsy[ssy],hty))]
                         lhy <- length(hy)
                         if (lhx == 0 && !is.na(hty)) {
                             # no exact match for this height at stn
