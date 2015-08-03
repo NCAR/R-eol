@@ -106,6 +106,7 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
     }
 
     res <- NULL
+    gsoil <- dat(expand("Gsoil",what),derived=FALSE)
 
     for (stn in unique(stations(tx))) {
         txs <- select(tx,stns=stn)
@@ -155,15 +156,15 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
             }
 
             # determine depth of Gsoil heat flux plate
-            g <- conform(dat(expand("Gsoil",what),derived=FALSE),txss)
+            gsoilss <- select(gsoil, stns=stn, sites=st)
             depthg <- NULL
-            if (!is.null(g)) {
-                depthg <- unique(-heights(g))
+            if (!is.null(gsoilss)) {
+                depthg <- unique(-heights(gsoilss))
                 depthg[is.na(depthg)] <- -0.05 # 5 cm
             }
 
             if (is.null(depthg) || length(depthg) == 0) {
-                if (is.null(g)) warning(paste("Gsoil not found at station=",stn,", site=\"",st,"\". Assuming 5cm as bottom limit of Tsoil",sep=""))
+                if (is.null(gsoilss)) warning(paste("Gsoil not found at station=",stn,", site=\"",st,"\". Assuming 5cm as bottom limit of Tsoil",sep=""))
                 else warning(paste("Gsoil depth unknown at station=",stn,", site=\"",st,"\". Assuming 5cm",sep=""))
                 depthg <- 0.05 # default depth in meters
             }
@@ -199,7 +200,7 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
 
             # a missing (NA) temperature will result in no addition to Gsfc from that depth.
             if (sum) {
-                dns <- expand("dT_by_dt_dz",g)
+                dns <- expand("dT_by_dt_dz",gsoilss)
                 txss@data <- matrix(apply(txss@data,1,function(x){sum(x*dz,na.rm=TRUE)}),
                     byrow=TRUE,ncol=length(dns),dimnames=list(NULL,dns))
                 stations(txss) <- stn
