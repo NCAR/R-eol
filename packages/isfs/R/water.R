@@ -31,7 +31,7 @@ dat.satvp <- function(what,derived=TRUE,TC,frost=dpar("RH.ice"), enhancement=T,.
 
     select <- as.vector(!is.na(TC) & TC <= 0)
     TC <- as.vector(TC)[select]
-    if (!is.null(frost) && frost) 
+    if (!is.null(frost) && !is.na(frost) && frost) 
         # formula e_i2, fit from -50C to 0C
         satvp[select] <- 6.1115*exp(22.452*TC/(272.55+TC))
     else
