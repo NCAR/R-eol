@@ -87,9 +87,8 @@ find_datasets <- function(
             if ("dataset" %in% names(attrs)) {
                 if (attrs$dataset != dname) warning(paste0("files in directory ",
                         ncd," have global attribute \"dataset\" of \"",attrs$dataset,
-                        "\", which does not match the directory suffix, ", dname,
-                        ". Setting datasetname to \"",attrs$dataset,"\""))
-                dname <- attrs$dataset
+                        "\", which does not match the directory name, ", dname))
+                # dname <- attrs$dataset
             }
 
             desc <- ""
