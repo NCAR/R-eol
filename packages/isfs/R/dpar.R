@@ -21,19 +21,25 @@ setDpar <- function(parm,vals)
 
 # dpar parameters supported by this isfs package. See isfs::onAttach(), where these
 # are appended to the list that is used by eolts::dpar().
+#
+# Several of the parameters with flushCache=TRUE indicate whether a
+# correction has been applied to variables in the NetCDF files.
+# If the paramter is being changed, it might mean that
+# the specified correction has just been written to the variables
+# in the NetCDF files, and so one could clear the cache before reading them again.
 .dparParams <- list(
     accelgrav=list(type="numeric",setf=setDpar,default=9.81,flushCache=FALSE),
     # for simple averages, one value, average interval in seconds
     # for non-simple averages, two values, non-simple interval, simple interval
     avg=list(type="numeric",setf=setDpar,default=NULL,flushCache=TRUE),
-    co2_flux_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=FALSE),
+    co2_flux_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=TRUE),
     coords=list(type="character",setf=setDpar,default=NA,flushCache=FALSE),
-    datacoords=list(type="character",setf=setDpar,default=NA,flushCache=FALSE),
+    datacoords=list(type="character",setf=setDpar,default=NA,flushCache=TRUE),
     emissivity.sfc=list(type="numeric",setf=setDpar,default=0.98,flushCache=FALSE),
-    gsoil_philip_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=FALSE),
-    h2o_flux_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=FALSE),
+    gsoil_philip_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=TRUE),
+    h2o_flux_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=TRUE),
     hts=list(type="numeric",setf=setDpar,default=NULL,flushCache=TRUE),
-    lambdasoil_fat_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=FALSE),
+    lambdasoil_fat_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=TRUE),
     lat=list(type="numeric",setf=setDpar,default=NA,flushCache=FALSE),
     lon=list(type="numeric",setf=setDpar,default=NA,flushCache=FALSE),
     platform=list(type="character",setf=setDpar,default="",flushCache=FALSE),
