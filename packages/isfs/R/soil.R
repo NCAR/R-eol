@@ -106,6 +106,8 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
     }
 
     res <- NULL
+
+    # Gsoil flux is only used here to determine depth of flux plate
     gsoil <- dat(expand("Gsoil",what),derived=FALSE)
 
     for (stn in unique(stations(tx))) {
@@ -221,6 +223,7 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
             Cs <- approx(conform(Cs,txss),xout=positions(txss))
 
             # Units:   J/(m^3 degK) * d(degK)/d(sec) * m =  W/m^2
+            # browser()
             x <- Cs * txss
             if (sum) dimnames(x) <- list(NULL,expand("Ssoil",Cs))
             else dimnames(x) <- list(NULL,expand("Ssoil",txss))

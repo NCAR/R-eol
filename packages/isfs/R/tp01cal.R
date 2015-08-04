@@ -198,7 +198,7 @@ calc_Lambdasoil <- function(what="Lambdasoil",...)
     lambda
 }
 
-dat.Cvsoil <- function(what, cache=F,...) {
+dat.Cvsoil <- function(what, derived=TRUE, cache=FALSE,...) {
     #
     # Below 2 lines should allow this code to be used for both Wisard
     # (Lambdasoil reported by motes) and pre-Wisard deployments
@@ -207,13 +207,13 @@ dat.Cvsoil <- function(what, cache=F,...) {
     vars <- words(variables(),1,1)
     lambda <- dat(expand("Lambdasoil",what),...)
     if (is.null(lambda)) return(NULL)
-    Cv <- lambda/dat("asoil")
+    Cv <- lambda / conform(dat("asoil",...),lambda)
     sufs <- suffixes(Cv)
     colnames(Cv) <- paste(rep("Cvsoil",ncol(Cv)),sufs,sep="")
     Cv@units <- rep("J/(m3 K)",ncol(Cv))
     Cv
 }
-dat.asoil <- function(what,derived=TRUE,cache=F,...)
+dat.asoil <- function(what,derived=TRUE,cache=FALSE,...)
 {
     # TP01 manual suggests limits of 0.05e-6 and 1.0e-6 for
     # diffusivity.  The user should apply those limits
