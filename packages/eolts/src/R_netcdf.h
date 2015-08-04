@@ -112,6 +112,11 @@ public:
     void write(R_nts& nts, const std::vector<NcDim>& dims,
             double dt, double fillValue) throw(RPC_Exception);
 
+    /**
+     * Request nc_server to sync files to disk.
+     */
+    void sync() throw(RPC_Exception);
+
     int writeHistory(const std::string&) throw(RPC_Exception);
 
     int writeGlobalAttr(const std::string& name, const std::string& val) throw(RPC_Exception);

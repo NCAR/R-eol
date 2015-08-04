@@ -557,16 +557,11 @@ R_netcdf::~R_netcdf()
 {
 #ifdef HAVE_NC_SERVER
     if (_clnt) {
+
+        sync();
+
         int result = 0;
         enum clnt_stat clnt_stat;
-
-        if ((clnt_stat = clnt_call (_clnt, SYNC_FILES,
-                (xdrproc_t) xdr_void, (caddr_t) NULL,
-                (xdrproc_t) xdr_int, (caddr_t) &result,
-                _rpcOtherTimeout)) != RPC_SUCCESS)
-        {
-            Rf_warning(clnt_sperror(_clnt,"nc_server sync failed"));
-        }
 
         if ((clnt_stat = clnt_call(_clnt, CLOSE_CONNECTION,
                         (xdrproc_t) xdr_int, (caddr_t) &_id,
@@ -997,6 +992,24 @@ void R_netcdf::write(R_nts &nts,
         vg->write(tval,data,nr,nc,&start.front(),&count.front(),*wtsPtr);
         if (wc >= 0) wtsPtr++;
         data++;
+    }
+
+    sync();
+}
+
+void R_netcdf::sync() throw(RPC_Exception)
+{
+    if (_clnt) {
+        int result = 0;
+        enum clnt_stat clnt_stat;
+
+        if ((clnt_stat = clnt_call (_clnt, SYNC_FILES,
+                (xdrproc_t) xdr_void, (caddr_t) NULL,
+                (xdrproc_t) xdr_int, (caddr_t) &result,
+                _rpcOtherTimeout)) != RPC_SUCCESS)
+        {
+            Rf_warning(clnt_sperror(_clnt,"nc_server sync failed"));
+        }
     }
 }
 
@@ -1471,4 +1484,4 @@ string R_netcdf::NSVarGroupFloat::toString()
     }
     return out;
 }
-#endif
+#endif  // HAVE_NC_SERVER
