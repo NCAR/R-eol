@@ -122,7 +122,7 @@ setMethod("readts",
         x <- .Call("read_prep",con,start,end,as.integer(nrows),PACKAGE="isfs")
 
         if (length(x@data) == 0) {
-            warning(paste("No data found for ",paste(con@variables,collapse=",")," between ",format(start)," and ",format(end)))
+            warning(paste("No data found for",paste(con@variables,collapse=","),"between",format(start),"and",format(end)))
             return(NULL)
         }
 
