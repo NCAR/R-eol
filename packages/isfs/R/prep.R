@@ -121,6 +121,11 @@ setMethod("readts",
 
         x <- .Call("read_prep",con,start,end,as.integer(nrows),PACKAGE="isfs")
 
+        if (length(x@data) == 0) {
+            warning(paste("No data found for ",paste(con@variables,collapse=",")," between ",format(start)," and ",format(end)))
+            return(NULL)
+        }
+
         # cat("dim(x)=",dim(x),"\n")
         # browser()
 
@@ -133,17 +138,17 @@ setMethod("readts",
 
         nrows <- nrow(x)
         if (nrows <= 1L) {
-          if (nrows == 1L) {
-            warning(paste("One point time series read from",format(start),"to",format(end)))
-            return(invisible(x))
-          }
-          warning(paste("No data found from",format(start),"to",format(end)))
-          return(NULL)
+            if (nrows == 1L) {
+                warning(paste("One point time series read from",format(start),"to",format(end)))
+                return(invisible(x))
+            }
+            warning(paste("No data found from",format(start),"to",format(end)))
+            return(NULL)
         }
         # In the future, try to read an even number of records - help fft efficiency
         if (nrows > 100L && nrows %% 2L) {
-          nrows <- nrows - 1L
-          x <- x[1:nrows,]
+            nrows <- nrows - 1L
+            x <- x[1:nrows,]
         }
 
         # If data is evenly sampled, save period and number of records
@@ -152,8 +157,8 @@ setMethod("readts",
         dt <- deltat(x)
         # cat("dt=",paste(dt,collapse=","),"\n")
         if (con@rate > 0. && abs(dt[1] - 1/con@rate) < .1/con@rate) {
-          dt[1] <- 1/con@rate
-          deltat(x) <- dt
+            dt[1] <- 1/con@rate
+            deltat(x) <- dt
         }
         # browser()
         # cat('(dt["max"] - dt["min"])=',(dt["max"] - dt["min"])," dt[1]=",dt[1],
@@ -162,13 +167,13 @@ setMethod("readts",
         if ((dt["max"] - dt["min"]) < 1.5 * dt[1] &&
               ((nrows * dt[1]) / period) > .95)
         {
-          # Set nrows the first time we get evenly sampled data
-          if (.Call("prep_get_nrows",con,PACKAGE="isfs") <= 0) {
-            # cat("prep_set_nrows, nrows=",nrows,"\n")
-            .Call("prep_set_nrows",con,as.integer(nrows),PACKAGE="isfs")
-            # cat("prep_set_period, period=",period,"\n")
-            .Call("prep_set_period",con,period,PACKAGE="isfs")
-          }
+            # Set nrows the first time we get evenly sampled data
+            if (.Call("prep_get_nrows",con,PACKAGE="isfs") <= 0) {
+                # cat("prep_set_nrows, nrows=",nrows,"\n")
+                .Call("prep_set_nrows",con,as.integer(nrows),PACKAGE="isfs")
+                # cat("prep_set_period, period=",period,"\n")
+                .Call("prep_set_period",con,period,PACKAGE="isfs")
+            }
         }
         else .Call("prep_set_period",con,-1., PACKAGE="isfs")
 
