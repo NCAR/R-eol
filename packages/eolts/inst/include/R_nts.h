@@ -59,6 +59,9 @@ public:
     void setUnits(const std::vector<std::string>& names);
     std::vector<std::string> getUnits() const;
 
+    void setLongNames(const std::vector<std::string>& names);
+    std::vector<std::string> getLongNames() const;
+
     /**
      * Set the weights slot.
      */
@@ -83,6 +86,7 @@ public:
     static SEXP weightsSlotName;
     static SEXP weightMapSlotName;
     static SEXP stationsSlotName;
+    static SEXP longNamesSlotName;
     static SEXP startposSlotName;
     static SEXP endposSlotName;
     static SEXP timeFormatSlotName;

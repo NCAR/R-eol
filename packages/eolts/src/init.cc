@@ -51,6 +51,7 @@ extern "C" {
         R_nts::weightsSlotName = Rf_install("weights");
         R_nts::weightMapSlotName = Rf_install("weightmap");
         R_nts::stationsSlotName = Rf_install("stations");
+        R_nts::longNamesSlotName = Rf_install("long_names");
         R_nts::startposSlotName = Rf_install("start");
         R_nts::endposSlotName = Rf_install("end");
         R_nts::timeFormatSlotName = Rf_install("time.format");

@@ -26,6 +26,7 @@ SEXP R_nts::unitsSlotName;
 SEXP R_nts::weightsSlotName;
 SEXP R_nts::weightMapSlotName;
 SEXP R_nts::stationsSlotName;
+SEXP R_nts::longNamesSlotName;
 SEXP R_nts::startposSlotName;
 SEXP R_nts::endposSlotName;
 SEXP R_nts::timeFormatSlotName;
@@ -124,6 +125,27 @@ vector<string> R_nts::getUnits() const
     return units;
 }
 
+void R_nts::setLongNames(const vector<string>& long_names)
+{
+    SEXP cobj = PROTECT(Rf_allocVector(STRSXP,long_names.size()));
+
+    for (unsigned int i = 0; i < long_names.size(); i++)
+        SET_STRING_ELT(cobj,i,Rf_mkChar(long_names[i].c_str()));
+
+    Rf_setAttrib(_obj,longNamesSlotName,cobj);
+    UNPROTECT(1);
+}
+
+vector<string> R_nts::getLongNames() const
+{
+    SEXP cobj = Rf_getAttrib(_obj,longNamesSlotName);
+
+    vector<string> longNames;
+    for (int i = 0; i < Rf_length(cobj); i++) 
+        longNames.push_back(string(CHAR(STRING_ELT(cobj,i))));
+
+    return longNames;
+}
 void R_nts::setTimeFormat(const string& val)
 {
     SEXP cobj = Rf_getAttrib(_obj,timeFormatSlotName);

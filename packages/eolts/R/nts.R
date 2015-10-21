@@ -16,7 +16,8 @@ setClass("nts",
         deltat="numeric",
         wss="numeric",
         time.format="character",
-        time.zone="character"
+        time.zone="character",
+        long_names="character"
         ),
     prototype=list(
         weights=matrix(0,ncol=0,nrow=0),
@@ -25,13 +26,15 @@ setClass("nts",
         deltat=numeric(0),
         wss=numeric(0),
         time.format=getOption("time.out.format"),
-        time.zone=getOption("time.zone")
+        time.zone=getOption("time.zone"),
+        long_names=character(0)
         )
     )
 
 nts <- function(data,positions,
     units,
     names,
+    long_names=NULL,
     weights=NULL,
     weightmap=NULL,
     stations=NULL,
@@ -72,6 +75,7 @@ nts <- function(data,positions,
     else ret@units <- rep("",ncol(ret@data))
 
     if (!missing(names)) colnames(ret@data) <- names
+    if (!is.null(long_names)) ret@long_names <- long_names
 
     if (!is.null(weights)) {
         ret@weights <- weights
@@ -255,6 +259,27 @@ setReplaceMethod("units",signature(x="nts",value="character"),
         if (length(value) != ncol(x@data))
             warning(paste("Length of units (",length(units),") is not equal to number of data columns (",ncol(x@data),")."))
         x@units <- value
+        x
+    }
+    )
+
+setGeneric("long_names",function(x) standardGeneric("long_names"))
+
+setMethod("long_names", signature(x="nts"),
+    function(x)
+    {
+        x@long_names
+    }
+    )
+
+setGeneric("long_names<-",function(x,value) standardGeneric("long_names<-"))
+
+setReplaceMethod("long_names",signature(x="nts",value="character"),
+    function(x,value)
+    {
+        if (length(value) != ncol(x@data))
+            warning(paste("Length of long_names (",length(long_names),") is not equal to number of data columns (",ncol(x@data),")."))
+        x@long_names <- value
         x
     }
     )
@@ -596,6 +621,7 @@ setMethod("[",signature(x="nts"),
         weights <- x@weights
         weightmap <- x@weightmap
         stations <- x@stations
+        long_names <- x@long_names
         units <- x@units
         t1 <- start(x)
         t2 <- end(x)
@@ -647,6 +673,7 @@ setMethod("[",signature(x="nts"),
 
         stations(x) <- stations[j]
         x@units <- units[j]
+        if (length(long_names) > 0) long_names(x) <- long_names[j]
 
         # recompute deltat
         if (newdt) {

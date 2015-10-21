@@ -193,9 +193,11 @@ private:
         std::string _units;
         std::vector<NcAttrT<std::string> > _attrs;
     public:
-        NSVar(const std::string& n, const std::string& u,const std::string& c) :
+        NSVar(const std::string& n, const std::string& u, const std::string& l,
+                const std::string& c) :
             _name(n),_units(u),_attrs()
         {
+            if (l.length() > 0) addAttribute("long_name",l);
             if (c.length() > 0) addAttribute("counts",c);
         }
 
@@ -212,8 +214,8 @@ private:
 
     class NSVarGroupFloat {
     public:
-        NSVarGroupFloat(R_netcdf *conn,NS_rectype,
-                const std::vector<NcDim>& dims,double fillValue,
+        NSVarGroupFloat(R_netcdf *conn,NS_rectype, double interval,
+                const std::vector<NcDim>& dims, double fillValue,
                 const std::string& cntsName);
         // NSVarGroupFloat() {}
         ~NSVarGroupFloat(void);
@@ -229,7 +231,7 @@ private:
         int write(double t,double *d,size_t nr, size_t nc,
                 size_t *start, size_t *count,double cnts) throw(RPC_Exception);
 
-        void addVariable(const std::string& name,const std::string& units);
+        void addVariable(const std::string& name,const std::string& units, const std::string& long_name);
 
         unsigned int getNumVariables() const { return _vars.size(); }
         NSVar &getVariable(int i) { return _vars[i]; }
@@ -240,6 +242,8 @@ private:
         const std::string& getCountsName() const { return _cntsName; }
 
         std::string toString();
+
+        double getInterval() const { return _interval; }
 
     protected:
         void init_datarec(void);
@@ -257,7 +261,9 @@ private:
     };
 
     NSVarGroupFloat *getVarGroupFloat(const std::vector<std::string>& vnames,
-        const std::vector<std::string>& vunits, NS_rectype rectype,
+        const std::vector<std::string>& vunits,
+        const std::vector<std::string>& long_names,
+        NS_rectype rectype,
         double interval, const std::vector<NcDim>& dims,
         double fillvalue,const std::string& cntsName) throw(RPC_Exception);
 

@@ -912,6 +912,7 @@ void R_netcdf::write(R_nts &nts,
     size_t nc = dmatrix.getNcols();
     vector<string> vnames = dmatrix.getColumnNames();
     vector<string> vunits = nts.getUnits();
+    vector<string> long_names = nts.getLongNames();
 
     double *data = dmatrix.getDataPtr();
 
@@ -977,7 +978,8 @@ void R_netcdf::write(R_nts &nts,
     }
 
     NSVarGroupFloat* vg = getVarGroupFloat(
-            vnames,vunits,NS_TIMESERIES,dt,dims,fillvalue,cntsName);
+            vnames, vunits, long_names, NS_TIMESERIES,
+            dt, dims, fillvalue, cntsName);
 #ifdef DEBUG
     Rprintf("getVarGroupFloat for vnames[0]=%s: %s\n",
             vnames[0].c_str(),vg->toString().c_str());
@@ -1112,7 +1114,8 @@ int R_netcdf::writeGlobalAttr(const string& name, int val) throw(RPC_Exception)
 }
 
 R_netcdf::NSVarGroupFloat* R_netcdf::addVarGroupFloat(NS_rectype rectype,
-        double interval,const vector<NcDim>& dims,double fillValue,const string& cntsName)
+        double interval, const vector<NcDim>& dims,
+        double fillValue, const string& cntsName)
 {
 
 #ifdef DEBUG
@@ -1124,7 +1127,8 @@ R_netcdf::NSVarGroupFloat* R_netcdf::addVarGroupFloat(NS_rectype rectype,
     Rprintf("calling NSVarGroupFloat ctor\n");
 #endif
 
-    NSVarGroupFloat *g = new NSVarGroupFloat(this,rectype,dims,fillValue,cntsName);
+    NSVarGroupFloat *g = new NSVarGroupFloat(this, rectype, interval,
+            dims, fillValue, cntsName);
 
     _groups.push_back(g);
 
@@ -1137,6 +1141,7 @@ R_netcdf::NSVarGroupFloat* R_netcdf::addVarGroupFloat(NS_rectype rectype,
 R_netcdf::NSVarGroupFloat* R_netcdf::getVarGroupFloat(
         const vector<string>& vnames,
         const vector<string>& vunits,
+        const vector<string>& long_names,
         NS_rectype rectype,
         double interval,
         const vector<NcDim>& dims,
@@ -1173,17 +1178,24 @@ R_netcdf::NSVarGroupFloat* R_netcdf::getVarGroupFloat(
 
         if (cntsName != vg->getCountsName()) continue;
 
+        if (interval != vg->getInterval()) continue;
+
         /* NOTE: other attributes are not checked. */
 
         /* Same variables, same dimension, same counts */
         return vg;
     }
 
-    NSVarGroupFloat *vg = addVarGroupFloat(rectype,interval,dims,fillValue,cntsName);
+    NSVarGroupFloat *vg = addVarGroupFloat(rectype, interval, dims,
+            fillValue, cntsName);
 
-    for (size_t j = 0; j < vnames.size(); j++)
-        vg->addVariable(vnames[j], vunits[j]);
+    for (size_t j = 0; j < vnames.size(); j++) {
 
+        if (j < long_names.size())
+            vg->addVariable(vnames[j], vunits[j], long_names[j]);
+        else
+            vg->addVariable(vnames[j], vunits[j], "");
+    }
     vg->open();
 
     return vg;
@@ -1295,11 +1307,13 @@ void R_netcdf::NSVar::addAttribute(const string& name, const string& val)
     }
 }
 
-R_netcdf::NSVarGroupFloat::NSVarGroupFloat(R_netcdf *conn,NS_rectype rectype,
-        const vector<NcDim>& dims, double fillValue,const string& cntsName) :
-    _interval(conn->getInterval()), _conn(conn),_id(-1),
-    _vars(), _dims(dims),_rectype(rectype),
-    _fillValue(fillValue),_rec(),_cntsName(cntsName)
+R_netcdf::NSVarGroupFloat::NSVarGroupFloat(R_netcdf *conn,
+        NS_rectype rectype, double interval,
+        const vector<NcDim>& dims, double fillValue,
+        const string& cntsName) :
+    _interval(interval), _conn(conn),_id(-1),
+    _vars(), _dims(dims), _rectype(rectype),
+    _fillValue(fillValue), _rec(), _cntsName(cntsName)
 
 {
     _rec.connectionId = _conn->getId();
@@ -1321,9 +1335,9 @@ R_netcdf::NSVarGroupFloat::~NSVarGroupFloat()
     delete [] _rec.count.count_val;
 }
 
-void R_netcdf::NSVarGroupFloat::addVariable(const string& name, const string& units)
+void R_netcdf::NSVarGroupFloat::addVariable(const string& name, const string& units, const string& long_name)
 {
-    _vars.push_back(NSVar(name,units,_cntsName));
+    _vars.push_back(NSVar(name,units,long_name, _cntsName));
 }
 
 int R_netcdf::NSVarGroupFloat::open() throw(RPC_Exception)
