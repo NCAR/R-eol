@@ -1014,6 +1014,12 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
     unsigned int ncols = vs.getNumOutputColumns();
     size_t maxSampleDim = vs.getMaxSampleDimension();
 
+    // imap:
+    // A vector of integers that specifies the mapping between the dimensions of
+    // a netCDF variable and the in-memory structure of the internal data array.
+    // imap[0]: gives the distance between elements of the internal array
+    //      corresponding to the most slowly varying dimension of the netCDF variable
+
     // variable	imap
     // x(time)
     //		ncol * maxSampleDim
@@ -1172,7 +1178,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
             }
         }
 
-        const NcAttr* intervalAttr = tvar->getAttribute("interval");
+        const NcAttr* intervalAttr = tvar->getAttribute("interval(sec)");
         if (intervalAttr && intervalAttr->getLength() == 1) {
             const NcAttrT<double>* dattr;
             const NcAttrT<float>* fattr;
@@ -1183,7 +1189,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                 interval = fattr->getValue(0);
             else if ((lattr = dynamic_cast<const NcAttrT<long>*>(intervalAttr)))
                 interval = lattr->getValue(0);
-            Rprintf("%s interval attribute= %f\n",ncf->getName().c_str(),interval);
+            // Rprintf("%s interval attribute= %f\n",ncf->getName().c_str(),interval);
         }
 
         size_t n1 = searchTime(tvar,std::max(startTime-basetime,0.0),GE,timemult);
@@ -1285,37 +1291,28 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
 
         count[0] = nrec;
         start[0] = n1;
-        size_t offset;
 
         if (!readCountsOnly) {
             ptrdiff_t tmap = maxSampleDim;
 
             if (timesAreMidpoints) {
-                offset = (maxSampleDim - 1) / 2;
-
                 status = nc_get_varm_double(ncid,tvar->getId(),&start.front(),
-                        &count.front(),0,&tmap,timesPtr+offset);
+                        &count.front(),0,&tmap,timesPtr);
                 if (status != NC_NOERR) throw NcException("nc_get_varm_double",
                         tvar->getFileName(),tvar->getName(),status);
+
+                if (timemult != 1.0)
+                    for (ui = 0; ui < nrec * maxSampleDim; ui += maxSampleDim)
+                        timesPtr[ui] *= timemult;
+
                 if (maxSampleDim > 1) {
-                    double dt = 1;	// if nrec == 1, dt is undefined
-
-                    if (timemult != 1.0)
-                        for (ui = offset; ui < nrec * maxSampleDim; ui += maxSampleDim)
-                            timesPtr[ui] *= timemult;
-
-                    // interpolate times if getMaxSampleDimension() > 1
-                    // This is symmetrical only if getMaxSampleDimension is odd
-                    for (ui = offset; ui < (nrec-1) * maxSampleDim; ui += maxSampleDim) {
-                        dt = (timesPtr[ui+maxSampleDim] - timesPtr[ui]) / maxSampleDim;
-                        if (ui == offset) 
-                            for (uj = 1; uj <= offset; uj++)
-                                timesPtr[ui - uj] = timesPtr[ui] - dt * uj;
-                        for (uj = 1; uj < maxSampleDim; uj++)
-                            timesPtr[ui + uj] = timesPtr[ui] + dt * uj;
+                    double dt = 1.0 / maxSampleDim;
+                    for (ui = 0; ui < nrec * maxSampleDim; ui += maxSampleDim) {
+                        double tval = timesPtr[ui] - interval / 2.0;
+                        for (uj = 0; uj < maxSampleDim; uj++) {
+                             timesPtr[ui+uj] = tval + dt * (0.5 + uj);
+                        }
                     }
-                    for (uj = 1; uj < maxSampleDim - offset; uj++)
-                        timesPtr[ui + uj] = timesPtr[ui] + dt * uj;
                 }
             }
             else {
@@ -1377,7 +1374,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
 
             // found this variable in this file
             if (var) {
-                offset = 0;
+                size_t offset = 0;
                 int sampleRatio = maxSampleDim / sampleDim;
 
                 if ((maxSampleDim % sampleDim)) {
