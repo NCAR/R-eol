@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Build R packages on a mac
+
 # path to pdflatex, used by check step
 PATH=$PATH:/usr/texbin
 

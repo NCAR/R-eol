@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Build R source packages from contents of R-eol working tree
+
 # revision will be the commit counts on the HEAD
 revision=$(git rev-list HEAD | wc -l)
 

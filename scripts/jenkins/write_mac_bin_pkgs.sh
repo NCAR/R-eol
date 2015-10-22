@@ -1,8 +1,11 @@
 #!/bin/sh
 
+# From working directory, copy .tgz mac.binary R packages to a
+# local R package repository
+
 repo=/net/www/docs/software/R
 
-contrib=$(</scr/tmp/maclean/jenkins/R-eol/mac/contrib_path.txt)
+contrib=$(<contrib_path.txt)
 
 repo=$repo/$contrib
 
@@ -10,9 +13,9 @@ repo=$repo/$contrib
 
 rm -f $repo/eolts_*.tgz $repo/isfs_*.tgz $repo/eolsonde_*.tgz
 
-rsync -a /scr/tmp/maclean/jenkins/R-eol/mac/*.tgz $repo
+rsync -a *.tgz $repo
 
-rm -f /scr/tmp/maclean/jenkins/R-eol/mac/*.tgz
+rm -f *.tgz
 
 R --vanilla -e "tryCatch(tools::write_PACKAGES(dir='$repo',type='mac.binary'),error=function(e)q(status=1))"
 

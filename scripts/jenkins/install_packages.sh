@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Build R packages from source form, install to the first site
+# library, .Library.site[1].
+
 http=false
 
 repo=http://www.eol.ucar.edu/software/R

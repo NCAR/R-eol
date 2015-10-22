@@ -1,7 +1,10 @@
 #!/bin/sh
 
-jscr=/scr/tmp/$USER/jenkins/R-eol/packages
-[ -d $jscr ] || exit 1
+# From working directory, copy source R packages to a
+# local R package repository
+
+dir=packages
+[ -d $dir ] || exit 1
 
 repo=/net/www/docs/software/R/src/contrib
 
@@ -11,7 +14,7 @@ trap "{ rm -f $tmpfile1 $tmpfile2; }" EXIT
 
 ls $repo/eolts_*.tar.gz $repo/isfs_*.tar.gz $repo/eolsonde_*.tar.gz | sort > $tmpfile1
 
-rsync --remove-source-files -a $jscr/*.tar.gz $repo
+rsync --remove-source-files -a $dir/*.tar.gz $repo
 
 R --vanilla -e "tryCatch(tools::write_PACKAGES(dir='$repo',type='source'),error=function(e)q(status=1))"
 
