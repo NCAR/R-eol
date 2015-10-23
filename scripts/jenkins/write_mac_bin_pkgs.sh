@@ -3,11 +3,8 @@
 # From working directory, copy .tgz mac.binary R packages to a
 # local R package repository
 
-repo=/net/www/docs/software/R
-
-contrib=$(<contrib_path.txt)
-
-repo=$repo/$contrib
+# contrib_path.txt was written by mac_build.sh, 
+repo=${R_REPO:?}/$(<contrib_path.txt)
 
 [ -d $repo ] || mkdir -p $repo
 

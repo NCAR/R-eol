@@ -6,7 +6,9 @@
 dir=packages
 [ -d $dir ] || exit 1
 
-repo=/net/www/docs/software/R/src/contrib
+repo=${R_REPO:?}/src/contrib
+
+[ -d $repo ] || mkdir -p $repo || exit 1
 
 tmpfile1=$(mktemp /tmp/$(basename $0)_XXXXXX)
 tmpfile2=$(mktemp /tmp/$(basename $0)_XXXXXX)

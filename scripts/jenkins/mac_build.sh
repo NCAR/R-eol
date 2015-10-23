@@ -1,6 +1,9 @@
 #!/bin/sh
 
-# Build R packages on a mac
+# Download R source packages from $R_REPO, then build binary packages
+# Meant to be used on a mac
+
+repo=${R_REPO:?}
 
 # path to pdflatex, used by check step
 PATH=$PATH:/usr/texbin
@@ -15,7 +18,7 @@ export R_LIBS_USER=$(mktemp -d $WORKSPACE/Rtemp_XXXXXX)
 trap "{ rm -rf $R_LIBS_USER; }" EXIT
 
 # download the source package tar-balls
-R $rargs -e "download.packages(c('eolts','isfs','eolsonde'),repos='http://www.eol.ucar.edu/software/R',type='source',destdir='.')"
+R $rargs -e "download.packages(c('eolts','isfs','eolsonde'),repos='$repo',type='source',destdir='.')"
 
 for pkg in eolts isfs eolsonde; do
 
