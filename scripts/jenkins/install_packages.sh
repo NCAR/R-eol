@@ -1,21 +1,14 @@
 #!/bin/sh
 
-# Build R packages from source form, install to the first site
-# library, .Library.site[1].
+# Build R packages from source tar files on the current directory,
+# install to the first site library, .Library.site[1].
 
-shopt -s nullglob
-
-while [ $# -gt 0 ]; do
-    case $1 in
-    *)
-        pkg=$1.tar.gz
-        if [ -f $pkg ]; then
-            [ -n "$pkgs" ] && pkgs=$pkgs,
-            pkgs+="'$pkg'"
-        fi
-        ;;
-    esac
-    shift
+for pkg in eolts isfs eolsonde; do
+    pkgf=$(echo ${pkg}_*.tar.gz)    # force pathname expansion
+    if [ -f $pkgf ]; then
+        [ -n "$pkgs" ] && pkgs=$pkgs,
+        pkgs+="'$pkgf'"
+    fi
 done
 
 pkgs="c("$pkgs")"
@@ -26,7 +19,6 @@ if [ ! -d $rlib ]; then
     echo "$rlib not found"
     exit 1
 fi
-
 
 R --vanilla -e "tryCatch(install.packages(pkgs=$pkgs,type='source',lib='$rlib'),error=function(e)q(status=1))"
 
