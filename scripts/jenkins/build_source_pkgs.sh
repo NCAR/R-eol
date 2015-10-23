@@ -1,20 +1,17 @@
 #!/bin/sh
 
-# Build R source packages from contents of R-eol working tree
+# Build and check R source packages from contents of R-eol working tree
 
-# revision will be the commit counts on the HEAD
-revision=$(git rev-list HEAD | wc -l)
-
-
+# Revision info from output of git describe based on a tag of the form vX.Y
 if ! gitdesc=$(git describe --match "v[0-9]*"); then
     echo "git describe failed, looking for a tag vX.Y"
     exit 1
 fi
-gitdesc=${gitdesc/#v}       # 2.0-14-gabcdef123
-version=${gitdesc%-*}       # 2.0-14
+#  v1.2-14-gabcdef123
+gitdesc=${gitdesc/#v}   # remove v: 1.2-14-gabcdef123
+version=${gitdesc%-*}   # remove trailing -*: 1.2-14
 
-[ $gitdesc == "$version" ] && version=${gitdesc}-0
-
+[ $gitdesc == "$version" ] && version=${gitdesc}-0  # if no commits since tag
 
 rargs="--vanilla"
 
