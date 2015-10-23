@@ -3,9 +3,6 @@
 # From working directory, copy source R packages to a
 # local R package repository
 
-dir=packages
-[ -d $dir ] || exit 1
-
 repo=${R_REPO:?}/src/contrib
 
 [ -d $repo ] || mkdir -p $repo || exit 1
@@ -16,7 +13,7 @@ trap "{ rm -f $tmpfile1 $tmpfile2; }" EXIT
 
 ls $repo/eolts_*.tar.gz $repo/isfs_*.tar.gz $repo/eolsonde_*.tar.gz | sort > $tmpfile1
 
-rsync --remove-source-files -a $dir/*.tar.gz $repo
+rsync --remove-source-files -a *.tar.gz $repo
 
 R --vanilla -e "tryCatch(tools::write_PACKAGES(dir='$repo',type='source'),error=function(e)q(status=1))"
 

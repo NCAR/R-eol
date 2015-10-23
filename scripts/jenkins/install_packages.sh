@@ -3,15 +3,16 @@
 # Build R packages from source form, install to the first site
 # library, .Library.site[1].
 
-repo=${R_REPO:?}
-
 shopt -s nullglob
 
 while [ $# -gt 0 ]; do
     case $1 in
     *)
-        [ -n "$pkgs" ] && pkgs=$pkgs,
-        pkgs+=\'$1\'
+        pkg=$1.tar.gz
+        if [ -f $pkg ]; then
+            [ -n "$pkgs" ] && pkgs=$pkgs,
+            pkgs+="'$pkg'"
+        fi
         ;;
     esac
     shift
@@ -27,5 +28,5 @@ if [ ! -d $rlib ]; then
 fi
 
 
-R --vanilla -e "tryCatch(install.packages(pkgs=$pkgs,type='source',repos='$repo',lib='$rlib'),error=function(e)q(status=1))"
+R --vanilla -e "tryCatch(install.packages(pkgs=$pkgs,type='source',lib='$rlib'),error=function(e)q(status=1))"
 
