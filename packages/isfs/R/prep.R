@@ -14,20 +14,22 @@ setClass("prep",
 	variables="character",
 	rate="numeric",
         dsm="character",
+        config="character",
 	cppPtr="raw"
     ),
     prototype=list(
 	variables="",
         rate=0,
 	dsm="",
+	config="",
 	cppPtr=raw(8)
     )
 )
 
-prep <- function(variables, rate=0, dsm="")
+prep <- function(variables, rate=0, dsm="", config="")
 {
     if (!HAVE_PREP) stop("sorry prep not available")
-    obj <- new("prep",variables=variables, rate=rate, dsm=dsm)
+    obj <- new("prep",variables=variables, rate=rate, dsm=dsm, config=config)
     .Call("open_prep",obj,PACKAGE="isfs")
 }
 
@@ -69,6 +71,7 @@ setMethod("readts",
                 dset <- names(dataset())
                 if (!is.null(dset)) runargs <- c(runargs,"-S",dset)
                 if (con@dsm != "") runargs <- c(runargs,"-d",con@dsm)
+                if (con@config != "") runargs <- c(runargs,"-c",con@config)
                 env <- ""
             }
             else {
