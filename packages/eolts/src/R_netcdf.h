@@ -46,6 +46,8 @@ extern "C" {
     SEXP write_history_ns(SEXP args);
 
     SEXP write_global_attrs_ns(SEXP args);
+
+    SEXP ncsync_r(SEXP args);
 #endif
 
     SEXP get_variables(SEXP obj, SEXP all, SEXP ncverbose);

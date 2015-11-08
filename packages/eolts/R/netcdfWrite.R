@@ -169,3 +169,13 @@ setMethod("writets",
     }
 )
 
+setGeneric("ncsync",function(con,x) standardGeneric("ncsync"))
+setMethod("ncsync",
+    signature(con="netcdf"),
+    function(con,x) {
+        # not supported on all architectures
+        if (!HAVE_NC_SERVER) stop("sorry, ncsync not available. No nc_server_rpc support")
+        .External("ncsync_r", con, PACKAGE="eolts")
+        invisible(NULL)
+    }
+)

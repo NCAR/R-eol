@@ -473,6 +473,25 @@ SEXP write_global_attrs_ns(SEXP args)
     return ans;
 }
 
+SEXP ncsync_r(SEXP args)
+{
+    args = CDR(args);
+
+    if (args == R_NilValue) Rf_error("connection not specified");
+    SEXP obj = CAR(args);
+    R_netcdf *con = eolts::R_netcdf::getR_netcdf(obj);
+    if (!con) {
+        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+    }
+
+    con->sync();
+
+    SEXP ans = PROTECT(Rf_allocVector(INTSXP,1));
+    INTEGER(ans)[0] = 0;
+    UNPROTECT(1);
+    return ans;
+}
+
 #endif
 
 R_netcdf::R_netcdf(SEXP con, SEXP files, SEXP cdlfile,
