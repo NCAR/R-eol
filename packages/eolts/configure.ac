@@ -16,8 +16,9 @@ if test -z "${R_HOME}"; then
     exit 1
 fi
 CC=`${R_HOME}/bin/R CMD config CC`
-CFLAGS=`${R_HOME}/bin/R CMD config CFLAGS`
 CPPFLAGS=`${R_HOME}/bin/R CMD config CPPFLAGS`
+CFLAGS=`${R_HOME}/bin/R CMD config CFLAGS`
+CXXFLAGS=`${R_HOME}/bin/R CMD config CXXFLAGS`
 LDFLAGS=`${R_HOME}/bin/R CMD config LDFLAGS`
 AC_LANG(C++)
 
