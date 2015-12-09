@@ -1230,9 +1230,12 @@ setMethod("Ops",signature(e1="nts",e2="ANY"),
     function(e1,e2)
     {
         # cat(".Generic=",.Generic," .Signature=",.Signature,"\n")
-        e1@data <- callGeneric(e1@data,e2)
-        if (length(e1@data) == 0) e1 <- NULL
-        e1
+        e2 <- callGeneric(e1@data,e2)
+        if (is.matrix(e2)) {
+            e1@data <- e2
+            e1
+        }
+        else e2
     }
     )
 
@@ -1256,10 +1259,12 @@ setMethod("Ops",signature(e1="timeSeries",e2="nts"),
 setMethod("Ops",signature(e1="ANY",e2="nts"),
     function(e1,e2)
     {
-        # cat(".Generic=",.Generic," .Signature=",.Signature,"\n")
-        e2@data <- callGeneric(e1,e2@data)
-        if (length(e2@data) == 0) e2 <- NULL
-        e2
+        e1 <- callGeneric(e1,e2@data)
+        if (is.matrix(e1)) {
+            e2@data <- e1
+            e2
+        }
+        else e1
     }
     )
 setMethod("Ops",signature(e1="nts",e2="missing"),

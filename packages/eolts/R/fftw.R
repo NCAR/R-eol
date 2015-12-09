@@ -380,6 +380,13 @@ setMethod("Math","spectra",
     }
     )
 
+setAs("spectra","matrix",
+    function(from)
+    {
+        from@data
+    }
+    )
+
 # setMethod("Math","fftw",
 #   function(x) {
 #     x@data <- callGeneric(x@data)
@@ -396,8 +403,12 @@ setMethod("Ops",signature(e1="spectra",e2="spectra"),
     )
 setMethod("Ops",signature(e1="spectra",e2="ANY"),
     function(e1,e2) {
-        e1@data <- callGeneric(e1@data,e2)
-        e1
+        e2 <- callGeneric(e1@data,e2)
+        if (is.matrix(e2)) {
+            e1@data <- e2
+            e1
+        }
+        else e2
     }
     )
 
@@ -410,8 +421,12 @@ setMethod("Ops",signature(e1="spectra",e2="missing"),
 
 setMethod("Ops",signature(e1="ANY",e2="spectra"),
     function(e1,e2) {
-        e2@data <- callGeneric(e1,e2@data)
-        e2
+        e1 <- callGeneric(e1,e2@data)
+        if (is.matrix(e1)) {
+            e2@data <- e1
+            e2
+        }
+        else e1
     }
     )
 
