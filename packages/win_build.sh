@@ -4,8 +4,17 @@
 
 ftphost=win-builder.r-project.org
 
-revision=$(( $(git rev-list HEAD | wc -l) ))
-[ $revision -eq 0 ] && revision=1
+# Revision info from output of git describe based on a tag of the form vX.Y
+if ! gitdesc=$(git describe --match "v[0-9]*"); then
+    echo "git describe failed, looking for a tag vX.Y"
+    exit 1
+fi
+#  v1.2-14-gabcdef123
+gitdesc=${gitdesc/#v}   # remove v: 1.2-14-gabcdef123
+version=${gitdesc%-*}   # remove trailing -*: 1.2-14
+
+[ $gitdesc == "$version" ] && version=${gitdesc}-0  # if no commits since tag
+
 
 tmpdesc=$(mktemp /tmp/${0##*/}_XXXXXX)
 trap "{ rm -f $tmpdesc; }" EXIT
@@ -39,9 +48,9 @@ rm -f ${pkg}_*.tar.gz
 cp $pkg/DESCRIPTION $tmpdesc
 
 if [ $(uname) == Darwin ]; then
-    sed -i "" -E "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" $pkg/DESCRIPTION
+    sed -i "" -E "s/^Version:.*/Version: $version/" $pkg/DESCRIPTION
 else
-    sed -i -r "s/^Version: *([0-9]+)\.([0-9]+)-.*/Version: \1.\2-$revision/" $pkg/DESCRIPTION
+    sed -ri "s/^Version:.*/Version: $version/" $pkg/DESCRIPTION
 fi
 
 R --vanilla CMD build $pkg
