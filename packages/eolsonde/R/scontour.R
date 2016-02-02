@@ -137,6 +137,7 @@ scontour <- function(sdngs, yname, zname,
     xlim <- c(1,nrow(zmat))
     if (is.null(ylim))
         ylim <- c(ymin,ymax)
+    if (diff(xlim) <= 0) xlim <- c(0.9,1.1)
     cat("ylim=",paste(signif(ylim,4),collapse=","),"\n")
 
     if (substring(zname,1,2) =="RH")
