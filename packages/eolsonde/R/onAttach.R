@@ -15,6 +15,9 @@
 
         dpardefs <- c(get(".dparParams",envir=eolts:::.eoltsEnv),.dparParams)
         assign(".dparParams",dpardefs,envir=eolts:::.eoltsEnv)
+        # remove cached .dpar, so that the next call sets if from the above
+        if (exists(".dpar",envir=eolts:::.eoltsEnv))
+            remove(".dpar",envir=eolts:::.eoltsEnv)
     }
     packageStartupMessage("For help on the eolsonde package, do: \"? eolsonde\"")
 }
