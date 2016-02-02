@@ -181,7 +181,7 @@ readDFile <- function (file, checkStatus=dpar("checkSondeStatus"), sondeRecords=
     units <- sub(")","",units,fixed=TRUE)
     sdng <- dat(nts(sdng,utc,units=units))
 
-    if (checkStatus) {
+    if (!is.null(checkStatus) && checkStatus) {
         # zero-based indices into rectype for the types that are to be kept
         matchtype <- 1:length(rectypes) - 1
         if (!is.null(dpar("sondeRecords")) && !is.na(dpar("sondeRecords")))
