@@ -2,6 +2,8 @@
 
 # Script to send a source package to win-builder.r-project.org to be built for windows.
 
+rver=3.2.3
+
 ftphost=win-builder.r-project.org
 
 # Revision info from output of git describe based on a tag of the form vX.Y
@@ -85,10 +87,10 @@ The maintainer of this package is listed as $maintainer in $pkg/DESCRIPTION.
 Usually within 15 minutes the maintainer should receive an email from winbuilder,
 with a link to a URL containing the build results.  If the build succeeds,
 download the .zip file and copy it to
-/net/www/docs/software/R/bin/windows/contrib/<Rversion>, where <Rversion>
+/net/www/docs/software/R/bin/windows/contrib/\$rver, where \$rver
 is the version of R that was used to do the build on win-build,
 which can be determined by looking at 00check.log on the results page.
 Then, to update the PACKAGES file on the R repository: run:
-R --vanilla -e 'tools::write_PACKAGES(dir=\"/net/www/docs/software/R/bin/windows/contrib/<Rversion>\",type=\"win.binary\")'
+R --vanilla -e 'tools::write_PACKAGES(dir=\"/net/www/docs/software/R/bin/windows/contrib/\$rver\",type=\"win.binary\")'
 "
 
