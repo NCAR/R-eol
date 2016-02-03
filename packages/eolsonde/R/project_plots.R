@@ -53,16 +53,7 @@ project_plots <- function(dataDir=Sys.getenv("SONDE_DATA"),plotDir=file.path(dat
             if (!is.null(plotDir))
                 pagepng(filename=file.path(plotDir,paste0(var,"_",type,"_",plotSuffix,".png")))
 
-            dl <- dlim[[var]]
-            if (!is.null(dl)) {
-                if (is.na(dl[1])) dl[1] <- -Inf
-                if (is.na(dl[2])) dl[2] <- Inf
-                clip(var,TRUE,dl[1],dl[2])
-            }
-            else
-                clip(var,F)
-            units <- units(xs[[1]][,var])
-            scontour(xs,"P",var,contour=(type=="contour"),zlim=dlim)
+            scontour(xs,"P",var,contour=(type=="contour"),zlim=dlim[[var]])
             if (!is.null(plotDir)) dev.off()
         }
     }

@@ -5,7 +5,7 @@
  Plot profile contours of a variable from a list of soundings, where the X axis is the sounding index, and Y is pressure or altitude.
 }
 \usage{
-scontour(sdngs, yname, zname, contour = FALSE, ylim=NULL, ynstep=100, title)
+scontour(sdngs, yname, zname, contour = FALSE, ylim=NULL, ynstep=100, zlim=NULL, fixedzlim=TRUE, title)
 }
 \arguments{
   \item{sdngs}{
@@ -21,10 +21,16 @@ scontour(sdngs, yname, zname, contour = FALSE, ylim=NULL, ynstep=100, title)
         When TRUE, a contour plot is generated. Otherwise, a level plot (color filling) will be drawn.
   }
   \item{ylim}{
-      Limits on yaxis. If not specified, the limits will be determined from the data, after clipping.
+    Limits on yaxis, numeric vector of length 2. If not specified, the limits will be determined from the data, after clipping.
   }
   \item{ynstep}{
       Number of steps in Y to interpolate the Z variable.
+  }
+  \item{zlim}{
+      Limits of z, numeric vector of length 2, default NULL. If fixedzlim is TRUE, zlim must not be NULL, and will be the limits of the color axes. If fixedzlim is FALSE, the z data is clipped at these limits, and the color scale will be dynamic. If zlim is NULL, global clipping limits for the variable are applied.
+  }
+  \item{fixedzlim}{
+      Logical, whether the color axis should have a fixed scale or be dynamic.
   }
   \item{title}{
       Title for the plot. If missing, the name of the Y variable plus the number of sounding will be used for the title.

@@ -9,7 +9,7 @@
 
 scontour <- function(sdngs, yname, zname,
     contour=FALSE, ylim=NULL, ynstep=100,
-    title,zlim=NULL,fixedzlim=TRUE)
+    zlim=NULL,fixedzlim=TRUE,title)
 {
 
     # proc.times:
@@ -28,11 +28,18 @@ scontour <- function(sdngs, yname, zname,
     # This was a version of interpSoundings with no apply(),
     # just for loops.
 
-    # 
-    # parameters to control plot:
-    #   ylim, ystep  (is ystep necessary?)
-    #   zlim (perhaps only clip z?) Is zstep necessary?
-    #       Perhaps only to reduce colors
+    if (fixedzlim) {
+        if (is.null(zlim)) stop("If fixedzlim is TRUE, zlim must be specified")
+    }
+    else {
+        # if not fixed scales, clip data
+        if (!is.null(zlim) && !is.na(zlim[1]) && !is.na(zlim[2])) {
+            # on.exit set clipping limits back to what they were
+            zclip <- clip(zname)
+            on.exit(clip(zname,zclip$clip,zclip$min,zclip$max),add=T)
+            clip(zname,TRUE,zlim[1],zlim[2])
+        }
+    }
 
     profile <- FALSE
     if (profile)
@@ -93,29 +100,25 @@ scontour <- function(sdngs, yname, zname,
             }
         }
 
-        if (fixedzlim) {
-            zdata <- sdng[,zname]@data[,1]
-            zok <- !is.na(zdata)
-            if (!any(zok)) next
-            if (!is.null(zlim[zname])) {
-                if (!is.na(zlim[zname][1])) zmin <- zlim[[zname]][1]
-                else zmin <- min(zmin,zdata,na.rm=TRUE)
+        zdata <- sdng[,zname]
+        zok <- !is.na(zdata@data)
+        if (!any(zok)) next
 
-                if (!is.na(zlim[zname][2])) zmax <- zlim[[zname]][2]
-                else zmax <- max(zmax,zdata,na.rm=TRUE)
-            }
+        if (fixedzlim) {
+            if (!is.na(zlim[1])) zmin <- zlim[1]
+            else zmin <- min(zmin,zdata@data,na.rm=TRUE)
+            if (!is.na(zlim[2])) zmax <- zlim[2]
+            else zmax <- max(zmax,zdata@data,na.rm=TRUE)
         }
         else {
-            if (!is.null(zlim[zname]) &&
-                !is.na(zlim[[zname]][1]) && !is.na(zlim[[zname]][2]))
-                    clip(zname,TRUE,zlim[[zname]][1],zlim[[zname]][2])
-            zdata <- clip(sdng[,zname])@data[,1]
-            zok <- !is.na(zdata)
+            zdata <- clip(zdata)
+            zok <- !is.na(zdata@data)
             if (!any(zok)) next
-
-            zmin <- min(zmin,zdata,na.rm=TRUE)
-            zmax <- max(zmax,zdata,na.rm=TRUE)
+            zmin <- min(zmin,zdata@data,na.rm=TRUE)
+            zmax <- max(zmax,zdata@data,na.rm=TRUE)
         }
+        # get data matrix from time-series
+        zdata <- zdata@data
 
         ymin <- min(ymin,sdng@data[zok,yname],na.rm=TRUE)
         ymax <- max(ymax,sdng@data[zok,yname],na.rm=TRUE)
