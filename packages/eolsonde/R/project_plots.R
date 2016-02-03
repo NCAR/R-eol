@@ -3,14 +3,25 @@ pagepng <- function(filename)
     png(filename=filename,width=10.3,height=8,units="in",res=300)
 }
 
-project_plots <- function(dataDir=Sys.getenv("SONDE_DATA"),plotDir=file.path(dataDir,"postflight"))
+project_plots <- function(dataDir=Sys.getenv("SONDE_DATA"),plotDir=file.path(dataDir,"postflight"),
+    dlim=list(RH=c(-5,105),T=c(-60,30),Vz=c(-50,0),Wspd=c(0,50)))
 {
+    # these defaults should match the default argument above.
+    dlimx <- list(RH=c(-5,105),T=c(-60,30),Vz=c(-50,0),Wspd=c(0,50))
+
+    dlim <- lapply(names(dlimx),function(n) {
+        if (is.null(dlim[[n]])) dlimx[[n]]
+        else dlim[[n]]
+    })
+    names(dlim) <- names(dlimx)
+
     # AVAPS users don't want project dependent code in an .RData, so
     # things like this have to go in this package.
     dpar(platform="AVAPS")
     dpar(start="2008 1 1 00:00",end="2019 1 1 00:00")
 
-    if (!file.exists(plotDir)) dir.create(plotDir)
+    if (!is.null(plotDir) && !file.exists(plotDir)) dir.create(plotDir)
+    else options(device.ask.default=TRUE)
 
     # set plot suffix to trailing portion of dataDir
     plotSuffix <- dataDir
@@ -39,11 +50,20 @@ project_plots <- function(dataDir=Sys.getenv("SONDE_DATA"),plotDir=file.path(dat
     # Make level and contour plots
     for (type in c("level")) {
         for (var in vars) {
-            pagepng(filename=file.path(plotDir,paste0(var,"_",type,"_",plotSuffix,".png")))
+            if (!is.null(plotDir))
+                pagepng(filename=file.path(plotDir,paste0(var,"_",type,"_",plotSuffix,".png")))
 
+            dl <- dlim[[var]]
+            if (!is.null(dl)) {
+                if (is.na(dl[1])) dl[1] <- -Inf
+                if (is.na(dl[2])) dl[2] <- Inf
+                clip(var,TRUE,dl[1],dl[2])
+            }
+            else
+                clip(var,F)
             units <- units(xs[[1]][,var])
             scontour(xs,"P",var,contour=(type=="contour"))
-            dev.off()
+            if (!is.null(plotDir)) dev.off()
         }
     }
 
@@ -55,8 +75,6 @@ project_plots <- function(dataDir=Sys.getenv("SONDE_DATA"),plotDir=file.path(dat
         nc <- 2L
         # if (ns > 4) nc <- 4L
         np <- 0
-
-        xlim <- list(RH=c(0,100),T=c(-80,30),Vz=c(-60,60),Wspd=c(-60,60))
 
         for (sname in names(xs)) {
             if (np %% (nc*nr) == 0) {
