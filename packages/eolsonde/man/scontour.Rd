@@ -5,7 +5,7 @@
  Plot profile contours of a variable from a list of soundings, where the X axis is the sounding index, and Y is pressure or altitude.
 }
 \usage{
-scontour(sdngs, yname, zname, contour = FALSE, ylim=NULL, ynstep=100, zlim=NULL, fixedzlim=TRUE, title)
+scontour(sdngs, yname, zname, contour = FALSE, ylim=NULL, ynstep=100, zlim=NULL, fixedzlim=FALSE, title)
 }
 \arguments{
   \item{sdngs}{

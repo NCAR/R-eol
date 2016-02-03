@@ -9,7 +9,7 @@
 
 scontour <- function(sdngs, yname, zname,
     contour=FALSE, ylim=NULL, ynstep=100,
-    zlim=NULL,fixedzlim=TRUE,title)
+    zlim=NULL, fixedzlim=FALSE, title)
 {
 
     # proc.times:

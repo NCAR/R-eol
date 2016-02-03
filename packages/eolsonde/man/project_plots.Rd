@@ -37,8 +37,9 @@ NULL
 \code{\link{readSoundings}}
 }
 \examples{
-    Sys.setenv(SONDE_DATA="/net/isf/sounding.group/projects/DEEPWAVE/AVAPS/data/Dfiles")
-    dpar(start="2014 06 13 00:00",end="2014 06 15 00:00")
+    dir = system.file(package="eolsonde","unitTests","data","D-file")
+    Sys.setenv(SONDE_DATA=dir)
+    dpar(start="2008 8 15 17:20",end="2008 8 15 18:00")
     project_plots(plotDir="/tmp")
 }
 \keyword{ sounding }
