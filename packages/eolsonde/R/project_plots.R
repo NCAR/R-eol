@@ -21,7 +21,11 @@ project_plots <- function(dataDir=Sys.getenv("SONDE_DATA"),plotDir=file.path(dat
     dpar(start="2008 1 1 00:00",end="2019 1 1 00:00")
 
     if (!is.null(plotDir) && !file.exists(plotDir)) dir.create(plotDir)
-    else options(device.ask.default=TRUE)
+    else {
+        ask <- getOption("device.ask.default")
+        on.exit(options(device.ask.default=ask), add=TRUE)
+        options(device.ask.default=TRUE)
+    }
 
     # set plot suffix to trailing portion of dataDir
     plotSuffix <- dataDir
