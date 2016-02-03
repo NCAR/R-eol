@@ -62,7 +62,7 @@ project_plots <- function(dataDir=Sys.getenv("SONDE_DATA"),plotDir=file.path(dat
             else
                 clip(var,F)
             units <- units(xs[[1]][,var])
-            scontour(xs,"P",var,contour=(type=="contour"))
+            scontour(xs,"P",var,contour=(type=="contour"),zlim=dlim)
             if (!is.null(plotDir)) dev.off()
         }
     }

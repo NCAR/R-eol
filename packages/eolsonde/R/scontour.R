@@ -9,7 +9,7 @@
 
 scontour <- function(sdngs, yname, zname,
     contour=FALSE, ylim=NULL, ynstep=100,
-    title)
+    title,zlim=NULL,fixedzlim=TRUE)
 {
 
     # proc.times:
@@ -59,6 +59,8 @@ scontour <- function(sdngs, yname, zname,
     reverse <- FALSE
     ymin <- Inf
     ymax <- -Inf
+    zmin <- Inf
+    zmax <- -Inf
     slabels <- NULL
     zunits <- "unknown"
 
@@ -91,9 +93,29 @@ scontour <- function(sdngs, yname, zname,
             }
         }
 
-        zdata <- clip(sdng[,zname])@data[,1]
-        zok <- !is.na(zdata)
-        if (!any(zok)) next
+        if (fixedzlim) {
+            zdata <- sdng[,zname]@data[,1]
+            zok <- !is.na(zdata)
+            if (!any(zok)) next
+            if (!is.null(zlim[zname])) {
+                if (!is.na(zlim[zname][1])) zmin <- zlim[[zname]][1]
+                else zmin <- min(zmin,zdata,na.rm=TRUE)
+
+                if (!is.na(zlim[zname][2])) zmax <- zlim[[zname]][2]
+                else zmax <- max(zmax,zdata,na.rm=TRUE)
+            }
+        }
+        else {
+            if (!is.null(zlim[zname]) &&
+                !is.na(zlim[[zname]][1]) && !is.na(zlim[[zname]][2]))
+                    clip(zname,TRUE,zlim[[zname]][1],zlim[[zname]][2])
+            zdata <- clip(sdng[,zname])@data[,1]
+            zok <- !is.na(zdata)
+            if (!any(zok)) next
+
+            zmin <- min(zmin,zdata,na.rm=TRUE)
+            zmax <- max(zmax,zdata,na.rm=TRUE)
+        }
 
         ymin <- min(ymin,sdng@data[zok,yname],na.rm=TRUE)
         ymax <- max(ymax,sdng@data[zok,yname],na.rm=TRUE)
@@ -236,6 +258,7 @@ scontour <- function(sdngs, yname, zname,
             ylim=ylim, yaxs="r", ylab=paste0(yname,"(",yunits,")"),
             par.settings=lh,
             aspect="fill",
+            at=pretty(c(zmin,zmax),n=nlevels/2),
             cuts=nlevels,
             col.regions=colorfunc(nlevels+1),
             scales=list(x=list(at=slabx,labels=slabels,cex=xlab.cex,rot=90,axs="r")),
