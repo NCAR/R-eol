@@ -7,9 +7,7 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-find_datasets <- function(
-    path=file.path(Sys.getenv("ISFF"),"projects",Sys.getenv("PROJECT"),"ISFF"),
-    pattern="^netcdf")
+find_datasets <- function(path=NULL, pattern="^netcdf")
 {
 
     # remove duplicate .projectEnv from .GlobalEnv
@@ -19,8 +17,19 @@ find_datasets <- function(
     if (!exists(".projectEnv"))
         stop(".projectEnv not found. Should be located in project .RData")
 
+    if (is.null(path)) {
+        for (root in c("ISFS","ISFF")) {
+            rpath <- Sys.getenv(root,unset=NA)
+            if (is.na(rpath)) continue
+            for (plat in c("ISFS","ISFF","")) {
+                path <- file.path(rpath,"projects",Sys.getenv("PROJECT"),plat)
+                if (file.exists(path)) break
+            }
+        }
+    }
+
     if (!file.exists(path))
-        warning(paste0("directory $ISFF/projects/$PROJECT/ISFF=",path," does not exist"))
+        warning(paste0("directory $ISF[SF]/projects/$PROJECT/ISF[SF]=",path," does not exist"))
 
     ncds <- list.files(path,pattern,include.dirs=TRUE)
 
@@ -29,8 +38,11 @@ find_datasets <- function(
 
     # If a directory called simply "netcdf" found, look in it for directories
     # cat("ncds=",ncds,"\n")
-    if (identical(ncds,"netcdf")) {
-        ncds = file.path(ncds,list.dirs(file.path(path,ncds),full.names=FALSE))
+
+    nc <- !is.na(match(ncds,"netcdf"))
+    if (any(nc)) {
+        ncds <- ncds[!nc]
+        ncds <- append(ncds,file.path(ncds[nc],list.dirs(file.path(path,ncds),full.names=FALSE)))
         # cat("ncds=",ncds,"\n")
     }
 

@@ -7,12 +7,15 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-set_project <- function(root="ISFF",project=NULL,platform="ISFF")
+set_project <- function(root=c("ISFS","ISFF"),project=NULL,platform=c("ISFS","ISFF"))
 {
     curproj <- Sys.getenv("PROJECT",unset=NA)
 
-    rootpath <- Sys.getenv(root,unset=NA)
-    if (is.na(rootpath)) stop(paste(root,"environment variable not found"))
+    for (rt in root) {
+        rootpath <- Sys.getenv(rt,unset=NA)
+        if (!is.na(rootpath)) break
+    }
+    if (is.na(rootpath)) stop(paste(root[1],"environment variable not found"))
 
     projpath <- file.path(rootpath,"projects")
     
@@ -48,15 +51,17 @@ set_project <- function(root="ISFF",project=NULL,platform="ISFF")
         else project <- projects
     }
     
-    projdata <- file.path(projpath,project,platform,"R",".RData")
-    if (!file.exists(projdata)) {
-        projdata <- file.path(projpath,project,"R",".RData")
+    for (plat in c(platform,"")) {
+        projdata <- file.path(projpath,project,plat,"R",".RData")
+        if (file.exists(projdata)) {
+            break
+        }
     }
 
     curpos <- NULL
     if (!is.na(curproj)) {
         sl <- search()
-        curdata <- file.path(projpath,curproj,platform,"R",".RData")
+        curdata <- file.path(projpath,curproj,plat,"R",".RData")
         pos <- grepl(curdata,sl)
         if (!any(pos)) {
             curdata <- file.path(projpath,curproj,"R",".RData")

@@ -7,28 +7,33 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-sync <- function(pos,root="ISFF")
+sync <- function(pos,root=c("ISFS","ISFF"))
 {
-    # detach/attach $ISFF/projects/$PROJECT/ISFF/R/.RData so that the
+    # detach/attach $ISF[SF]/projects/$PROJECT/ISF[SF]/R/.RData so that the
     # user's R session has the latest copy.
+
 
     sl <- search()
     if (missing(pos)) {
-        projdata1 <- file.path(Sys.getenv(root),"projects",Sys.getenv("PROJECT"),
-            "ISFF","R")
-        pos <- grepl(projdata1,sl)
-        if (!any(pos)) {
-            projdata2 <- file.path(Sys.getenv(root),"projects",Sys.getenv("PROJECT"),"R")
-            pos <- grepl(projdata2,sl)
+        for (rt in root) {
+            rootpath <- Sys.getenv(rt,unset=NA)
+            if (!is.na(rootpath)) break
         }
-        if (!any(pos)) stop(paste("pos is missing and can't find",projdata1,"or",projdata2))
+        if (is.na(rootpath)) stop(paste(root[1],"environment variable not found"))
+
+        for (plat in c(root,"")) {
+            projdata <- file.path(rootpath,"projects",Sys.getenv("PROJECT"), plat,"R")
+            pos <- grepl(projdata,sl)
+            if (any(pos)) break
+        }
+        if (!any(pos)) stop(paste("pos is missing and can't find",projdata))
         pos <- base::seq(along=pos)[pos][1]
     }
 
     rd <- sl[pos]
 
     # There may be an .projectEnv environment object in the
-    # $ISFF/projects/$PROJECT/ISFF/R/.RData. Save it before detaching/re-attaching
+    # $ISF[SF]/projects/$PROJECT/ISF[SF]/R/.RData. Save it before detaching/re-attaching
     if (exists(".projectEnv",where=pos,inherits=FALSE)) projectEnv <- get(".projectEnv",pos=pos)
     else projectEnv <- NULL
 
