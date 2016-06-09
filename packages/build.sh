@@ -108,7 +108,7 @@ fi
 
 if $do_isfs; then
 
-    pkg=eolts
+    pkg=isfs
     cd $pkg
     autoreconf
     cd -

@@ -41,8 +41,8 @@ find_datasets <- function(path=NULL, pattern="^netcdf")
 
     nc <- !is.na(match(ncds,"netcdf"))
     if (any(nc)) {
-        ncds <- ncds[!nc]
-        ncds <- append(ncds,file.path(ncds[nc],list.dirs(file.path(path,ncds),full.names=FALSE)))
+        ncds <- append(ncds[!nc],
+            file.path(ncds[nc],list.dirs(file.path(path,ncds[nc]),full.names=FALSE)))
         # cat("ncds=",ncds,"\n")
     }
 
