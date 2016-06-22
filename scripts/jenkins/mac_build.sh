@@ -23,7 +23,7 @@ R $rargs -e "download.packages(c('eolts','isfs','eolsonde'),repos='$repo',type='
 for pkg in eolts isfs eolsonde; do
 
     # check, then build binary tar-ball
-    R $rargs CMD check -l $R_LIBS_USER ${pkg}_*.tar.gz || exit 1
+    # R $rargs CMD check -l $R_LIBS_USER ${pkg}_*.tar.gz || exit 1
     R $rargs CMD INSTALL --build -l $R_LIBS_USER ${pkg}_*.tar.gz || exit 1
 
     # Check that the package does not have dependencies on /usr/local/lib
