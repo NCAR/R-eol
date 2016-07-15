@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ $# -eq 0 ]; then
-    echo "Usage: ${0##*/} [-e] [-c] [-i] [-I]"
+    echo "Usage: ${0##*/} [-e] [-c] [-i] [-s] [-I]"
     exit 1
 fi
 
