@@ -13,7 +13,7 @@ Full path name of QC file to be read.
 }
 }
 \details{
-\code{readQCFile} finds the "UTC Launch Time" line in the file header to determine the launch date. It then looks for the line in the file containing only a '/'. The following two lines contain the variable names and the units. It then reads the data, starting 3 lines after the '/'.
+\code{readQCFile} finds the "UTC Launch Time" line in the file header to determine the launch date. It then looks for the line in the file starting with "----". The previous two lines contain the variable names and the units. It then reads the data, after the "----".
 
 From the variable names, the following translation from "Header Name" to "Column Name" is applied to generate column names in the sounding. Also shown are the missing data values for each column:
 \tabular{llr}{
