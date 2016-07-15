@@ -9,7 +9,8 @@
 
 readQCFile <- function(file)
 {
-    hdrw1 <- scan(file=file,what=list(w1=""),flush=TRUE,quiet=TRUE,nlines=50)
+    hdrw1 <- scan(file=file, what=list(w1=""), flush=TRUE, quiet=TRUE, nlines=50,
+        blank.lines.skip=FALSE, fill=TRUE)
 
     # Find line containing launch time
     # UTC Launch Time (y,m,d,h,m,s):             2008, 08, 15, 17:38:56
@@ -27,19 +28,16 @@ readQCFile <- function(file)
 
     launchutc <- utime(paste(unlist(regmatches(utchdrs[lline],mx[lline]))[-1],collapse=" "),in.format="%Y%m%d%H%M%S",time.zone="UTC")
 
-    # find line containing '/'
-    lhdr <- hdrw1$w1 == "/"
-
-    # line number starting with /
-    lhdr <- seq(along=lhdr)[lhdr][1]
+    # look for line starting with "----"
+    lhdr <- seq(along=hdrw1$w1)[regexec("^----",hdrw1$w1) > 0]
 
     # save all of header, assume 3 lines after line wth '/'
-    header <- scan(file=file,what="",sep='\n',nlines=lhdr+3,quiet=TRUE)
+    header <- scan(file=file,what="",sep='\n',nlines=lhdr,quiet=TRUE)
 
     # read header line containing variable names
-    varnames <- unlist(read.table(file=file,skip=lhdr,nrows=1,row.names=NULL,stringsAsFactors=FALSE))
+    varnames <- unlist(read.table(file=file,skip=lhdr-3,nrows=1,row.names=NULL,stringsAsFactors=FALSE))
 
-    units <- unlist(read.table(file=file,skip=lhdr+1,nrows=1,row.names=NULL,stringsAsFactors=FALSE))
+    units <- unlist(read.table(file=file,skip=lhdr-2,nrows=1,row.names=NULL,stringsAsFactors=FALSE))
 
     # mapping of header strings to returned variable names
     hnames <- list(
@@ -77,7 +75,7 @@ readQCFile <- function(file)
     dnames <- unlist(dnames)
 
     # read data into numeric values
-    sdng <- read.table(file=file, skip=lhdr+3,
+    sdng <- read.table(file=file, skip=lhdr,
         col.names=dnames,row.names=NULL, na.strings=c("-999.00","-999.00000","-999.000000"),
         check.names=FALSE)
 
