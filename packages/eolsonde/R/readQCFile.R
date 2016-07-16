@@ -30,6 +30,10 @@ readQCFile <- function(file)
 
     # look for line starting with "----"
     lhdr <- seq(along=hdrw1$w1)[regexec("^----",hdrw1$w1) > 0]
+    if (length(lhdr) != 1) {
+        warning(paste("Cannot find ---- line in",file))
+        return(NULL)
+    }
 
     # save all of header, assume 3 lines after line wth '/'
     header <- scan(file=file,what="",sep='\n',nlines=lhdr,quiet=TRUE)

@@ -126,5 +126,8 @@ readSoundings <- function(
         }
     )
     names(sdngs) <- sapply(files,function(fx) { fx$f })
+    # discard NULL soundings
+    ok <- sapply(sndgs,function(x) !is.null(x))
+    if (!all(ok)) sdngs <- sdngs[ok]
     sdngs
 }
