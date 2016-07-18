@@ -25,6 +25,10 @@ readQCFile <- function(file)
 
     # return of -1 indicates no match. Exclude those lines
     lline <- sapply(mx,function(x)x[1]!=-1)
+    if (!any(lline)) {
+        warning(paste("Cannot find \"UTC Launch Time\" line in",file))
+        return(NULL)
+    }
 
     launchutc <- utime(paste(unlist(regmatches(utchdrs[lline],mx[lline]))[-1],collapse=" "),in.format="%Y%m%d%H%M%S",time.zone="UTC")
 
