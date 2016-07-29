@@ -12,5 +12,5 @@ if [ ! -d $rlib ]; then
     exit 1
 fi
 
-R --vanilla -e "tryCatch(install.packages(pkgs=$pkgs,type='source',repos='http://www.eol.ucar.edu/software/R',lib='$rlib'),error=function(e)q(status=1))"
+R --vanilla -e "tryCatch(install.packages(pkgs=$pkgs,type='source',repos='https://www.eol.ucar.edu/software/R',lib='$rlib'),error=function(e)q(status=1))"
 
