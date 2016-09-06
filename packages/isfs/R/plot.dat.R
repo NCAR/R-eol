@@ -656,7 +656,7 @@ logo_stamp <- function(print.motto=TRUE,cex=0.75 * par("cex"))
 
     mex <- par("mex")
 
-    lineoff <- cex / mex + .1
+    lineoff <- cex / mex + .5
 
     if (is.null(platform <- dpar("platform"))) {
         platform <- Sys.getenv("PLATFORM")
@@ -733,7 +733,7 @@ adjPar <- function(nxscales=1,nyscales=1)
     cex <- par("cex")
 
     # line of axis title, labels, axis
-    mgp <- c(linecex + 0.3,0.3,0)
+    mgp <- c(linecex + 1.0,0.5,0)
 
     # lines of margin on each side of plot
     mar <- rep(0,4)
