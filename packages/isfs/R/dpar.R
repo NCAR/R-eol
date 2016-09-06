@@ -47,6 +47,7 @@ setDpar <- function(parm,vals)
     pyrgeometer.swcor=list(type="numeric",setf=setDpar,default=0,flushCache=FALSE),
     RH.ice=list(type="logical",setf=setDpar,default=NA,flushCache=FALSE),
     robust=list(type="logical",setf=setDpar,default=FALSE,flushCache=TRUE),
+    sfrac.min=list(type="numeric",setf=setDpar,default=NULL,flushCache=FALSE),
     sites=list(type="character",setf=setDpar,default=NULL,flushCache=TRUE),
     # smoothing period, in seconds
     smooth=list(type="numeric",setf=setDpar,default=NULL,flushCache=TRUE),
