@@ -35,7 +35,7 @@ setMethod("plot",signature(x="nts",y="numeric"),
 )
 
 plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
-	xaxs="i",xaxt,yaxt,tck=par("tck"),
+	xaxs="i",xaxt,yaxt,
         col,pch,lty,time.zone=x@time.zone,axes=T,log="",cex=1.0,...)
 {
 
@@ -239,12 +239,12 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
 
     if (all.is.na)
         plot.nas(type=type,axes=plotaxes,xlim=xlim.scaled,xlab="",
-            ylim=ylim,ylab=ylab,xaxs=xaxs,xaxt="n",yaxt=yaxt,tck=tck,
+            ylim=ylim,ylab=ylab,xaxs=xaxs,xaxt="n",yaxt=yaxt,
             col=col[1],pch=pch[1],lty=lty[1],cex=cex,...)
     else
         plot((tx-x0)/scalef,x@data[,1],type=type,axes=plotaxes,
             xlim=xlim.scaled,xlab="",ylim=ylim,ylab=ylab,xaxs=xaxs,
-            xaxt="n",yaxt=yaxt,tck=tck,col=col[1],pch=pch[1],lty=lty[1],log=log,cex=cex,...)
+            xaxt="n",yaxt=yaxt,col=col[1],pch=pch[1],lty=lty[1],log=log,cex=cex,...)
 
     if (plotaxes) {
         if (xaxt != "n") {
@@ -275,11 +275,8 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
                 tlabels[1] <- format(xtics[1],format=tfmt)
             }
 
-            # User can set tck to 1 to get grid lines
-            # default is NA
-            if (is.na(tck)) tck = -0.01
-            mtck <- 2 * tck
-            if (tck > .5) mtck <- tck
+            tcl <- par("tcl")
+            minor_tcl <- tcl * 0.6
 
             outer <- F
             line <- 0
@@ -291,20 +288,20 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
             if (label.space > lines.avail) {
                 outer <- T
                 line <- -mar[1] + line
-                mtck <- mtck / par("mfrow")[1]
             }
 
-            # Try to make major tic marks noticeable
-            axis(1,at=(xtics-x0)/scalef,labels=tlabels,tck=mtck,cex=tlabcex,xaxt="s",
-              outer=outer,line=line,hadj=0.5,padj=c(0.6,rep(0,length(tlabels)-1)))
-            axis(3,at=(xtics-x0)/scalef,labels=F,tck=mtck,xaxt="s")
+            # major ticks and labels
+            axis(1,at=(xtics-x0)/scalef,labels=tlabels,
+                cex=tlabcex,xaxt="s", outer=outer,
+                line=line,hadj=0.5,padj=c(0.6,rep(0,length(tlabels)-1)))
+            axis(3,at=(xtics-x0)/scalef,labels=F,xaxt="s")
 
-            if (mtck < 1) {
+            if (is.na(par("tck"))) {
                 # First minor tick
                 xfmtic <- xftic - tlab$delta
                 xmtics <- seq(from=xfmtic,to=xrange[2],by=tlab$mdelta)
-                axis(1,at=(xmtics-x0)/scalef,labels=F,tck=tck,xaxt="s")
-                axis(3,at=(xmtics-x0)/scalef,labels=F,tck=tck,xaxt="s")
+                axis(1,at=(xmtics-x0)/scalef,labels=F,tcl=minor_tcl,xaxt="s")
+                axis(3,at=(xmtics-x0)/scalef,labels=F,tcl=minor_tcl,xaxt="s")
             }
         }
     }
@@ -325,8 +322,8 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
    
     invisible(plot.nts.scale)
 }
-timeaxis <- function(side,labels=T,tick=T,time.zone,
-	cex=NULL,date.too=F,line=0,outer=F,...)
+timeaxis <- function(side,labels=TRUE,tick=TRUE,time.zone,
+	cex=NULL,date.too=FALSE,line=0,outer=FALSE,...)
 {
     if (! exists(".plot.nts.scale",envir=.eoltsEnv)) {
         stop("plot.nts.scale does not exist. Cannot add time axis to ordinary plot")
@@ -334,11 +331,8 @@ timeaxis <- function(side,labels=T,tick=T,time.zone,
  
     plot.nts.scale = get(".plot.nts.scale",envir=.eoltsEnv)
 
-    # User can set tck to 1 to get grid lines
-    tck <- par("tck")
-    if (is.na(tck)) tck = -0.01
-    mtck <- 2 * tck
-    if (tck > .5) mtck <- tck
+    tcl <- par("tcl")
+    minor_tcl <- tcl * 0.6
 
     tlab <- plot.nts.scale$tlab
     if (is.null(cex)) cex <- plot.nts.scale$cex
@@ -374,21 +368,22 @@ timeaxis <- function(side,labels=T,tick=T,time.zone,
         lines.avail <- mar[side] * mex / cex	# in units of cex
         label.space <- (par("mgp")[2] + line + 1) * mex / cex
         if (label.space > lines.avail) {
-            outer <- T
+            outer <- TRUE
             line <- -mar[side] + line
-            mtck <- mtck / par("mfrow")[1]
         }
     }
 
-    # Try to make major tic marks noticable
-    axis(side,at=(xtics-x0)/scalef,labels=tlabels,tick=tick,tck=mtck,
-          cex=cex,xaxt="s",line=line,outer=outer,...)
+    # labels and major tick marks
+    axis(side,at=(xtics-x0)/scalef,labels=tlabels,tick=tick,
+          cex=cex, xaxt="s",line=line,outer=outer,...)
 
-    if (tick && mtck < 1) {
+    # minor ticks
+    if (tick && is.na(par("tck"))) {
         # First minor tick
         xfmtic <- xftic - tlab$delta
         xmtics <- seq(from=xfmtic,to=xrange[2],by=tlab$mdelta)
-        axis(side,at=(xmtics-x0)/scalef,labels=F,tick=tick,tck=tck,xaxt="s",...)
+        axis(side,at=(xmtics-x0)/scalef,labels=F,tick=tick,tcl=minor_tcl,
+            xaxt="s",...)
     }
 }
 
