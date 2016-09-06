@@ -292,8 +292,8 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
 
             # major ticks and labels
             axis(1,at=(xtics-x0)/scalef,labels=tlabels,
-                cex=tlabcex,xaxt="s", outer=outer,
-                line=line,hadj=0.5,padj=c(0.6,rep(0,length(tlabels)-1)))
+                cex=tlabcex,xaxt="s", outer=outer, line=line,
+                hadj=0.5, padj=c(0.6,rep(0,length(tlabels)-1)))
             axis(3,at=(xtics-x0)/scalef,labels=F,xaxt="s")
 
             if (is.na(par("tck"))) {
@@ -309,7 +309,11 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
     plot.nts.scale <- list(scale=scalef,off=x0,tlab=tlab,cex=cex*par("cex"))
     assign(".plot.nts.scale",plot.nts.scale,envir=.eoltsEnv)
 
-    if (plotaxes && xlab != "") title(xlab=xlab,cex=cex*par("cex"))
+    if (plotaxes && xlab != "") {
+        # title(xlab=xlab,cex=cex*par("cex"))
+        cat("title,cex=",tlabcex,",mgp=",par("mgp"),"\n")
+        title(xlab=xlab,cex=tlabcex)
+    }
 
     if (nc > 1) {
         ncolor <- length(col)

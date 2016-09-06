@@ -290,14 +290,14 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
                     axis(side=side,at=l0lab:lnlab,labels=10^(l0lab:lnlab),
                         xaxt="s",yaxt="s",col=1,cex=cex*par("cex"),srt=-90)
                     axis(side=side,at=mtics,line=line,labels=FALSE,col=1,xaxt="s",yaxt="s")
-                    mtext(side=side,line=line+mgp[1]*.8,ylab_txt,col=1,
+                    mtext(side=side,line=line+mgp[1],ylab_txt,col=1,
                         at=mean(usr[3:4]),srt=-90,cex=cex*par("cex"))
                 }
                 else {
                     axis(side=side,at=l0lab:lnlab,labels=10^(l0lab:lnlab),
                         xaxt="s",yaxt="s",col=1,cex=cex*par("cex"),srt=90)
                     axis(side=side,at=mtics,line=line,labels=FALSE,col=1,xaxt="s",yaxt="s")
-                    mtext(side=side,line=line+mgp[1]*.8,ylab_txt,col=1,cex=cex*par("cex"))
+                    mtext(side=side,line=line+mgp[1],ylab_txt,col=1,cex=cex*par("cex"))
                 }
                 if (nscales == 1 || length(dnames) == 1) axis(4,labels=FALSE,at=l0lab:lnlab)
             }
@@ -333,13 +333,13 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
                 # cat("nscales=",nscales,"length(yaxis_done)=",length(yaxis_done),"side=",side,"at=",at,"line=",line,"ylabels=",paste(ylabels,collapse=","),"\n")
                 if (side == 4) {    # right
                     axis(side=side,at=at,line=line,col=1,srt=-90,cex=cex*par("cex"),labels=ylabels)
-                    mtext(side=side,line=line+mgp[1]*.8,ylab_txt,col=1,
+                    mtext(side=side,line=line+mgp[1],ylab_txt,col=1,
                         at=mean(usr[3:4]),srt=-90,cex=cex*par("cex"))
                 }
                 else if (nscales > 1 || length(yaxis_done) == 0) {
                     # axis(side=side,line=line,col=1,cex=cex*par("cex"),at=at,labels=ylabels,adj=1)
                     axis(side=side,at=at,line=line,col=1,srt=90,cex=cex*par("cex"),labels=ylabels)
-                    mtext(side=side,line=line+mgp[1]*.8,ylab_txt,col=1,cex=cex*par("cex"))
+                    mtext(side=side,line=line+mgp[1],ylab_txt,col=1,cex=cex*par("cex"))
                 }
                 if (nscales == 1 || length(dnames) == 1) axis(4,labels=FALSE,at=at)
             }
@@ -735,7 +735,7 @@ adjPar <- function(nxscales=1,nyscales=1)
     cex <- par("cex")
 
     # line of axis title, labels, axis
-    mgp <- c(linecex + 1.0,0.5,0)
+    mgp <- c(linecex + 0.5,0.5,0)
 
     # lines of margin on each side of plot
     mar <- rep(0,4)
