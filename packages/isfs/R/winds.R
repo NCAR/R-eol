@@ -30,6 +30,10 @@ check.windcoords = function()
 
     # requested coordinate system
     rcoords = dpar("coords")
+    if (rcoords != "geo" && substring(rcoords,1,3) == "geo") {
+        rcoords = "geo"
+        dpar(coords=rcoords)
+    }
     if (is.null(rcoords)) dpar(coords=dcoords)
     else if (rcoords == "sonic") dpar(coords="instrument")
     else if (rcoords != "geo" && rcoords != "instrument")
