@@ -415,7 +415,6 @@ setReplaceMethod("stations", signature(x="nts",value="integer"),
 setReplaceMethod("stations", signature(x="nts",value="ANY"),
     function(x,value)
     {
-        if (is.null(nv)) nv <- rep("",length(value))
         if (!is.integer(value)) {
             if (is.numeric(value)) value <- round(value)
             # use storage.mode instead of as.integer so
