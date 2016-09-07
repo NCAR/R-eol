@@ -84,7 +84,11 @@ nts <- function(data,positions,
 
     if (is.null(stations) || length(stations) == 0)
         stations <- rep(0L,ncol(ret@data))
-    else if (!is.integer(stations)) stations <- as.integer(stations)
+    else if (!is.integer(stations)) {
+        # use storage.mode instead of as.integer since it doesn't
+        # loose attributes, such as names
+        storage.mode(stations) <- "integer"
+    }
 
     ret@stations <- stations
 
@@ -411,13 +415,13 @@ setReplaceMethod("stations", signature(x="nts",value="integer"),
 setReplaceMethod("stations", signature(x="nts",value="ANY"),
     function(x,value)
     {
-        nv <- names(value)
         if (is.null(nv)) nv <- rep("",length(value))
         if (!is.integer(value)) {
             if (is.numeric(value)) value <- round(value)
-            value <- as.integer(value)
+            # use storage.mode instead of as.integer so
+            # the names attribute is not lost
+            storage.mode(value) <- "integer"
         }
-        names(value) <- nv
         x@stations <- value
         x
     }
