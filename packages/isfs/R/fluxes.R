@@ -741,9 +741,9 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
 
 dat.TKE <- function(what,derived=TRUE,cache=FALSE,...)
 {
-    x <- sqrt(dat("u'u'",avg=TRUE,smooth=TRUE)^2 +
-        dat("v'v'",avg=TRUE,smooth=TRUE)^2 +
-        dat("w'w'",avg=TRUE,smooth=TRUE)^2)/2
+    x <- (dat("u'u'",avg=TRUE,smooth=TRUE) +
+        dat("v'v'",avg=TRUE,smooth=TRUE) +
+        dat("w'w'",avg=TRUE,smooth=TRUE))/2
 
     dimnames(x) <- list(NULL,paste("TKE",suffixes(x,2),sep=""))
     x@units <- rep("(m/s)^2",ncol(x))
