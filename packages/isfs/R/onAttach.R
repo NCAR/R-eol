@@ -7,6 +7,8 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
+.isfsEnv <- new.env(parent=emptyenv())
+
 .onAttach = function(libname,pkgname)
 {
     # cat(paste("hello from libname=",libname,", pkgname=",pkgname," .onAttach\n"))

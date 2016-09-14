@@ -126,10 +126,10 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
         }
 
         # Look for a dat function  dat.what
-        fcn <- paste("dat",what,sep=".")
-        if (exists(fcn,mode="function")) {
+        datFuncName <- paste("dat",what,sep=".")
+        if (exists(datFuncName,mode="function")) {
             # browser()
-            f <- get(fcn,mode="function",pos=1,inherits=TRUE)
+            f <- get(datFuncName,mode="function",pos=1,inherits=TRUE)
             x <- f(what=what,derived=derived,cache=cache,...)
             if (inherits(x,"nts")) {
                 x <- select(x,stns=dpar("stns"),hts=dpar("hts"),sfxs=dpar("sfxs"),
@@ -148,9 +148,9 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
             nw <- nwords(what,sep=".")
             iw <- nw - 1
             while (iw > 0) {
-                fcn <- paste("dat",words(what,1,iw),sep=".")
-                if (exists(fcn,mode="function")) {
-                    f <- get(fcn,mode="function",pos=1,inherits=TRUE)
+                datFuncName <- paste("dat",words(what,1,iw),sep=".")
+                if (exists(datFuncName,mode="function")) {
+                    f <- get(datFuncName,mode="function",pos=1,inherits=TRUE)
                     x <- f(what=what,derived=derived,cache=cache,...)
 
                     if (inherits(x,"nts")) {
@@ -196,7 +196,7 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
         if (check_cache(dnames)) {
             if (smooth || avg) return(smooth_avg_dat(get_cache_object(dnames),
                     smooth,smoothper,avg,simple.avg,avgper))
-        else return(get_cache_object(dnames))
+            else return(get_cache_object(dnames))
         }
     }
 
@@ -212,16 +212,7 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
     x <- readts(iod,variables=dnames,start=T1,end=T2,stns=stns)
     close(iod)
 
-    # cat("class(x)=",class(x),"\n")
-    if (FALSE) {
-        if (nnames == 1 && existsClass(dnames) && extends(dnames,"dat",maybe=FALSE))
-            class(x) <- dnames
-        else class(x) <- "dat"
-    }
-    else {
-        x <- as(x,"dat")
-    }
-    # cat("class(x)=",class(x),"\n")
+    x <- as(x,"dat")
 
     # browser()
     x <- select(x,stns=stns,hts=dpar("hts"),sfxs=dpar("sfxs"),sites=dpar("sites"))
@@ -235,6 +226,24 @@ dat <- function(what,derived=TRUE,cache=getOption("dcache"),
         x <- smooth_avg_dat(x,smooth,smoothper,avg,simple.avg,avgper)
 
     x
+}
+
+datVar <- function()
+{
+    # When called from within a dat.x function, returns "x"
+
+    # parent.frame(2) is the frame of dat(). Within dat(),
+    # datFuncName is the name of the function that is
+    # being called.
+    env <- parent.frame(2)
+    if (exists("datFuncName",envir=env)) {
+        func <- get("datFuncName",env)
+    }
+    else {
+        # looks like dat.X is being called directly
+        func <- strsplit(deparse(sys.call(-1)),"(",fixed=TRUE)[[1]][1]
+    }
+    sub("dat.","",func)
 }
 
 smooth_avg_dat <- function(x,smooth,smoothper,avg,simple.avg,avgper)

@@ -44,6 +44,8 @@ check.windcoords = function()
 # -----
 dat.u <- function(what,derived=TRUE,cache=FALSE,...)
 {
+    datvar <- datVar() # requested variable name, x of dat.x
+
     # dat("u",derived=FALSE) forces reading "u" from NetCDF
     # otherwise calling dat("u") here would be an infinite loop
     u <- dat(what,derived=FALSE)
@@ -56,11 +58,11 @@ dat.u <- function(what,derived=TRUE,cache=FALSE,...)
 
     # Rotate from instrument to geographic coordinates (or back)
     if (rcoords != dcoords) {
-        v <- dat(expand("v",what),derived=FALSE)
+        v <- dat(sub(datvar,"v",what,fixed=TRUE),derived=FALSE)
         if (is.null(u) || is.null(v)) return(NULL)
 
         # vazm is the geographic compass angle of the sonic +V axis
-        vazm <- dat(expand("Vazimuth",what))
+        vazm <- dat(sub(datvar,"Vazimuth",what,fixed=TRUE))
         if (is.null(vazm)) return(NULL)
 
         # Flip the sign of vazimuth if rotating from geo to instrument
@@ -117,13 +119,15 @@ dat.u <- function(what,derived=TRUE,cache=FALSE,...)
 
         u <-  u * cos(vazm) + v * sin(vazm)
 
-        dimnames(u) <- list(NULL,expand("u",u))
+        colnames(u) <- sub("[^.]+",datvar,colnames(u))
         u@units <- rep("m/s",ncol(u))
     }
     u
 }
 dat.v <- function(what,derived=TRUE,cache=FALSE,...)
 {
+    datvar <- datVar() # requested variable name, x of dat.x
+
     # dat("v",derived=FALSE) forces reading "v" from NetCDF
     # otherwise calling dat("v") here would be an infinite loop
     v <- dat(what,derived=FALSE)
@@ -137,10 +141,10 @@ dat.v <- function(what,derived=TRUE,cache=FALSE,...)
     # Rotate from instrument to geographic coordinates (or back)
     if (rcoords != dcoords) {
 
-        u <- dat(expand("u",what),derived=FALSE)
+        u <- dat(sub(datvar,"u",what,fixed=TRUE),derived=FALSE)
         if (is.null(u) || is.null(v)) return(NULL)
 
-        vazm <- dat(expand("Vazimuth",what))
+        vazm <- dat(sub(datvar,"Vazimuth",what,fixed=TRUE))
         if (is.null(vazm)) return(NULL)
 
         # Flip the sign of vazimuth if rotating from geo to instrument
@@ -197,83 +201,97 @@ dat.v <- function(what,derived=TRUE,cache=FALSE,...)
 
         v <- -u * sin(vazm) + v * cos(vazm)
 
-        dimnames(v) <- list(NULL,expand("v",v))
+        colnames(v) <- sub("[^.]+",datvar,colnames(v))
         v@units <- rep("m/s",ncol(v))
     }
     v
 }
 dat.spd <- function(what,derived=TRUE,cache=FALSE,...)
 {
-    x <- sqrt(dat(expand("u",what),avg=TRUE,smooth=TRUE)^2 +
-        dat(expand("v",what),avg=TRUE,smooth=TRUE)^2)
+    datvar <- datVar() # requested variable name, x of dat.x
+
+    x <- sqrt(dat(sub(datvar,"u",what,fixed=TRUE),avg=TRUE,smooth=TRUE)^2 +
+        dat(sub(datvar,"v",what,fixed=TRUE),avg=TRUE,smooth=TRUE)^2)
     if (length(x) == 0) return(NULL)
 
-    dimnames(x) <- list(NULL,expand("spd",x))
+    colnames(x) <- sub("[^.]+",datvar,colnames(x))
     x@units <- rep("m/s",ncol(x))
     x
 }
 dat.spd.uvw <- function(what,derived=TRUE,cache=FALSE,...)
 {
-    x <- sqrt(dat(expand("u",what),avg=TRUE,smooth=TRUE)^2 +
-        dat(expand("v",what),avg=TRUE,smooth=TRUE)^2 +
-        dat(expand("w",what),avg=TRUE,smooth=TRUE)^2)
+    datvar <- datVar() # requested variable name, x of dat.x
+
+    x <- sqrt(dat(sub(datvar,"u",what,fixed=TRUE),avg=TRUE,smooth=TRUE)^2 +
+        dat(sub(datvar,"v",what,fixed=TRUE),avg=TRUE,smooth=TRUE)^2 +
+        dat(sub(datvar,"w",what,fixed=TRUE),avg=TRUE,smooth=TRUE)^2)
     if (length(x) == 0) return(NULL)
 
-    dimnames(x) <- list(NULL,expand("spd.uvw",x))
+    colnames(x) <- sub("[^.]+",datvar,colnames(x))
     x@units <- rep("m/s",ncol(x))
     x
 }
 dat.dir <- function(what,derived=TRUE,cache=FALSE,...)
 {
-    x <- dat(expand("u",what),avg=TRUE,smooth=TRUE)
+    datvar <- datVar() # requested variable name, x of dat.x
+
+    x <- dat(sub(datvar,"u",what,fixed=TRUE),avg=TRUE,smooth=TRUE)
     if (length(x) == 0) return(NULL)
     x@data <- atan2(-x@data,
-        -dat(expand("v",what),avg=TRUE,smooth=TRUE)@data) * 180 / pi
+        -dat(sub(datvar,"v",what,fixed=TRUE),avg=TRUE,smooth=TRUE)@data) * 180 / pi
     xneg <- !is.na(x@data) & x@data < 0
     x[xneg] <- x[xneg] + 360
 
-    dimnames(x) <- list(NULL,expand("dir",x))
+    colnames(x) <- sub("[^.]+",datvar,colnames(x))
     x@units <- rep("deg",ncol(x))
     x
 }
 dat.Spd <- function(what,derived=TRUE,cache=FALSE,...)
 {
-    x <- sqrt(dat(expand("U",what),avg=TRUE,smooth=TRUE)^2 +
-        dat(expand("V",what),avg=TRUE,smooth=TRUE)^2)
+    datvar <- datVar() # requested variable name, x of dat.x
+
+    x <- sqrt(dat(sub(datvar,"U",what,fixed=TRUE),avg=TRUE,smooth=TRUE)^2 +
+        dat(sub(datvar,"V",what,fixed=TRUE),avg=TRUE,smooth=TRUE)^2)
     if (length(x) == 0) return(NULL)
     if (length(x) == 1 && is.na(x)) return(NULL)
 
-    dimnames(x) <- list(NULL,expand("Spd",x))
+    colnames(x) <- sub("[^.]+",datvar,colnames(x))
     x@units <- rep("m/s",ncol(x))
     x
 }
 dat.Dir <- function(what,derived=TRUE,cache=FALSE,...)
 {
-    x <- dat("U",avg=TRUE,smooth=TRUE)
+    datvar <- datVar() # requested variable name, x of dat.x
+
+    x <- dat(sub(datvar,"U",what,fixed=TRUE),avg=TRUE,smooth=TRUE)
     if (length(x) == 0) return(NULL)
-    x@data <- atan2(-x@data,-dat("V",avg=TRUE,smooth=TRUE)@data) * 180 / pi
+    x@data <- atan2(-x@data,-dat(sub(datvar,"V",what,fixed=TRUE),avg=TRUE,smooth=TRUE)@data) * 180 / pi
     xneg <- !is.na(x@data) & x@data < 0
     x[xneg] <- x[xneg] + 360
 
-    dimnames(x) <- list(NULL,expand("Dir",x))
+    colnames(x) <- sub("[^.]+",datvar,colnames(x))
     x@units <- rep("deg",ncol(x))
     x
 }
 dat.elev.u <- function(what,derived=TRUE,cache=FALSE,...)
 {
-    x <- atan(dat("w")/dat("u"))*180/pi
+    datvar <- datVar() # requested variable name, x of dat.x
+
+    x <- atan(dat(sub(datvar,"w",what,fixed=TRUE))/dat(sub(datvar,"u",what,fixed=TRUE)))*180/pi
     if (length(x) == 0) return(NULL)
 
-    dimnames(x) <- list(NULL,expand("elev.u",x))
+    colnames(x) <- sub("[^.]+",datvar,colnames(x))
     x@units <- rep("deg",ncol(x))
     x
 }
 dat.elev.v <- function(what,derived=TRUE,cache=FALSE,...)
 {
-    x <- atan(dat("w")/dat("v"))*180/pi
+    datvar <- datVar() # requested variable name, x of dat.x
+
+    x <- atan(dat(sub(datvar,"w",what,fixed=TRUE))/dat(sub(datvar,"v",what,fixed=TRUE)))*180/pi
     if (length(x) == 0) return(NULL)
 
-    dimnames(x) <- list(NULL,expand("elev.v",x))
+    colnames(x) <- sub("[^.]+",datvar,colnames(x))
     x@units <- rep("deg",ncol(x))
     x
 }
@@ -282,51 +300,59 @@ dat.elev.v <- function(what,derived=TRUE,cache=FALSE,...)
 
 "dat.us" <- function(what,derived=TRUE,cache=FALSE,...)
 {
+    datvar <- datVar() # requested variable name, x of dat.x
+
     # mean streamwise wind required to calculate non-simple average of
     # us'us'
-    u <- dat(expand("u",what), avg=TRUE,smooth=TRUE, derived=FALSE)
-    v <- dat(expand("v",what), avg=TRUE,smooth=TRUE, derived=FALSE)
+    u <- dat(sub(datvar,"u",what,fixed=TRUE), avg=TRUE,smooth=TRUE, derived=FALSE)
+    v <- dat(sub(datvar,"v",what,fixed=TRUE), avg=TRUE,smooth=TRUE, derived=FALSE)
     x = sqrt(u^2 + v^2)
 
-    dimnames(x) <- list(NULL,paste("us",suffixes(x,2),sep=""))
+    colnames(x) <- sub("[^.]+","us",colnames(x))
     x@units <- rep("m/s",ncol(x))
     x
 }
 
 "dat.vs" <- function(what,derived=TRUE,cache=FALSE,...)
 {
+    datvar <- datVar() # requested variable name, x of dat.x
+
     # mean cross-stream wind required to calculate non-simple average of
     # us'us'
     x = 0
-    dimnames(x) <- list(NULL,paste("vs",suffixes(x,2),sep=""))
-    x@units <- rep("m/s",ncol(x))
+    # colnames(x) <- sub("[^.]+","vs",colnames(x))
+    # x@units <- rep("m/s",ncol(x))
     x
 }
 
 "dat.us'us'" <- function(what,derived=TRUE,cache=FALSE,...)
 {
-    # calculate streamwise variance
-    u <- dat(expand("u",what), avg=TRUE,smooth=TRUE, derived=FALSE)
-    v <- dat(expand("v",what), avg=TRUE,smooth=TRUE, derived=FALSE)
-    x <- (u^2*dat(expand("u'u'",what), avg=TRUE,smooth=T) +
-        2*u*v*dat(expand("u'v'",what), avg=TRUE,smooth=T) +
-        v^2*dat(expand("v'v'",what), avg=TRUE,smooth=T))/ (u^2 + v^2)
+    datvar <- datVar() # requested variable name, x of dat.x
 
-    dimnames(x) <- list(NULL,paste("us'us'",suffixes(x,2),sep=""))
+    # calculate streamwise variance
+    u <- dat(sub(datvar,"u",what,fixed=TRUE), avg=TRUE,smooth=TRUE, derived=FALSE)
+    v <- dat(sub(datvar,"v",what,fixed=TRUE), avg=TRUE,smooth=TRUE, derived=FALSE)
+    x <- (u^2*dat(sub(datvar,"u'u'",what,fixed=TRUE), avg=TRUE,smooth=T) +
+        2*u*v*dat(sub(datvar,"u'v'",what,fixed=TRUE), avg=TRUE,smooth=T) +
+        v^2*dat(sub(datvar,"v'v'",what,fixed=TRUE), avg=TRUE,smooth=T))/ (u^2 + v^2)
+
+    colnames(x) <- sub("[^.]+","us'us'",colnames(x))
     x@units <- rep("(m/s)^2",ncol(x))
     x
 }
 
 "dat.vs'vs'" <- function(what,derived=TRUE,cache=FALSE,...)
 {
-    # calculate cross-stream variance
-    u <- dat(expand("u", what),avg=TRUE,smooth=TRUE, derived=FALSE)
-    v <- dat(expand("v", what),avg=TRUE,smooth=TRUE, derived=FALSE)
-    x <- (v^2*dat(expand("u'u'",what), avg=TRUE,smooth=T) -
-        2*u*v*dat(expand("u'v'",what), avg=TRUE,smooth=T) +
-        u^2*dat(expand("v'v'",what), avg=TRUE,smooth=T))/ (u^2 + v^2)
+    datvar <- datVar() # requested variable name, x of dat.x
 
-    dimnames(x) <- list(NULL,paste("vs'vs'",suffixes(x,2),sep=""))
+    # calculate cross-stream variance
+    u <- dat(sub(datvar,"u", what,fixed=TRUE),avg=TRUE,smooth=TRUE, derived=FALSE)
+    v <- dat(sub(datvar,"v", what,fixed=TRUE),avg=TRUE,smooth=TRUE, derived=FALSE)
+    x <- (v^2*dat(sub(datvar,"u'u'",what,fixed=TRUE), avg=TRUE,smooth=T) -
+        2*u*v*dat(sub(datvar,"u'v'",what,fixed=TRUE), avg=TRUE,smooth=T) +
+        u^2*dat(sub(datvar,"v'v'",what,fixed=TRUE), avg=TRUE,smooth=T))/ (u^2 + v^2)
+
+    colnames(x) <- sub("[^.]+","vs'vs'",colnames(x))
     x@units <- rep("(m/s)^2",ncol(x))
     x
 }

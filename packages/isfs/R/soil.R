@@ -54,9 +54,12 @@ dat.Csoil <- function(what,derived=TRUE,...)
     # organics, and 4.2e6 is rho*Cp for water in J/(m3 C).  THIS SHOULD BE CHECKED.
     # Finally, I'm also changing the organic fraction to 5% -- more typical??
     # ...SPO
+
+    datvar <- datVar() # requested variable name, x of dat.x
+
     min.vol.frac <- 0.55
     org.vol.frac <- 0.05
-    h2o <- dat(expand("Qsoil",what))
+    h2o <- dat(sub(datvar,"Qsoil",what,fixed=TRUE))
 
     # Check units. Expect vfract or %vol
     hunits <- h2o@units
@@ -72,7 +75,7 @@ dat.Csoil <- function(what,derived=TRUE,...)
 
     #  rho <- dat("rho.soil")
     x <- ( 1.9*min.vol.frac + 2.5*org.vol.frac + 4.2*h2o )*1e6
-    dimnames(x) <- list(NULL,expand("Csoil",h2o))
+    colnames(x) <- sub("Qsoil",datvar,colnames(x),fixed=TRUE)
     x@units <- rep("J/(m3 C)",ncol(x))
     x
 }
@@ -97,18 +100,20 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
 
     # If sum == T, the sum the Ssoil values is returned.
 
+    datvar <- datVar() # requested variable name, x of dat.x
+
     if (!doderiv && !is.na(match("dTsoil_dt",words(variables(),1,1)))) {
-        tx <- dat(expand("dTsoil_dt",what))
+        tx <- dat(sub(datvar,"dTsoil_dt",what,fixed=TRUE))
     }
     else {
-        tx <- dat(expand("Tsoil",what))
+        tx <- dat(sub(datvar,"Tsoil",what,fixed=TRUE))
         doderiv <- TRUE
     }
 
     res <- NULL
 
     # Gsoil flux is only used here to determine depth of flux plate
-    gsoil <- dat(expand("Gsoil",what),derived=FALSE)
+    gsoil <- dat(sub(datvar,"Gsoil",what,fixed=TRUE),derived=FALSE)
 
     for (stn in unique(stations(tx))) {
         txs <- select(tx,stns=stn)
@@ -201,14 +206,19 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
             # multiply dT/dt by dz, then sum
 
             # a missing (NA) temperature will result in no addition to Gsfc from that depth.
+
             if (sum) {
-                dns <- expand("dT_by_dt_dz",gsoilss)
+                # Convert all before first period, and optional depth to "dT_by_dt_dz"
+                dns <- sub("[^.]+(\\.[0-9.]+cm)?","dTsoil_by_dt_dz",colnames(txss[,1]))
+                # make sure depth is gone
+                dns <- sub("\\.[0-9.]+cm","",dns)
                 txss@data <- matrix(apply(txss@data,1,function(x){sum(x*dz,na.rm=TRUE)}),
                     byrow=TRUE,ncol=length(dns),dimnames=list(NULL,dns))
                 stations(txss) <- stn
             }
             else {
-                dns <- expand("dT_by_dt_dz",txss)
+                # Convert all before first period, and optional depth to "dT_by_dt_dz"
+                dns <- sub("[^.]+(\\.[0-9.]+cm)?","dTsoil_by_dt_dz",colnames(txss))
                 txss@data <- matrix(apply(txss@data,1,function(x){x*dz}),
                     byrow=TRUE,ncol=length(dns),dimnames=list(NULL,dns))
             }
@@ -216,18 +226,17 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
             # get soil heat capacity (J/(m^3 degK))
             vars <- words(variables(),1,1)
             if (any(vars=="Lambdasoil") || any(vars=="Tau63_max"))
-                Cs <- dat(expand("Cvsoil",what))
+                Cs <- dat(sub(datvar,"Cvsoil",what,fixed=TRUE))
             else
-                Cs <- dat(expand("Csoil",what))
+                Cs <- dat(sub(datvar,"Csoil",what,fixed=TRUE))
 
             Cs <- approx(conform(Cs,txss),xout=positions(txss))
 
             # Units:   J/(m^3 degK) * d(degK)/d(sec) * m =  W/m^2
             # browser()
             x <- Cs * txss
-            if (sum) dimnames(x) <- list(NULL,expand("Ssoil",Cs))
-            else dimnames(x) <- list(NULL,expand("Ssoil",txss))
-
+            colnames(x) <- sub("[^.]+(\\.[0-9.]+cm)?",datvar,colnames(txss))
+            colnames(x) <- sub("\\.[0-9.]+cm","",colnames(x))
             x@units <- rep("W/m^2",ncol(x))
 
             if (is.null(res)) res <- x
@@ -256,9 +265,10 @@ dat.Ssoilz <- function(what,derived=TRUE,dfill=FALSE,fit=3,sum=TRUE,...)
     #   If fit==2,sum=FALSE, the flux values at all depths will be equal, since the
     #   second derivative of a second order polynomial is a constant.
 
+    datvar <- datVar() # requested variable name, x of dat.x
 
     if ((fit < 2 && fit != 0) || fit > 3) stop("order of polynomial fit must be 2 or 3")
-    tx <- dat(expand("Tsoil",what))
+    tx <- dat(sub(datvar,"Tsoil",what,fixed=TRUE))
 
     res <- NULL
 
@@ -276,7 +286,7 @@ dat.Ssoilz <- function(what,derived=TRUE,dfill=FALSE,fit=3,sum=TRUE,...)
             txss <- txss[,dseq]
             depths <- depths[dseq]
 
-            g <- select(dat(expand("Gsoil",what),derived=FALSE),stns=stn,sites=st)
+            g <- select(dat(sub(datvar,"Gsoil",what,fixed=TRUE),derived=FALSE),stns=stn,sites=st)
             depthg <- NULL
             if (!is.null(g)) depthg <- unique(-heights(g))
 
@@ -301,7 +311,7 @@ dat.Ssoilz <- function(what,derived=TRUE,dfill=FALSE,fit=3,sum=TRUE,...)
                             # not extrapolated.
                             if (sgx > 1 && sgx < length(depths)) approx(depths[gx],x[gx],xout=depths,method="linear",rule=2)$y
                             else x
-            }),ncol=length(depths),dimnames=dns,byrow=TRUE)
+                    }),ncol=length(depths),dimnames=dns,byrow=TRUE)
                 }
             }
 
@@ -312,11 +322,14 @@ dat.Ssoilz <- function(what,derived=TRUE,dfill=FALSE,fit=3,sum=TRUE,...)
                 rdepths <- depths[c(-1,-length(depths))]
                 cat("result depths=",paste(rdepths,collapse=", "),"\n")
 
-                if (sum)
-                    dns <- "d2Tsoil_by_dz2_dz"
-                else
-                    dns <- paste("d2Tsoil_by_dz2_dz.",rdepths*100,"cm",sep="")
-                if (st != "") dns <- paste(dns,st,sep=".")
+                if (sum) {
+                    dns <- sub("[^.]+","d2Tsoil_by_dz2_dz",colnames(txss[,1]))
+                    # remove depth
+                    dns <- sub("\\.[0-9.]+cm","",dns)
+                }
+                else {
+                    dns <- sub("[^.]+","d2Tsoil_by_dz2_dz",colnames(txss[,c(-1,-ncol(txss))]))
+                }
 
                 txss@data <- matrix(apply(txss@data,1,function(y,z,dosum) {
                         # double difference
@@ -326,7 +339,7 @@ dat.Ssoilz <- function(what,derived=TRUE,dfill=FALSE,fit=3,sum=TRUE,...)
                             sum(y,na.rm=TRUE)
                         else
                             y
-            },z=depths,dosum=sum),ncol=length(dns),byrow=TRUE,dimnames=list(NULL,dns))
+                    },z=depths,dosum=sum),ncol=length(dns),byrow=TRUE,dimnames=list(NULL,dns))
             }
             else {
                 if (length(depths) > 1) {
@@ -346,11 +359,14 @@ dat.Ssoilz <- function(what,derived=TRUE,dfill=FALSE,fit=3,sum=TRUE,...)
                 cat("depths=",paste(depths,collapse=", "),"\n")
                 cat("dz=",paste(dz,collapse=", "),"\n")
 
-                if (sum)
-                    dns <- "d2Tsoil_by_dz2_dz"
-                else
-                    dns <- expand("d2Tsoil_by_dz2_dz",txss)
-                if (st != "") dns <- paste(dns,st,sep=".")
+                if (sum) {
+                    dns <- sub("[^.]+","d2Tsoil_by_dz2_dz",colnames(txss[,1]))
+                    # remove depth
+                    dns <- sub("\\.[0-9.]+cm","",dns)
+                }
+                else {
+                    dns <- sub("[^.]+","d2Tsoil_by_dz2_dz",colnames(txss))
+                }
 
                 if (fit == 2) {
                     txss@data <- matrix(apply(txss@data,1,function(y,z,dz,dosum) {
@@ -366,7 +382,7 @@ dat.Ssoilz <- function(what,derived=TRUE,dfill=FALSE,fit=3,sum=TRUE,...)
                             # sapply(z,function(z,cs){z^2*cs[2] + z*cs[3] + cs[1]},cs=cs)
                             if (dosum) sum(dz * 2 * cs[2])
                             else dz * 2 * cs[2]
-            },z=depths,dz=dz,dosum=sum),ncol=length(dns),byrow=TRUE,dimnames=list(NULL,dns))
+                    },z=depths,dz=dz,dosum=sum),ncol=length(dns),byrow=TRUE,dimnames=list(NULL,dns))
                 }
                 else {
                     txss@data <- matrix(apply(txss@data,1,function(y,z,dz,dosum) {
@@ -381,7 +397,7 @@ dat.Ssoilz <- function(what,derived=TRUE,dfill=FALSE,fit=3,sum=TRUE,...)
                             # sapply(z,function(z,cs){z^3*cs[2] + z^2*cs[3] + z*cs[4] + cs[1]},cs=cs)
                             if (dosum) sum(dz * (6 * cs[2] * z + 2 * cs[3]))
                             else dz * (6 * cs[2] * z + 2 * cs[3])
-            },z=depths,dz=dz,dosum=sum),ncol=length(dns),byrow=TRUE,dimnames=list(NULL,dns))
+                    },z=depths,dz=dz,dosum=sum),ncol=length(dns),byrow=TRUE,dimnames=list(NULL,dns))
                 }
             }
 
@@ -391,12 +407,12 @@ dat.Ssoilz <- function(what,derived=TRUE,dfill=FALSE,fit=3,sum=TRUE,...)
             units(txss) <- rep("degK/m",ncol(txss))
 
             # get soil heat conductivity (W/(m degK))
-            lambda <- dat(expand("Lambdasoil",what))
+            lambda <- dat(sub(datvar,"Lambdasoil",what,fixed=TRUE))
             lambda <- select(lambda,stns=stn,sites=st)
 
             # Units:   W/(m degK) * degK/m =  W/m^2
             x <- lambda * txss
-            dimnames(x) <- list(NULL,expand("Ssoilz",txss))
+            colnames(x) <- sub("[^.]+", datvar, colnames(txss))
 
             x@units <- rep("W/m^2",ncol(x))
 
@@ -415,7 +431,9 @@ dat.Gsoilz <- function(what,derived=TRUE,fit=0,dfill=FALSE,...)
     # fit: order of polynomial fit of temperature w.r.t z (soil depth)
     # The maximum value of fit is 3 for temperatures measured at 4 depths
 
-    tx <- dat(expand("Tsoil",what))
+    datvar <- datVar() # requested variable name, x of dat.x
+
+    tx <- dat(sub(datvar,"Tsoil",what,fixed=TRUE))
 
     res <- NULL
 
@@ -433,7 +451,7 @@ dat.Gsoilz <- function(what,derived=TRUE,fit=0,dfill=FALSE,...)
             txss <- txss[,dseq]
             depths <- depths[dseq]
 
-            g <- select(dat(expand("Gsoil",what),derived=FALSE),stns=stn,sites=st)
+            g <- select(dat(sub(datvar,"Gsoil",what,fixed=TRUE),derived=FALSE),stns=stn,sites=st)
             depthg <- NULL
             if (!is.null(g)) depthg <- unique(-heights(g))
 
@@ -471,9 +489,14 @@ dat.Gsoilz <- function(what,derived=TRUE,fit=0,dfill=FALSE,...)
 
                 cat("result depths=",paste(rdepths,collapse=", "),"\n")
 
-                dns <- paste("dTsoil_by_dz.",rdepths*100,"cm",sep="")
-                if (st != "") dns <- paste(dns,st,sep=".")
-                txss@data <- matrix(apply(txss@data,1,function(y) {
+                dns <- sub("[^.]+","dTsoil_by_dz",colnames(txss[,-1]))
+                cat("dns=",dns,"\n")
+                # substitute rdepths
+                for (i in 1:length(dns))
+                    dns[i] <- sub("\\.[0-9.]+cm",paste(".",rdepths[i]*100,"cm",sep=""),dns[i])
+                cat("dns=",dns,"\n")
+
+                txss@data <- matrix(apply(txss@data,1,function(y,dz) {
                         diff(y)/dz},dz=diff(depths)),
                     ncol=length(dns),byrow=TRUE,dimnames=list(NULL,dns))
             }
@@ -487,31 +510,35 @@ dat.Gsoilz <- function(what,derived=TRUE,fit=0,dfill=FALSE,...)
 
                 cat("result depths=",paste(rdepths,collapse=", "),"\n")
 
-                dns <- paste("dTsoil_by_dz.",rdepths*100,"cm",sep="")
-                if (st != "") dns <- paste(dns,st,sep=".")
+                dns <- sub("[^.]+","dTsoil_by_dz",colnames(txss[,-1]))
+                # substitute rdepths
+                for (i in 1:length(dns))
+                    dns[i] <- sub("\\.[0-9.]+cm",paste(".",rdepths[i]*100,"cm",sep=""),dns[i])
 
                 if (fit == 2) {
                     txss@data <- matrix(apply(txss@data,1,function(y,z,ndepths) {
-                            if (sum(!is.na(y)) < length(z)) return(rep(NA_real_,length(ndepths)))
-                            # 2nd order fit
-                            pfit <- lm(y ~ z^2 + z,data=list(y=y,z=z))
-                            cs <- coef(pfit)
-                            # re-create points using fit
-                            # sapply(z,function(z,cs){z^2*cs[2] + z*cs[3] + cs[1]},cs=cs)
-                            # first derivative of the fit wrt z, evaluated at ndepths
-                            (2 * cs[2] * ndepths + cs[3])
-                        },z=depths,ndepths=rdepths),ncol=length(dns),byrow=TRUE,dimnames=list(NULL,dns))
+                        if (sum(!is.na(y)) < length(z)) return(rep(NA_real_,length(ndepths)))
+                        # 2nd order fit
+                        pfit <- lm(y ~ z^2 + z,data=list(y=y,z=z))
+                        cs <- coef(pfit)
+                        # re-create points using fit
+                        # sapply(z,function(z,cs){z^2*cs[2] + z*cs[3] + cs[1]},cs=cs)
+                        # first derivative of the fit wrt z, evaluated at ndepths
+                        (2 * cs[2] * ndepths + cs[3])
+                    },z=depths,ndepths=rdepths),ncol=length(dns),byrow=TRUE,
+                        dimnames=list(NULL,dns))
                 }
                 else {
                     txss@data <- matrix(apply(txss@data,1,function(y,z,ndepths) {
-                            if (sum(!is.na(y)) < length(z)) return(rep(NA_real_,length(ndepths)))
-                            # 3rd order fit
-                            pfit <- lm(y ~ z^3 + z^2 + z,data=list(y=y,z=z))
-                            cs <- coef(pfit)
-                            # sapply(z,function(z,cs){z^3*cs[2] + z^2*cs[3] + z*cs[4] + cs[1]},cs=cs)
-                            # first derivative of the fit wrt z, evaluated at ndepths
-                            (3 * cs[2] * ndepths^2 + 2 * cs[3] * ndepths + cs[4])
-                        },z=depths,ndepths=rdepths),ncol=length(dns),byrow=TRUE,dimnames=list(NULL,dns))
+                        if (sum(!is.na(y)) < length(z)) return(rep(NA_real_,length(ndepths)))
+                        # 3rd order fit
+                        pfit <- lm(y ~ z^3 + z^2 + z,data=list(y=y,z=z))
+                        cs <- coef(pfit)
+                        # sapply(z,function(z,cs){z^3*cs[2] + z^2*cs[3] + z*cs[4] + cs[1]},cs=cs)
+                        # first derivative of the fit wrt z, evaluated at ndepths
+                        (3 * cs[2] * ndepths^2 + 2 * cs[3] * ndepths + cs[4])
+                    },z=depths,ndepths=rdepths),ncol=length(dns),byrow=TRUE,
+                        dimnames=list(NULL,dns))
                 }
             }
             stations(txss) <- rep(stn,length(dns))
@@ -520,12 +547,12 @@ dat.Gsoilz <- function(what,derived=TRUE,fit=0,dfill=FALSE,...)
             units(txss) <- rep("degK/m",ncol(txss))
 
             # get soil heat conductivity (W/(m degK))
-            lambda <- dat(expand("Lambdasoil",what))
+            lambda <- dat(sub(datvar,"Lambdasoil",what,fixed=TRUE))
             lambda <- select(lambda,stns=stn,sites=st)
 
             # Units:   W/(m degK) * degK/m =  W/m^2
             x <- lambda * txss
-            dimnames(x) <- list(NULL,expand("Gsoilz",txss))
+            colnames(x) <- sub("[^.]+", datvar, colnames(txss))
 
             x@units <- rep("W/m^2",ncol(x))
 
@@ -539,12 +566,14 @@ dat.Gsoilz <- function(what,derived=TRUE,fit=0,dfill=FALSE,...)
 
 dat.Gsfc <- function(what,derived=TRUE,...)
 {
+    datvar <- datVar() # requested variable name, x of dat.x
+
     # sign convention for Gsoil and Gsfc:
     # positive is upward energy flux
-    G <- dat(expand("Gsoil",what))
-    S <- conform(dat(expand("Ssoil",what)),G)
+    G <- dat(sub(datvar,"Gsoil",what,fixed=TRUE))
+    S <- conform(dat(sub(datvar,"Ssoil",what,fixed=TRUE)),G)
     x <- G - S
-    dimnames(x) <- list(NULL,expand("Gsfc",S))
+    colnames(x) <- sub("[^.]+",datvar,colnames(S))
     x
 }
 
@@ -569,6 +598,9 @@ philip <- function(lambda,Tp=3.93,Dp=38.56,lp=1.22)
 
 dat.Gsoil <- function(what,derived=TRUE,lc=0.906,Tp=3.93,Dp=38.56,lp=1.22,...)
 {
+
+    datvar <- datVar() # requested variable name, x of dat.x
+
     G <- dat(what,derived=FALSE,...)
 
     philip_done <- dpar("gsoil_philip_corrected")
@@ -584,7 +616,7 @@ dat.Gsoil <- function(what,derived=TRUE,lc=0.906,Tp=3.93,Dp=38.56,lp=1.22,...)
         }
 
         # then apply the Philip correction with the measured soil conductivity.
-        lambda <- dat(expand("Lambdasoil",what),...)
+        lambda <- dat(sub(datvar,"Lambdasoil",what,fixed=TRUE),...)
         lambda <- approx(conform(lambda,G),xout=positions(G))
         G <- G / philip(lambda,Tp=Tp,Dp=Dp,lp=lp)
     }

@@ -10,6 +10,7 @@
 
 dat.Lambdasoil <- function(what,derived=TRUE,tsec=180,rc=0.005,rh=0.001,...)
 {
+    datvar <- datVar() # requested variable name, x of dat.x
     if (any(words(variables(),1,1) == "Lambdasoil")) {
         lambda <- dat(what,derived=FALSE,...)
         if (is.null(lambda)) return(NULL)
@@ -18,18 +19,18 @@ dat.Lambdasoil <- function(what,derived=TRUE,tsec=180,rc=0.005,rh=0.001,...)
         fat_done <- !is.null(fat_done) && as.logical(fat_done)
 
     } else {
-        lambda <- calc_Lambdasoil(what,...)
+        lambda <- calc_Lambdasoil(datvar,what,...)
         fat_done  <- FALSE
     }
     # Compute F(a*t), where a is the soil diffusivity.
     if (!fat_done) {
         lambda <- lambda * conform(
-            dat(expand("Fat_tp01",what),tsec=tsec,rc=rc,rh=rh,...),lambda)
+            dat(sub(datvar,"Fat_tp01",what,fixed=TRUE),tsec=tsec,rc=rc,rh=rh,...),lambda)
     }
     lambda
 }
 
-calc_Lambdasoil <- function(what="Lambdasoil",...)
+calc_Lambdasoil <- function(datvar="Lambasoil",what="Lambdasoil",...)
 {
     # Function to calculate Lambdasoil from Tau, Vheat and Vpile values from a
     # Huksefulx TP01 soil thermal properties probe.
@@ -91,33 +92,33 @@ calc_Lambdasoil <- function(what="Lambdasoil",...)
         # Campbell logger reporting Tau63, Vpile and Vheat.
         # statsproc computes the max values in 5 minutes.
 
-        tau <- dat(expand("Tau63_max",what),...)
+        tau <- dat(sub(datvar,"Tau63_max",what,fixed=TRUE),...)
         if (is.null(tau)) return(NULL)
         tau[tau<0] <- NA_real_
 
-        pile <- dat(expand("Vpile_max",what),...)
+        pile <- dat(sub(datvar,"Vpile_max",what,fixed=TRUE),...)
         mv <- units(pile) == "mV"
         if (any(mv)) {
             pile[,mv] <- pile[,mv] * 0.001
         }
-        heat <- dat(expand("Vheat_max",what),...)
+        heat <- dat(sub(datvar,"Vheat_max",what,fixed=TRUE),...)
     } else if (any(words(variables(),1,2) == "Vpile.on")) {
         # Wisard sensor reports Tau63, Vheat, Vpile.on, Vpile.off
         # Compute thermopile response as Vpile.on - Vpile.off
         wisard_mode <- TRUE
 
-        tau <- dat(expand("Tau63",what),...)
+        tau <- dat(sub(datvar,"Tau63",what,fixed=TRUE),...)
         if (is.null(tau)) return(NULL)
         tau[tau<0] <- NA_real_
 
-        pile_on <- dat(expand("Vpile.on",what),...)
-        pile_off <- dat(expand("Vpile.off",what),...)
+        pile_on <- dat(sub(datvar,"Vpile.on",what,fixed=TRUE),...)
+        pile_off <- dat(sub(datvar,"Vpile.off",what,fixed=TRUE),...)
         uv <- units(pile_on) == "uV"
         if (any(uv)) {
             pile_on[,uv] <- pile_on[,uv] * 0.000001
             pile_off[,uv] <- pile_off[,uv] * 0.000001
         }
-        heat <- dat(expand("Vheat",what),...)
+        heat <- dat(sub(datvar,"Vheat",what,fixed=TRUE),...)
     }
     else return(NULL)
 
@@ -198,14 +199,16 @@ calc_Lambdasoil <- function(what="Lambdasoil",...)
     lambda
 }
 
-dat.Cvsoil <- function(what, derived=TRUE, cache=FALSE,...) {
+dat.Cvsoil <- function(what, derived=TRUE, cache=FALSE,...)
+{
+    datvar <- datVar() # requested variable name, x of dat.x
     #
     # Below 2 lines should allow this code to be used for both Wisard
     # (Lambdasoil reported by motes) and pre-Wisard deployments
     # (lambdasoil derived from above)
     #
     vars <- words(variables(),1,1)
-    lambda <- dat(expand("Lambdasoil",what),...)
+    lambda <- dat(sub(datvar,"Lambdasoil",what,fixed=TRUE),...)
     if (is.null(lambda)) return(NULL)
     Cv <- lambda / conform(dat("asoil",...),lambda)
     sufs <- suffixes(Cv)
@@ -251,7 +254,9 @@ dat.Fat_tp01 <- function(what,derived=TRUE,tsec=180,rc=0.005,rh=0.001,...)
     # rc: distance of cold junctions of the thermopile from the heating
     #   wire in meters
 
-    x <- dat(expand("asoil",what),...)
+    datvar <- datVar() # requested variable name, x of dat.x
+
+    x <- dat(sub(datvar,"asoil",what,fixed=TRUE),...)
     x <- x * tsec
     ok <- !is.na(x) & (x >= (rc^2 - rh^2))
     # first two terms

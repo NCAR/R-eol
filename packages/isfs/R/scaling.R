@@ -10,28 +10,33 @@
 # Monin-Obukhov scaling parameters
 # ----------------
 #
-dat.L <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),g=dpar("accelgrav"),...)
+dat.L <- function(what,derived=TRUE,k=dpar("vonKarman"),g=dpar("accelgrav"),...)
 {
     # Monin_Obukhov length
+    datvar <- datVar() # requested variable name, x of dat.x
+
     if (is.null(k)) k <- 0.4
     if (is.null(g)) g <- 9.81	# m/s^2
 
-    x <- -(dat(expand("tc",what),avg=T,smooth=T)+273.15) *
+    x <- -(dat(sub(datvar,"tc",what,fixed=TRUE),avg=T,smooth=T)+273.15) *
         dat("u*",avg=T,smooth=T)^3/k/g /
-        dat(expand("w'tc'",what),avg=T,smooth=T)
+        dat(sub(datvar,"w'tc'",what),avg=T,smooth=T)
     x[is.infinite(x)] <- NA_real_
 
     dimnames(x) <- list(NULL,paste("L",suffixes(x,2),sep=""))
     x@units <- rep("m",ncol(x))
     x
 }
-"dat.u*" <- function(what,derived=TRUE,cache=F,...)
+"dat.u*" <- function(what,derived=TRUE,...)
 {
     # calculate streamwise value of ustar
-    u <- dat(expand("u",what),avg=T,smooth=T)
-    v <- dat(expand("v",what),avg=T,smooth=T)
-    uw <- dat(expand("u'w'",what),avg=T,smooth=T)
-    vw <- dat(expand("v'w'",what),avg=T,smooth=T)
+
+    datvar <- datVar() # requested variable name, x of dat.x
+
+    u <- dat(sub(datvar,"u",what,fixed=TRUE),avg=T,smooth=T)
+    v <- dat(sub(datvar,"v",what,fixed=TRUE),avg=T,smooth=T)
+    uw <- dat(sub(datvar,"u'w'",what,fixed=TRUE),avg=T,smooth=T)
+    vw <- dat(sub(datvar,"v'w'",what,fixed=TRUE),avg=T,smooth=T)
 
     # for negative values, sqrt generates a warning: NaNs produced
     x <- -(uw*u + vw*v)/sqrt(u^2+v^2)
@@ -52,46 +57,48 @@ dat.L <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),g=dpar("accelgra
 #
 # neutral formulation of z0
 #
-dat.z0 <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),...)
+dat.z0 <- function(what,derived=TRUE,k=dpar("vonKarman"),...)
 {
+    datvar <- datVar() # requested variable name, x of dat.x
     if (is.null(k)) k <- 0.4
-    x <- dat(expand("spd",what))
+    x <- dat(sub(datvar,"spd",what,fixed=TRUE))
 
-    z <- dat(expand("heightSonic",what))
+    z <- dat(sub(datvar,"heightSonic",what,fixed=TRUE))
     z <- conform(z,x)
     z <- approx(z,xout=tspar(x),method="constant",f=0,rule=2)
 
-    d <- dat(expand("D",what))
+    d <- dat(sub(datvar,"D",what,fixed=TRUE))
     d <- conform(d,x)
     d <- approx(d,xout=tspar(x),method="constant",f=0,rule=2)
 
-    x <- (z - d) * exp(-k*x/dat(expand("u*",what)))
+    x <- (z - d) * exp(-k*x/dat(sub(datvar,"u*",what,fixed=TRUE)))
 
     dimnames(x) <- list(NULL,rep("z0",ncol(x)))
     x@units <- rep("m",ncol(x))
     x
 }
-dat.z0raw <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),...)
+dat.z0raw <- function(what,derived=TRUE,k=dpar("vonKarman"),...)
 {
+    datvar <- datVar() # requested variable name, x of dat.x
     # Calculates zo for neutral stability using both prop and sonic winds,
     # eliminating the need to know the displacement height
     if (is.null(k)) k <- 0.4
-    U1 <- dat(expand("spd",what))
-    U2 <- dat(expand("Spd",what))
+    U1 <- dat(sub(datvar,"spd",what,fixed=TRUE))
+    U2 <- dat(sub(datvar,"Spd",what,fixed=TRUE))
 
     # We'll often get an error here for projects without a clear
     # pairing of sonics and props.
     U2 <- conform(U2,U1)
 
-    z1 <- dat(expand("heightSonic",what))
+    z1 <- dat(sub(datvar,"heightSonic",what,fixed=TRUE))
     z1 <- conform(z1,U1)
     z1 <- approx(z1,xout=U1,method="constant",f=0,rule=2)
 
-    z2 <- dat(expand("heightProp",what))
+    z2 <- dat(sub(datvar,"heightProp",what,fixed=TRUE))
     z2 <- conform(z2,U2)
     z2 <- approx(z2,xout=U2,method="constant",f=0,rule=2)
 
-    ustar <- dat(expand("u*",what))
+    ustar <- dat(sub(datvar,"u*",what,fixed=TRUE))
     x <- (z2-z1)/(exp(k*U2/ustar) - exp(k*U1/ustar))
 
     check <- (U2 - U1) / (z2 - z1) > 0
@@ -105,26 +112,27 @@ dat.z0raw <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),...)
 #
 # neutral formulation of displacement height
 #
-dat.Draw <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),...)
+dat.Draw <- function(what,derived=TRUE,k=dpar("vonKarman"),...)
 {
+    datvar <- datVar() # requested variable name, x of dat.x
     if (is.null(k)) k <- 0.4
-    U1 <- dat(expand("spd",what))
-    U2 <- dat(expand("Spd",what))
+    U1 <- dat(sub(datvar,"spd",what,fixed=TRUE))
+    U2 <- dat(sub(datvar,"Spd",what,fixed=TRUE))
 
     # We'll often get an error here for projects without a clear
     # pairing of sonics and props.
     U2 <- conform(U2,U1)
 
-    z1 <- dat("heightSonic",what)
+    z1 <- dat("heightSonic")
     z1 <- conform(z1,U1)
     z1 <- approx(z1,xout=U1,method="constant",f=0,rule=2)
 
-    z2 <- dat(dat("heightProp",what))
+    z2 <- dat("heightProp")
     z2 <- conform(z2,U2)
     z2 <- approx(z2,xout=U2,method="constant",f=0,rule=2)
 
 
-    ustar <- dat(expand("u*",what))
+    ustar <- dat(sub(datvar,"u*",what,fixed=TRUE))
     #  x <- z1 - (z2-z1)/(exp(k*(U2-U1)/ustar) - 1)
     x <- (z1*exp(-k*U1/ustar) - z2*exp(-k*U2/ustar)) /
         (exp(-k*U1/ustar) - exp(-k*U2/ustar))
@@ -133,20 +141,21 @@ dat.Draw <- function(what,derived=TRUE,cache=F,k=dpar("vonKarman"),...)
     x@data[!check@data] <- NA_real_
     # cat("number of !checks=",sum(!check),"\n")
 
-    dimnames(x) <- list(NULL,rep("Draw",ncol(x)))
+    colnames(x) <- rep("Draw",ncol(x))
     x@units <- rep("m",ncol(x))
     x
 }
 
-#
+
 # Default function for heightSonic
 #
 dat.heightSonic <- function(what,derived=TRUE,...)
 {
+    datvar <- datVar() # requested variable name, x of dat.x
 
     warning('project version of dat("heightSonic") not found, heightSonic is being determined from names of u variable')
 
-    x <- dat(expand("u",what),derived=F)
+    x <- dat(sub(datvar,"u",what,fixed=TRUE),derived=F)
     z <- heights(x)
     if (any(is.na(z))) {
         noz <- is.na(z)
@@ -178,11 +187,13 @@ dat.height.sonic <- function(what,derived=TRUE,...)
 #
 # Default function for heightProp
 #
-dat.heightProp <- function(what,derived=TRUE,...) {
-
+dat.heightProp <- function(what,derived=TRUE,...)
+{
     warning("project version of dat.heightProp not found, heightProp is being determined from names of U variable")
 
-    x <- dat(expand("U",what,first=3),derived=F)
+    datvar <- datVar() # requested variable name, x of dat.x
+
+    x <- dat(sub(datvar,"U",what,fixed=TRUE),derived=F)
     z <- heights(x)
     if (any(is.na(z))) {
         noz <- is.na(z)
@@ -215,7 +226,8 @@ dat.height.prop <- function(what,derived=TRUE,...)
 dat.D <- function(what,derived=TRUE,...) {
 
     warning("project dat.D not found for displacement height. dat.D returning 0s")
-    x <- dat(expand("u",what),derived=F)
+    datvar <- datVar() # requested variable name, x of dat.x
+    x <- dat(sub(datvar,"u",what,fixed=TRUE),derived=F)
     sfxs <- suffixes(x)
 
     if (nrow(x) > 1) {

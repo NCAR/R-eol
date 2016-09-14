@@ -9,6 +9,7 @@
 
 #  Description: dat functions for derived radiation variables.
 #
+
 calcRlw <- function(Rpile,Tcase,Tdome=NULL,B=4,swcor=0,Rsw=NULL)
 {
     # Long wave calculation for either in or out.
@@ -58,7 +59,7 @@ calcRlw <- function(Rpile,Tcase,Tdome=NULL,B=4,swcor=0,Rsw=NULL)
         Rpile <- Rpile - swcor * Rsw
     }
 
-    dimnames(Rpile) <- list(NULL,paste("Rlw",suffixes(Rpile,2),sep=""))
+    colnames(Rpile) <- paste("Rlw",suffixes(Rpile,2),sep="")
     Rpile@units <- rep("W/m^2",ncol(Rpile))
     Rpile
 }
@@ -80,15 +81,18 @@ dat.Rlw.either <- function(what="Rlw.out",B=dpar("pyrgeometer.B"),
 
 {
     robust <- dpar("robust")
-    which <- suffixes(what,2)
-    Rpile.name <- paste("Rpile",which,sep="")
-    Tcase.name <- paste("Tcase",which,sep="")
-    Tdome.name <- paste("Tdome",which,sep="")
-    Bpyrg.name <- paste("Bpyrg",which,sep="")
-    Rsw.name <- paste("Rsw",which,sep="")
-    Swcor.name <- paste("Swcor",which,sep="")
+    Rpile.name <- sub("Rlw","Rpile",what,fixed=TRUE)
+    Tcase.name <- sub("Rlw","Tcase",what,fixed=TRUE)
+    Tdome.name <- sub("Rlw","Tdome",what,fixed=TRUE)
+    Bpyrg.name <- sub("Rlw","Bpyrg",what,fixed=TRUE)
+    Rsw.name <- sub("Rlw","Rsw",what,fixed=TRUE)
+    Swcor.name <- sub("Rlw","Swcor",what,fixed=TRUE)
 
     tcase <- dat(Tcase.name,...)
+    if (is.null(tcase)) {
+        Tcase.name <- sub("(\\.in)|(\\.out)","",Tcase.name)
+        tcase <- dat(Tcase.name,...)
+    }
     if (!is.null(tcase)) {
         degC <- apply(tcase@data,2,mean,trim=0.1,na.rm=T) < 150
         degC[is.na(degC)] <- F
@@ -184,9 +188,9 @@ dat.Swcor <- function(what,derived=TRUE,...) {
 
 dat.Rlw <- function(what,derived=TRUE,...) 
 {
-    which <- suffixes(what,3)
-    Rlwin <- dat(paste("Rlw.in",which,sep=""),...)
-    Rlwout <- dat(paste("Rlw.out",which,sep=""),...)
+    datvar <- datVar() # name of variable to be created
+    Rlwin <- dat(sub(datvar,"Rlw.in",what,fixed=TRUE),...)
+    Rlwout <- dat(sub(datvar,"Rlw.out",what,fixed=TRUE),...)
 
     if (!is.null(Rlwin)) {
         if (!is.null(Rlwout)) Rlw = Cbind(Rlwin,Rlwout)
@@ -203,60 +207,72 @@ dat.Rlw <- function(what,derived=TRUE,...)
     }
     Rlw
 }
+
 dat.Rsum <- function(what,derived=TRUE,...)
 {
+    datvar <- datVar() # name of variable to be created
     # sign convention: positive Rsum and Rnet is
     # a downward energy flux
-    Rsw.in = dat(expand("Rsw.in",what),...) 
+    Rsw.in = dat(sub(datvar,"Rsw.in",what,fixed=TRUE),...) 
     Rsw.in[Rsw.in < 0] = 0
-    Rsw.out = dat(expand("Rsw.out",what),...)
+    Rsw.out = dat(sub(datvar,"Rsw.out",what,fixed=TRUE),...)
     Rsw.out[Rsw.out < 0] = 0
     x <- Rsw.in - conform(Rsw.out,Rsw.in) +
-        conform(dat(expand("Rlw.in",what),...),Rsw.in) -
-        conform(dat(expand("Rlw.out",what),...),Rsw.in)
+        conform(dat(sub(datvar,"Rlw.in",what,fixed=TRUE),...),Rsw.in) -
+        conform(dat(sub(datvar,"Rlw.out",what,fixed=TRUE),...),Rsw.in)
 
     if (is.null(x)) return(x)
-    dimnames(x) <- list(NULL,paste("Rsum",suffixes(x,3),sep=""))
-    x@units <- rep("W/m^2",ncol(x))
+    colnames(x) <- paste("Rsum",suffixes(x,3),sep="")
+    # x@units <- rep("W/m^2",ncol(x))
     x
 }
+
 dat.Rsw.net <- function(what,derived=TRUE,...)
 {
-    Rsw.in = dat(expand("Rsw.in",what,3),...) 
+    datvar <- datVar() # name of variable to be created
+    Rswinname <- sub(datvar,"Rlw.in",what,fixed=TRUE)
+    Rsw.in = dat(Rswinname,...) 
     Rsw.in[Rsw.in < 0] = 0
-    Rsw.out = dat(expand("Rsw.out",what,3),...)
+    Rsw.out = dat(sub(datvar,"Rsw.out",what,fixed=TRUE),...)
     Rsw.out[Rsw.out < 0] = 0
     x <- Rsw.in - conform(Rsw.out,Rsw.in)
 
     if (is.null(x)) return(x)
-    dimnames(x) <- list(NULL,paste("Rsw.net",suffixes(x,3),sep=""))
-    x@units <- rep("W/m^2",ncol(x))
+    colnames(x) <- sub(Rswinname,datvar,colnames(x),fixed=TRUE)
+    # x@units <- rep("W/m^2",ncol(x))
     x
 }
-dat.Rlw.net <- function(what,derived=TRUE,...)
-{
-    Rlw.in = dat(expand("Rlw.in",what,3),...) 
-    Rlw.out = dat(expand("Rlw.out",what,3),...)
-    x <- Rlw.in - conform(Rlw.out,Rlw.in)
 
+dat.Rlw.net <- function(what,derived=TRUE,...) 
+{
+    datvar <- datVar() # name of variable to be created
+    Rlwinname <- sub(datvar,"Rlw.in",what,fixed=TRUE)
+    Rlwin <- dat(Rlwinname,...)
+    Rlwout <- dat(sub(datvar,"Rlw.out",what,fixed=TRUE),...)
+    x <- Rlwin - conform(Rlwout,Rlwin)
     if (is.null(x)) return(x)
-    dimnames(x) <- list(NULL,paste("Rlw.net",suffixes(x,3),sep=""))
-    x@units <- rep("W/m^2",ncol(x))
+    colnames(x) <- sub(Rlwinname,datvar,colnames(x),fixed=TRUE)
+    # x@units <- rep("W/m^2",ncol(x))
     x
+
 }
+
 dat.albedo <- function(what,derived=TRUE,...)
 {
-    Rsw.in <- dat(expand("Rsw.in",what),...)
-    Rsw.out <- dat(expand("Rsw.out",what),...)
+    datvar <- datVar() # name of variable to be created
+
+    Rsw.in <- dat(sub(datvar,"Rsw.in",what,fixed=TRUE),...)
+    Rsw.out <- dat(sub(datvar,"Rsw.out",what,fixed=TRUE),...)
     x <- Rsw.out/conform(Rsw.in,Rsw.out)
     x[Rsw.in < 1 | Rsw.out < 1] <- NA_real_
 
-    dimnames(x) <- list(NULL,paste("albedo",suffixes(x,3),sep=""))
+    colnames(x) <- paste("albedo",suffixes(x,3),sep="")
     x@units <- rep("",ncol(x))
     x
 }
 dat.Tsfc <- function(what,derived=TRUE,emissivity=dpar("emissivity.sfc"),...)
 {
+    datvar <- datVar() # name of variable to be created
     if (is.null(emissivity))
         emissivity <- 0.98
     SB <- 5.67e-8	   # Stefan-Boltzmann constant, W/m^2-degK^4
@@ -271,18 +287,18 @@ dat.Tsfc <- function(what,derived=TRUE,emissivity=dpar("emissivity.sfc"),...)
     }
     else what = paste("Tsfc",suffixes(what,3),sep="")
 
-    vars = lookup(expand("Rlw.out",what),verbose=F)
-    rvars = lookup(expand("Rpile.out",what),verbose=F)
+    vars = lookup(sub(datvar,"Rlw.out",what,fixed=TRUE),verbose=F)
+    rvars = lookup(sub(datvar,"Rpile.out",what,fixed=TRUE),verbose=F)
     if (length(vars) > 0 || length(rvars) > 0) {
-        rlwin = dat(expand("Rlw.in",what),...)
-        rlwout = dat(expand("Rlw.out",what),...)
+        rlwin = dat(sub(datvar,"Rlw.in",what,fixed=TRUE),...)
+        rlwout = dat(sub(datvar,"Rlw.out",what,fixed=TRUE),...)
 
         # conform rlw to whichever has fewest columns.
         if (ncol(rlwin) < ncol(rlwout)) rlwout = conform(rlwout,rlwin)
         else rlwin = conform(rlwin,rlwout)
 
         x <- ( (rlwout - (1-emissivity)* rlwin) / (emissivity*SB) )^0.25 - 273.1
-        dimnames(x) <- list(NULL,paste("Tsfc.pyrg",suffixes(x,3),sep=""))
+        colnames(x) <- paste("Tsfc.pyrg",suffixes(x,3),sep="")
         x@units <- rep("degC",ncol(x))
         if (!is.null(tsfc)) x = Cbind(tsfc,x)
     }
@@ -291,11 +307,13 @@ dat.Tsfc <- function(what,derived=TRUE,emissivity=dpar("emissivity.sfc"),...)
 }
 dat.Tsky <- function(what,derived=TRUE,...)
 {
+    datvar <- datVar() # name of variable to be created
+
     SB <- 5.67e-8	   # Stefan-Boltzmann constant, W/m^2-degK^4
 
-    x <- (dat(expand("Rlw.in",what),...) / SB) ^ 0.25 - 273.15
+    x <- (dat(sub(datvar,"Rlw.in",what,fixed=TRUE),...) / SB) ^ 0.25 - 273.15
 
-    dimnames(x) <- list(NULL,paste("Tsky",suffixes(x,3),sep=""))
+    colnames(x) <- paste("Tsky",suffixes(x,3),sep="")
     x@units <- rep("degC",ncol(x))
     x
 }

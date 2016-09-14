@@ -32,6 +32,7 @@ setDpar <- function(parm,vals)
     # for simple averages, one value, average interval in seconds
     # for non-simple averages, two values, non-simple interval, simple interval
     avg=list(type="numeric",setf=setDpar,default=NULL,flushCache=TRUE),
+    bulk.speed=list(type="character",setf=setDpar,default=NULL,flushCache=FALSE),
     co2_flux_corrected=list(type="logical",setf=setDpar,default=NULL,flushCache=TRUE),
     coords=list(type="character",setf=setDpar,default=NA,flushCache=FALSE),
     datacoords=list(type="character",setf=setDpar,default=NA,flushCache=TRUE),

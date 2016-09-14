@@ -7,6 +7,7 @@ fi
 
 do_eolts=false
 do_check=false
+do_quick_test=false
 do_isfs=false
 do_eolsonde=false
 do_install=false
@@ -31,6 +32,9 @@ while [ $# -gt 0 ]; do
         ;;
     -s)
         do_eolsonde=true
+        ;;
+    -t)
+        do_quick_test=true
         ;;
     -I)
         do_install=true
@@ -145,6 +149,12 @@ if $do_isfs; then
     if $do_check; then
         R $rargs CMD check -o /tmp ${pkg}_[0-9].[0-9]*.tar.gz || exit $?
         # R --vanilla --environ CMD check --use-valgrind -o /tmp ${pkg}_*.tar.gz || exit $?
+    fi
+    if $do_quick_test; then
+        R --vanilla <<-EOD || exit 1
+            library(isfs)
+            isfs::runTests()
+EOD
     fi
 fi
 

@@ -10,16 +10,18 @@
 #  Description:
 #    dat routines returning various variables concerning licor 7500 hygrometers
 #
-dat.licor7500Sep <- function(what,derived=TRUE,...) {
+dat.licor7500Sep <- function(what,derived=TRUE,...)
+{
     # separation, in meters between licor 7500 and sonic anemometer w axis
+
+    datvar <- datVar() # requested variable name, x of dat.x
 
     default.val <- 0.3	# 30 centimeters
 
     warning(paste("project dat.licor7500Sep not found for licor7500<->sonic separation. dat.licor7500Sep returning", default.val,"meters"))
 
-    x = dat(expand("h2o",what),derived=F)
+    x = dat(sub(datvar,"h2o",what,fixed=TRUE),derived=F)
     if (is.null(x)) return(x)
-    sfxs <- suffixes(x,2)
 
     if (nrow(x) > 1) {
         tz <- c(tspar(x)[1],tspar(x)[nrow(x)])
@@ -30,7 +32,7 @@ dat.licor7500Sep <- function(what,derived=TRUE,...) {
         z <- matrix(rep(default.val,ncol(x)),nrow=1,byrow=T)
     }
     dat(nts(z,tz,
-            names=paste("licor7500Sep",sfxs,sep=""),
+            names=sub("h2o","licor7500Sep",colnames(x),fixed=TRUE),
             units=rep("m",ncol(x)),
             stations=stations(x)))
 }

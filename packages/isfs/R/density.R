@@ -12,14 +12,16 @@ dat.rhoAir <- function(what,derived=TRUE,cache=F,...)
 {
     # compute density of moist air (kg/m^3)
 
+    datvar <- datVar() # requested variable name, x of dat.x
+
     robust <- dpar("robust")
     R <- 287		# specific gas constant for dry air: J/kg-K
     P = dat("P")
     # convert to pascals
     if (any(units(P) == "mb")) P[,units(P)=="mb"] = P[,units(P)=="mb"] * 100
     if (any(units(P) == "kPa")) P[,units(P)=="kPa"] = P[,units(P)=="kPa"] * 1000
-    q <- dat(expand("Q",what,3))
-    Td <- dat(expand("T",what,3))
+    q <- dat(sub(datvar,"Q",what,fixed=TRUE))
+    Td <- dat(sub(datvar,"T",what,fixed=TRUE))
     Td <- conform(Td,q)
     Tv <- (273.15 + Td)*(1 + 0.608*q*1e-3)
 
@@ -43,7 +45,7 @@ dat.rhoAir <- function(what,derived=TRUE,cache=F,...)
     x <- P/R/Tv
     if (!is.null(robust) && robust) x <- median(x, na.rm=T)
     else {
-        dimnames(x) <- list(NULL,expand("rhoAir",Tv))
+        colnames(x) <- sub("^[^.]+",datvar,colnames(x))
         x@units <- rep("kg/m^3",ncol(x))
     }
 
@@ -51,10 +53,12 @@ dat.rhoAir <- function(what,derived=TRUE,cache=F,...)
 }
 dat.rhoDry <- function(what,derived=TRUE,cache=F,...)
 {
+    datvar <- datVar() # requested variable name, x of dat.x
+
     robust <- dpar("robust")
     # density of dry air (kg/m^3)
     R <- 287		# J/kg-K
-    mr <- dat(expand("MR",what))
+    mr <- dat(sub(datvar,"MR",what,fixed=TRUE))
 
     P = dat("P")
     # convert to pascals
@@ -81,13 +85,13 @@ dat.rhoDry <- function(what,derived=TRUE,cache=F,...)
     else P <- P[, im]
 
     P <- P/(1 + mr/622)		# P - Pv, pascals
-    Td <- dat(expand("T",what))
+    Td <- dat(sub(datvar,"T",what,fixed=TRUE))
     Td <- conform(Td,mr)
     TK <- 273.15 + Td
     x <- P/R/TK		
     if (!is.null(robust) && robust) x <- median(x, na.rm=T)
     else {
-        dimnames(x) <- list(NULL,expand("rhoDry",Td))
+        colnames(x) <- sub("^[^.]+",datvar,colnames(Td))
         x@units <- rep("kg/m^3",ncol(x))
     }
     x

@@ -10,13 +10,6 @@
 find_datasets <- function(path=NULL, pattern="^netcdf")
 {
 
-    # remove duplicate .projectEnv from .GlobalEnv
-    if (exists(".projectEnv",where=1,inherits=FALSE) && exists(".projectEnv",where=2,inherits=TRUE))
-        rm(".projectEnv",pos=1,inherits=FALSE)
-
-    if (!exists(".projectEnv"))
-        stop(".projectEnv not found. Should be located in project .RData")
-
     if (is.null(path)) {
         for (root in c("ISFS","ISFF")) {
             rpath <- Sys.getenv(root,unset=NA)
@@ -26,136 +19,130 @@ find_datasets <- function(path=NULL, pattern="^netcdf")
                 if (file.exists(path)) break
             }
         }
-    }
+        if (!file.exists(path))
+            warning(paste0("directory $ISF[SF]/projects/$PROJECT/ISF[SF]=",path," does not exist"))
+    } else if (!file.exists(path))
+            warning(paste0("directory",path," does not exist"))
 
-    if (!file.exists(path))
-        warning(paste0("directory $ISF[SF]/projects/$PROJECT/ISF[SF]=",path," does not exist"))
+    topncds <- list.files(path,pattern,include.dirs=TRUE)
 
-    ncds <- list.files(path,pattern,include.dirs=TRUE)
-
-    if (length(ncds) == 0)
+    if (length(topncds) == 0)
         warning(paste0("no directories found on",path," matching pattern: \"",pattern,"\""))
-
-    # If a directory called simply "netcdf" found, look in it for directories
-    # cat("ncds=",ncds,"\n")
-
-    nc <- !is.na(match(ncds,"netcdf"))
-    if (any(nc)) {
-        ncds <- append(ncds[!nc],
-            file.path(ncds[nc],list.dirs(file.path(path,ncds[nc]),full.names=FALSE)))
-        # cat("ncds=",ncds,"\n")
-    }
 
     dsets <- list()
 
-    for (ncd in ncds) {
+    for (topncd in topncds) {
 
-        ncpath <- file.path(path,ncd)
-        ncdf <- list.files(ncpath,"\\.nc$")
-        if (length(ncdf) == 0) ncdf <- list.files(ncpath,"\\.cdf$")
+        # cat("topncd=",topncd,"\n")
+        topncpath <- file.path(path,topncd)
+        ncds <- list.dirs(path=topncpath,full.names=FALSE)
 
-        if (length(ncdf) > 0) {
+        for (ncd in ncds) {
 
-            # first try to match 4 digit year, looking like 20xx or 1[3-9]xx
-            # Don't try 10xx, 11xx, or 12xx since that is most likely
-            # month and day.
-            ncpat <- sub("(20[0-9][0-9])|(1[3-9][0-9][0-9])","%Y",ncdf)
+            # cat("ncd=",ncd,"\n")
 
-            # If not all file names match, try a 2 digit year starting with 8 or 9
-            if (!all(grepl("%Y",ncpat,fixed=TRUE))) {
-                ncpat <- sub("[8-9][0-9]","%y",ncdf)
+            ncpath <- file.path(topncpath,ncd)
+            ncdf <- list.files(ncpath,"\\.nc$")
+            if (length(ncdf) == 0) ncdf <- list.files(ncpath,"\\.cdf$")
 
-                # If not all file names match, try any leading 2 digit year
-                if (!all(grepl("%y",ncpat,fixed=TRUE)))
-                    ncpat <- sub("[0-9][0-9]","%y",ncdf)
+            if (length(ncdf) > 0) {
+
+                # first try to match 4 digit year, looking like 20xx or 1[3-9]xx
+                # Don't try 10xx, 11xx, or 12xx since that is most likely
+                # month and day.
+                ncpat <- sub("(20[0-9][0-9])|(1[3-9][0-9][0-9])","%Y",ncdf)
+
+                # If not all file names match, try a 2 digit year starting with 8 or 9
+                if (!all(grepl("%Y",ncpat,fixed=TRUE))) {
+                    ncpat <- sub("[8-9][0-9]","%y",ncdf)
+
+                    # If not all file names match, try any leading 2 digit year
+                    if (!all(grepl("%y",ncpat,fixed=TRUE)))
+                        ncpat <- sub("[0-9][0-9]","%y",ncdf)
+                }
+
+                ncpat <- sub("(%[yY][^01]*)[01][0-9]","\\1%m",ncpat)
+                ncpat <- sub("(%m[^0-3]*)[0-3][0-9]","\\1%d",ncpat)
+                ncpat <- sub("(%d[^0-2]*)[0-2][0-9]","\\1%H",ncpat)
+                ncpat <- sub("(%H[^0-5]*)[0-5][0-9]","\\1%M",ncpat)
+                ncpat <- sub("(%M[^0-5]*)[0-5][0-9]","\\1%S",ncpat)
+
+                ncpat <- unique(ncpat)
+                if (length(ncpat) > 1)
+                    warning(paste("In directory",ncd,
+                            "cannot determine a unique file name pattern from file names:",
+                            paste(ncpat,collapse=", ")))
+
+                # parse at most 10 files
+                ix <- seq(from=1,to=length(ncdf),by=ceiling(length(ncdf)/10))
+
+                con <- netcdf(dir=ncpath,file=sort(ncdf)[ix])
+                # read global attributes
+                attrs <- readnc(con)
+                close(con)
+
+                if ("dataset" %in% names(attrs) && nchar(attrs$dataset) > 0 &&
+                    !(attrs$dataset %in% dsets)) {
+                    dname <- attrs$dataset
+                }
+                else if (ncd == pattern) dname <- ncd
+                else {
+                    dname <- sub(pattern,"",ncd)    # remove pattern from directory
+                    dname <- sub("^_+","",dname)    # remove leading underscores
+                    dname <- sub("^/+","",dname)    # remove leading slashes (/x from netcdf/x)
+                    if (nchar(dname) == 0) dname <- "default"
+                }
+                # cat("dname=",dname,"\n")
+
+                desc <- ""
+                if ("dataset_description" %in% names(attrs))
+                    desc <- attrs$dataset_description
+
+                anames <- c("h2o_flux_corrected", "co2_flux_corrected", "gsoil_philip_corrected",
+                    "file_length_seconds","lambdasoil_fat_corrected")
+
+                int_attrs <- attrs[anames]
+                ix <- sapply(int_attrs,is.null)
+                # for those attributes not found, explicitly set them to NULL
+                int_attrs <- c(int_attrs[!ix],sapply(anames[ix],function(x)NULL))
+
+                calpaths <- ""
+                if ("calibration_file_path" %in% names(attrs))
+                    calpaths <- gsub(",version=[^:]+","",attrs$calibration_file_path)
+
+                datacoords <- "instrument"
+
+                # check wind3d_horiz_coordinates to see if it contains "geo"
+                if ("wind3d_horiz_coordinates" %in% names(attrs))
+                    datacoords <- attrs$wind3d_horiz_coordinates
+                else if (grepl("geo",dname,ignore.case=TRUE)) datacoords <- "geo"
+
+                if (datacoords == "geographic") datacoords <- "geo"
+
+                # if ("calfile_version" %in% names(attrs))
+                # browser()
+
+                dsets[[dname]] <- c(list(enable=TRUE,desc=desc,
+                    calpath=calpaths, ncd=ncpath,ncf=ncpat,datacoords=datacoords),
+                    int_attrs)
             }
-
-            ncpat <- sub("(%[yY][^01]*)[01][0-9]","\\1%m",ncpat)
-            ncpat <- sub("(%m[^0-3]*)[0-3][0-9]","\\1%d",ncpat)
-            ncpat <- sub("(%d[^0-2]*)[0-2][0-9]","\\1%H",ncpat)
-            ncpat <- sub("(%H[^0-5]*)[0-5][0-9]","\\1%M",ncpat)
-            ncpat <- sub("(%M[^0-5]*)[0-5][0-9]","\\1%S",ncpat)
-
-            ncpat <- unique(ncpat)
-            if (length(ncpat) > 1)
-                warning(paste("In directory",ncd,
-                        "cannot determine a unique file name pattern from file names:",
-                        paste(ncpat,collapse=", ")))
-
-            # parse at most 10 files
-            ix <- seq(from=1,to=length(ncdf),by=ceiling(length(ncdf)/10))
-
-            con <- netcdf(dir=ncpath,file=sort(ncdf)[ix])
-            # read global attributes
-            attrs <- readnc(con)
-            close(con)
-
-            dname <- sub(pattern,"",ncd)    # remove pattern from directory
-            dname <- sub("^_+","",dname)    # remove leading underscores
-            dname <- sub("^/+","",dname)    # remove leading slashes (/x from netcdf/x)
-            dname <- sub("^\\.+","",dname)  # remove periods (why?)
-            if (nchar(dname) == 0) dname <- "default"
-
-            if ("dataset" %in% names(attrs)) {
-                if (attrs$dataset != dname) warning(paste0("files in directory ",
-                        ncd," have global attribute \"dataset\" of \"",attrs$dataset,
-                        "\", which does not match the directory name, ", dname))
-                # dname <- attrs$dataset
-            }
-
-            desc <- ""
-            if ("dataset_description" %in% names(attrs))
-                desc <- attrs$dataset_description
-
-            anames <- c("h2o_flux_corrected", "co2_flux_corrected", "gsoil_philip_corrected",
-                "file_length_seconds","lambdasoil_fat_corrected")
-
-            int_attrs <- attrs[anames]
-            ix <- sapply(int_attrs,is.null)
-            # for those attributes not found, explicitly set them to NULL
-            int_attrs <- c(int_attrs[!ix],sapply(anames[ix],function(x)NULL))
-
-            calpaths <- ""
-            if ("calibration_file_path" %in% names(attrs))
-                calpaths <- gsub(",version=[^:]+","",attrs$calibration_file_path)
-
-            datacoords <- "instrument"
-
-            # check wind3d_horiz_coordinates to see if it contains "geo"
-            if ("wind3d_horiz_coordinates" %in% names(attrs))
-                datacoords <- attrs$wind3d_horiz_coordinates
-            else if (grepl("geo",dname,ignore.case=TRUE)) datacoords <- "geo"
-
-            if (datacoords == "geographic") datacoords <- "geo"
-
-            # if ("calfile_version" %in% names(attrs))
-            # browser()
-
-            dsets[[dname]] <- c(list(enable=TRUE,desc=desc,
-                calpath=calpaths, ncd=ncpath,ncf=ncpat,datacoords=datacoords),
-                int_attrs)
         }
     }
-    assign(".datasets",dsets,envir=.projectEnv)
+    assign(".datasets",dsets,envir=.isfsEnv)
     dsets
 }
 
-datasets <- function(all=FALSE)
+datasets <- function(all=FALSE,warn=TRUE)
 {
-    if (exists(".projectEnv",where=1,inherits=FALSE) && exists(".projectEnv",where=2,inherits=TRUE))
-        rm(".projectEnv",pos=1,inherits=FALSE)
 
-    if (!exists(".projectEnv"))
-        stop(".projectEnv not found. Should be located in project .RData")
-
-    if (!exists(".datasets",envir=.projectEnv)) {
-        warning(".datasets not found on .projectEnv. Do find_datasets() to create the list")
+    if (!exists(".datasets",envir=.isfsEnv)) {
+        if (warn) warning(".datasets not found on .isfsEnv. Do find_datasets() to create the list")
         dsets <- list()
     }
-    else dsets <- get(".datasets",envir=.projectEnv)
+    else dsets <- get(".datasets",envir=.isfsEnv)
 
     # discard datasets that are not enabled.
-    if (!all) 
+    if (!all && length(dsets) < 0) 
         dsets <- dsets[sapply(dsets,function(x) { ifelse (is.null(x$enable),FALSE,x$enable) })]
 
     dsets
@@ -181,8 +168,8 @@ dataset <- function(which,verbose=F)
     dsets <- isfs::datasets()
 
     if (missing(which)) {
-        if(exists("current_dataset",envir=.projectEnv))
-            current <- get("current_dataset",.projectEnv)
+        if(exists("current_dataset",envir=.isfsEnv))
+            current <- get("current_dataset",.isfsEnv)
         else current <- "unknown"
 
         if (verbose) {
@@ -236,11 +223,11 @@ dataset <- function(which,verbose=F)
     if (!is.null(dset[["f"]])) dset$f()
     if (ncf != dset$ncf || ncd != dset$ncd) clear_cache()
 
-    assign("current_dataset",which,envir=.projectEnv)
+    assign("current_dataset",which,envir=.isfsEnv)
 
     if (verbose) {
         cat(paste("************************************************\n"))
-        cat(paste("current dataset is \"", get("current_dataset",envir=.projectEnv),"\"\n",sep=""))
+        cat(paste("current dataset is \"", get("current_dataset",envir=.isfsEnv),"\"\n",sep=""))
 
         cat(paste0("NETCDF_FILE=",Sys.getenv("NETCDF_FILE"),"\n",
             "NETCDF_DIR=",Sys.getenv("NETCDF_DIR"),"\n",

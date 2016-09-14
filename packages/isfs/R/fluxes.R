@@ -10,25 +10,26 @@
 # Turbulent fluxes
 # ----------------
 #
-calc.x.t <- function(what)
+calc.x.t <- function(datvar,what)
 {
+
     MH2O <- 18
     # compute u't', v't', or w't', as specified by the what argument
-    xt.name <- words(what,1,1,sep=".")	# get x't' prefix
-    comp <- words(xt.name,1,1,sep="'")	# get x
+    comp <- words(datvar,1,1,sep="'")	# get u, v or w
 
-    xtc.name <- expand(paste(comp,"tc'",sep="'"),what)	# x'tc' where x is u,v or w
+    # x'tc' where x is u,v or w
+    xtc.name <- sub(datvar,paste(comp,"tc'",sep="'"),what,fixed=TRUE)
+
     # Note avg=TRUE, which means x'tc' is computed at the
     # resolution specified in avg, and then corrections are
     # applied here, after the averaging.
     xt <- dat(xtc.name,avg=TRUE,smooth=TRUE)
-    sfxs <- suffixes(xt,2)
 
     robust <- dpar("robust")
     if (is.null(robust)) robust <- TRUE
 
     if (robust) {   # no conversion from x'tc' to x't'
-        dimnames(xt) <- list(NULL,paste(xt.name,sfxs,sep=""))
+        colnames(xt) <- sub("[^.]+",datvar,colnames(xt))
         return(xt)
     }
 
@@ -50,7 +51,7 @@ calc.x.t <- function(what)
         # Note avg=TRUE, which means x'kh2o' is computed at the
         # resolution specified in avg, and then the o2 and spatial
         # corrections are applied here, after the averaging.
-        xh.name <- expand(xh.name,what)
+        xh.name <- sub(datvar,xh.name,what,fixed=TRUE)
         xkh2o <- dat(xh.name,derived=FALSE,avg=TRUE,smooth=TRUE)	# m/s g/m^3
 
         if (!is.null(xkh2o)) {
@@ -59,13 +60,13 @@ calc.x.t <- function(what)
             if (!all(allna)) xkh2o <- xkh2o[,!allna]
 
             # dat("o2corr") can return a simple zero, rather than a time series
-            o2corr <- dat(expand("o2corr",what))
+            o2corr <- dat(sub(datvar,"o2corr",what,fixed=TRUE))
             if (is(o2corr,"dat")) {
                 o2corr <- conform(o2corr,xkh2o)
                 o2corr <- approx(o2corr,xout=xkh2o,method="constant",f=0,rule=2)
             }
 
-            scorr <- dat(expand("Scorr",what),which="krypton",avg=TRUE,smooth=TRUE)
+            scorr <- dat(sub(datvar,"Scorr",what,fixed=TRUE),which="krypton",avg=TRUE,smooth=TRUE)
             if (is(scorr,"dat")) scorr <- conform(scorr,xkh2o)
             # correction for spatial separation between sonic and fast hygrometer
             if (!is.null(scorr)) xkh2o <- xkh2o * scorr
@@ -75,7 +76,7 @@ calc.x.t <- function(what)
     xh.name <- paste(comp,"h2o'",sep="'")   # x'h2o'
 
     if (any(wvb == xh.name)) {
-        xh.name <- expand(xh.name,what)
+        xh.name <- sub(datvar,xh.name,what,fixed=TRUE)
         # specify derived=FALSE, to avoid infinite loop of calling this derived function
         xh2o <- dat(xh.name,derived=FALSE,avg=TRUE,smooth=TRUE) # m/s mmol/m^3
 
@@ -100,9 +101,8 @@ calc.x.t <- function(what)
                     lo2corr <- xh2o * 0.0
                     units(lo2corr) <- rep("",ncol(xh2o))
                 }
-                else if (o2corr != 0.0) stop("Krypton o2corr is non-zero and not a time series. Cannot corrector Licors")
 
-                scorr <- dat(expand("Scorr",what),which="other",avg=TRUE,smooth=TRUE)
+                scorr <- dat(sub(datvar,"Scorr",what,fixed=TRUE),which="other",avg=TRUE,smooth=TRUE)
                 if (is(scorr,"dat")) scorr <- conform(scorr,xh2o)
                 # correction for spatial separation between sonic and fast hygrometer
                 if (!is.null(scorr)) xh2o <- xh2o * scorr
@@ -122,7 +122,7 @@ calc.x.t <- function(what)
             rmd <- apply(sonicbad,2,function(x){sum(x,na.rm=TRUE)/length(x) * 100})
             cat(paste("calc.x.t: percentage of flux data removed due to dat(\"sfrac\") < dpar(sfrac.min=",
                     dpar("sfrac.min"),"):",
-                    paste(dimnames(xh2o)[[2]],"(",round(rmd,1),")",sep="",collapse=", "),"\n"))
+                    paste(colnames(xh2o),"(",round(rmd,1),")",sep="",collapse=", "),"\n"))
             xh2o[sonicbad] <- NA_real_
         }
     }
@@ -153,9 +153,16 @@ calc.x.t <- function(what)
             if (!is.null(lo2corr)) o2corr <- Cbind(o2corr,lo2corr)
             o2corr <- conform(o2corr,xt) * 1.e-3
         }
+        else if (is.null(o2corr)) o2corr <- 0.0
 
         rhoAir <- conform(dat("rhoAir",avg=TRUE,smooth=TRUE),xt)
+        # cat("dim(rhoAir)=",dim(rhoAir),"\n")
         Q <- conform(dat("Q",avg=TRUE,smooth=TRUE),xt) * 1e-3
+
+        # cat("dim(Q)=",dim(Q),"\n")
+        # cat("dim(xh2o)=",dim(xh2o),"\n")
+        # cat("dim(o2corr)=",dim(o2corr),"\n")
+        # cat("o2corr=",o2corr,"\n")
 
         if (comp == "w") {
             factor <- 0.51*(1 + Q*(1/0.622-1))
@@ -171,75 +178,84 @@ calc.x.t <- function(what)
     }
     xt@units <- rep("m/s degK",ncol(xt))
 
-    dimnames(xt) <- list(NULL,paste(xt.name,sfxs,sep=""))
+    colnames(xt) <- sub("[^.]+",datvar,colnames(xt))
     xt
 }
 
 "dat.u't'" <- function(what,derived=TRUE,...)
 {
-    calc.x.t(what)
+    datvar <- datVar() # requested variable name, x of dat.x
+    calc.x.t(datvar,what)
 }
 
 "dat.v't'" <- function(what,derived=TRUE,...)
 {
-    calc.x.t(what)
+    datvar <- datVar() # requested variable name, x of dat.x
+    calc.x.t(datvar,what)
 }
 
 "dat.w't'" <- function(what,derived=TRUE,...)
 {
-    calc.x.t(what)
+    datvar <- datVar() # requested variable name, x of dat.x
+    calc.x.t(datvar,what)
 }
 
-calc.x.tnew <- function(what)
+calc.x.tnew <- function(datvar,what)
 {
     # compute u't', v't', or w't', as specified by the what argument
-    xt.name <- words(what,1,1,sep=".")	# get x't' prefix
-    comp <- words(xt.name,1,1,sep="'")	# get x
+    comp <- words(datvar,1,1,sep="'")	# get u,v, w
 
-    xtc.name <- expand(paste(comp,"tc'",sep="'"),what)	# x'tc' where x is u,v or w
+    # x'tc' where x is u,v or w
+    xtc.name <- sub(datvar,paste(comp,"tc'",sep="'"),what,fixed=TRUE)
+
     # Note avg=TRUE, which means x'tc' is computed at the
     # resolution specified in avg, and then corrections are
     # applied here, after the averaging.
     xt <- dat(xtc.name,avg=TRUE,smooth=TRUE)
-    sfxs <- suffixes(xt,2)
 
     xh.name <- paste(comp,"h2o'",sep="'")  # x'kh2o'
-    xh.name <- expand(xh.name,what)
+    xh.name <- sub(datvar,xh.name,what,fixed=TRUE)
     # specify derived=TRUE, to get corrected w'h2o'
     xh2o <- dat(xh.name,derived=TRUE,avg=TRUE,smooth=TRUE) # m/s mmol/m^3
 
     TK <- conform(dat("T",avg=TRUE,smooth=TRUE),xt) + 273.15
 
+    # cat("dim(xh2o)=",dim(xh2o),"\n")
+    # cat("dim(xt)=",dim(xt),"\n")
+    # cat("dim(TK)=",dim(TK),"\n")
+
     xt <- xt - 0.51 * TK * xh2o * 1.e-3
 
-    dimnames(xt) <- list(NULL,paste(xt.name,sfxs,sep=""))
+    colnames(xt) <- sub("[^.]+",datvar,colnames(xt))
     xt@units <- rep("m/s degK",ncol(xt))
     xt
 }
 
 "dat.u'tnew'" <- function(what,derived=TRUE,...)
 {
-    calc.x.tnew(what)
+    datvar <- datVar() # requested variable name, x of dat.x
+    calc.x.tnew(datvar,what)
 }
 
 "dat.v'tnew'" <- function(what,derived=TRUE,...)
 {
-    calc.x.tnew(what)
+    datvar <- datVar() # requested variable name, x of dat.x
+    calc.x.tnew(datvar,what)
 }
 
 "dat.w'tnew'" <- function(what,derived=TRUE,...)
 {
-    calc.x.tnew(what)
+    datvar <- datVar() # requested variable name, x of dat.x
+    calc.x.tnew(datvar,what)
 }
 
-calc.x.mr <- function(what,derived=TRUE)
+calc.x.mr <- function(datvar,what,derived=TRUE)
 {
     robust <- dpar("robust")
     if (is.null(robust)) robust <- TRUE
 
     MH2O <- 18
-    xmr.name <- words(what,1,1,sep=".")
-    comp <- words(xmr.name,1,1,sep="'")
+    comp <- words(datvar,1,1,sep="'")
 
     xkh2o <- xh2o <- o2corr <- lo2corr <- NULL
 
@@ -254,7 +270,7 @@ calc.x.mr <- function(what,derived=TRUE)
 
     if (!fcorr_done && any(wvb == xh.name)) {
         # Assume E measured as <w'h2o'> (m/s g/m^3)
-        xh.name <- expand(xh.name,what)
+        xh.name <- sub(datvar,xh.name,what,fixed=TRUE)
 
         # specify derived=FALSE, so make sure we get the uncorrected x'kh2o'
         # Note avg=TRUE, which means x'kh2o' is computed at the
@@ -267,12 +283,12 @@ calc.x.mr <- function(what,derived=TRUE)
             if (!all(allna)) xkh2o <- xkh2o[,!allna]
 
             if (!robust) {
-                o2corr <- dat(expand("o2corr",what))
+                o2corr <- dat(sub(datvar,"o2corr",what,fixed=TRUE))
                 if (is(o2corr,"dat")) {
                     o2corr <- conform(o2corr,xkh2o)
                     o2corr <- approx(o2corr,xout=xkh2o,method="constant",f=0,rule=2)
                 }
-                scorr <- dat(expand("Scorr",what),which="krypton",avg=TRUE,smooth=TRUE)
+                scorr <- dat(sub(datvar,"Scorr",what,fixed=TRUE),which="krypton",avg=TRUE,smooth=TRUE)
                 if (is(scorr,"dat")) scorr <- conform(scorr,xkh2o)
                 # correction for spatial separation between sonic and fast hygrometer
                 if (!is.null(scorr)) xkh2o <- xkh2o * scorr
@@ -283,7 +299,7 @@ calc.x.mr <- function(what,derived=TRUE)
     xh.name <- paste(comp,"h2o'",sep="'")  # x'h2o'
 
     if (any(wvb == xh.name)) {
-        xh.name <- expand(xh.name,what)
+        xh.name <- sub(datvar,xh.name,what,fixed=TRUE)
 
         # specify derived=FALSE, so that oxygen and spatial corrections
         # are not done in this call to dat
@@ -308,7 +324,7 @@ calc.x.mr <- function(what,derived=TRUE)
                     units(lo2corr) <- rep("",ncol(xh2o))
                 }
 
-                scorr <- dat(expand("Scorr",what),which="other",avg=TRUE,smooth=TRUE)
+                scorr <- dat(sub(datvar,"Scorr",what,fixed=TRUE),which="other",avg=TRUE,smooth=TRUE)
                 if (is(scorr,"dat")) scorr <- conform(scorr,xh2o)
                 # correction for spatial separation between sonic and fast hygrometer
                 if (!is.null(scorr)) xh2o <- xh2o * scorr
@@ -334,8 +350,10 @@ calc.x.mr <- function(what,derived=TRUE)
             if (!is.null(lo2corr)) o2corr <- Cbind(o2corr,lo2corr)
             o2corr <- conform(o2corr,xh2o)
         }
+        else if (is.null(o2corr)) o2corr <- 0.0
 
-        xtc.name <- expand(paste(comp,"tc'",sep="'"),what)	# x'tc' where x is u,v or w
+        # x'tc' where x is u,v or w
+        xtc.name <- sub(datvar,paste(comp,"tc'",sep="'"),what,fixed=TRUE)
         # Correct <w'kh2o'> for spatial separation  (done above)
         # Correct E for <w't'> (oxygen correction)
         # Correct <w'tc'> for <w'h2o'> per Schotanus et al., BLM, 1983
@@ -354,7 +372,7 @@ calc.x.mr <- function(what,derived=TRUE)
                 rmd <- apply(sonicbad,2,function(x){sum(x)/length(x) * 100})
                 cat(paste("calc.x.mr: percentage of flux data removed due to dat(\"sfrac\") < dpar(sfrac.min=",
                         dpar("sfrac.min"),"):",
-                        paste(dimnames(xh2o)[[2]],"(",round(rmd,1),")",sep="",collapse=", "),"\n"))
+                        paste(colnames(xh2o),"(",round(rmd,1),")",sep="",collapse=", "),"\n"))
                 xmr[sonicbad] <- NA_real_
             }
         }
@@ -374,33 +392,35 @@ calc.x.mr <- function(what,derived=TRUE)
 
     xmr <- xmr * 1.e3	# m/s g/kg
 
-    dimnames(xmr) <- list(NULL,paste(xmr.name,sfxs,sep=""))
+    colnames(xmr) <- sub("[^.]+",datvar,colnames(xmr))
     xmr@units <- rep("m/s g/kg",ncol(xmr))
     xmr
 }
 "dat.u'mr'" <- function(what,derived=TRUE,...)
 {
-    calc.x.mr(what)
+    datvar <- datVar() # requested variable name, x of dat.x
+    calc.x.mr(datvar,what)
 }
 
 "dat.v'mr'" <- function(what,derived=TRUE,...)
 {
-    calc.x.mr(what)
+    datvar <- datVar() # requested variable name, x of dat.x
+    calc.x.mr(datvar,what)
 }
 
 "dat.w'mr'" <- function(what,derived=TRUE,...)
 {
-    calc.x.mr(what)
+    datvar <- datVar() # requested variable name, x of dat.x
+    calc.x.mr(datvar,what)
 }
 
-calc.x.h2o <- function(what)
+calc.x.h2o <- function(datvar,what)
 {
     robust <- dpar("robust")
     if (is.null(robust)) robust <- TRUE
 
     MH2O <- 18
-    xh2o.name <- words(what,1,1,sep=".")
-    comp <- words(xh2o.name,1,1,sep="'")
+    comp <- words(datvar,1,1,sep="'")
 
     xkh2o <- xh2o <- o2corr <- lo2corr <- NULL
 
@@ -413,7 +433,7 @@ calc.x.h2o <- function(what)
     xh.name <- paste(comp,"kh2o'",sep="'")  # x'kh2o'
 
     if (!fcorr_done && any(wvb == xh.name)) {
-        xh.name <- expand(xh.name,what)
+        xh.name <- sub(datvar,xh.name,what,fixed=TRUE)
 
         # Note avg=TRUE, which means x'kh2o' is computed at the
         # resolution specified in avg, and then the o2 and spatial
@@ -422,12 +442,12 @@ calc.x.h2o <- function(what)
         if (!is.null(xkh2o) && !robust) {
             # dat("o2corr") can return a simple 0, rather than a time series
             # In that case, conform will just return that 0 again.
-            if (is.null(o2corr)) o2corr <- dat(expand("o2corr",what))
+            if (is.null(o2corr)) o2corr <- dat(sub(datvar,"o2corr",what,fixed=TRUE))
             if (is(o2corr,"dat")) {
                 o2corr <- conform(o2corr,xkh2o)
                 o2corr <- approx(o2corr,xout=xkh2o,method="constant",f=0,rule=2)
             }
-            scorr <- dat(expand("Scorr",what),which="krypton",avg=TRUE,smooth=TRUE)
+            scorr <- dat(sub(datvar,"Scorr",what,fixed=TRUE),which="krypton",avg=TRUE,smooth=TRUE)
             if (is(scorr,"dat")) scorr <- conform(scorr,xkh2o)
             # correction for spatial separation between sonic and fast hygrometer
             if (!is.null(scorr)) xkh2o <- xkh2o * scorr
@@ -437,7 +457,7 @@ calc.x.h2o <- function(what)
     xh.name <- paste(comp,"h2o'",sep="'")  # x'h2o'
 
     if (any(wvb == xh.name)) {
-        xh.name <- expand(xh.name,what)# x'h2o'
+        xh.name <- sub(datvar,xh.name,what,fixed=TRUE)# x'h2o'
         xh2o <- dat(xh.name,derived=FALSE,avg=TRUE,smooth=TRUE) # m/s mmol/m^3
         if (!is.null(xh2o)) {
             # ...convert units
@@ -456,7 +476,7 @@ calc.x.h2o <- function(what)
                     units(lo2corr) <- rep("",ncol(xh2o))
                 }
 
-                scorr <- dat(expand("Scorr",what),which="other",avg=TRUE,smooth=TRUE)
+                scorr <- dat(sub(datvar,"Scorr",what,fixed=TRUE),which="other",avg=TRUE,smooth=TRUE)
                 if (is(scorr,"dat")) scorr <- conform(scorr,xh2o)
                 # correction for spatial separation between sonic and fast hygrometer
                 if (!is.null(scorr)) xh2o <- xh2o * scorr
@@ -481,6 +501,7 @@ calc.x.h2o <- function(what)
             if (!is.null(lo2corr)) o2corr <- Cbind(o2corr,lo2corr)
             o2corr <- conform(o2corr,xh2o)
         }
+        else if (is.null(o2corr)) o2corr <- 0.0
 
         # Correct <w'kh2o'> for spatial separation 
         # Correct <w'tc'> for <w'h2o'> per Schotanus et al., BLM, 1983
@@ -494,7 +515,7 @@ calc.x.h2o <- function(what)
                 rmd <- apply(sonicbad,2,function(x){sum(x)/length(x) * 100})
                 cat(paste("calc.x.h2o: percentage of flux data removed due to dat(\"sfrac\") < dpar(sfrac.min=",
                         dpar("sfrac.min"),"):",
-                        paste(dimnames(xh2o)[[2]],"(",round(rmd,1),")",sep="",collapse=", "),"\n"))
+                        paste(colnames(xh2o),"(",round(rmd,1),")",sep="",collapse=", "),"\n"))
                 xh2o[sonicbad] <- NA_real_
             }
         }
@@ -503,8 +524,17 @@ calc.x.h2o <- function(what)
         Q <- conform(dat("Q",avg=TRUE,smooth=TRUE),xh2o) * 1e-3	# kg/kg
         TK <- conform(dat("T",avg=TRUE,smooth=TRUE),xh2o) + 273.15
 
-        xtc.name <- expand(paste(comp,"tc'",sep="'"),what)	# x'tc' where x is u,v or w
+        # x'tc' where x is u,v or w
+        xtc.name <- sub(datvar,paste(comp,"tc'",sep="'"),what,fixed=TRUE)
         xtc <- conform(dat(xtc.name,avg=TRUE,smooth=TRUE),xh2o)
+
+        # cat("dim(rhod)=",dim(rhod),"\n")
+        # cat("dim(Q)=",dim(Q),"\n")
+        # cat("dim(TK)=",dim(TK),"\n")
+        # cat("dim(xtc)=",dim(xtc),"\n")
+        # cat("dim(o2corr)=",dim(o2corr),"\n")
+        # cat("o2corr=",o2corr,"\n")
+
 
         if (comp == "w") {
             factor <- 0.51*(1 + Q*(1/0.622-1))
@@ -517,7 +547,7 @@ calc.x.h2o <- function(what)
                 (1 + factor* o2corr * (1-Q))
         }
         xh2o@data[is.infinite(xh2o@data)] <- NA_real_
-        dimnames(xh2o) <- list(NULL,paste(xh2o.name,sfxs,sep=""))
+        colnames(xh2o) <- sub("[^.]+",datvar,colnames(xh2o))
         xh2o@units <- rep("m/s g/m^3",ncol(xh2o))
     }
 
@@ -526,22 +556,26 @@ calc.x.h2o <- function(what)
 
 "dat.u'h2o'" <- function(what,derived=TRUE,...)
 {
-    calc.x.h2o(what)
+    datvar <- datVar() # requested variable name, x of dat.x
+    calc.x.h2o(datvar,what)
 }
 
 "dat.v'h2o'" <- function(what,derived=TRUE,...)
 {
-    calc.x.h2o(what)
+    datvar <- datVar() # requested variable name, x of dat.x
+    calc.x.h2o(datvar,what)
 }
 
 "dat.w'h2o'" <- function(what,derived=TRUE,...)
 {
-    calc.x.h2o(what)
+    datvar <- datVar() # requested variable name, x of dat.x
+    calc.x.h2o(datvar,what)
 }
 
 calc.H <- function(wt,wq,Td,Q,rho)
 {
     # Turbulent sensible heat flux
+
     # Constant values from Smithsonian Meteorological Tables:
     Cpd <- 1006	# for dry air, range is 1004.8-1007.4 from -50 to +50 C and
     # 700 to 1100 mb, J/kg-K
@@ -565,31 +599,36 @@ calc.H <- function(wt,wq,Td,Q,rho)
     }
 
     if (!is.null(x)) {
-        dimnames(x) <- list(NULL,paste(Hname,suffixes(wt,2),sep=""))
+        colnames(x) <- sub("[^.]+",Hname,colnames(x))
         x@units <- rep("W/m^2",ncol(x))
     }
     x
 }
 dat.H <- function(what,derived=TRUE,...)
 {
+    # Turbulent sensible heat flux
+
+    datvar <- datVar() # requested variable name, x of dat.x
     robust <- dpar("robust")
     if (is.null(robust)) robust <- TRUE
 
-    # Turbulent sensible heat flux
     Td <- dat("T",avg=TRUE,smooth=TRUE)
 
     if (robust)
         Td[is.na(Td)] <- median(Td,na.rm=TRUE)
 
-    wq <- dat(expand("w'h2o'",what),avg=TRUE,smooth=TRUE)*1e-3
-    wt <- dat(expand("w't'",what),avg=TRUE,smooth=TRUE)
+    wq <- dat(sub(datvar,"w'h2o'",what,fixed=TRUE),avg=TRUE,smooth=TRUE)*1e-3
+    wt <- dat(sub(datvar,"w't'",what,fixed=TRUE),avg=TRUE,smooth=TRUE)
 
     x <- calc.H(wt=wt,wq=wq,Td=Td,rho=dat("rhoAir",avg=TRUE,smooth=TRUE))
     x
 }
+
 dat.H.dry <- function(what,derived=TRUE,...)
 {
     # Turbulent sensible heat flux without contribution from varying Cp 
+
+    datvar <- datVar() # requested variable name, x of dat.x
 
     robust <- dpar("robust")
     if (is.null(robust)) robust <- TRUE
@@ -601,22 +640,22 @@ dat.H.dry <- function(what,derived=TRUE,...)
         else
             Q <- median(Q, na.rm=TRUE)
     }
-    x <- calc.H(wt=dat(expand("w't'",what),avg=TRUE,smooth=TRUE),
-        Q=dat("Q",avg=TRUE,smooth=TRUE),rho=dat("rhoAir",avg=TRUE,smooth=TRUE))
+    wt <- dat(sub(datvar,"w't'",what,fixed=TRUE),avg=TRUE,smooth=TRUE)
+    x <- calc.H(wt=wt,Q=Q,rho=dat("rhoAir",avg=TRUE,smooth=TRUE))
     x
 }
-
 
 dat.LE <- function(what,derived=TRUE,...)
 {
     # Turbulent latent heat flux
-    x <- dat(expand("w'mr'",what),avg=TRUE,smooth=TRUE)
+    datvar <- datVar() # requested variable name, x of dat.x
+    x <- dat(sub(datvar,"w'mr'",what,fixed=TRUE),avg=TRUE,smooth=TRUE)
     sfxs <- suffixes(x,2)
 
-    x <- conform(dat(expand("Lv",what),avg=TRUE,smooth=TRUE),x) *
-    conform(dat("rhoDry",avg=TRUE,smooth=TRUE),x) * x * 1e-3
+    x <- conform(dat(sub(datvar,"Lv",what,fixed=TRUE),avg=TRUE,smooth=TRUE),x) *
+	conform(dat("rhoDry",avg=TRUE,smooth=TRUE),x) * x * 1e-3
 
-    dimnames(x) <- list(NULL,paste("LE",sfxs,sep=""))
+    colnames(x) <- sub("[^.]+",datvar,colnames(x))
     x@units <- rep("W/m^2",ncol(x))
     x
 }
@@ -629,26 +668,28 @@ dat.Lv <- function(what,derived=TRUE,...)
     # values from http://www.eos.uoguelph.ca/webfiles/wjames/wj365m04.html
     # were used previously, but conversion from calories gave slightly different
     # numerical values
+    datvar <- datVar() # requested variable name, x of dat.x
 
     robust <- dpar("robust")
     if (is.null(robust)) robust <- TRUE
 
     if (!robust) {
-        x <- 2501000 - 2361 * dat(expand("T",what))
-        dimnames(x) <- list(NULL,paste("Lv",suffixes(x,2),sep=""))
+        x <- 2501000 - 2361 * dat(sub(datvar,"T",what,fixed=TRUE))
+        colnames(x) <- sub("[^.]+",datvar,colnames(x))
         x@units <- rep("J/kg",ncol(x))
     }
     else x <- 2.5e6
     x
 }
-dat.BR <- function(what,derived=TRUE,..)
+dat.BR <- function(what,derived=TRUE,...)
 {
     # Bowen ratio
-    x <- dat(expand("H",what),avg=TRUE,smooth=TRUE) / 
-    dat(expand("LE",what),avg=TRUE,smooth=TRUE)
+    datvar <- datVar() # requested variable name, x of dat.x
+    x <- dat(sub(datvar,"H",what,fixed=TRUE),avg=TRUE,smooth=TRUE) / 
+    dat(sub(datvar,"LE",what,fixed=TRUE),avg=TRUE,smooth=TRUE)
     x@data[is.infinite(x@data)] <- NA_real_
 
-    dimnames(x) <- list(NULL,paste("BR",suffixes(x,2),sep=""))
+    colnames(x) <- sub("[^.]+",datvar,colnames(x))
     x@units <- rep("",ncol(x))
     x
 }
@@ -665,6 +706,8 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
     # n_m <- dimensionless frequency of peak of flux cospectrum
     #     <- function of z/L from Horst, BLM, projected 2008
 
+    datvar <- datVar() # requested variable name, x of dat.x
+
     robust <- dpar("robust")
     if (is.null(robust)) robust <- TRUE
 
@@ -677,9 +720,9 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
 
         # first get the separation. Conform everything to it
         # It is then approximated to zoL later.
-        if (which == "krypton") S <- dat(expand("kryptonSep",what))
-        else if (which == "licor") S <- dat(expand("licor7500Sep",what))
-        else S <- dat(expand("fastH2OSep",what))
+        if (which == "krypton") S <- dat(sub(datvar,"kryptonSep",what,fixed=TRUE))
+        else if (which == "licor") S <- dat(sub(datvar,"licor7500Sep",what,fixed=TRUE))
+        else S <- dat(sub(datvar,"fastH2OSep",what,fixed=TRUE))
 
         if (is.null(S)) return(1)
 
@@ -690,14 +733,14 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
         }
 
 
-        zoL <- conform(dat(expand("L",what),avg=TRUE,smooth=TRUE),S)
+        zoL <- conform(dat(sub(datvar,"L",what,fixed=TRUE),avg=TRUE,smooth=TRUE),S)
         sfxs <- suffixes(zoL,2)
 
         # need z and d for each sonic
-        z <- conform(dat(expand("heightSonic",what)),S)
+        z <- conform(dat(sub(datvar,"heightSonic",what,fixed=TRUE)),S)
         z <- approx(z,xout=zoL,method="constant",f=0,rule=2)
 
-        d <- conform(dat(expand("D",what)),z)
+        d <- conform(dat(sub(datvar,"D",what,fixed=TRUE)),z)
         # Note linear interpolation for D
         d <- approx(d,xout=z,method="linear",rule=3)
         z <- z - d
@@ -724,8 +767,8 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
             dpar(coords="instrument")
         }
 
-        u <- conform(dat(expand("u",what),avg=TRUE,smooth=TRUE),zoL)
-        v <- conform(dat(expand("v",what),avg=TRUE,smooth=TRUE),zoL)
+        u <- conform(dat(sub(datvar,"u",what,fixed=TRUE),avg=TRUE,smooth=TRUE),zoL)
+        v <- conform(dat(sub(datvar,"v",what,fixed=TRUE),avg=TRUE,smooth=TRUE),zoL)
         spd <- sqrt(u^2 + v^2)
 
         nm <- sqrt((nmx * u/spd)^2 + (nmy * v/spd)^2)
@@ -734,25 +777,28 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
 
         S <- exp(2 * pi * nm * S / z)
     }
-    dimnames(S) <- list(NULL,paste("Scorr",sfxs,sep=""))
+    colnames(S) <- sub("[^.]+",datvar,colnames(S))
     S@units <- rep("",ncol(S))
     S
 }
 
-dat.TKE <- function(what,derived=TRUE,cache=FALSE,...)
+dat.TKE <- function(what,derived=TRUE,...)
 {
+    datvar <- datVar() # requested variable name, x of dat.x
     x <- (dat("u'u'",avg=TRUE,smooth=TRUE) +
         dat("v'v'",avg=TRUE,smooth=TRUE) +
         dat("w'w'",avg=TRUE,smooth=TRUE))/2
 
-    dimnames(x) <- list(NULL,paste("TKE",suffixes(x,2),sep=""))
+    colnames(x) <- sub("[^.]+",datvar,colnames(x))
     x@units <- rep("(m/s)^2",ncol(x))
     x
 }
 
-"dat.w'co2'" <- function(what,cache=FALSE,...)
+"dat.w'co2'" <- function(what,...)
 {
     #
+    datvar <- datVar() # requested variable name, x of dat.x
+
     robust <- dpar("robust")
     if (is.null(robust)) robust <- TRUE
 
@@ -771,7 +817,7 @@ dat.TKE <- function(what,derived=TRUE,cache=FALSE,...)
         mu <- 28.97/18
 
         # Get data and convert to kg/m^3 (haven't put in ppmV yet, but open-paths don't use)
-        rhoc <- dat(expand("co2",what),avg=TRUE,smooth=TRUE)
+        rhoc <- dat(sub(datvar,"co2",what,fixed=TRUE),avg=TRUE,smooth=TRUE)
         uc <- units(rhoc)
         cf <- rep(NA,length(uc))
         cf[uc=="kg/m^3"] <- 1
@@ -792,7 +838,7 @@ dat.TKE <- function(what,derived=TRUE,cache=FALSE,...)
         wh2o <- 0.001*conform(dat("w'h2o'",avg=TRUE,smooth=TRUE),wc)
 
         # now the correction
-        scorr <- dat(expand("Scorr",what),which="other",avg=TRUE,smooth=TRUE)
+        scorr <- dat(sub(datvar,"Scorr",what,fixed=TRUE),which="other",avg=TRUE,smooth=TRUE)
         if (is(scorr,"dat")) scorr <- conform(scorr,wc)
         wc <- wc*scorr + mu*(rhoc/rhoa)*wh2o + (1 + mu*rhov/rhoa)*(rhoc/TK)*wt    
 
