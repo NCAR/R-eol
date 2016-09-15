@@ -143,7 +143,7 @@ find_datasets <- function(path=NULL, pattern="^netcdf")
         }
     }
     assign(".datasets",dsets,envir=.isfsEnv)
-    dsets
+    invisible(dsets)
 }
 
 datasets <- function(all=FALSE,warn=TRUE)
