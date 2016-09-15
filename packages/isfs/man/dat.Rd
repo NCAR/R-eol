@@ -138,12 +138,11 @@ Gordon Maclean
 \note{
 }
 \seealso{
+\code{\linkS4class{dat}}, \code{\link{nts}}
 }
 \examples{
 \dontrun{
     x = dat("RH")
 }
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
 \keyword{ ts }

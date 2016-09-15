@@ -28,7 +28,7 @@ Gordon Maclean
 \keyword{ ts }
 \seealso{
 \tabular{ll}{
-?command \tab link\cr
+command \tab link\cr
 \code{? eolts} \tab \code{\link[eolts:eolts-package]{eolts}}\cr
 \code{? find_datasets} \tab \code{\link{find_datasets}}\cr
 \code{? datasets} \tab \code{\link{datasets}}\cr

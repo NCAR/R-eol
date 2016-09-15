@@ -23,7 +23,7 @@
 A time series class based on \code{\linkS4class{nts}}.
 }
 \section{Objects from the Class}{
-dat objects are typically created with a call to function \code{link{dat}}.
+dat objects are typically created with a call to function \code{\link{dat}}.
 }
 \section{Slots}{
   \describe{
@@ -83,7 +83,7 @@ Gordon Maclean
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{dat}}, \code{\link{select-methods}} 
+\code{\link{dat}}, \code{\link{select-methods}}, \code{\linkS4class{nts}}, \code{\link{nts}}
 }
 \examples{
 }
