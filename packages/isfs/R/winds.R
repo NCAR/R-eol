@@ -12,7 +12,7 @@ check.windcoords = function()
 {
     # dpar("datacoords") is coordinates of dat("u",derived=FALSE)
     dcoords = dpar("datacoords")
-    if (is.null(dcoords)) {
+    if (is.na(dcoords) || is.null(dcoords)) {
         warning("dpar(\"datacoords\") not set. Setting dpar(datacoords=\"instrument\")")
         dcoords = "instrument"
         dpar(datacoords=dcoords)
@@ -30,9 +30,9 @@ check.windcoords = function()
 
     # requested coordinate system
     rcoords = dpar("coords")
-    if (is.null(rcoords)) {
+    if (is.na(rcoords) || is.null(rcoords)) {
         rcoords = dpar("datacoords")
-        warning(paste0("dpar(\"coords\") not set. Setting dpar(coords=\"",rcords,"\")"))
+        warning(paste0("dpar(\"coords\") not set. Setting dpar(coords=\"",rcoords,"\")"))
         dpar(coords=rcoords)
     }
     if (rcoords != "geo" && substring(rcoords,1,3) == "geo") {
