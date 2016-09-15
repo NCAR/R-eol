@@ -31,10 +31,12 @@ Gordon Maclean
 \code{\link{find_datasets}}, \code{\link{dataset}}
 }
 \examples{
-# assemble a list of datasets from directories and NetCDF files found in /data/netcdf
 \dontrun{
+# Look for datasets in /data/netcdf
 find_datasets("/data","netcdf")
-# List the names of available datasets
+# Look for datasets in /data, in sub-directories with names starting with netcdf
+find_datasets("/data","^netcdf")
+# List the names of found datasets
 names(datasets())
 # select a dataset by name
 dataset("geo_tiltcor")
@@ -42,4 +44,4 @@ dataset("geo_tiltcor")
 dataset(1)
 }
 }
-\keyword{ ts }% use one of  RShowDoc("KEYWORDS")
+\keyword{ ts }

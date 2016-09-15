@@ -100,12 +100,15 @@ Gordon Maclean
 }
 
 \seealso{
-\code{\link{dataset}}
+\code{\link{dataset}}, \code{\link{datasets}},
 }
 \examples{
 \dontrun{
+# Look for datasets in /data/netcdf
 find_datasets("/data","netcdf")
-# List the names of available datasets
+# Look for datasets in /data, in sub-directories with names starting with netcdf
+find_datasets("/data","^netcdf")
+# List the names of found datasets
 names(datasets())
 # select a dataset by name
 dataset("geo_tiltcor")

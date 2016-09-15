@@ -13,7 +13,7 @@ check.windcoords = function()
     # dpar("datacoords") is coordinates of dat("u",derived=FALSE)
     dcoords = dpar("datacoords")
     if (is.null(dcoords)) {
-        warning("dpar(\"datacoords\") not set, assuming dpar(datacoords=\"instrument\")")
+        warning("dpar(\"datacoords\") not set. Setting dpar(datacoords=\"instrument\")")
         dcoords = "instrument"
         dpar(datacoords=dcoords)
     }
@@ -30,12 +30,16 @@ check.windcoords = function()
 
     # requested coordinate system
     rcoords = dpar("coords")
+    if (is.null(rcoords)) {
+        rcoords = dpar("datacoords")
+        warning(paste0("dpar(\"coords\") not set. Setting dpar(coords=\"",rcords,"\")"))
+        dpar(coords=rcoords)
+    }
     if (rcoords != "geo" && substring(rcoords,1,3) == "geo") {
         rcoords = "geo"
         dpar(coords=rcoords)
     }
-    if (is.null(rcoords)) dpar(coords=dcoords)
-    else if (rcoords == "sonic") dpar(coords="instrument")
+    if (rcoords == "sonic") dpar(coords="instrument")
     else if (rcoords != "geo" && rcoords != "instrument")
         stop("unknown value for dpar(\"coords\"), should be \"instrument\" or \"geo\"")
 
