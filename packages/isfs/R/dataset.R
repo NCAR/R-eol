@@ -22,7 +22,7 @@ find_datasets <- function(path=NULL, pattern="^netcdf")
         if (!file.exists(path))
             warning(paste0("directory $ISF[SF]/projects/$PROJECT/ISF[SF]=",path," does not exist"))
     } else if (!file.exists(path))
-            warning(paste0("directory",path," does not exist"))
+            warning(paste0("directory ",path," does not exist"))
 
     topncds <- list.files(path,pattern,include.dirs=TRUE)
 
@@ -41,7 +41,10 @@ find_datasets <- function(path=NULL, pattern="^netcdf")
 
             # cat("ncd=",ncd,"\n")
 
-            ncpath <- file.path(topncpath,ncd)
+            # file.path adds a trailing slash if second arg is ""
+            if (ncd == "") ncpath <- topncpath
+            else ncpath <- file.path(topncpath,ncd)
+
             ncdf <- list.files(ncpath,"\\.nc$")
             if (length(ncdf) == 0) ncdf <- list.files(ncpath,"\\.cdf$")
 
@@ -68,15 +71,22 @@ find_datasets <- function(path=NULL, pattern="^netcdf")
                 ncpat <- sub("(%M[^0-5]*)[0-5][0-9]","\\1%S",ncpat)
 
                 ncpat <- unique(ncpat)
-                if (length(ncpat) > 1)
+
+                if (length(ncpat) > 1) {
                     warning(paste("In directory",ncd,
                             "cannot determine a unique file name pattern from file names:",
                             paste(ncpat,collapse=", ")))
+                    t1 <- utime(0)
+                }
+                else {
+                    t1 <- utime(ncdf[1],in.format=ncpat,time.zone="UTC")
+                }
 
                 # parse at most 10 files
                 ix <- seq(from=1,to=length(ncdf),by=ceiling(length(ncdf)/10))
 
-                con <- netcdf(dir=ncpath,file=sort(ncdf)[ix])
+                # times are not important when reading global attributes
+                con <- netcdf(dir=ncpath,file=sort(ncdf)[ix], start=t1,end=t1)
                 # read global attributes
                 attrs <- readnc(con)
                 close(con)
@@ -85,12 +95,16 @@ find_datasets <- function(path=NULL, pattern="^netcdf")
                     !(attrs$dataset %in% dsets)) {
                     dname <- attrs$dataset
                 }
-                else if (ncd == pattern) dname <- ncd
                 else {
-                    dname <- sub(pattern,"",ncd)    # remove pattern from directory
+                    catpath <- file.path(topncd,ncd)
+                    # cat("catpath=",catpath,",pattern=",pattern,"\n")
+                    dname <- sub(pattern,"",catpath)
+                    if (nchar(dname) == 0 || dname == "/") dname <- catpath
+                    # cat("dname=",dname,"\n")
+
                     dname <- sub("^_+","",dname)    # remove leading underscores
-                    dname <- sub("^/+","",dname)    # remove leading slashes (/x from netcdf/x)
-                    if (nchar(dname) == 0) dname <- "default"
+                    dname <- sub("^/+","",dname)    # remove leading slashes
+                    dname <- sub("/$","",dname)    # remove trailing slashes
                 }
                 # cat("dname=",dname,"\n")
 
@@ -121,9 +135,9 @@ find_datasets <- function(path=NULL, pattern="^netcdf")
 
                 # if ("calfile_version" %in% names(attrs))
                 # browser()
-
+                
                 dsets[[dname]] <- c(list(enable=TRUE,desc=desc,
-                    calpath=calpaths, ncd=ncpath,ncf=ncpat,datacoords=datacoords),
+                    calpath=calpaths, ncd=ncpath,ncf=ncpat,datacoords=datacoords, start=t1),
                     int_attrs)
             }
         }
@@ -148,22 +162,18 @@ datasets <- function(all=FALSE,warn=TRUE)
     dsets
 }
 
-dataset <- function(which,verbose=F)
+dataset <- function(which,verbose=FALSE)
 {
     
     # select one from a collection of datasets.
     # The list of available datasets can be passed as the datasets argument.
     # If that is NULL, an object ".datasets" is used.
     # An entry in the datasets list should have these elements:
-    #   enabled  TRUE/FALSE
     #   desc    character string describing the dataset
     #   ncf     character string containing the NetCDF file name format, like isfs_%Y%m%d.nc
     #   ncd     directory path of NetCDF file names
     #   lenfile length in seconds of the NetCDF files
     #   datacoords  Wind coordinates of data: "geo", "instrument"
-    #   qcdir   directory of cal files, which is copied to the environment variable QC_DIR
-    #   sonicdir directory of sonic anemometer cal files, which is copied to the
-    #           environment variable SONIC_DIR
 
     dsets <- isfs::datasets()
 
@@ -199,11 +209,8 @@ dataset <- function(which,verbose=F)
     if (!is.null(dset$lenfile)) dpar(lenfile=dset$lenfile)
     dpar(datacoords=dset$datacoords)
 
-    if (!is.null(dset$qcdir))
-        Sys.setenv(QC_DIR=dset$qcdir)
-
-    if (!is.null(dset$sonicdir))
-        Sys.setenv(SONIC_DIR=dset$sonicdir)
+    if (!is.null(dset$start) && is.null(dpar("start")))
+        dpar(start=dset$start,lenday=1)
 
     ncf <- Sys.setenv(NETCDF_FILE=dset$ncf)
     ncd <- Sys.setenv(NETCDF_DIR=dset$ncd)
@@ -220,7 +227,9 @@ dataset <- function(which,verbose=F)
     a <- "file_length_seconds"
     if (a %in% names(dset)) dpar(lenfile=dset[[a]])
 
+    # Execute the function f if it exists. Obsolete.
     if (!is.null(dset[["f"]])) dset$f()
+
     if (ncf != dset$ncf || ncd != dset$ncd) clear_cache()
 
     assign("current_dataset",which,envir=.isfsEnv)
@@ -229,12 +238,11 @@ dataset <- function(which,verbose=F)
         cat(paste("************************************************\n"))
         cat(paste("current dataset is \"", get("current_dataset",envir=.isfsEnv),"\"\n",sep=""))
 
-        cat(paste0("NETCDF_FILE=",Sys.getenv("NETCDF_FILE"),"\n",
+        cat(paste0(
+            "NETCDF_FILE=",Sys.getenv("NETCDF_FILE"),"\n",
             "NETCDF_DIR=",Sys.getenv("NETCDF_DIR"),"\n",
             "dpar(\"datacoords\")=\"", dpar("datacoords"),"\" (coordinates of netcdf data)\n",
             ifelse(is.null(dset$calpath),"",paste0("calpath=",dset$calpath,"\n")),
-            ifelse(is.null(dset$qcdir),"",paste0("QC_DIR=",dset$qcdir,"\n")),
-            ifelse(is.null(dset$sonicdir),"",paste0("SONIC_DIR=",dset$sonicdir,"\n")),
             ifelse(is.null(dset$wind3d_horiz_rotation),"",paste0("wind3d_horiz_rotation=",dset$wind3d_horiz_rotation,"\n")),
             ifelse(is.null(dset$wind3d_tilt_correction),"",paste0("wind3d_tilt_correction=",dset$wind3d_tilt_correction,"\n")),
             ifelse(is.null(dpar("lenfile")),"",paste0("dpar(\"lenfile\")=",dpar("lenfile")," sec\n"))))

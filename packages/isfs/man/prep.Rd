@@ -9,13 +9,13 @@ The \code{\linkS4class{prep}} object is the connection to the ISFS "prep" progra
 The NIDAS software and the project configuration environment and XML must be installed on the user's system, and the raw high-rate data archive for the time period of interest must be accessible.
 }
 \usage{
-prep(variables, rate = 0, dsm="")
+prep(variables, rate = 0, dsm="", config = "")
 }
 \arguments{
   \item{variables}{A character vector containing the names of the variables to be read. }
   \item{rate}{The re-sampling rate, a numeric value, in Hz. A value of zero means resample the variables at the raw rate of the first variable specified. }
   \item{dsm}{The name of the DSM. If the raw-data files for a particular dsm have not been merged for the project, you can specify the name of the DSM, which will be passed as the value of the -d option to the prep program. prep will then look in the <dsm> section of the XML for an archive <output> element, in order to determine the raw-data file names. }
-    \item{config}{The name of a configuration in \code{"$ISFF/projects/$PROJECT/ISFF/config/configs.xml"}. If config is an empty string, the configuration is guessed by finding the first configuration whose times fit the read request.}
+  \item{config}{The name of a configuration in \code{"$ISFF/projects/$PROJECT/ISFF/config/configs.xml"}. If config is an empty string, the configuration is guessed by finding the first configuration whose times fit the read request.}
 }
 \details{
 }
