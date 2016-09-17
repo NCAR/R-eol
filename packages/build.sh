@@ -1,7 +1,14 @@
 #!/bin/sh
 
+# build and install EOL R packages on local system
+
 if [ $# -eq 0 ]; then
-    echo "Usage: ${0##*/} [-e] [-c] [-i] [-s] [-I]"
+    echo "Usage: ${0##*/} [-e] [-c] [-i] [-s] [-t]
+-c: do R CMD check after builds
+-e: eolts (R CMD build, R CMD INSTALL)
+-i: isfs (R CMD build, R CMD INSTALL)
+-s: eolsonde (R CMD build, R CMD INSTALL)
+-t: run isfs:runTests() after isfs build, quicker, less thorough than -c"
     exit 1
 fi
 
@@ -10,7 +17,6 @@ do_check=false
 do_quick_test=false
 do_isfs=false
 do_eolsonde=false
-do_install=false
 
 is_mac=false
 if [ $(uname) == Darwin ]; then
@@ -35,9 +41,6 @@ while [ $# -gt 0 ]; do
         ;;
     -t)
         do_quick_test=true
-        ;;
-    -I)
-        do_install=true
         ;;
     *)
         echo "huh?"
@@ -156,10 +159,6 @@ if $do_isfs; then
             isfs::runTests()
 EOD
     fi
-fi
-
-if $do_install; then
-    scp eolts_[0-9]*.[0-9]*-*.tar.gz isfs_[0-9]*.[0-9]*-*.tar.gz porter2:/net/www/docs/software/R/src/contrib
 fi
 
 if $do_eolsonde; then
