@@ -50,15 +50,17 @@ while [ $# -gt 0 ]; do
     shift
 done
 
+# --vanilla implies --no-environ, which means $R_ENVIRON (defaulting
+# to $R_HOME/etc/Renviron.site) is not sourced.
+# But the default $R_HOME/etc/Renviron on Linux does set R_LIBS_SITE.
+# We generally don't use an Renviron.site anyway.
+
 if $is_mac; then
 	rlib=$(R --vanilla --slave -e 'cat(.Library[1])' )
 else
 	rlib=$(R --vanilla --slave -e 'cat(.Library.site[1])' )
 fi
-# rlib=$(R RHOME)/site-library
 
-# --vanilla does --no-environ so we have to set R_LIBS_SITE ourselves
-# export R_LIBS_SITE=$rlib
 rargs="--vanilla"
 
 # Revision info from output of git describe based on a tag of the form vX.Y
