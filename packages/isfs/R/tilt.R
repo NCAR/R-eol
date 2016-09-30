@@ -92,14 +92,16 @@ sonic_tilt_data <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
     # delete NA's
     bad <- apply(uvw,1,function(x)any(is.na(x))) |
         apply(uvwflag,1,function(x)any(is.na(x)))
-    if (all(bad))
-        stop("No u,v,w, or flag data available")
+    if (all(bad)) {
+        warning("No u,v,w, or flag data available")
+        return(NULL)
+    }
     else if (any(bad)) {
         uvv <- uvw[!bad,]
         uvvflag <- uvwflag[!bad,]
     }
-
     list(uvw=uvw,flags=uvwflag)
+
 }
 
 select_sonic_tilt_data  <- function(uvw,flags,
@@ -234,6 +236,7 @@ plot_tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
 
     if (is.null(uvw) || is.null(uvwflag)) {
         data <- sonic_tilt_data(uvw,uvwflag, flag=flag, u.off, v.off, w.off, u.gain, v.gain, w.gain)
+        if (is.null(data)) return(invisible(NULL))
     }
     else
         data <- list(uvw=uvw,flags=uvwflag)
