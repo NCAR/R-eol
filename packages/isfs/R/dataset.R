@@ -13,7 +13,7 @@ find_datasets <- function(path=NULL, pattern="^netcdf")
     if (is.null(path)) {
         for (root in c("ISFS","ISFF")) {
             rpath <- Sys.getenv(root,unset=NA)
-            if (is.na(rpath)) continue
+            if (is.na(rpath)) next
             for (plat in c("ISFS","ISFF","")) {
                 path <- file.path(rpath,"projects",Sys.getenv("PROJECT"),plat)
                 if (file.exists(path)) break
