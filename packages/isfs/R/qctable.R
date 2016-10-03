@@ -77,106 +77,97 @@ qctable_list = function(data=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntpe
         dns <- dimnames(data)[[2]]
 
         # for each var, an integer vector of the indices of matching elements in dns
-        mx <- lapply(vars,function(dn,dns) {
+        mx <- lapply(vars,function(dn) {
             (1:length(dns))[match(words(dns,1,nwords(dn,sep=".")),dn,nomatch=0) != 0]
-},dns)
+})
         bx <- unlist(lapply(mx,length)) == 0
 
         if (any(bx))
             warning(paste("no match for variables:",
                     paste(vars[bx],collapse=","),"in dimnames(data)=",
                     paste(dns,collapse=",")))
-        vars <- vars[!bx]
     }
 
-    x <- lapply(vars,
-        function(vn,t1,dt,ntper) {
-            if (is.null(data)) x <- dat(vn)
+    qctab <- lapply(vars,
+        function(vn) {
+            if (is.null(data)) dv <- dat(vn)
             else {
-		vnames <- dimnames(data)[[2]]
-                x <- data[,match(words(vnames,1,nwords(vn,sep=".")),vn,nomatch=0) !=0 ]
+		vnames <- colnames(data)
+                mx <- match(words(vnames,1,nwords(vn,sep=".")),vn,nomatch=0)
+                if (all(mx == 0)) {
+                    # generate fake time series of NA
+                    dv <- dat(nts(matrix(rep(NA,2),nrow=2),
+                        c(t1,t2), names=vn,units=""))
+                }
+                else dv <- data[,mx]
 	    }
 
             # discard last row in most recent data. All variables might not be ready
-            if (t1 + ntper * dt > utime("now") && nrow(x) > 1) x = x[-nrow(x),]
-            dunits <- units(x)
+            if (t1 + ntper * dt > utime("now") && nrow(dv) > 1) dv = dv[-nrow(dv),]
+            dunits <- units(dv)
             duniqs <- unique(dunits)
-            xdeltat <- deltat(x)[["trimmed.mean"]]
-            # cat("v=",v,", dimnames(x)[[2]]=",paste(dimnames(x)[[2]],collapse=","),
+            xdeltat <- deltat(dv)[["trimmed.mean"]]
+            # cat("v=",v,", dimnames(dv)[[2]]=",paste(dimnames(dv)[[2]],collapse=","),
             #         ", duniqs=",paste(duniqs,collapse=","),", dunits=",
             #          paste(dunits,collapse=","),"\n")
             # if (length(duniqs) > 1) browser()
 
-            # loop over different units
-            x <- lapply(duniqs,
-                function(dunit,x,t1,dt,ntper) {
-                    dunits <- units(x)
-                    x <- x[,dunits==dunit]
-                    colseq <- order(heights(x))
-                    stns <- stations(x)[colseq]
-                    dns <- dimnames(x)[[2]][colseq]
+            # loop over different units of variable
+            utab <- lapply(duniqs,
+                function(dunit) {
+                    dunits <- units(dv)
+                    du <- dv[,dunits==dunit]
+                    colseq <- order(heights(du))
+                    stns <- stations(du)[colseq]
+                    vns <- colnames(du)[colseq]
 
                     # loop over columns, in order of height
-                    x <- matrix(sapply(colseq,
-                            function(nc,x,t1,dt,ntper) {
-                                x <- x[,nc]
-                                times <- as.numeric(seq(from=t1,length=ntper,by=dt))
+                    uctab <- matrix(sapply(colseq,
+                            function(nc) {
+                                dc <- du[,nc]
+                                times <- as.numeric(seq(from=t1,
+                                    length=ntper,by=dt))
 
                                 # loop over times
                                 as.vector(sapply(times,
-                                        function(t1,x,dt) {
-                                            t1 <- utime(t1)
-                                            t2 <- t1 + dt
-                                            # cat("t1=",t1," t2=",t2,"\n")
-                                            x <- x[utime(c(t1,t2)),]
-                                            if (length(x) == 0) rep(NA_real_,4)
+                                        function(t1x) {
+                                            t1x <- utime(t1x)
+                                            t2x <- t1x + dt
+                                            # cat("t1x=",t1x," t2=",t2,"\n")
+                                            dct <- dc[utime(c(t1x,t2x)),]
+                                            if (length(dct) == 0) rep(NA_real_,4)
                                             else {
-                                                nas <- sum(is.na(x))
-                                                x <- clip(x)
-                                                xm <- mean(x,na.rm=TRUE)
-                                                xd <- sqrt(var(x,na.rm=TRUE))
-                                                nclipped <- sum(is.na(x)) - nas
+                                                nas <- sum(is.na(dct))
+                                                dct <- clip(dct)
+                                                xm <- mean(dct,na.rm=TRUE)
+                                                xd <- sqrt(var(dct,na.rm=TRUE))
+                                                nclipped <- sum(is.na(dct)) - nas
                                                 c(xm,xd,nclipped,nas)
                                             }
-                                        },
-                                        x,dt))
-                            },
-                            x,t1,dt,ntper),ncol=ntper*4,byrow=TRUE)
+                                        }))
+                            }),ncol=ntper*4,byrow=TRUE)
                     times <- as.numeric(seq(from=t1,length=ntper,by=dt))
                     if (dt >= 86400) fmt <- "%b %d %H:%M"
                     else fmt <- "%H:%M"
-                    cnames <- sapply(times,function(t1,dt,fmt) {
-                        paste(format(utime(t1),format=fmt),
-                            format(utime(t1+dt),format=fmt),sep="-")
-},dt,fmt)
 
-                    if (TRUE || length(unique(dns)) > 1) {
-                        dimnames(x) <- list(paste(dns,names(stns),sep=" "),
-                            paste(sapply(cnames,function(x) c(x,"","","")),c("","sd","nclip","NAs"),sep=""))
-                        attr(x,"clip") <- clip(words(dns[1],1,1,sep="."))
-                    }
-                    else {
-                        # If all variables have same name, print just station number.
-                        # This has been disabled by the logical test above
-                        dimnames(x) <- list(stns,paste(sapply(cnames,function(x) c(x,"","","")),c("","sd","nclip","NAs"),sep=""))
-                        attr(x,"clip") <- clip(dns[1])
-                    }
-                    attr(x,"units") <- dunit
-                    x
-                },
-                x,t1,dt,ntper)
-            if (length(unique(vn)) > 1)
-                names(x) <- paste(words(vn[1],1,1,sep=".")," (",duniqs,")",sep="")
-            else
-                names(x) <- paste(vn[1]," (",duniqs,")",sep="")
-            x$deltat <- xdeltat
-            x
-        },
-        t1,dt,ntper)
+                    cnames <- sapply(times,function(tx) {
+                        paste(format(utime(tx),format=fmt),
+                            format(utime(tx+dt),format=fmt),sep="-")})
+
+                    dimnames(uctab) <- list(paste(vns,names(stns),sep=" "),
+                        paste(sapply(cnames,function(cn) c(cn,"","","")),c("","sd","nclip","NAs"),sep=""))
+                    attr(uctab,"clip") <- clip(words(vns[1],1,1,sep="."))
+                    attr(uctab,"units") <- dunit
+                    uctab
+            })
+            names(utab) <- paste(vn," (",duniqs,")",sep="")
+            utab$deltat <- utabdeltat
+            utab
+        })
     # browser()
-    x <- unlist(x,recursive=FALSE)
-    x$period <- dt
-    x
+    qctab <- unlist(qctab,recursive=FALSE)
+    qctab$period <- dt
+    qctab
 }
 
 qctable_links_html <- function(dnames,file="",append=append)
