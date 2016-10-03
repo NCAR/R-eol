@@ -86,15 +86,7 @@ qctable_list = function(data=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntpe
             warning(paste("no match for variables:",
                     paste(vars[bx],collapse=","),"in dimnames(data)=",
                     paste(dns,collapse=",")))
-
-        if (FALSE) {
-            mx <- unique(unlist(mx))
-
-            if (length(dns[-mx]) > 0)
-                warning(paste("no match for dimnames(data)=",
-                        paste(dns[-mx],collapse=","),"in list of names:",
-                        paste(vars,collapse=",")))
-        }
+        vars <- vars[!bx]
     }
 
     x <- lapply(vars,
