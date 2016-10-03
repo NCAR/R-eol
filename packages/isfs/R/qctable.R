@@ -91,15 +91,12 @@ qctable_list <- function(data=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntp
                 else dv <- data[,mx]
 	    }
 
-            # cat("mx=",mx,", colnames(data)=",colnames(data),"\n")
-            # cat("vn=",vn,", colnames(dv)=",colnames(dv),"\n")
-
             # discard last row in most recent data. All variables might not be ready
             if (t1 + ntper * dt > utime("now") && nrow(dv) > 1) dv = dv[-nrow(dv),]
             dunits <- units(dv)
             duniqs <- unique(dunits)
             dvdeltat <- deltat(dv)[["trimmed.mean"]]
-            # cat("v=",v,", dimnames(dv)[[2]]=",paste(dimnames(dv)[[2]],collapse=","),
+            # cat("vn=",vn,", colnames(dv)=",paste(colnames(dv),collapse=","),
             #         ", duniqs=",paste(duniqs,collapse=","),", dunits=",
             #          paste(dunits,collapse=","),"\n")
             # if (length(duniqs) > 1) browser()
@@ -109,7 +106,6 @@ qctable_list <- function(data=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntp
                 function(dunit) {
                     dunits <- units(dv)
                     du <- dv[,dunits==dunit]
-                    cat("colnames(du)=",colnames(du),"\n")
                     colseq <- order(heights(du))
                     stns <- stations(du)[colseq]
                     vns <- colnames(du)[colseq]
@@ -118,7 +114,6 @@ qctable_list <- function(data=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntp
                     uctab <- matrix(sapply(colseq,
                             function(nc) {
                                 dc <- du[,nc]
-                                cat("colnames(dc)=",colnames(dc),"\n")
                                 times <- as.numeric(seq(from=t1,
                                     length=ntper,by=dt))
 
