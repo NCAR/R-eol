@@ -82,15 +82,17 @@ qctable_list <- function(data=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntp
         function(vn) {
             if (is.null(data)) dv <- dat(vn)
             else {
-		vnames <- colnames(data)
-                mx <- match(words(vnames,1,nwords(vn,sep=".")),vn,nomatch=0)
-                if (all(mx == 0)) {
+                mx <- !is.na(match(words(colnames(data),1,nwords(vn,sep=".")),vn))
+                if (!any(mx)) {
                     # generate fake time series of NA
                     dv <- dat(nts(matrix(rep(NA,2),nrow=2),
                         c(t1,t2), names=vn,units=""))
                 }
                 else dv <- data[,mx]
 	    }
+
+            # cat("mx=",mx,", colnames(data)=",colnames(data),"\n")
+            # cat("vn=",vn,", colnames(dv)=",colnames(dv),"\n")
 
             # discard last row in most recent data. All variables might not be ready
             if (t1 + ntper * dt > utime("now") && nrow(dv) > 1) dv = dv[-nrow(dv),]
@@ -107,6 +109,7 @@ qctable_list <- function(data=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntp
                 function(dunit) {
                     dunits <- units(dv)
                     du <- dv[,dunits==dunit]
+                    cat("colnames(du)=",colnames(du),"\n")
                     colseq <- order(heights(du))
                     stns <- stations(du)[colseq]
                     vns <- colnames(du)[colseq]
@@ -115,6 +118,7 @@ qctable_list <- function(data=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntp
                     uctab <- matrix(sapply(colseq,
                             function(nc) {
                                 dc <- du[,nc]
+                                cat("colnames(dc)=",colnames(dc),"\n")
                                 times <- as.numeric(seq(from=t1,
                                     length=ntper,by=dt))
 

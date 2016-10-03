@@ -52,7 +52,7 @@ export(
     solar_lha_dec,solar_azm_elev,
     plot_sunangle, plot_sunshadow,
     find_datasets, dataset, datasets, set_project, 
-    qctable,
+    qctable, qctable_list,
     runTests
 )
 
