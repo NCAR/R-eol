@@ -26,7 +26,7 @@
 #  perhaps passing the names would be good.
 #
 # 
-qctable_list = function(data=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntper=4)
+qctable_list <- function(data=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntper=4)
 {
 
     # Return a list of summary information for a list of variables.
@@ -48,16 +48,6 @@ qctable_list = function(data=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntpe
     # columns in the matrix will be ntper*4.
 
     dt <- as.numeric((t2 - t1) / ntper)
-
-    # loop over variables
-    # this needs rework:
-    #   if a station 0: (profiles) do a table of variables matching
-    #     a prefix - perhaps treat T,RH,U,V,Spd,Dir,u,v,w,tc specially
-    #     or look at heights.
-    #	i.e. we would like all heights of T in the same table.
-    #   for other variables: if looping over unique full dimnames, then
-    #	unique units is unnecessary
-    #
 
     # scenarios:
     # 1. user passes data and vars 
@@ -106,7 +96,7 @@ qctable_list = function(data=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntpe
             if (t1 + ntper * dt > utime("now") && nrow(dv) > 1) dv = dv[-nrow(dv),]
             dunits <- units(dv)
             duniqs <- unique(dunits)
-            xdeltat <- deltat(dv)[["trimmed.mean"]]
+            dvdeltat <- deltat(dv)[["trimmed.mean"]]
             # cat("v=",v,", dimnames(dv)[[2]]=",paste(dimnames(dv)[[2]],collapse=","),
             #         ", duniqs=",paste(duniqs,collapse=","),", dunits=",
             #          paste(dunits,collapse=","),"\n")
@@ -161,7 +151,7 @@ qctable_list = function(data=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntpe
                     uctab
             })
             names(utab) <- paste(vn," (",duniqs,")",sep="")
-            utab$deltat <- utabdeltat
+            utab$deltat <- dvdeltat
             utab
         })
     # browser()
