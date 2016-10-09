@@ -7,7 +7,7 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-plotprofile <- function(x, every=3600, ntraces=6, smooth=deltat(x)[1],
+plotprofile <- function(x, every=3600, ntraces=6,
                         xlim=NULL,ylim,ylab="Heights (m)", dx=0.02,
                         hd, ...) 
 {
@@ -18,11 +18,6 @@ plotprofile <- function(x, every=3600, ntraces=6, smooth=deltat(x)[1],
     old.par <- par(oma=c(1.3,0,3.5,0),mar=c(3.3, 3.3, 1.5, 1.0),
                   mgp=c(1.3,0.1,0),tck=0.02)
     on.exit(par(old.par))
-
-    dt <- deltat(x)[1]
-    outint <- dt;
-    if ((smooth %% outint) != 0) outint <- smooth
-    if (smooth > dt) x <- average(x,avgperiod=smooth,outinterval=outint)
 
     vname0 <-  paste(unique(words(dimnames(x)[[2]],1,1)),collapse=",")
     vname <- vname0
@@ -186,9 +181,14 @@ plotprofile <- function(x, every=3600, ntraces=6, smooth=deltat(x)[1],
         horiz_legend(lx,ly, lgnd, col=2:(ntraces+1),bty="n",cex=1.1)
     }
 
+    smooth <- dpar("smooth")
+    dt <- deltat(x)[1]
+    if (is.null(smooth)) smooth <- dt
+
     if (smooth == 1800) ptitle <- "1/2 Hour Average"
     else if (smooth == 3600) ptitle <- "Hourly Average"
-    else if ((smooth %% 60) == 0) ptitle <- paste(smooth %/% 60,"Minute Average")
+    else if ((smooth %% 60) == 0) ptitle <-
+        paste(smooth %/% 60,"Minute Average")
     else ptitle <- paste(smooth,"Second Average")
     ptitle <- paste(ptitle,vname,"Profiles")
     # add station id to plot title
