@@ -40,29 +40,29 @@ calc_Lambdasoil <- function(datvar="Lambasoil",what="Lambdasoil",...)
     # 
     # This uses a list to map site name or character station number
     # to TP01 serial numbers. This list should be given the name
-    # "tp01_serial_numbers" and assigned in the .projectEnv,
+    # "tp01_serial_numbers" and assigned in the .isfsEnv,
     # typically in the project_init function:
     #
     # CHATS:
-    #   assign("tp01_serial_numbers",list(vt=200239),envir=.projectEnv)
+    #   assign("tp01_serial_numbers",list(vt=200239),envir=.isfsEnv)
     # HVAMS03:
     #   assign("tp01_serial_numbers",list(
     #     "5"=200234, "9"=200235, "8"=200236, "1"=200238,
     #     "2"=200239, "3"=200240, "4"=200241, "6"=200242, "7"=200243
-    #     ), envir=.projectEnv)
+    #     ), envir=.isfsEnv)
     # TREX:
     #   assign("tp01_serial_numbers",list(
     #       "1"=200235, "2"=200240, "3"=200243
-    #       ), envir=.projectEnv)
+    #       ), envir=.isfsEnv)
     # CuPIDO:
     #   assign("tp01_serial_numbers",list(
     #       "3"=200235, "5"=200236, "10"=200240, "2"=200243
-    #       ), envir=.projectEnv)
+    #       ), envir=.isfsEnv)
     # METCRAX:
     #   assign("tp01_serial_numbers",list(
     #       rim=200234, el=200235, wl=200236, flr=200239, wu=200240,
     #       sw=200241, eu=200242),
-    #       ), envir=.projectEnv)
+    #       ), envir=.isfsEnv)
     #
     # The calibrations for all TP01 probes (by serial number):
     # (Note (9/13/2010): With Wisard, should never need this code, but decided
@@ -129,7 +129,7 @@ calc_Lambdasoil <- function(datvar="Lambasoil",what="Lambdasoil",...)
     #
     # match recorded values by either stations or suffixes
     #
-    tp01sns <- get("tp01_serial_numbers",envir=.projectEnv)
+    tp01sns <- get("tp01_serial_numbers",envir=.isfsEnv)
 
     if (is.list(tp01sns)) {
         sites[stns > 0] <- as.character(stns[stns > 0])

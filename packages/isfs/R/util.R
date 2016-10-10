@@ -32,16 +32,10 @@ sync <- function(pos,root=c("ISFS","ISFF"))
 
     rd <- sl[pos]
 
-    # There may be an .projectEnv environment object in the
-    # $ISF[SF]/projects/$PROJECT/ISF[SF]/R/.RData. Save it before detaching/re-attaching
-    if (exists(".projectEnv",where=pos,inherits=FALSE)) projectEnv <- get(".projectEnv",pos=pos)
-    else projectEnv <- NULL
-
     if (grepl(".RData",rd)) {
         rd <- sub("^file:","",rd)
         detach(pos=pos)
         attach(rd,pos=pos)
-        if (!is.null(projectEnv)) assign(".projectEnv",projectEnv,pos=pos)
     }
     else stop(paste("attached object at position",pos,"is not an .RData:",rd))
 
