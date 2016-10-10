@@ -19,6 +19,10 @@ plotprofile <- function(x, every=3600, ntraces=6,
                   mgp=c(1.3,0.1,0),tck=0.02)
     on.exit(par(old.par))
 
+    smooth <- dpar("smooth")
+    delt <- deltat(x)[1]
+    if (is.null(smooth)) smooth <- delt
+
     vname0 <-  paste(unique(words(dimnames(x)[[2]],1,1)),collapse=",")
     vname <- vname0
     vunits <-  paste(unique(x@units),collapse=",")
@@ -92,7 +96,7 @@ plotprofile <- function(x, every=3600, ntraces=6,
 
             # Don't plot profile if its time is more than 2 deltat's away
             # from the labeled time
-            if (tdm < outint * 2.1) {
+            if (tdm < delt * 2.1) {
                 i <- seq(along=td)[td == tdm][1]
                 xp[ip,it,] <- as.vector(x[i,]@data)
             }
@@ -180,10 +184,6 @@ plotprofile <- function(x, every=3600, ntraces=6,
 
         horiz_legend(lx,ly, lgnd, col=2:(ntraces+1),bty="n",cex=1.1)
     }
-
-    smooth <- dpar("smooth")
-    dt <- deltat(x)[1]
-    if (is.null(smooth)) smooth <- dt
 
     if (smooth == 1800) ptitle <- "1/2 Hour Average"
     else if (smooth == 3600) ptitle <- "Hourly Average"
