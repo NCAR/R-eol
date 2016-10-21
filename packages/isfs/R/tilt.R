@@ -104,7 +104,6 @@ sonic_tilt_data <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
 
 }
 
-
 good_dir_range <- function(rm.azm, fix.gill=FALSE,fix.ir=FALSE)
 {
 
@@ -145,8 +144,8 @@ select_dirs <- function(gdr,dirs)
 }
 
 select_sonic_tilt_data  <- function(uvw,flags,
-    wmax,spdmax,spdmin,flagmax,elmax,rm.azm,
-    fix.gill=FALSE,fix.ir=FALSE,ohats=FALSE,debug=FALSE)
+    wmax,spdmax,spdmin,flagmax,elmax,good.dir.range,
+    ohats=FALSE,debug=FALSE)
 {
 
     deg <- 180/pi
@@ -173,9 +172,7 @@ select_sonic_tilt_data  <- function(uvw,flags,
     }
     select.plt <- select.plt & !is.na(select.plt)
 
-    gdr <- good_dir_range(rm.azm, fix.gill=fix.gill,fix.ir=fix.ir)
-
-    select.dir <- select_dirs(gdr,dir.sonic)
+    select.dir <- select_dirs(good.dir.range,dir.sonic)
 
     select.fit <- select.plt & select.dir
 
@@ -213,6 +210,7 @@ fit_tilt <- function(u,v,w, wbar=NA)
 plot_tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag", 
     u.off=0, v.off=0, w.off, u.gain=1, v.gain=1, w.gain=1,
     flagmax=.01, spdmax=20, wmax=2, elmax, spdmin=1, rm.azm=45,
+    good.dir.range=NULL,
     fix.gill=FALSE, fix.ir=FALSE,
     nsmth=0, method.smth="mean",
     ohats=FALSE, ylim, ellim=5, color=1, debug=FALSE)
@@ -262,9 +260,12 @@ plot_tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
     else
         data <- list(uvw=uvw,flags=uvwflag)
 
+    if (is.null(good.dir.range))
+        good.dir.range <- good_dir_range(rm.azm, fix.gill=fix.gill,fix.ir=fix.ir)
+
     dsel <- select_sonic_tilt_data(data$uvw,data$flags,
-        wmax,spdmax,spdmin,flagmax,elmax,rm.azm,
-        fix.gill=fix.gill,fix.ir=fix.ir,ohats=ohats,debug=debug)
+        wmax,spdmax,spdmin,flagmax,elmax,good.dir.range=good.dir.range,
+        ohats=ohats,debug=debug)
 
     u <- data$uvw[,1]
     v <- data$uvw[,2]
@@ -370,9 +371,7 @@ plot_tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
 
     lines(az[select]/180,el[select],lty=2,lwd=nlwd, col=color)
 
-    gdr <- good_dir_range(rm.azm, fix.gill=fix.gill,fix.ir=fix.ir)
-
-    select.dir <- select_dirs(gdr,az)
+    select.dir <- select_dirs(good.dir.range,az)
 
     select <- select & select.dir
     el[!select] <- NA
