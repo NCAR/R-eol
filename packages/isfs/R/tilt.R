@@ -104,6 +104,46 @@ sonic_tilt_data <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
 
 }
 
+
+good_dir_range <- function(rm.azm, fix.gill=FALSE,fix.ir=FALSE)
+{
+
+    # return 2 angles, c(amin,amax) indicating a continuous range of
+    # good wind directions in degrees, where
+    #     dir = atan2(V,U) * 180 / pi
+    # is the simple vector wind direction, measured counter-clockwise
+    # from the instrument +U axis that the wind is blowing TO.
+    # A wind direction, dir, is good if it is
+    #   amin <= dir <= amax
+    # or
+    #   amin-360 <= dir <= amax-360
+    # or
+    #   amin+360 <= dir <= amax+360
+    #
+    # So amin, amax should be in the range -360:360
+    # 
+    # For a typical sonic where dir=0 is wind from the un-obstructed direction
+    # and dir=180 dir=-180 is wind through the tower, this will
+    # select good winds from -180+rm.azm to 180-rm.azm
+
+    if (length(rm.azm)==2)
+        return(rm.azm)
+    else if (fix.gill)
+        return(c(-210 + rm.azm, 150 - rm.azm))
+    else if (fix.ir)
+        return(c(-150 + rm.azm, 210 - rm.azm))
+    return(c(-180+rm.azm, 180-rm.azm))
+}
+
+select_dirs <- function(gdr,dirs)
+{
+    ok <- gdr[1] <= dirs & dirs <= gdr[2]
+    ok <- ok | (gdr[1] - 360 <= dirs & dirs <= gdr[2] - 360)
+    ok <- ok | (gdr[1] + 360 <= dirs & dirs <= gdr[2] + 360)
+    ok <- ok & !is.na(dirs)
+    ok
+}
+
 select_sonic_tilt_data  <- function(uvw,flags,
     wmax,spdmax,spdmin,flagmax,elmax,rm.azm,
     fix.gill=FALSE,fix.ir=FALSE,ohats=FALSE,debug=FALSE)
@@ -133,28 +173,9 @@ select_sonic_tilt_data  <- function(uvw,flags,
     }
     select.plt <- select.plt & !is.na(select.plt)
 
-    # edit data with rm.azm
-    # have not adjusted fix.gill and fix.ir for length(rm.azm)=2
-    if (fix.gill & length(rm.azm)==1) {
-        if (rm.azm <= 30)
-            select.dir <- dir.sonic <= 150-rm.azm | dir.sonic >= 150+rm.azm
-        else
-            select.dir <- 150+rm.azm-360 <= dir.sonic & dir.sonic <= 150-rm.azm
-    }
-    else if (fix.ir & length(rm.azm)==1) {
-        if (rm.azm <= 30)
-            select.dir = rm.azm-150 <= dir.sonic & dir.sonic <= 180
-        else
-            select.dir = rm.azm-150 <= dir.sonic & dir.sonic <= 360-(150+rm.azm)
-    }
-    else {
-        if (length(rm.azm) == 1)
-            select.dir <- abs(dir.sonic) <= 180-rm.azm
-        else
-            select.dir = rm.azm[1] < dir.sonic & dir.sonic < rm.azm[2]
-    }
-    
-    select.dir <- select.dir & !is.na(select.dir)
+    gdr <- good_dir_range(rm.azm, fix.gill=fix.gill,fix.ir=fix.ir)
+
+    select.dir <- select_dirs(gdr,dir.sonic)
 
     select.fit <- select.plt & select.dir
 
@@ -348,24 +369,11 @@ plot_tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
     else                 nlwd <- 2
 
     lines(az[select]/180,el[select],lty=2,lwd=nlwd, col=color)
-    if (fix.gill & length(rm.azm)==1) {
-        if (rm.azm <= 30)
-            select.dir <- az <= 150-rm.azm | az >= 150+rm.azm
-        else
-            select.dir <- 150+rm.azm-360 <= az & az <= 150-rm.azm
-    }
-    else if (fix.ir & length(rm.azm)==1) {
-        if (rm.azm <= 30)
-            select.dir = rm.azm-150 <= az & az <= 180
-        else
-            select.dir = rm.azm-150 <= az & az <= 360-(150+rm.azm)
-    }
-    else {
-        if (length(rm.azm)==1)
-            select.dir <- abs(az) <= 180-rm.azm
-        else
-            select.dir = rm.azm[1] < az & az < rm.azm[2]
-    }
+
+    gdr <- good_dir_range(rm.azm, fix.gill=fix.gill,fix.ir=fix.ir)
+
+    select.dir <- select_dirs(gdr,az)
+
     select <- select & select.dir
     el[!select] <- NA
     lines(az/180,el,lwd=nlwd, col=color)
