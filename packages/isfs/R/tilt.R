@@ -347,15 +347,15 @@ plot_tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
     }
     abline(v=0)
 
-    title(paste(paste(deparse(sys.call()),collapse=""),"from",
-            dimnames(u)[[2]],dimnames(v)[[2]],dimnames(w)[[2]]),cex=0.6)
-    tfmt <- "%Y %b %d %H:%M"
-    title(sub=paste(paste(format(start(u),format=tfmt),
-                format(end(u),format=paste(tfmt,"%Z")),sep="-"),
-            "; stn=",stations(u),sep=""),cex=0.7)
+    title(paste(colnames(u),colnames(v),colnames(w),
+            paste0("stn=",stations(u))),cex=0.6)
 
-    # notate dataset()
-    mtext(paste0("dataset=",names(dataset())),side=3, adj=1)
+    mtext(paste0(deparse(sys.call()),collapse=""),side=3)
+
+    tfmt <- "%Y %b %d %H:%M"
+    title(sub=paste0(paste(format(start(u),format=tfmt),
+                format(end(u),format=paste(tfmt,"%Z")),sep="-"),
+            "; ",names(dataset())),cex=0.7)
 
     # Plot fitted curve:
     az <- seq(-180,180,5)
