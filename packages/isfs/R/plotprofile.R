@@ -107,9 +107,11 @@ plotprofile <- function(x, every=3600, ntraces=6,
 
     # add offsets to individual profiles to separate them if too close
     # dx is fraction of plot width
+
+    offset <- matrix(0,nrow=length(tps),ncol=ntraces)
+
     if (!all(is.na(xp[,,]))) {
         dx <- dx*max(pretty(xp, 10))
-        offset <- matrix(0,nrow=length(tps),ncol=ntraces)
         if (dx > 0) {
             # iterate on plots
             for (ip in seq(along=tps)) {
