@@ -104,7 +104,7 @@ sonic_tilt_data <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
 
 }
 
-good_dir_range <- function(rm.azm, fix.gill=FALSE,fix.ir=FALSE)
+good_dir_range_tilt <- function(rm.azm, fix.gill=FALSE,fix.ir=FALSE)
 {
 
     # return 2 angles, c(amin,amax) indicating a continuous range of
@@ -261,7 +261,7 @@ plot_tilt <- function(uvw=NULL,uvwflag=NULL, flag="ldiag",
         data <- list(uvw=uvw,flags=uvwflag)
 
     if (is.null(good.dir.range))
-        good.dir.range <- good_dir_range(rm.azm, fix.gill=fix.gill,fix.ir=fix.ir)
+        good.dir.range <- good_dir_range_tilt(rm.azm, fix.gill=fix.gill,fix.ir=fix.ir)
 
     dsel <- select_sonic_tilt_data(data$uvw,data$flags,
         wmax,spdmax,spdmin,flagmax,elmax,good.dir.range=good.dir.range,
