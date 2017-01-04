@@ -1659,6 +1659,27 @@ setGeneric("Rbind",function(x1,x2,...) standardGeneric("Rbind"))
 setMethod("Rbind",signature(x1="nts",x2="nts"),
     function(x1,x2,...) seriesConcat(x1,x2,...)
     )
+setMethod("Rbind",signature(x1="ANY",x2="nts"),
+    function(x1,x2,...)
+    {
+        if (is.null(x1)) {
+            if (length(list(...)) == 0) x2
+            else Rbind(x2,...)
+        }
+        else stop("unsupported argument type x1")
+    }
+    )
+
+setMethod("Rbind",signature(x1="nts",x2="ANY"),
+    function(x1,x2,...)
+    {
+        if (is.null(x2)) {
+            if (length(list(...)) == 0) x1
+            else Rbind(x1,...)
+        }
+        else stop("unsupported argument type x2")
+    }
+    )
 
 setGeneric("Cbind",function(x1,x2,...) standardGeneric("Cbind"))
 
@@ -1670,7 +1691,10 @@ setMethod("Cbind",signature(x1="nts",x2="nts"),
 setMethod("Cbind",signature(x1="ANY",x2="nts"),
     function(x1,x2,...)
     {
-        if (is.null(x1)) Cbind(x2,...)
+        if (is.null(x1)) {
+            if (length(list(...)) == 0) x2
+            else Cbind(x2,...)
+        }
         else stop("unsupported argument type x1")
     }
     )
@@ -1678,7 +1702,10 @@ setMethod("Cbind",signature(x1="ANY",x2="nts"),
 setMethod("Cbind",signature(x1="nts",x2="ANY"),
     function(x1,x2,...)
     {
-        if (is.null(x2)) Cbind(x1,...)
+        if (is.null(x2)) {
+            if (length(list(...)) == 0) x1
+            else Cbind(x1,...)
+        }
         else stop("unsupported argument type x2")
     }
     )
