@@ -167,8 +167,7 @@ dat.Rlw.either <- function(what="Rlw.out",B=dpar("pyrgeometer.B"),
     # Check if Rlw is available without being derived.
     if (any(words(variables(),1,nwords(what,sep=".")) == what)) {
         x2 = dat(what,derived=F,...)
-        if (is.null(x)) x = x2
-        else if (!is.null(x2)) x = Cbind(x,x2)
+        x <- Cbind(x,x2)
     }
     # browser()
     x
@@ -192,18 +191,11 @@ dat.Rlw <- function(what,derived=TRUE,...)
     Rlwin <- dat(sub(datvar,"Rlw.in",what,fixed=TRUE),...)
     Rlwout <- dat(sub(datvar,"Rlw.out",what,fixed=TRUE),...)
 
-    if (!is.null(Rlwin)) {
-        if (!is.null(Rlwout)) Rlw = Cbind(Rlwin,Rlwout)
-        else Rlw = Rlwin
-    }
-    else Rlw = Rlwout
+    Rlw <- Cbind(Rlwin,Rlwout)
 
     if (any(words(variables(),1,2) == "Rlw.net")) {
         Rlwnet <- dat(paste("Rlw.net",which,sep=""),...,derived=F)
-        if (!is.null(Rlwnet)) {
-            if (!is.null(Rlw)) Rlw = Cbind(Rlw,Rlwnet)
-            else Rlw = Rlwnet
-        }
+        Rlw <- Cbind(Rlw,Rlwnet)
     }
     Rlw
 }
@@ -300,7 +292,7 @@ dat.Tsfc <- function(what,derived=TRUE,emissivity=dpar("emissivity.sfc"),...)
         x <- ( (rlwout - (1-emissivity)* rlwin) / (emissivity*SB) )^0.25 - 273.1
         colnames(x) <- paste("Tsfc.pyrg",suffixes(x,3),sep="")
         x@units <- rep("degC",ncol(x))
-        if (!is.null(tsfc)) x = Cbind(tsfc,x)
+        x <- Cbind(tsfc,x)
     }
     else x = tsfc
     x

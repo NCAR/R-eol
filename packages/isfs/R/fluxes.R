@@ -110,13 +110,10 @@ calc.x.t <- function(datvar,what)
         }
     }
 
-    if (!is.null(xkh2o)) {
-        if (is.null(xh2o)) xh2o <- xkh2o
-        else xh2o <- Cbind(xkh2o,xh2o)
-    }
+    xh2o <- Cbind(xkh2o,xh2o)
 
     # delete data when the fraction of expected sonic samples is lower than sfrac.min
-    if (!is.null(dpar("sfrac.min")) && existsFunction("dat.sfrac")) {
+    if (!is.null(xh2o) && !is.null(dpar("sfrac.min")) && existsFunction("dat.sfrac")) {
         sonicbad <- !is.na(xh2o) & (conform(dat("sfrac",avg=TRUE,smooth=TRUE),xh2o) < dpar("sfrac.min"))
         if (any(!is.na(sonicbad) & sonicbad)) {
             rmd <- apply(sonicbad,2,function(x){sum(x,na.rm=TRUE)/length(x) * 100})
@@ -150,7 +147,7 @@ calc.x.t <- function(datvar,what)
         # Correct E for <w'kh2o'> for spatial separation
 
         if (is(o2corr,"dat")) {
-            if (!is.null(lo2corr)) o2corr <- Cbind(o2corr,lo2corr)
+            o2corr <- Cbind(o2corr,lo2corr)
             o2corr <- conform(o2corr,xt) * 1.e-3
         }
         else if (is.null(o2corr)) o2corr <- 0.0
@@ -331,11 +328,8 @@ calc.x.mr <- function(datvar,what,derived=TRUE)
             }
         }
     }
-    # combine
-    if (!is.null(xkh2o)) {
-        if (is.null(xh2o)) xh2o <- xkh2o
-        else xh2o <- Cbind(xkh2o,xh2o)
-    }
+    # Cbind works if one is NULL. Returns NULL if both are NULL.
+    xh2o <- Cbind(xkh2o,xh2o)
 
     if (any(xh2o@units != "m/s g/m^3" & xh2o@units != "m/s gm/m^3"))
         warning("units of <w'kh2o'> are not m/s g/m^3")
@@ -347,7 +341,7 @@ calc.x.mr <- function(datvar,what,derived=TRUE)
     if (!fcorr_done && !robust) {
 
         if (is(o2corr,"dat")) {
-            if (!is.null(lo2corr)) o2corr <- Cbind(o2corr,lo2corr)
+            o2corr <- Cbind(o2corr,lo2corr)
             o2corr <- conform(o2corr,xh2o)
         }
         else if (is.null(o2corr)) o2corr <- 0.0
@@ -483,11 +477,8 @@ calc.x.h2o <- function(datvar,what)
             }
         }
     }
-    # combine
-    if (!is.null(xkh2o)) {
-        if (is.null(xh2o)) xh2o <- xkh2o
-        else xh2o <- Cbind(xkh2o,xh2o)
-    }
+    # Cbind works if one is NULL. Returns NULL if both are NULL.
+    xh2o <- Cbind(xkh2o,xh2o)
 
     if (any(xh2o@units != "m/s g/m^3" & xh2o@units != "m/s gm/m^3"))
         warning("units of <w'h2o'> are not m/s g/m^3")
@@ -498,7 +489,7 @@ calc.x.h2o <- function(datvar,what)
         sfxs <- suffixes(xh2o,2)
 
         if (is(o2corr,"dat")) {
-            if (!is.null(lo2corr)) o2corr <- Cbind(o2corr,lo2corr)
+            o2corr <- Cbind(o2corr,lo2corr)
             o2corr <- conform(o2corr,xh2o)
         }
         else if (is.null(o2corr)) o2corr <- 0.0

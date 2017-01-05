@@ -239,8 +239,7 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
             colnames(x) <- sub("\\.[0-9.]+cm","",colnames(x))
             x@units <- rep("W/m^2",ncol(x))
 
-            if (is.null(res)) res <- x
-            else res <- Cbind(res,x)
+            res <- Cbind(res,x)
             NULL
         }
     }
@@ -416,8 +415,7 @@ dat.Ssoilz <- function(what,derived=TRUE,dfill=FALSE,fit=3,sum=TRUE,...)
 
             x@units <- rep("W/m^2",ncol(x))
 
-            if (is.null(res)) res <- x
-            else res <- Cbind(res,x)
+            res <- Cbind(res,x)
             NULL
         }
     }
@@ -556,8 +554,7 @@ dat.Gsoilz <- function(what,derived=TRUE,fit=0,dfill=FALSE,...)
 
             x@units <- rep("W/m^2",ncol(x))
 
-            if (is.null(res)) res <- x
-            else res <- Cbind(res,x)
+            res <- Cbind(res,x)
             NULL
         }
     }

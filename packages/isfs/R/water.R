@@ -252,7 +252,7 @@ dat.Tc <- function(what,derived=TRUE,...)
     # Look for any non-derived Tc, such as from a 2-d sonic
     if (any(words(variables(),1,1) == "Tc")) {
         x2 <- dat(sub(datvar,"Tc",what,fixed=TRUE),derived=F)
-        if (!is.null(x2)) x <- Cbind(x,x2)
+        x <- Cbind(x,x2)
     }
     x
 }
@@ -338,12 +338,12 @@ dat.h2o <- function(what,derived=TRUE,...)
         h2o <- dat(h2o.name,derived=FALSE,avg=FALSE,smooth=FALSE)
     }
     # combine
-    if (!is.null(kh2o)) {
-        if (is.null(h2o)) h2o <- kh2o
-        else h2o <- Cbind(kh2o,h2o)
+    h2o <- Cbind(kh2o,h2o)
+    
+    if (!is.null(h2o)) {
+        sfxs <- suffixes(h2o,2)
+        colnames(h2o) <- paste0("h2o",sfxs)
     }
-    sfxs <- suffixes(h2o,2)
-    colnames(h2o) <- paste0("h2o",sfxs)
     h2o
 }
 
