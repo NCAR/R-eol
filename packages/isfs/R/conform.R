@@ -41,6 +41,7 @@ setMethod("conform",signature(x="dat",y="dat"),
         x
     }
     )
+
 setMethod("conform",signature(x="numeric",y="dat"),
     function(x,y)
     {
@@ -58,24 +59,13 @@ setMethod("conform",signature(x="numeric",y="dat"),
         x
     }
     )
-setMethod("conform",signature(x="ANY",y="dat"),
-    function(x,y)
-    {
-        if (is.null(x)) stop("x is NULL")
-        else stop("x is not either numeric or a dat object")
-    }
-    )
-setMethod("conform",signature(x="ANY",y="numeric"),
-    function(x,y)
-    {
-        x	# do nothing, let S rules apply
-    }
-    )
+
 setMethod("conform",signature(x="ANY",y="ANY"),
     function(x,y)
     {
-        if (is.null(y)) stop("y is NULL")
-        else stop("y is not either numeric or a dat object")
+        if (is.null(x) || is.null(y)) x
+        warning(paste("conform: unrecognized arguments, class(x)=",class(x),", class(y)=",class(y),". Returning x"))
+        x
     }
     )
 
