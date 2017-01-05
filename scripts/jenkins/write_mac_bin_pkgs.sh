@@ -1,5 +1,7 @@
 #!/bin/sh
 
+umask 002
+
 # From working directory, copy .tgz mac.binary R packages to a
 # local R package repository
 
