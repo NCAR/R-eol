@@ -16,6 +16,7 @@ rm -f *.tgz
 
 for pkg in eolts isfs eolsonde; do
     rm -f $(ls $repo/${pkg}_*.tgz | sort | head -n -2)
+    chmod g+w $repo/${pkg}_*.tgz
 done
 
 R --vanilla -e "tryCatch(tools::write_PACKAGES(dir='$repo',type='mac.binary'),error=function(e)q(status=1))"
