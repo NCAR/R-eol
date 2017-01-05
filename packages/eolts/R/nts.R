@@ -1710,6 +1710,14 @@ setMethod("Cbind",signature(x1="nts",x2="ANY"),
     }
     )
 
+setMethod("Cbind",signature(x1="ANY",x2="ANY"),
+    function(x1,x2,...)
+    {
+        if (is.null(x1) && is.null(x2)) NULL
+        cbind(x1, x2, ...)
+    }
+    )
+
 setGeneric("average",function(x,...) standardGeneric("average"))
 
 setMethod("average", signature=(x="nts"),
