@@ -7,6 +7,8 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
+# Plot method for dat objects
+
 setMethod("plot",signature(x="dat",y="missing"),
     function(x,...) 
     {
@@ -61,7 +63,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
     if (first_plot) xaxs <- "i"
     else xaxs <- "d"                # don't rescale
 
-    # unique loses the station names
+    # unique looses the station names
     plot_stns <- stations(x)
     if (!is.null(plot_stns)) {
         i <- sort(unique(plot_stns))
@@ -289,20 +291,29 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
 
                 ndec <- lntic - l0tic
                 mtics <- l0tic + as.vector(outer(log10(2:9),(0:ndec-1),"+"))
+
                 if (side == 4) {
-                    axis(side=side,at=l0lab:lnlab,labels=10^(l0lab:lnlab),
+                    axis(side=side,at=10^(l0lab:lnlab),labels=10^(l0lab:lnlab),
                         xaxt="s",yaxt="s",col=1,cex=cex*par("cex"),srt=-90)
-                    axis(side=side,at=mtics,line=line,labels=FALSE,col=1,xaxt="s",yaxt="s")
+                    axis(side=side,at=10^mtics,labels=FALSE,
+                        xaxt="s",yaxt="s",col=1)
                     mtext(side=side,line=line+mgp[1],ylab_txt,col=1,
                         at=mean(usr[3:4]),srt=-90,cex=cex*par("cex"))
                 }
                 else {
-                    axis(side=side,at=l0lab:lnlab,labels=10^(l0lab:lnlab),
+                    axis(side=side,at=10^(l0lab:lnlab),labels=10^(l0lab:lnlab),
                         xaxt="s",yaxt="s",col=1,cex=cex*par("cex"),srt=90)
-                    axis(side=side,at=mtics,line=line,labels=FALSE,col=1,xaxt="s",yaxt="s")
-                    mtext(side=side,line=line+mgp[1],ylab_txt,col=1,cex=cex*par("cex"))
+                    axis(side=side,at=10^mtics,labels=FALSE,
+                        xaxt="s",yaxt="s",col=1)
+                    mtext(side=side,line=line+mgp[1],ylab_txt,col=1,
+                        cex=cex*par("cex"))
                 }
-                if (nscales == 1 || length(dnames) == 1) axis(4,labels=FALSE,at=l0lab:lnlab)
+                if (nscales == 1 || length(dnames) == 1) {
+                    axis(4, at=10^(l0lab:lnlab), labels=FALSE,
+                        xaxt="s",yaxt="s",col=1)
+                    axis(4, at=10^mtics, labels=FALSE,
+                        xaxt="s",yaxt="s",col=1)
+                }
             }
             else {
                 # special wind direction tic marks
@@ -511,6 +522,7 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".",log="")
     dnameunits <- paste0(dnames,"(",dunits,")")
     dnameunits_unique <- unique(dnameunits)
 
+    # 1: left hand side, 2: rhs, 3:second axis on lhs, etc
     scales <- rep(1,length(dnameunits_unique))
     names(scales) <- dnameunits_unique
 
@@ -597,6 +609,7 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".",log="")
 
         if (any(ylmtch != 0)) {
             lim_res[dnuu[ylmtch!=0]] <- lim[ylmtch]
+            # 1: left hand side, 2: rhs, 3:second axis on lhs, etc
             iscale <- iscale + 1
             scales[dnuu[ylmtch!=0]] <- iscale
 

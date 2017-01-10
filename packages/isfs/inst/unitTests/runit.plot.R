@@ -21,27 +21,21 @@ setup_test <- function(pkg="isfs")
 
 test.plot <- function()
 {
-    if (length(datasets(warn=FALSE)) == 0) setup_test()
-
-    dataset("noqc_instrument")
-
-    stns <- 2:3
-    dpar(stns=stns)
-
-    x <- dat("rhoAir")
-
     tmp = tempfile("test.plot",fileext=".png")
     on.exit(unlink(tmp))
+
+    tx <- utime("now")
+    len <- 100
+    x = dat(nts(seq(from=0.01,to=100,len=len),
+            utime(seq(as.numeric(tx),by=1,length=len)),names="test"))
+
     png(file=tmp)
     plot(x)
     dev.off()
 
-    png(file=tmp)
-    plot(x,log="y")
-    dev.off()
-
-    x[1,] = 0.001
-    x[2,] = 99.
+    # check for crashes when doing log plots. If the scale is
+    # expanded incorrectly you will get errors about taking a log of
+    # a non-positive number.
     png(file=tmp)
     plot(x,log="y")
     dev.off()
