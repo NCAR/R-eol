@@ -75,7 +75,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
     dunits <- x@units
     names(dunits) <- dnames
 
-    yinfo <- plotLimits(x,ylim,one_scale,axs=yaxs)
+    yinfo <- plotLimits(x,ylim,one_scale,axs=yaxs,log=log)
     nscales <- yinfo$nscales
 
     if (remargin && first_plot) adjPar(nyscales=nscales)
@@ -173,7 +173,10 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
         wind_dir <- wind_dir == "Dir" || wind_dir == "dir"
 
         # All data is NAs
-        if (any(is.na(ylim1)) || any(is.infinite(ylim1))) ylim1 <- c(-1,1)
+        if (any(is.na(ylim1)) || any(is.infinite(ylim1))) {
+            if (log == "y") ylim1 <- c(1,10)
+            else ylim1 <- c(-1,1)
+        }
 
         clipped <- FALSE
         cmin <- ylim1[1]
@@ -496,7 +499,7 @@ plot_dat_title <- function(title="",first_plot,last_plot,
     invisible(title)
 }
 
-plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".")
+plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".",log="")
 {
 
     # unique variable names.
@@ -533,9 +536,16 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".")
                             else lim <- range(clip(data[,dnames==n]),na.rm=TRUE,finite=TRUE)
                         }
                         if (axs == "r") {
-                            dl <- lim[2] - lim[1]
-                            lim[1] <- lim[1] - 0.04 * dl
-                            lim[2] <- lim[2] + 0.04 * dl
+                            if (log == "y") {
+                                dl <- log10(lim[2]) - log10(lim[1])
+                                lim[1] <- 10^(log10(lim[1]) - 0.04 * dl)
+                                lim[2] <- 10^(log10(lim[2]) + 0.04 * dl)
+                            }
+                            else {
+                                dl <- lim[2] - lim[1]
+                                lim[1] <- lim[1] - 0.04 * dl
+                                lim[2] <- lim[2] + 0.04 * dl
+                            }
                         }
                         l <- list()
                         l[[n]] <- lim
@@ -629,9 +639,16 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".")
                                 else lim <- range(clip(data[,dnames==n]),na.rm=TRUE,finite=TRUE)
                             }
                             if (axs == "r") {
-                                dl <- lim[2] - lim[1]
-                                lim[1] <- lim[1] - 0.04 * dl
-                                lim[2] <- lim[2] + 0.04 * dl
+                                if (log == "y") {
+                                    dl <- log10(lim[2]) - log10(lim[1])
+                                    lim[1] <- 10^(log10(lim[1]) - 0.04 * dl)
+                                    lim[2] <- 10^(log10(lim[2]) + 0.04 * dl)
+                                }
+                                else {
+                                    dl <- lim[2] - lim[1]
+                                    lim[1] <- lim[1] - 0.04 * dl
+                                    lim[2] <- lim[2] + 0.04 * dl
+                                }
                             }
                             l <- list()
                             l[[n]] <- lim
