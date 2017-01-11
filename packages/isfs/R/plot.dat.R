@@ -36,7 +36,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
         t2 <- utime(xlim[2])
     }
 
-    dnames <- dimnames(x)[[2]]
+    dnames <- colnames(x)
 
     mfg <- par("mfg")
     # cat("mfg1=",paste(mfg,collapse=","),"\n")
@@ -514,7 +514,7 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".",log="")
 {
 
     # unique variable names.
-    dnames <- dimnames(data)[[2]]
+    dnames <- colnames(data)
     dunits <- units(data)
 
     # Sometimes two data colums may have the same name, but different units

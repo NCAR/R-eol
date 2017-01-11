@@ -1017,8 +1017,15 @@ d_by_dt <- function(x,dtmax=NULL,lag=2,differences=1,time=0)
     dt <- dt[keep]
     ts <- ts[keep]
 
-    dunits <- paste(x@units,"s-1")
-    dnames <- paste("d_",words(dimnames(x)[[2]],1,1),"_by_dt.",words(dimnames(x)[[2]],2),sep="")
+    dunits <- sapply(x@units,function(x) {
+        if (x=="") "s-1" 
+        else paste(x,"s-1")
+    })
+    dnames <- paste0("d_", words(colnames(x),1,1), "_by_dt",
+        sapply(words(colnames(x),2),function(x) {
+            if (x == "") x
+            else paste0(".",x)
+    }))
 
     x <- dat(nts(matrix(as.vector(dx/dt),ncol=nc,dimnames=list(NULL,dnames)),
             as(ts,"utime"),units=dunits,stations=stns))
