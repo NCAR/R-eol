@@ -364,7 +364,7 @@ setMethod("coherence",signature(x="fftw",type="character",bpd="numeric"),
 
         pspec = specsmooth(pspectra(x),type=type,bpd=bpd)
 
-        x = xx * Conj(xx) / pspec[,i1] / pspec[,i2]
+        x = Re(xx * Conj(xx)) / pspec[,i1] / pspec[,i2]
         class(x) = "coherence"
         x
     }
