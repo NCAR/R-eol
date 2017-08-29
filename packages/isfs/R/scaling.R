@@ -33,6 +33,20 @@ dat.L <- function(what,derived=TRUE,k=dpar("vonKarman"),g=dpar("accelgrav"),...)
 
     datvar <- datVar() # requested variable name, x of dat.x
 
+    # Do calculations in whatever coordinates the netcdf
+    # data is in, since dat.u and dat.v can perform rotations
+    # but dat.u'w' and dat.v'w' do not.
+
+    check.windcoords();
+    # dcoords is coordinates of dat("u",derived=F)
+    dcoords = dpar("datacoords")
+    # requested coordinate system
+    rcoords = dpar("coords")
+    if (rcoords != dcoords) {
+            on.exit(dpar(coords=rcoords),add=T)
+            dpar(coords=dcoords)
+    }
+
     u <- dat(sub(datvar,"u",what,fixed=TRUE),avg=T,smooth=T)
     v <- dat(sub(datvar,"v",what,fixed=TRUE),avg=T,smooth=T)
     uw <- dat(sub(datvar,"u'w'",what,fixed=TRUE),avg=T,smooth=T)
