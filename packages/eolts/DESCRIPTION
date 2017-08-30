@@ -1,7 +1,7 @@
 Package: eolts
-Version: 0.0-1
+Version: 1.0-86
 Date: 2013-09-13
-Title: Support for reading, writing, and analysis and plotting of time series and spectra.
+Title: Support for reading, writing, and analysis and plotting of time series and spectra
 Description: This package provides R functions to read, analyse, plot and write time series data, and support for generation and plotting of spectra from time series. Support includes reading time series from multiple NetCDF files. Developed at the National Center for Atmospheric Research, Earth Observing Laboratory (NCAR EOL), sponsored by the National Science Foundation.
 License: BSD_2_clause + file LICENSE
 URL: http://github.com/ncareol/R-eol.git
