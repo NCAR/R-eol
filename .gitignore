@@ -1,6 +1,7 @@
 *.o
 *.so
 .R*
+!.Rbuildignore
 # History files
 .Rhistory
 
