@@ -40,6 +40,8 @@ NULL
     dir = system.file(package="eolsonde","unitTests","data","D-file")
     Sys.setenv(SONDE_DATA=dir)
     dpar(start="2008 8 15 17:20",end="2008 8 15 18:00")
-    project_plots(plotDir="/tmp")
+    plotdir = tempdir()
+    project_plots(plotDir=plotdir)
+    unlink(plotdir, recursive=TRUE)
 }
 \keyword{ sounding }
