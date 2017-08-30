@@ -48,25 +48,7 @@ dat.rhoDry <- function(what,derived=TRUE,cache=F,...)
     # convert to pascals
     if (any(units(P) == "mb")) P[,units(P)=="mb"] = P[,units(P)=="mb"] * 100
     if (any(units(P) == "kPa")) P[,units(P)=="kPa"] = P[,units(P)=="kPa"] * 1000
-
-    im <- match(stations(mr), stations(P), nomatch = 0)
-    # 
-    if(any(im == 0)) {
-        # For those stations without a pressure
-        warning(paste("No variable P at stations",
-                paste(unique(stations(mr)[im==0]),collapse=","),
-                ". dat.rhoDry is creating a P from average of other stations"))
-        Pa <- P[, 1]
-        nP <- dim(P)[2]
-        Pa@data <- P@data %*% rep(1/nP, nP)
-        nm <- length(im)
-        Pt <- P[, rep(1, nm)]
-        if (any(im != 0)) Pt[,im!=0] <- P[,im]
-        Pt[, im == 0] <- Pa
-        P <- Pt
-        stations(P) <- stations(mr)
-    }
-    else P <- P[, im]
+    P = conform(P,mr)
 
     P <- P/(1 + mr/622)		# P - Pv, pascals
     Td <- dat(sub(datvar,"T",what,fixed=TRUE))
