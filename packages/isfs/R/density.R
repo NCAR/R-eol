@@ -24,23 +24,7 @@ dat.rhoAir <- function(what,derived=TRUE,cache=F,...)
     Td <- dat(sub(datvar,"T",what,fixed=TRUE))
     Td <- conform(Td,q)
     Tv <- (273.15 + Td)*(1 + 0.608*q*1e-3)
-
-    im <- match(stations(Td),stations(P),nomatch=0)
-    if (any(im==0)) {
-        warning(paste("No variable P at stations",
-                paste(unique(stations(Td)[im==0]),collapse=","),
-                ". dat.rhoAir is creating a P from average of other stations"))
-        Pa <- P[,1]
-        nP <- dim(P)[2]
-        Pa@data <- P@data %*% rep(1,nP)/nP
-        nm <- length(im)
-        Pt <- P[,rep(1,nm)]
-        if (any(im != 0)) Pt[,im!=0] <- P[,im]
-        Pt[,im==0] <- Pa
-        P <- Pt
-        stations(P) <- stations(Td)
-    }
-    else P <- P[,im] 
+    P = conform(P,Tv)
 
     x <- P/R/Tv
     if (!is.null(robust) && robust) x <- median(x, na.rm=T)
