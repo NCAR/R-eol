@@ -14,7 +14,7 @@ setMethod("conform",signature(x="dat",y="dat"),
     function(x,y)
     {
 
-        xcols <- match_columns(y,x,warn="Creating time series of NAs")
+        xcols <- match_columns(y,x,warn="Creating time series, filled by")
         if (any(xbad <- (xcols == 0))) {
             xcols[xbad] <- 1
             x <- x[,xcols]
