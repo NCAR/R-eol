@@ -1,5 +1,8 @@
 #!/bin/sh
 
+groups
+id -a
+
 # Build R packages from source tar files on the current directory,
 # install to the first site library, .Library.site[1].
 
