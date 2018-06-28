@@ -20,7 +20,7 @@ setClass("nts",
         long_names="character"
         ),
     prototype=list(
-        weights=matrix(0,ncol=0,nrow=0),
+        weights=matrix(0, ncol=0,nrow=0),
         weightmap=integer(0),
         stations=integer(0),
         deltat=numeric(0),
@@ -656,7 +656,7 @@ setMethod("[",signature(x="nts"),
         if (length(weightmap) > 0) {
             weightmap <- weightmap[j]
             if (length(weightmap) == 0) {
-                weights <- matrix(ncol=0,nrow=0)
+                weights <- matrix(0, ncol=0,nrow=0)
                 weightmap <- integer(0)
             }
             else if (length(weights) > 0) {
@@ -667,7 +667,7 @@ setMethod("[",signature(x="nts"),
                 weights <- weights[i,uw,drop=FALSE]
             }
         }
-        else weights <- matrix(ncol=0,nrow=0)
+        else weights <- matrix(0, ncol=0,nrow=0)
 
         if (!is.null(weights)) {
             x@weights <- weights
@@ -929,7 +929,7 @@ setReplaceMethod("[",signature(x="nts",value="vector"),
         }
 
         if (is.logical(i) && any(is.na(i))) i[is.na(i)] <- FALSE
-        if (is.character(j)) j <- match(j,dimnames(x)[[2]],nomatch=0)
+        if (is.character(j)) j <- match(j,colnames(x),nomatch=0)
         if (is.logical(j) && any(is.na(j))) j[is.na(j)] <- FALSE
 
         if (is.null(j)) x@data[i] <- value
@@ -1037,12 +1037,12 @@ setMethod("atan2",signature(y="nts",x="nts"),
 
             x <- align(x, p1, how="NA",matchtol=tol)
             x@deltat <- numeric(0)
-            x@weights <- matrix(ncol=0,nrow=0)
+            x@weights <- matrix(0, ncol=0,nrow=0)
             x@weightmap <- integer(0)
 
             y <- align(y, p1, how="NA",matchtol=tol)
             y@deltat <- numeric(0)
-            y@weights <- matrix(ncol=0,nrow=0)
+            y@weights <- matrix(0, ncol=0,nrow=0)
             y@weightmap <- integer(0)
         }
 
@@ -1061,7 +1061,7 @@ setMethod("atan2",signature(y="nts",x="nts"),
         else y@data <- atan2(y@data, x@data)
 
         # remove weights when computing atan2 of two nts
-        y@weights <- matrix(ncol=0,nrow=0)
+        y@weights <- matrix(0, ncol=0,nrow=0)
         y@weightmap <- integer(0)
         y
     }
@@ -1157,12 +1157,12 @@ setMethod("Ops",signature(e1="nts",e2="nts"),
             # browser()
             e1 <- align(e1, p1, how="NA",matchtol=tol)
             e1@deltat <- numeric(0)
-            e1@weights <- matrix(ncol=0,nrow=0)
+            e1@weights <- matrix(0, ncol=0,nrow=0)
             e1@weightmap <- integer(0)
 
             e2 <- align(e2, p1, how="NA",matchtol=tol)
             e2@deltat <- numeric(0)
-            e2@weights <- matrix(ncol=0,nrow=0)
+            e2@weights <- matrix(0, ncol=0,nrow=0)
             e2@weightmap <- integer(0)
         }
 
@@ -1188,12 +1188,12 @@ setMethod("Ops",signature(e1="nts",e2="nts"),
             wm2 <- e2@weightmap
             # if weights are identical then keep e1 weights
             if (!identical(wts1[,wm1],wts2[,wm2])) {
-                e1@weights <- matrix(ncol=0,nrow=0)
+                e1@weights <- matrix(0, ncol=0,nrow=0)
                 e1@weightmap <- integer(0)
             }
         }
         else {
-            e1@weights <- matrix(ncol=0,nrow=0)
+            e1@weights <- matrix(0, ncol=0,nrow=0)
             e1@weightmap <- integer(0)
         }
         if (length(s1) > length(s2)) {
@@ -1387,8 +1387,8 @@ setMethod("seriesMerge",signature(x1="nts",x2="nts"),
 
         nc1 <- ncol(x1)
         nc2 <- ncol(x2)
-        n1 <- dimnames(x1)[[2]]
-        n2 <- dimnames(x2)[[2]]
+        n1 <- colnames(x1)
+        n2 <- colnames(x2)
 
         s1 <- stations(x1)
         if (length(s1) == 0) s1 <- rep(NA_integer_,nc1)
@@ -1542,7 +1542,7 @@ setMethod("seriesMerge",signature(x1="nts",x2="numeric"),
         if (length(s1) == 0) s1 <- rep(NA_integer_,nc1)
 
         if (is.matrix(x2)) {
-            nx2 <- dimnames(x2)[[2]]
+            nx2 <- colnames(x2)
             nc2 <- ncol(x2)
         }
         else {
@@ -1554,7 +1554,7 @@ setMethod("seriesMerge",signature(x1="nts",x2="numeric"),
 
         x2 <- nts(cbind(x1@data,x2),x1@positions,weights=w1,weightmap=wm1,
             stations=s1)
-        dimnames(x2) <- list(NULL,c(dimnames(x1)[[2]],nx2))
+        colnames(x2) <- c(colnames(x1),nx2)
 
         i <- 1
         while( i <= length(args)) {
@@ -1580,8 +1580,8 @@ setMethod("seriesConcat",signature(x1="nts",x2="nts"),
     function(x1,x2,...)
     {
 
-        n1 <- dimnames(x1)[[2]]
-        n2 <- dimnames(x1)[[2]]
+        n1 <- colnames(x1)
+        n2 <- colnames(x1)
 
         if (!identical(n1,n2)) warning("column names of x1 do no match column names of x2")
 
@@ -1599,7 +1599,7 @@ setMethod("seriesConcat",signature(x1="nts",x2="nts"),
         # one weight
         weightmap <- as.integer(as.vector(t(c(1,1)) %*% weightmap))
 
-        weights <- matrix(ncol=0,nrow=0)
+        weights <- matrix(0, ncol=0,nrow=0)
 
         if (any(weightmap != 0)) {
 
@@ -1725,7 +1725,7 @@ setMethod("average", signature=(x="nts"),
         method="mean",use.weights=TRUE,simple=TRUE)
     {
         if (!simple) stop("average on an nts cannot do non-simple averaging. Non-simple averaging must be done on a dat object")
-        cat(paste("average x=",dimnames(x)[[2]],
+        cat(paste("average x=",colnames(x),
                 ", period=",avgperiod,
                 ", outinterval=",outinterval,
                 ", use.weights=",use.weights,"\n",sep=""))
@@ -1793,7 +1793,7 @@ setMethod("approx",signature(x="nts"),
         else if (inherits(xout,"utime")) xout <- as.numeric(xout)
         else if (inherits(xout,"timeDate")) xout <- as.numeric(utime(xout))
 
-        dnames <- dimnames(x)[[2]]
+        dnames <- colnames(x)
         dunits <- x@units
         stns <- stations(x)
 
@@ -1889,13 +1889,13 @@ setMethod("align",signature="nts",
             # interpolated over more than tol.
             x <- splusTimeSeries::align(x,xpos,how="drop",error.how="drop",matchtol=tol/86400)
             class(x) <- class.x
-            x@weights <- matrix(0,ncol=0,nrow=0)
+            x@weights <- matrix(0, ncol=0,nrow=0)
             x@weightmap <- integer(0)
         }
         else {
             x <- splusTimeSeries::align(x,pos,how=how,error.how=error.how,matchtol=tol/86400)
             class(x) <- class.x
-            x@weights <- matrix(0,ncol=0,nrow=0)
+            x@weights <- matrix(0, ncol=0,nrow=0)
             x@weightmap <- integer(0)
         }
         x@positions <- utime(x@positions)
@@ -1932,7 +1932,7 @@ setMethod("replace.nas",signature=signature(x="matrix",warn="logical"),
         if (any(is.na(x))) {
             nc <- ncol(x)
             nr <- nrow(x)
-            dns <- dimnames(x)[[2]]     # names of data columns
+            dns <- colnames(x)     # names of data columns
             na.cnt <- t(rep(1,nr)) %*% is.na(x)
             na.cols <- (1:nc)[na.cnt > 0]
             if (is.null(dns)) dns <- paste("col",1:nc,sep="")
@@ -2047,7 +2047,7 @@ setMethod("trend", signature(x="nts",use.lsfit="logical"),
                 times <- times - times[1]
 
                 # Don't use weights
-                x@weights <- matrix(ncol=0,nrow=0)
+                x@weights <- matrix(0, ncol=0,nrow=0)
                 x@weightmap <- integer(0)
                 mean.x <- apply(x@data,2,mean,na.rm=TRUE)
 
