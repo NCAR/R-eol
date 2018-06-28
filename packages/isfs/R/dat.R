@@ -414,11 +414,11 @@ setGeneric("suffixes",function(x,...) standardGeneric("suffixes"))
 setMethod("suffixes",signature="dat",
     function(x,first=2,leadch=".")
     {
-        # function to strip words from front of dimnames(x)[[2]]
+        # function to strip words from front of colnames(x)
         # first is first word to save, e.g. for a dimname of "T.hygt.1.5m", 
         # suffixes returns ".hygt.1.5m" (first=2)
         # leadch is the character prepended to result
-        x <- dimnames(x)[[2]]
+        x <- colnames(x)
         suffixes(x,first=first,leadch=leadch)
     }
     )
@@ -560,7 +560,7 @@ setGeneric("heights",function(x) standardGeneric("heights"))
 setMethod("heights","ANY",
     function(x)
     {
-        if (is.matrix(x)) x <- dimnames(x)[[2]]
+        if (is.matrix(x)) x <- colnames(x)
         if (!is.character(x)) stop("x is not character")
 
         sapply(x,
@@ -581,39 +581,64 @@ setMethod("heights","ANY",
 setMethod("heights","dat",
     function(x)
     {
-        heights(dimnames(x)[[2]])
+        heights(colnames(x))
     }
     )
 
 setGeneric("sites",function(x) standardGeneric("sites"))
 
-setMethod("sites","ANY",
+setMethod("sites", signature(x="ANY"),
     function(x)
     {
-        if (is.matrix(x)) x <- dimnames(x)[[2]]
+        if (is.matrix(x)) x <- colnames(x)
         if (!is.character(x)) stop("x is not character")
         sapply(x,
             function(x)
             {
                 m <- regexec("(\\.[0-9]+\\.?[0-9]*(c?m))?(\\.[^.]+)?$",x)[[1]]
-                if (length(m) < 4 || m[1] == -1) return("")
+                if (length(m) < 4 || m[4] <= 0) return("")
                 substr(x,m[4]+1,m[4]+attr(m,"match.length")[4]-1)
             }
             )
     }
     )
 
-setMethod("sites","dat",
+setMethod("sites", signature(x="dat"),
     function(x)
     {
-        sites(dimnames(x)[[2]])
+        sites(colnames(x))
     }
     )
 
-setReplaceMethod("dimnames", signature(x="dat",value="list"),
+setGeneric("sites<-",function(x,value) standardGeneric("sites<-"))
+
+setReplaceMethod("sites",signature(x="character",value="character"),
     function(x,value)
     {
-        dimnames(as(x,"nts")) <- value
+        vx <- value != ""
+        value[vx] <- paste0(".", value[vx])
+        cx <- sapply(1:length(x),
+            function(i)
+            {
+                m <- regexec("(\\.[0-9]+\\.?[0-9]*(c?m))?(\\.[^.]+)?$",x[i])[[1]]
+                # cat("m=",paste0(m,collapse=","), "\n")
+                # cat("match.length(m)=",paste0(attr(m,"match.length"),collapse=","), "\n")
+                if (length(m) < 4 || m[4] <= 0)
+                    paste0(x[i],value[(i-1) %% length(value)+1])
+                else
+                    paste0(substr(x[i],1,m[4]-1), value[(i-1) %% length(value)+1])
+            }
+            )
+        cx
+    }
+    )
+
+setReplaceMethod("sites",signature(x="dat",value="character"),
+    function(x,value)
+    {
+        cx <- colnames(x)
+        sites(cx) <- value
+        colnames(x) <- cx
         x
     }
     )

@@ -1,4 +1,7 @@
 import(methods,eolts)
+importFrom("graphics", "axis", "legend", "mtext", "par",
+         "plot.default", "symbols", "text", "title")
+importFrom("stats", "coef", "lm", "median")
 
 useDynLib(isfs)
 
@@ -62,7 +65,7 @@ exportMethods(
     "clip",
     "suffixes",
     "heights",
-    "sites",
+    "sites", "sites<-",
     "seriesMerge",
     "dimnames<-",
     "crack",
