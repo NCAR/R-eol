@@ -7,6 +7,11 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
+# to run this test by hand:
+# library(RUnit)
+# source("wherever/runit.conform.R")
+# test.conform()
+
 test.conform <- function()
 {
     nr <- 4
