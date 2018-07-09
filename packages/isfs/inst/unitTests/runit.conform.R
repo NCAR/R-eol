@@ -118,6 +118,32 @@ test.conform <- function()
     checkTrue(all(xx[,1] ==  2))
     checkTrue(all(is.na(xx[,2])))
 
+    # conform P with no height to T at a height
+    cx <- paste0("P.s", 1:ncx)
+    colnames(x) <- cx
+    cy <- paste0("T.6m.s", 1:ncy)
+    colnames(y) <- cy
+    cat("checking conform of",paste0(colnames(x),collapse=","),"to",paste0(colnames(y),collapse=","),"\n")
+    xx <- conform(x, y)
+    checkIdentical(dim(xx), dim(y))
+    checkTrue(all(sapply(1:ncx, function(i) { all(xx[,i] == x[,i]) } )))
+    checkIdentical(colnames(xx), paste0(words(cx[1],1,1),suffixes(cy)))
+    checkTrue(all(is.na(xx[,(ncx+1):ncy])))
+    checkIdentical(units(xx), rep(ux[1],ncy))
+
+    # conform P with height to T with no height
+    cx <- paste0("P.",1:ncx,"m.s", 1:ncx)
+    colnames(x) <- cx
+    cy <- paste0("T.s", 1:ncy)
+    colnames(y) <- cy
+    cat("checking conform of",paste0(colnames(x),collapse=","),"to",paste0(colnames(y),collapse=","),"\n")
+    xx <- conform(x, y)
+    checkIdentical(dim(xx), dim(y))
+    checkTrue(all(sapply(1:ncx, function(i) { all(xx[,i] == x[,i]) } )))
+    checkIdentical(colnames(xx), paste0(words(cx[1],1,1),suffixes(cy)))
+    checkTrue(all(is.na(xx[,(ncx+1):ncy])))
+    checkIdentical(units(xx), rep(ux[1],ncy))
+
     cx <- paste0("P.5m.s", 1:ncx)
     colnames(x) <- cx
     cy <- paste0("T.6m.s", 1:ncy)

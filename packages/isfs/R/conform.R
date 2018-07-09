@@ -152,8 +152,9 @@ setMethod("match_columns",signature(x="dat",y="dat"),
                         hx <- (1:ncx)[ssx][!is.na(match(htsx[ssx],htx))]
                         lhx <- length(hx)
 
-                        # If y at this point has one column, with NA height, it matches against anything
-                        if (identical(htsy[ssy], NA_real_)) {
+                        # If x or y at this point has one column, with NA height,
+                        # it matches against anything
+                        if (identical(htsy[ssy], NA_real_) || is.na(htx)) {
                             # one column, no height information
                             hy = (1:ncy)[ssy]
                         }
@@ -165,8 +166,8 @@ setMethod("match_columns",signature(x="dat",y="dat"),
                         if (lhy == 0 && !is.na(htx)) {
                             # no exact match for this height at stn
                             # find minimum difference
-                            hd = abs(htsy[ssy]-htx)
-                            hdm = min(hd,na.rm=T)
+                            hd <- abs(htsy[ssy]-htx)
+                            hdm <- min(hd,na.rm=T)
                             # cat("height differences=",hd," minimum=",hdm,"\n")
                             if (!is.na(hdm)) {
                                 hy <- (1:ncy)[ssy][!is.na(hd) & hd == hdm]
