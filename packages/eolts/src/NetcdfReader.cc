@@ -81,6 +81,33 @@ namespace {
             dp += nc;
         }
     }     
+    template <typename T>
+    void setFillToNA_gt(T *dp,size_t nr,size_t nd,size_t nc,T fill, T na_val)
+    {
+        unsigned int i,j;
+
+        T *dp1;
+        for (i = 0; i < nr; i++) { 
+            dp1 = dp;
+            for (j = 0; j < nd; j++,dp1++) { 
+#ifdef FILL_DEBUG
+                if (*dp1 > 1.e36) {
+                            union d {
+                                double v;
+                                unsigned int i[2];
+                            } du,df;
+                            du.v = *dp1;
+                            df.v = fill;
+                            Rprintf("data =%lf, %08x %08x, fill=%lf, %08x %08x, equals=%d\n",
+                                    du.v, du.i[0], du.i[1], df.v, df.i[0], df.i[1],
+                                    (int)(*dp1 == fill));
+                }
+#endif
+                if (*dp1 > fill) *dp1 = na_val;
+            }
+            dp += nc;
+        }
+    }     
 
     /**
      * Parse a numeric time zone specification, with one of the
@@ -403,9 +430,8 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
         vector<size_t> finalRdims;
         size_t lenRead = 0;
 
-        double dFillValue = 0.0;
-        int  iFillValue = 0;
-        bool hasFillValue = false;
+        double dFillValue = NC_FILL_DOUBLE;
+        int  iFillValue = NC_FILL_INT;
         /*
          * Pointer to first instance of the variable in the file set,
          * for checking type and dimensions of that variable in subsequent files.
@@ -578,8 +604,10 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                         try {
                             const NcAttr* attr = var->getAttribute("_FillValue");
                             if (attr && attr->getLength() == 1) {
-                                hasFillValue = true;
                                 dFillValue = attr->getNumericValue(0);
+                            }
+                            else {
+                                dFillValue = NC_FILL_DOUBLE;
                             }
                         }
                         catch(const NcException& nce) {}
@@ -621,9 +649,9 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                         try {
                             const NcAttr* attr = var->getAttribute("_FillValue");
                             if (attr && attr->getLength() == 1) {
-                                hasFillValue = true;
                                 iFillValue = attr->getNumericValue(0);
                             }
+                            else iFillValue = NC_FILL_INT;
                         }
                         catch(const NcException& nce) {}
                     }
@@ -674,10 +702,26 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                     throw NcException("nc_get_vara_double",
                             var->getFileName(),var->getName(),status);
                 }
-                if (hasFillValue) {
+
+                {
                     double *fp = (double*)workPtr;
                     double *fpend = fp + rlen;
-                    for ( ; fp < fpend; fp++) if (*fp == dFillValue) *fp = NA_REAL;
+                    // _FillValue may have been assigned to variable
+                    // after the data was written (a bug), in which case the
+                    // data will be filled with NC_FILL_DOUBLE/FLOAT=9.96...e36
+                    // Our usual _FillValue is 1.e37. So if the fill is
+                    // greater than 9.9e36, do a greater-than test, rather
+                    // than equivalence.
+                    if (dFillValue > 9.9e36) {
+                        for ( ; fp < fpend; fp++) {
+                            if (*fp > 9.9e36) *fp = NA_REAL;
+                        }
+                    }
+                    else {
+                        for ( ; fp < fpend; fp++) {
+                            if (*fp == dFillValue) *fp = NA_REAL;
+                        }
+                    }
                 }
                 break;
             case INTSXP:
@@ -687,7 +731,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                     throw NcException("nc_get_vara_int",
                             var->getFileName(),var->getName(),status);
                 }
-                if (hasFillValue) {
+                {
                     int *fp = (int*)workPtr;
                     int *fpend = fp + rlen;
                     for ( ; fp < fpend; fp++) if (*fp == iFillValue) *fp = NA_INTEGER;
@@ -1101,6 +1145,8 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
         else Rprintf("Reading: %s%s, from=%s, to=%s\n",
                 vnames[0].c_str(),cntsStr.c_str(),t1.c_str(),t2.c_str());
     }
+    double dFillValue = NC_FILL_DOUBLE;
+    int iFillValue = NC_FILL_INT;
 
     for (ifile = 0; ifile < nfiles; ifile++) {
 
@@ -1472,10 +1518,27 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                     }
                     attr = var->getAttribute("_FillValue");
                     if (attr && attr->getLength() == 1) {
-                        double fill = attr->getNumericValue(0);
+                        dFillValue = attr->getNumericValue(0);
+                    }
+                    else {
+                        dFillValue = NC_FILL_DOUBLE;
+                    }
+                    {
                         double *dp = ddataPtr + offset;
-                        setFillToNA(dp,nrec * maxSampleDim,
-                                stationDim,ncols,fill,NA_REAL);
+                        // _FillValue may have been assigned to variable
+                        // after the data was written (a bug), in which case the
+                        // data will be filled with NC_FILL_DOUBLE/FLOAT=9.96...e36
+                        // Our usual _FillValue is 1.e37. So if the fill is
+                        // greater than 9.9e36, do a greater-than test, rather
+                        // than equivalence.
+                        if (dFillValue > 9.9e36) {
+                            setFillToNA_gt(dp,nrec * maxSampleDim,
+                                    stationDim,ncols,9.9e36,NA_REAL);
+                        }
+                        else {
+                            setFillToNA(dp,nrec * maxSampleDim,
+                                    stationDim,ncols,dFillValue,NA_REAL);
+                        }
                     }
                     break;
                 case INTSXP:
@@ -1496,12 +1559,15 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                         throw NcException("nc_get_varm_long",
                                 var->getFileName(),var->getName(),status);
                     }
+                    iFillValue = NC_FILL_INT;
                     attr = var->getAttribute("_FillValue");
                     if (attr && attr->getLength() == 1) {
-                        int fill = (int)attr->getNumericValue(0);
+                        iFillValue = (int)attr->getNumericValue(0);
+                    }
+                    {
                         int *dp = idataPtr + offset;
                         setFillToNA(dp,nrec * maxSampleDim,
-                                stationDim,ncols,fill,NA_INTEGER);
+                                stationDim,ncols,iFillValue,NA_INTEGER);
                     }
                     break;
                 default:

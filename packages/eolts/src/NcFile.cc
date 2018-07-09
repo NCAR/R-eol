@@ -177,12 +177,7 @@ NcVar* NcFile::getVariable(int varid) throw(NcException)
     // note i starts at _varvec.size() - doesn't re-read variables.
     for (int i = _varvec.size(); i <= varid; i++) {
         NcVar *var = 0;
-        try {
-            var = new NcVar(this,i);
-        }
-        catch(const NcException& nce) {
-            return 0;
-        }
+        var = new NcVar(this,i);
         _vars[var->getName()] = var;
         _varvec.push_back(var);
     }
@@ -193,15 +188,12 @@ NcVar* NcFile::getVariable(const string &name) throw()
 {
     NcVarMapIterator i = _vars.find(name);
     if (i != _vars.end()) return i->second;
-    NcVar *var = 0;
-    try {
-        var = new NcVar(this,name);
-    }
-    catch(const NcException& nce) {
-        return 0;
-    }
-    _vars[var->getName()] = var;
-    return var;
+
+    getVariables();
+    i = _vars.find(name);
+    if (i != _vars.end()) return i->second;
+
+    return 0;
 }
 
 vector<NcVar *> NcFile::getVariables() throw(NcException)
@@ -210,7 +202,7 @@ vector<NcVar *> NcFile::getVariables() throw(NcException)
     getNumVariables();
     // note i starts at _varvec.size() - doesn't re-read variables.
     for (int i = _varvec.size(); i < _nvars; i++)
-        if (!getVariable(i)) break;
+        getVariable(i);
     return _varvec;
 }
 
@@ -395,8 +387,9 @@ void NcFile::scanForTSVarWithoutStationDim(const NcDim* tdim)
         NcVar* var = getVariable(_nscannedVars);
         if (var->matchDimension(tdim,0)) {
             string shortName = var->getCharAttribute("short_name");
-            if (shortName.size() > 0) addTimeSeriesVariable(shortName,var);
-            else addTimeSeriesVariable(var->getName(),var);
+            if (shortName.size() > 0 && shortName != var->getName())
+                addTimeSeriesVariable(shortName,var);
+            addTimeSeriesVariable(var->getName(),var);
 
             if (_hasTSVariableWithoutStationDimension) break;
         }

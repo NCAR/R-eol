@@ -743,9 +743,9 @@ SEXP R_netcdf::getTimeSeriesVariables(int verbose) throw(NcException)
 
     int nfiles = _fileset->getNFiles();
 
-    set<string> vnames;
+    std::map<string,unsigned int> numattrs;
+    std::map<string,NcVar*> tvars;
 
-    vector<NcVar *> tvars;
     const set<string>& timeDimensionNames = _fileset->getTimeDimensionNames();
 
     for (int ifile = 0; ifile < nfiles; ifile++) {
@@ -761,9 +761,18 @@ SEXP R_netcdf::getTimeSeriesVariables(int verbose) throw(NcException)
         vector<NcVar*> vars = ncf->getTimeSeriesVariables(timeDim);
 
         for (unsigned int ivar = 0; ivar < vars.size(); ivar++) {
-            if (vnames.find(vars[ivar]->getName()) == vnames.end()) {
-                vnames.insert(vars[ivar]->getName());
-                tvars.push_back(vars[ivar]);
+            // For each unique variable name, create the R_NetcdfVariable
+            // from the variable in the set of files with the most
+            // attributes. This should avoid problems where variables
+            // may be added to a file without the usual ISFS attributes,
+            // of which "short_name" is the most important for matching
+            // by name.
+            NcVar* var = vars[ivar];
+            const vector<const NcAttr*>& attrs = var->getAttributes();
+            unsigned int na = numattrs[var->getName()];
+            if (attrs.size() >= na) {
+                tvars[var->getName()] = var;
+                numattrs[var->getName()] = attrs.size();
             }
         }
     }
@@ -781,8 +790,9 @@ SEXP R_netcdf::getTimeSeriesVariables(int verbose) throw(NcException)
         UNPROTECT(1);   // resnames
     }
 
-    for (unsigned int i = 0; i < tvars.size(); i++) {
-        R_NetcdfVariable rvar(this,tvars[i]);
+    std::map<string, NcVar*>::const_iterator itr = tvars.begin();
+    for (unsigned int i = 0; itr != tvars.end(); ++itr, i++) {
+        R_NetcdfVariable rvar(this,itr->second);
         SET_STRING_ELT(resnames,i,Rf_mkChar(rvar.getName().c_str()));
         SET_VECTOR_ELT(result,i,rvar.getRObject());
     }
