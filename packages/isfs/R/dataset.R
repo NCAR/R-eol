@@ -100,8 +100,8 @@ find_datasets <- function(path=NULL, pattern="^netcdf", verbose=TRUE)
                     if (verbose) cat(paste0("Found dataset=",dname," in global attributes of files in ",subpath,"\n"))
                 }
                 if (is.null(dname)) {
-                    # cat("catpath=",catpath,",pattern=",pattern,"\n")
-                    dname <- sub(pattern,"",catpath)
+                    # cat("subpath=",subpath,",pattern=",pattern,"\n")
+                    dname <- sub(pattern,"",subpath)
                     if (nchar(dname) == 0 || dname == "/") dname <- catpath
                     # cat("dname=",dname,"\n")
 
