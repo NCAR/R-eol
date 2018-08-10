@@ -24,6 +24,8 @@ find_datasets <- function(path=NULL, pattern="^netcdf", verbose=TRUE)
     } else if (!file.exists(path))
             warning(paste0("directory ",path," does not exist"))
 
+    if (verbose) cat("Searching for netcdf datasets in",path,"\n")
+
     topncds <- list.files(path,pattern,include.dirs=TRUE)
 
     if (length(topncds) == 0)
@@ -92,12 +94,12 @@ find_datasets <- function(path=NULL, pattern="^netcdf", verbose=TRUE)
                 close(con)
 
                 dname <- NULL
+                subpath <- file.path(topncd,ncd)
                 if ("dataset" %in% names(attrs) && nchar(attrs$dataset) > 0) {
                     dname <- attrs$dataset
-                    if (verbose) cat(paste0("found dataset=",dname," in global attributes of files in ",ncpath,"\n"))
+                    if (verbose) cat(paste0("Found dataset=",dname," in global attributes of files in ",subpath,"\n"))
                 }
                 if (is.null(dname)) {
-                    catpath <- file.path(topncd,ncd)
                     # cat("catpath=",catpath,",pattern=",pattern,"\n")
                     dname <- sub(pattern,"",catpath)
                     if (nchar(dname) == 0 || dname == "/") dname <- catpath
@@ -106,10 +108,10 @@ find_datasets <- function(path=NULL, pattern="^netcdf", verbose=TRUE)
                     dname <- sub("^_+","",dname)    # remove leading underscores
                     dname <- sub("^/+","",dname)    # remove leading slashes
                     dname <- sub("/$","",dname)    # remove trailing slashes
-                    if (verbose) cat(paste0("created dataset name=",dname," from path ",catpath,"\n"))
+                    if (verbose) cat(paste0("Created dataset=",dname," from path ",subpath,"\n"))
                 }
                 if (dname %in% names(dsets)) {
-                    warning(paste0("duplicate datasets called ", dname,
+                    warning(paste0("Duplicate datasets called ", dname,
                             " in ", paste(topncds,collapse=",")))
                 }
 
