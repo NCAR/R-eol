@@ -26,29 +26,29 @@ find_datasets <- function(path=NULL, pattern="^netcdf", verbose=TRUE)
 
     if (verbose) cat("Searching for netcdf datasets in",path,"\n")
 
-    topncds <- list.files(path,pattern,include.dirs=TRUE)
+    dirslev1 <- list.files(path,pattern,include.dirs=TRUE)
 
-    if (length(topncds) == 0)
+    if (length(dirslev1) == 0)
         warning(paste0("no directories found on",path," matching pattern: \"",pattern,"\""))
 
     dsets <- list()
 
-    for (topncd in topncds) {
+    for (dirlev1 in dirslev1) {
 
-        # cat("topncd=",topncd,"\n")
-        topncpath <- file.path(path,topncd)
-        ncds <- list.dirs(path=topncpath,full.names=FALSE)
+        # cat("dirlev1=",dirlev1,"\n")
+        lev1path <- file.path(path,dirlev1)
+        dirslev2 <- list.dirs(path=lev1path,full.names=FALSE)
 
-        for (ncd in ncds) {
+        for (dirlev2 in dirslev2) {
 
-            # cat("ncd=",ncd,"\n")
+            # cat("dirlev2=",dirlev2,"\n")
 
             # file.path adds a trailing slash if second arg is ""
-            if (ncd == "") ncpath <- topncpath
-            else ncpath <- file.path(topncpath,ncd)
+            if (dirlev2 == "") lev2path <- lev1path
+            else lev2path <- file.path(lev1path,dirlev2)
 
-            ncdf <- list.files(ncpath,"\\.nc$")
-            if (length(ncdf) == 0) ncdf <- list.files(ncpath,"\\.cdf$")
+            ncdf <- list.files(lev2path,"\\.nc$")
+            if (length(ncdf) == 0) ncdf <- list.files(lev2path,"\\.cdf$")
 
             if (length(ncdf) > 0) {
 
@@ -75,7 +75,7 @@ find_datasets <- function(path=NULL, pattern="^netcdf", verbose=TRUE)
                 ncpat <- unique(ncpat)
 
                 if (length(ncpat) > 1) {
-                    warning(paste("In directory",ncd,
+                    warning(paste("In directory",dirlev2,
                             "cannot determine a unique file name pattern from file names:",
                             paste(ncpat,collapse=", ")))
                     t1 <- utime(0)
@@ -88,31 +88,31 @@ find_datasets <- function(path=NULL, pattern="^netcdf", verbose=TRUE)
                 ix <- seq(from=1,to=length(ncdf),by=ceiling(length(ncdf)/10))
 
                 # times are not important when reading global attributes
-                con <- netcdf(dir=ncpath,file=sort(ncdf)[ix], start=t1,end=t1)
+                con <- netcdf(dir=lev2path,file=sort(ncdf)[ix], start=t1,end=t1)
                 # read global attributes
                 attrs <- readnc(con)
                 close(con)
 
                 dname <- NULL
-                subpath <- file.path(topncd,ncd)
+                dirlev12 <- file.path(dirlev1,dirlev2)
                 if ("dataset" %in% names(attrs) && nchar(attrs$dataset) > 0) {
                     dname <- attrs$dataset
-                    if (verbose) cat(paste0("Found dataset=",dname," in global attributes of files in ",subpath,"\n"))
+                    if (verbose) cat(paste0("Found dataset=",dname," in global attributes of files in ",dirlev12,"\n"))
                 }
                 if (is.null(dname)) {
-                    # cat("subpath=",subpath,",pattern=",pattern,"\n")
-                    dname <- sub(pattern,"",subpath)
+                    # cat("dirlev12=",dirlev12,",pattern=",pattern,"\n")
+                    dname <- sub(pattern,"",dirlev12)
                     if (nchar(dname) == 0 || dname == "/") dname <- catpath
                     # cat("dname=",dname,"\n")
 
                     dname <- sub("^_+","",dname)    # remove leading underscores
                     dname <- sub("^/+","",dname)    # remove leading slashes
                     dname <- sub("/$","",dname)    # remove trailing slashes
-                    if (verbose) cat(paste0("Created dataset=",dname," from path ",subpath,"\n"))
+                    if (verbose) cat(paste0("Created dataset=",dname," from path ",dirlev12,"\n"))
                 }
                 if (dname %in% names(dsets)) {
                     warning(paste0("Duplicate datasets called ", dname,
-                            " in ", paste(topncds,collapse=",")))
+                            " in ", paste(dirslev1,collapse=",")))
                 }
 
                 # cat("dname=",dname,"\n")
@@ -146,7 +146,7 @@ find_datasets <- function(path=NULL, pattern="^netcdf", verbose=TRUE)
                 # browser()
                 
                 dsets[[dname]] <- c(list(enable=TRUE,desc=desc,
-                    calpath=calpaths, ncd=ncpath,ncf=ncpat,datacoords=datacoords, start=t1),
+                    calpath=calpaths, ncd=lev2path,ncf=ncpat,datacoords=datacoords, start=t1),
                     int_attrs)
             }
         }
