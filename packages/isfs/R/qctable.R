@@ -241,6 +241,8 @@ qctable <- function(vars,data=NULL,ntper=4,file="",append=FALSE,title=NULL,
     if (length(vars) > 1) 
         qctable_links_html(vars,file=file,append=append)
 
+    cat("<p>Do a browser refresh to make sure this page is up-to-date.\n",file=file,append=append)
+
     first <- TRUE
     for (dnx in vars) {
 
