@@ -167,7 +167,7 @@ dat.Ssoil <- function(what,derived=TRUE,sum=TRUE,dfill=FALSE,doderiv=FALSE,...)
             depthg <- NULL
             if (!is.null(gsoilss)) {
                 depthg <- unique(-heights(gsoilss))
-                depthg[is.na(depthg)] <- -0.05 # 5 cm
+                depthg[is.na(depthg)] <- 0.05 # 5 cm
             }
 
             if (is.null(depthg) || length(depthg) == 0) {
