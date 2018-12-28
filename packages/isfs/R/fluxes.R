@@ -724,6 +724,17 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
             if (any(cmx)) S[,cmx] <- S[,cmx] / 100.0
         }
 
+        zoL <- conform(dat(sub(datvar,"L",what,fixed=TRUE),avg=TRUE,smooth=TRUE),S)
+        sfxs <- suffixes(zoL,2)
+
+        # need z and d for each sonic
+        z <- conform(dat(sub(datvar,"heightSonic",what,fixed=TRUE)),S)
+        z <- approx(z,xout=zoL,method="constant",f=0,rule=2)
+
+        d <- conform(dat(sub(datvar,"D",what,fixed=TRUE)),z)
+        # Note linear interpolation for D
+        d <- approx(d,xout=z,method="linear",rule=3)
+
         # Need u,v in instrument coordinates.
         check.windcoords()
         rcoords <- dpar("coords")
@@ -736,14 +747,6 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
         v <- conform(dat(sub(datvar,"v",what,fixed=TRUE),avg=TRUE,smooth=TRUE),zoL)
         spd <- sqrt(u^2 + v^2)
 
-        # need z and d for each sonic
-        z <- conform(dat(sub(datvar,"heightSonic",what,fixed=TRUE)),S)
-        z <- approx(z,xout=spd,method="constant",f=0,rule=2)
-
-        d <- conform(dat(sub(datvar,"D",what,fixed=TRUE)),z)
-        # Note linear interpolation for D
-        d <- approx(d,xout=z,method="linear",rule=3)
-
 # Start with Steves rough code for inside a canopy:
 # - Guess from Kaimal 1972 QJRMS that f_peak_Co_wt ~ f_peak_S_u
 # - Use Finnegan 2000 Annual Review paper that f_peak_S_u ~ 0.15 U/h within canopy
@@ -754,8 +757,6 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
 # Toms code above a canopy
         z <- z - d
         z[z<0] = 0 # remove in-canopy cases
-        zoL <- conform(dat(sub(datvar,"L",what,fixed=TRUE),avg=TRUE,smooth=TRUE),S)
-        sfxs <- suffixes(zoL,2)
         zoL <- z / zoL	
         nmx <- zoL	# make a copy of the time series
         select <- !is.na(zoL@data) & zoL@data <= -0.1
@@ -835,7 +836,7 @@ dat.TKE <- function(what,derived=TRUE,...)
         # the following will pick up Webb, spatial sep, etc. corrections for w't' and w'h2o'
         wt <- conform(dat("w't'",avg=TRUE,smooth=TRUE),wc)
 
-        # we're now using h2o from the IRGA itself, which should be fine
+        # we are now using h2o from the IRGA itself, which should be fine
         wh2o <- 0.001*conform(dat("w'h2o'",avg=TRUE,smooth=TRUE),wc)
 
         # now the correction
