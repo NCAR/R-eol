@@ -752,7 +752,7 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
 # - Use Finnegan 2000 Annual Review paper that f_peak_S_u ~ 0.15 U/h within canopy
 # - Assume h ~ 1.25*d (from rule-of-thumb: d ~ 0.8 h)
         Si = approx(S,xout=spd,method="constant",f=0,rule=2)
-        Si = exp(2 * pi * 0.15 * S / (1.25*d))
+        Si = exp(2 * pi * 0.15 * Si / (1.25*d))
 
 # Toms code above a canopy
         z <- z - d
@@ -773,7 +773,7 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
         nm <- conform(nm,S)
             
         So <- approx(S,xout=nm,method="constant",f=0,rule=2)
-        So <- exp(2 * pi * nm * S / z)
+        So <- exp(2 * pi * nm * So / z)
 
 # now patch together
         S = Si
