@@ -738,43 +738,45 @@ dat.Scorr <- function(what,derived=TRUE,which="krypton",...)
 
         # need z and d for each sonic
         z <- conform(dat(sub(datvar,"heightSonic",what,fixed=TRUE)),S)
-        z <- approx(z,xout=zoL,method="constant",f=0,rule=2)
+        z <- approx(z,xout=spd,method="constant",f=0,rule=2)
 
         d <- conform(dat(sub(datvar,"D",what,fixed=TRUE)),z)
         # Note linear interpolation for D
         d <- approx(d,xout=z,method="linear",rule=3)
-# Toms code above a canopy
-        if (z>d) {
-          z <- z - d
 
-          zoL <- conform(dat(sub(datvar,"L",what,fixed=TRUE),avg=TRUE,smooth=TRUE),S)
-          sfxs <- suffixes(zoL,2)
-          zoL <- z / zoL	
-
-          nmx <- zoL	# make a copy of the time series
-          select <- !is.na(zoL@data) & zoL@data <= -0.1
-          nmx@data[select] <- 0.065
-          # Horst, Lenschow, 2009: Corrected nmx values, 5/11/2009
-          nmx@data[!select] <- 2.31 - 2.240 / (1.015 + 0.15 * zoL@data[!select])^2
-
-          nmy <- zoL	# make a copy of the time series
-          select <- !is.na(zoL@data) & zoL@data <= -0.05
-          nmy@data[select] <- 0.15
-          nmy@data[!select] <- 2.43 - 2.28 / (1.01 + 0.2 * zoL@data[!select])^2
-
-          nm <- sqrt((nmx * u/spd)^2 + (nmy * v/spd)^2)
-          nm <- conform(nm,S)
-          S <- approx(S,xout=nm,method="constant",f=0,rule=2)
-          S <- exp(2 * pi * nm * S / z)
-        }
-# Steves rough code for inside a canopy:
+# Start with Steves rough code for inside a canopy:
 # - Guess from Kaimal 1972 QJRMS that f_peak_Co_wt ~ f_peak_S_u
 # - Use Finnegan 2000 Annual Review paper that f_peak_S_u ~ 0.15 U/h within canopy
 # - Assume h ~ 1.25*d (from rule-of-thumb: d ~ 0.8 h)
-        else {
-          S <- approx(S,xout=spd,method="constant",f=0,rule=2)
-          S <- exp(2 * pi * 0.15 * S / d)
-        }
+        Si = approx(S,xout=spd,method="constant",f=0,rule=2)
+        Si = exp(2 * pi * 0.15 * S / (1.25*d))
+
+# Toms code above a canopy
+        z <- z - d
+        z[z<0] = 0 # remove in-canopy cases
+        zoL <- conform(dat(sub(datvar,"L",what,fixed=TRUE),avg=TRUE,smooth=TRUE),S)
+        sfxs <- suffixes(zoL,2)
+        zoL <- z / zoL	
+        nmx <- zoL	# make a copy of the time series
+        select <- !is.na(zoL@data) & zoL@data <= -0.1
+        nmx@data[select] <- 0.065
+        # Horst, Lenschow, 2009: Corrected nmx values, 5/11/2009
+        nmx@data[!select] <- 2.31 - 2.240 / (1.015 + 0.15 * zoL@data[!select])^2
+
+        nmy <- zoL	# make a copy of the time series
+        select <- !is.na(zoL@data) & zoL@data <= -0.05
+        nmy@data[select] <- 0.15
+        nmy@data[!select] <- 2.43 - 2.28 / (1.01 + 0.2 * zoL@data[!select])^2
+
+        nm <- sqrt((nmx * u/spd)^2 + (nmy * v/spd)^2)
+        nm <- conform(nm,S)
+            
+        So <- approx(S,xout=nm,method="constant",f=0,rule=2)
+        So <- exp(2 * pi * nm * S / z)
+
+# now patch together
+        S = Si
+        S[z>0] = So[z>0]
     }
     colnames(S) <- sub("[^.]+",datvar,colnames(S))
     S@units <- rep("",ncol(S))
