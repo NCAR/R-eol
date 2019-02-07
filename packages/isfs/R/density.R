@@ -16,16 +16,13 @@ dat.rhoAir <- function(what,derived=TRUE,cache=F,...)
 
     robust <- dpar("robust")
     R <- 287		# specific gas constant for dry air: J/kg-K
-# allow Pirga to be used (especially when P is not available)
-    P = dat(c("P","Pirga"))
+    P = dat("P")
     # convert to pascals
     if (any(units(P) == "mb")) P[,units(P)=="mb"] = P[,units(P)=="mb"] * 100
     if (any(units(P) == "kPa")) P[,units(P)=="kPa"] = P[,units(P)=="kPa"] * 1000
     q <- dat(sub(datvar,"Q",what,fixed=TRUE))
     Td <- dat(sub(datvar,"T",what,fixed=TRUE))
-# allow Tirga also to be used
-    Ti <- dat(sub(datvar,"Tirga",what,fixed=TRUE))
-    Td <- conform(Cbind(Td,Ti),q)
+    Td <- conform(Td,q)
     Tv <- (273.15 + Td)*(1 + 0.608*q*1e-3)
     P = conform(P,Tv)
 
@@ -46,13 +43,8 @@ dat.rhoDry <- function(what,derived=TRUE,cache=F,...)
     # density of dry air (kg/m^3)
     R <- 287		# J/kg-K
     mr <- dat(sub(datvar,"MR",what,fixed=TRUE))
-# allow h2o to be used from IRGA
-# (this does not work due to the same type of dependencies)
-    mri <- dat(sub(datvar,"mr",what,fixed=TRUE))
-    mr = Cbind(mr,mri)
 
-# allow Pirga to be used (especially when P is not available)
-    P = dat(c("P","Pirga"))
+    P = dat("P")
     # convert to pascals
     if (any(units(P) == "mb")) P[,units(P)=="mb"] = P[,units(P)=="mb"] * 100
     if (any(units(P) == "kPa")) P[,units(P)=="kPa"] = P[,units(P)=="kPa"] * 1000
@@ -60,9 +52,7 @@ dat.rhoDry <- function(what,derived=TRUE,cache=F,...)
 
     P <- P/(1 + mr/622)		# P - Pv, pascals
     Td <- dat(sub(datvar,"T",what,fixed=TRUE))
-# allow Tirga also to be used
-    Ti <- dat(sub(datvar,"Tirga",what,fixed=TRUE))
-    Td <- conform(Cbind(Td,Ti),mr)
+    Td <- conform(Td,mr)
     TK <- 273.15 + Td
     x <- P/R/TK		
     if (!is.null(robust) && robust) x <- median(x, na.rm=T)

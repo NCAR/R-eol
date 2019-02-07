@@ -139,13 +139,9 @@ dat.mr <- function(what,derived=TRUE,...)
     h2o <- dat(sub(datvar,"h2o",what,fixed=TRUE),...)
 
     Td <- conform(dat(sub(datvar,"T",what,fixed=TRUE)),h2o)
-# allow Tirga to be used
-    Ti <- conform(dat(sub(datvar,"Tirga",what,fixed=TRUE)),h2o)
-    Td <- Cbind(Td,Ti)
 
     Pv <- h2o * (Td + 273.15) * Rm / 100 # millibars
-# allow Pirga to be used
-    P <- dat(c("P","Pirga"))
+    P <- dat("P")
 
     if (is.null(P)) {
         warning("No pressure data available")
@@ -220,9 +216,9 @@ dat.Tc <- function(what,derived=TRUE,...)
 
     P <- conform(P,Pv)
 
-    # We are simply going to match suffixes and stations, ignoring height.
-    # If any columns are not matched, fill in with median of others...
-    # Do not know what happens if more than one P per stn/sfx...
+    # We're simply going to match suffixes and stations, ignoring height.
+    # If any columns aren't matched, fill in with median of others...
+    # Don't know what happens if more than one P per stn/sfx...
     sf <- suffixes(P)
     nw <- nwords(sf,sep=".")
     st <- stations(P)
