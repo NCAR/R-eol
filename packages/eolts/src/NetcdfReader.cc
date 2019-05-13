@@ -1099,7 +1099,8 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
     int* idataPtr = 0;
 
     vector<double> times;
-    double*  timesPtr = &times.front();
+    double* timesPtr0 = 0;
+    double* timesPtr = 0;
 
     vector <string> colNames;
     vector <string> unitsNames;
@@ -1262,8 +1263,8 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                     tvar->getFileName(),tvar->getName(),status);
         }
         t1 *= timemult;
-        size_t n = n2 - 1;
-        status = nc_get_var1_double(ncid,tvar->getId(),&n,&t2);
+        size_t nra = n2 - 1;
+        status = nc_get_var1_double(ncid,tvar->getId(),&nra,&t2);
         if (status != NC_NOERR) {
             throw NcException("nc_get_var1_double",
                     tvar->getFileName(),tvar->getName(),status);
@@ -1289,23 +1290,23 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
         //     ncf->getName().c_str(),nrecs,nrec,nrecAlloc);
         if (nrecs + nrec > nrecAlloc) {
 
-            n = (size_t) (recsPerSec * (endTime - startTime) + 1.5);
+            nra = (size_t) (recsPerSec * (endTime - startTime) + 1.5);
 #ifdef DEBUG
-            Rprintf("t1,t2=%f,%f,recsPerSec=%f, n=%d\n",t1,t2,recsPerSec,n);
+            Rprintf("t1,t2=%f,%f,recsPerSec=%f, nra=%d\n",t1,t2,recsPerSec,nra);
 #endif
             /* screen absurd requests */
-            if (n < (nrecAlloc + nrec)) n = nrecAlloc + nrec;
-            if (n > (nrecAlloc + 100 * nrec)) n = nrecAlloc + 100 * nrec;
+            if (nra < (nrecAlloc + nrec)) nra = nrecAlloc + nrec;
+            if (nra > (nrecAlloc + 100 * nrec)) nra = nrecAlloc + 100 * nrec;
 
             if (nrecAlloc > 0)
-                Rprintf("Reallocating: %zd records, previous=%zd\n", n,nrecAlloc);
+                Rprintf("Reallocating: %zd records, previous=%zd\n", nra,nrecAlloc);
 
 
 #ifdef DEBUG
-            Rprintf("realloc, n=%d, ncols=%d, nrecAlloc=%d,tot=%d\n",
-                    n,ncols,nrecAlloc,n * ncols);
+            Rprintf("realloc, nra=%d, ncols=%d, nrecAlloc=%d,tot=%d\n",
+                    nra,ncols,nrecAlloc,nra * ncols);
 #endif
-            size_t nalloc = n * ncols * maxSampleDim;
+            size_t nalloc = nra * ncols * maxSampleDim;
 
             switch (rmode) {
             case INTSXP:
@@ -1327,12 +1328,13 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
             }
 
             if (!readCountsOnly) {
-                ptrdiff_t di = timesPtr - &times.front();
-                size_t nalloc = n * maxSampleDim;
+                ptrdiff_t di = timesPtr - timesPtr0;
+                size_t nalloc = nra * maxSampleDim;
                 times.resize(nalloc);
-                timesPtr = &times.front() + di;
+                timesPtr0 = &times.front();
+                timesPtr = timesPtr0 + di;
             }
-            nrecAlloc = n;
+            nrecAlloc = nra;
         }
 
         count[0] = nrec;
