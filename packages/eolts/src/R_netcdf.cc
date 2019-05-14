@@ -672,7 +672,7 @@ void R_netcdf::openFileSet(SEXP obj,SEXP files)
     _fileset = new NcFileSet(fullnames,tnames);
 }
 
-SEXP R_netcdf::getVariables(int verbose) throw(NcException)
+SEXP R_netcdf::getVariables(int verbose)
 {
 #ifdef DEBUG
     Rprintf("getVariables\n");
@@ -738,7 +738,7 @@ SEXP R_netcdf::getVariables(int verbose) throw(NcException)
     return result;
 }
 
-SEXP R_netcdf::getTimeSeriesVariables(int verbose) throw(NcException)
+SEXP R_netcdf::getTimeSeriesVariables(int verbose)
 {
 
     int nfiles = _fileset->getNFiles();
@@ -800,7 +800,7 @@ SEXP R_netcdf::getTimeSeriesVariables(int verbose) throw(NcException)
     return result;
 }
 
-SEXP R_netcdf::getStations() throw(NcException)
+SEXP R_netcdf::getStations()
 {
     getFileSet();
     std::map<int,string> stations = _fileset->getStations();
@@ -825,7 +825,7 @@ SEXP R_netcdf::getStations() throw(NcException)
     return namedStations.getRObject();
 }
 
-SEXP R_netcdf::readGlobalAttrs() throw(NcException)
+SEXP R_netcdf::readGlobalAttrs()
 {
 
     NetcdfReader reader(this);
@@ -835,7 +835,6 @@ SEXP R_netcdf::readGlobalAttrs() throw(NcException)
 
 SEXP R_netcdf::read(const vector<string> &vnames,
         const vector<size_t> &start, const vector<size_t> &count)
-throw(NcException)
 {
 
     NetcdfReader reader(this);
@@ -850,7 +849,6 @@ SEXP R_netcdf::read(const vector<string> &vnames,
         const string &btname,
         const string& timezone,
         int verbose)
-throw(NcException)
 {
     NetcdfReader reader(this);
     return reader.read(vnames,start,end,stations,tnames,btname,timezone,verbose);
@@ -858,7 +856,7 @@ throw(NcException)
 
 #ifdef HAVE_NC_SERVER
 
-void R_netcdf::rpcopen(void) throw(RPC_Exception)
+void R_netcdf::rpcopen(void)
 {
     connection conn;
     int result;
@@ -927,7 +925,7 @@ void R_netcdf::setBatchPeriod(int secs)
 
 void R_netcdf::write(R_nts &nts,
         const vector<NcDim>& dims,	// vector of non-time dimensions
-        double dt, double fillvalue) throw(RPC_Exception)
+        double dt, double fillvalue)
 {
     if (!_clnt) rpcopen();
 
@@ -1028,7 +1026,7 @@ void R_netcdf::write(R_nts &nts,
     sync();
 }
 
-void R_netcdf::sync() throw(RPC_Exception)
+void R_netcdf::sync()
 {
     if (_clnt) {
         int result = 0;
@@ -1044,7 +1042,7 @@ void R_netcdf::sync() throw(RPC_Exception)
     }
 }
 
-int R_netcdf::writeHistory(const string& hist) throw(RPC_Exception)
+int R_netcdf::writeHistory(const string& hist)
 {
     if (!_clnt) rpcopen();
     int result;
@@ -1084,7 +1082,7 @@ int R_netcdf::writeHistory(const string& hist) throw(RPC_Exception)
     return 0;
 }
 
-int R_netcdf::writeGlobalAttr(const string& name, const string& val) throw(RPC_Exception)
+int R_netcdf::writeGlobalAttr(const string& name, const string& val)
 {
     if (!_clnt) rpcopen();
     int result;
@@ -1113,7 +1111,7 @@ int R_netcdf::writeGlobalAttr(const string& name, const string& val) throw(RPC_E
     return result;
 }
 
-int R_netcdf::writeGlobalAttr(const string& name, int val) throw(RPC_Exception)
+int R_netcdf::writeGlobalAttr(const string& name, int val)
 {
     if (!_clnt) rpcopen();
     int result;
@@ -1174,7 +1172,7 @@ R_netcdf::NSVarGroupFloat* R_netcdf::getVarGroupFloat(
         NS_rectype rectype,
         double interval,
         const vector<NcDim>& dims,
-        double fillValue,const string& cntsName) throw(RPC_Exception)
+        double fillValue,const string& cntsName)
 {
     size_t ndims = dims.size();
     size_t nvars = vnames.size();
@@ -1230,7 +1228,7 @@ R_netcdf::NSVarGroupFloat* R_netcdf::getVarGroupFloat(
     return vg;
 }
 
-int R_netcdf::write(datarec_float *rec) throw(RPC_Exception)
+int R_netcdf::write(datarec_float *rec)
 {
     enum clnt_stat clnt_stat;
 #ifdef DEBUG
@@ -1251,7 +1249,7 @@ int R_netcdf::write(datarec_float *rec) throw(RPC_Exception)
     return 0;
 }
 
-int R_netcdf::nonBatchWrite(datarec_float *rec) throw(RPC_Exception)
+int R_netcdf::nonBatchWrite(datarec_float *rec)
 {
     int result = 0;
     enum clnt_stat clnt_stat;
@@ -1287,7 +1285,7 @@ int R_netcdf::nonBatchWrite(datarec_float *rec) throw(RPC_Exception)
     return result;
 } 
 
-void R_netcdf::checkError() throw(RPC_Exception)
+void R_netcdf::checkError()
 {
     char* errormsg = 0;
     enum clnt_stat clnt_stat = clnt_call(_clnt,CHECK_ERROR,
@@ -1369,7 +1367,7 @@ void R_netcdf::NSVarGroupFloat::addVariable(const string& name, const string& un
     _vars.push_back(NSVar(name,units,long_name, _cntsName));
 }
 
-int R_netcdf::NSVarGroupFloat::open() throw(RPC_Exception)
+int R_netcdf::NSVarGroupFloat::open()
 {
     datadef ddef; 
     int result;
@@ -1476,7 +1474,7 @@ int R_netcdf::NSVarGroupFloat::open() throw(RPC_Exception)
 
 int R_netcdf::NSVarGroupFloat::write(double t, double *d,
         size_t nr, size_t nc,
-        size_t *start, size_t *count,double dcnts) throw(RPC_Exception)
+        size_t *start, size_t *count,double dcnts)
 {
     vector<float> dout(nc);
 

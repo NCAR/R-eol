@@ -39,7 +39,7 @@ public:
 
     SEXP read(const std::vector<std::string>& vnames, 
             const std::vector<size_t>& start,
-            const std::vector<size_t>& count) throw(NcException);
+            const std::vector<size_t>& count);
     
     SEXP read(const std::vector<std::string> &vnames,
         double start, double end,
@@ -47,12 +47,12 @@ public:
         const std::vector<std::string> &timeVarNames,
         const std::string & baseTimeName,const std::string& timezone,
         int verbose,
-        bool readCountsOnly = false) throw(NcException);
+        bool readCountsOnly = false);
 
     size_t searchTime(NcVar* var,double stime,timeTests test,double timeMult)
-        throw(NcException);
+       ;
 
-    SEXP readGlobalAttrs() throw(NcException);
+    SEXP readGlobalAttrs();
 
     static int rMode(nc_type type);
 

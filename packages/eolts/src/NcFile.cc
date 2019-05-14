@@ -51,7 +51,7 @@ NcFile::~NcFile()
 /**
  * open a NetCDF file, if it isn't open already.
  */
-void NcFile::open() throw(NcException)
+void NcFile::open()
 {
     if (_ncid < 0) {
         int status = nc_open(_name.c_str(),NC_SHARE,&_ncid);
@@ -85,7 +85,7 @@ void NcFile::open() throw(NcException)
  * any other way.
  *
  */
-void NcFile::close() throw(NcException) {
+void NcFile::close() {
     if (_ncid >= 0) {
         int status = nc_close(_ncid);
         _ncid = -1;
@@ -140,14 +140,14 @@ void NcFile::clearMaps(void)
  *   int nv = getNumVariables();
  *   for (i = 0; i < nv; i++)
  */
-int NcFile::getNumVariables() throw(NcException) {
+int NcFile::getNumVariables() {
     int status = nc_inq_nvars(_ncid,&_nvars);
     if (status != NC_NOERR)
         throw NcException("nc_inq_nvars",getName(),status);
     return _nvars;
 }
 
-string NcFile::getVariableName(int varid) throw(NcException)
+string NcFile::getVariableName(int varid)
 {
     // should only throw exception if file is corrupt
     char name[NC_MAX_NAME];
@@ -157,7 +157,7 @@ string NcFile::getVariableName(int varid) throw(NcException)
     return string(name);
 }
 
-vector<string> NcFile::getVariableNames() throw(NcException)
+vector<string> NcFile::getVariableNames()
 {
     vector<string> names;
     unsigned int i;
@@ -170,7 +170,7 @@ vector<string> NcFile::getVariableNames() throw(NcException)
     return names;
 }
 
-NcVar* NcFile::getVariable(int varid) throw(NcException)
+NcVar* NcFile::getVariable(int varid)
 {
     // should only throw exception if file is corrupt
     if (varid >= _nvars) return 0;
@@ -184,7 +184,7 @@ NcVar* NcFile::getVariable(int varid) throw(NcException)
     return _varvec[varid];
 }
 
-NcVar* NcFile::getVariable(const string &name) throw()
+NcVar* NcFile::getVariable(const string &name) noexcept
 {
     NcVarMapIterator i = _vars.find(name);
     if (i != _vars.end()) return i->second;
@@ -196,7 +196,7 @@ NcVar* NcFile::getVariable(const string &name) throw()
     return 0;
 }
 
-vector<NcVar *> NcFile::getVariables() throw(NcException)
+vector<NcVar *> NcFile::getVariables()
 {
     // should only throw exception if file is corrupt
     getNumVariables();
@@ -206,14 +206,14 @@ vector<NcVar *> NcFile::getVariables() throw(NcException)
     return _varvec;
 }
 
-int NcFile::getNumDimensions() throw(NcException) {
+int NcFile::getNumDimensions() {
     int status = nc_inq_ndims(getNcid(),&_ndims);
     if (status != NC_NOERR)
         throw NcException("nc_inq_ndims",getName(),status);
     return _ndims;
 }
 
-const NcDim* NcFile::getDimension(int dimid) throw(NcException)
+const NcDim* NcFile::getDimension(int dimid)
 {
     // should only throw exception if file is corrupt
     if (dimid >= _ndims) readDimensions();
@@ -225,20 +225,20 @@ const NcDim* NcFile::getDimension(int dimid) throw(NcException)
     return _dimVec[dimid];
 }
 
-const NcDim* NcFile::getUnlimitedDimension() throw(NcException)
+const NcDim* NcFile::getUnlimitedDimension()
 {
     if (!_unlimitedDim) readDimensions();
     return _unlimitedDim;
 }
 
-vector<const NcDim*> NcFile::getDimensions() throw(NcException)
+vector<const NcDim*> NcFile::getDimensions()
 {
 
     if (getNumDimensions() != (signed)_dimVec.size()) readDimensions();
     return vector<const NcDim*>(_dimVec.begin(),_dimVec.end());
 }
 
-const NcDim* NcFile::getDimension(const string& name) throw(NcException)
+const NcDim* NcFile::getDimension(const string& name)
 {
     if (_dims.size() == 0) readDimensions();
     NcDimMapIterator i = _dims.find(name);
@@ -246,7 +246,7 @@ const NcDim* NcFile::getDimension(const string& name) throw(NcException)
     return i->second;
 }
 
-void NcFile::readDimensions() throw(NcException)
+void NcFile::readDimensions()
 {
     getNumDimensions();
     int unlimdimid = getUnlimitedDimid();
@@ -259,7 +259,7 @@ void NcFile::readDimensions() throw(NcException)
     }
 }
 
-int NcFile::getUnlimitedDimid() throw(NcException) {
+int NcFile::getUnlimitedDimid() {
     int unlimdim;
     // unlimdim is -1 if no unlimited dimension
     int status = nc_inq_unlimdim(getNcid(),&unlimdim);
@@ -268,7 +268,7 @@ int NcFile::getUnlimitedDimid() throw(NcException) {
     return unlimdim;
 }
 
-void NcFile::readAttrs() throw(NcException)
+void NcFile::readAttrs()
 {
     int natts;
     int status = nc_inq_varnatts(getNcid(),NC_GLOBAL,&natts);
@@ -285,19 +285,19 @@ void NcFile::readAttrs() throw(NcException)
     _readAttr = true;
 }
 
-int NcFile::getNumAttrs() throw(NcException)
+int NcFile::getNumAttrs()
 {
     if (!_readAttr) readAttrs();
     return _attrVec.size();
 }
 
-const std::vector<const NcAttr*> NcFile::getAttributes() throw(NcException)
+const std::vector<const NcAttr*> NcFile::getAttributes()
 {
     if (!_readAttr) readAttrs();
     return std::vector<const NcAttr*>(_attrVec.begin(),_attrVec.end());
 }
 
-const NcAttr *NcFile::getAttribute(const string& name) throw(NcException)
+const NcAttr *NcFile::getAttribute(const string& name)
 {
     if (!_readAttr) readAttrs();
     map<string,NcAttr *>::iterator itr = _attrMap.find(name);
@@ -321,7 +321,7 @@ void NcFile::addTimeSeriesVariable(const string& name,NcVar* var)
 
 
 NcVar* NcFile::getTimeSeriesVariable(const string& name,const NcDim* tdim)
-    throw(NcException)
+   
 {
 
     // first try already mapped names
@@ -351,7 +351,7 @@ NcVar* NcFile::getTimeSeriesVariable(const string& name,const NcDim* tdim)
 }
 
 vector<NcVar*> NcFile::getTimeSeriesVariables(const NcDim* tdim)
-    throw(NcException)
+   
 {
 
     vector <NcVar*> result;
@@ -380,7 +380,7 @@ vector<NcVar*> NcFile::getTimeSeriesVariables(const NcDim* tdim)
 }
 
 void NcFile::scanForTSVarWithoutStationDim(const NcDim* tdim)
-    throw(NcException)
+   
 {
     unsigned int nvars = getNumVariables();
     for (; _nscannedVars < nvars; _nscannedVars++) {
@@ -397,7 +397,7 @@ void NcFile::scanForTSVarWithoutStationDim(const NcDim* tdim)
 }
 
 const NcDim* NcFile::getTimeDimension(const set<string>& possibleNames)
-    throw(NcException)
+   
 {
     if (_timeDim) return _timeDim;			// already found
 
@@ -421,7 +421,7 @@ const NcDim* NcFile::getTimeDimension(const set<string>& possibleNames)
     return _timeDim;
 }
 
-map<int,string> NcFile::getStations(const NcDim *tdim) throw(NcException)
+map<int,string> NcFile::getStations(const NcDim *tdim)
 {
     map<int,string> stations;
 

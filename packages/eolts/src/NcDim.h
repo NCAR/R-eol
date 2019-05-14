@@ -31,14 +31,14 @@ protected:
     // bool _valid;
 public:
 
-    NcDim(NcFile *nch,int dimid) throw(NcException);
+    NcDim(NcFile *nch,int dimid);
     NcDim(const std::string name, size_t length):_dimid(-1),_name(name),_length(length){}
 
     int getId() const { return _dimid; }
     const std::string& getName() const { return _name; }
     size_t getLength() const { return _length; }
 
-    void readLength(NcFile*) throw(NcException);
+    void readLength(NcFile*);
 
 };
 

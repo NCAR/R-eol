@@ -98,7 +98,7 @@ double* R_utime::getTimePtr()
 
 /* static */
 double R_utime::parse(const std::string& tstr,
-        const std::string& format,const std::string& tz) throw(std::string)
+        const std::string& format,const std::string& tz)
 {
 
     int nunprot;
@@ -166,7 +166,7 @@ double R_utime::parse(const std::string& tstr,
 
 /* static */
 string R_utime::format(double time,
-        const std::string& format,const std::string& tz) throw(std::string)
+        const std::string& format,const std::string& tz)
 {
     R_utime utime;
     utime.setLength(1);

@@ -26,7 +26,7 @@ using std::pair;
 using namespace eolts;
 
 
-NcVar::NcVar(NcFile *nch,int varid) throw(NcException):
+NcVar::NcVar(NcFile *nch,int varid):
     _nch(nch),_varid(varid),_name(),_type(NC_NAT),
     _edges(0),_length(0),_dims(),_attrVec(),_attrMap(),_readAttr(false)
 {
@@ -41,7 +41,7 @@ NcVar::NcVar(NcFile *nch,int varid) throw(NcException):
     readDimensions();
 }
 
-NcVar::NcVar(NcFile *nch,const std::string& name) throw(NcException):
+NcVar::NcVar(NcFile *nch,const std::string& name):
     _nch(nch),_varid(-1),_name(name),_type(NC_NAT),
     _edges(0),_length(0),_dims(),_attrVec(),_attrMap(),_readAttr(false)
 {
@@ -58,7 +58,7 @@ NcVar::~NcVar() {
     for (unsigned int i = 0; i < _attrVec.size(); i++) delete _attrVec[i];
 }
 
-void NcVar::readDimensions() throw(NcException)
+void NcVar::readDimensions()
 {
     int ndims;
     int status = nc_inq_varndims(getNcid(),_varid,&ndims);
@@ -87,19 +87,19 @@ void NcVar::readDimensions() throw(NcException)
     delete [] dimids;
 }
 
-int NcVar::getNumAttrs() throw(NcException)
+int NcVar::getNumAttrs()
 {
     if (!_readAttr) readAttrs();
     return _attrVec.size();
 }
 
-const std::vector<const NcAttr*> NcVar::getAttributes() throw(NcException)
+const std::vector<const NcAttr*> NcVar::getAttributes()
 {
     if (!_readAttr) readAttrs();
     return std::vector<const NcAttr*>(_attrVec.begin(),_attrVec.end());
 }
 
-const NcAttr *NcVar::getAttribute(const string& name) throw(NcException)
+const NcAttr *NcVar::getAttribute(const string& name)
 {
     if (!_readAttr) readAttrs();
     map<string,NcAttr *>::iterator itr = _attrMap.find(name);
@@ -107,7 +107,7 @@ const NcAttr *NcVar::getAttribute(const string& name) throw(NcException)
     else return 0;
 }
 
-const string& NcVar::getCharAttribute(const string& name) throw(NcException)
+const string& NcVar::getCharAttribute(const string& name)
 {
     const NcAttr *attr = getAttribute(name);
     if (attr && attr->getNcType() == NC_CHAR) {
@@ -119,7 +119,7 @@ const string& NcVar::getCharAttribute(const string& name) throw(NcException)
     return res;
 }
 
-void NcVar::readAttrs() throw(NcException)
+void NcVar::readAttrs()
 {
     int natts;
     int status = nc_inq_varnatts(getNcid(),_varid,&natts);
@@ -136,12 +136,12 @@ void NcVar::readAttrs() throw(NcException)
     _readAttr = true;
 }
 
-const string& NcVar::getUnits() throw(NcException)
+const string& NcVar::getUnits()
 {
     return getCharAttribute("units");
 }
 
-void NcVar::readNcType() throw(NcException)
+void NcVar::readNcType()
 {
     int status = nc_inq_vartype(_nch->getNcid(),_varid,&_type);
     if (status != NC_NOERR) {

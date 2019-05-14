@@ -44,69 +44,69 @@ public:
     const std::string& getName() const { return _name; }
     const std::string& getShortName() const { return _shortname; }
 
-    void open() throw(NcException);
-    void close() throw(NcException);
+    void open();
+    void close();
 
     int isOpen() const { return _ncid >= 0; }
 
     int getNcid() const { return _ncid; }
 
-    int getNumVariables() throw(NcException);
+    int getNumVariables();
 
-    std::string getVariableName(int i) throw(NcException);
+    std::string getVariableName(int i);
 
-    std::vector<std::string> getVariableNames() throw(NcException);
+    std::vector<std::string> getVariableNames();
 
     /**
      * Could throw exception if file is corrupt.
      */
-    NcVar* getVariable(int i) throw(NcException);
+    NcVar* getVariable(int i);
 
     /** 
      * Return NULL if variable not found.
      */
-    NcVar* getVariable(const std::string & name) throw();
+    NcVar* getVariable(const std::string & name) noexcept;
 
-    std::vector<NcVar*> getVariables() throw(NcException);
+    std::vector<NcVar*> getVariables();
 
-    int getNumDimensions() throw(NcException);
+    int getNumDimensions();
 
-    const NcDim* getDimension(int i) throw(NcException);
+    const NcDim* getDimension(int i);
 
-    const NcDim* getDimension(const std::string & name) throw(NcException);
+    const NcDim* getDimension(const std::string & name);
 
-    std::vector<const NcDim*> getDimensions() throw(NcException);
+    std::vector<const NcDim*> getDimensions();
 
-    const NcDim* getUnlimitedDimension() throw(NcException);
+    const NcDim* getUnlimitedDimension();
 
-    int getNumAttrs() throw(NcException);
+    int getNumAttrs();
 
-    const NcAttr* getAttribute(const std::string& name) throw(NcException);
+    const NcAttr* getAttribute(const std::string& name);
 
-    const std::vector<const NcAttr*> getAttributes() throw(NcException);
+    const std::vector<const NcAttr*> getAttributes();
 
     const NcDim* getTimeDimension(const std::set<std::string>& possibleNames)
-        throw(NcException);
+       ;
 
     NcVar* getTimeSeriesVariable(const std::string& name,
-            const NcDim* tdim) throw(NcException);
+            const NcDim* tdim);
 
     std::vector<NcVar*> getTimeSeriesVariables(const NcDim* dim)
-        throw(NcException);
+       ;
 
     /**
      * retrieve mapping of station number to name.
      */
     std::map<int,std::string> getStations(const NcDim* tdim)
-        throw(NcException);
+       ;
 
 private:
 
-    void readDimensions() throw(NcException);
+    void readDimensions();
 
-    int getUnlimitedDimid() throw(NcException);
+    int getUnlimitedDimid();
 
-    void readAttrs() throw(NcException);
+    void readAttrs();
 
     void clearVarMap(void);
 
@@ -119,7 +119,7 @@ private:
     void addTimeSeriesVariable(const std::string& name,NcVar* var);
 
     void scanForTSVarWithoutStationDim(const NcDim* tdim)
-        throw(NcException);
+       ;
 
     typedef std::map<std::string,NcVar*>::iterator NcVarMapIterator;
 

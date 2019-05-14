@@ -34,8 +34,8 @@ class NcAttr;
 class NcVar {
 public:
 
-    NcVar(NcFile* nch,int varid) throw(NcException);
-    NcVar(NcFile* nch,const std::string& name) throw(NcException);
+    NcVar(NcFile* nch,int varid);
+    NcVar(NcFile* nch,const std::string& name);
     ~NcVar();
 
     int getNcid() const { return _nch->getNcid(); }
@@ -58,25 +58,25 @@ public:
     size_t getEdge(int i) const { return _edges[i]; }
     size_t getLength() const { return _length; }
 
-    int getNumAttrs() throw(NcException);
-    const NcAttr* getAttribute(const std::string& name) throw(NcException);
-    const std::string& getCharAttribute(const std::string& name) throw(NcException);
-    const std::vector<const NcAttr*> getAttributes() throw(NcException);
+    int getNumAttrs();
+    const NcAttr* getAttribute(const std::string& name);
+    const std::string& getCharAttribute(const std::string& name);
+    const std::vector<const NcAttr*> getAttributes();
 
-    const std::string& getUnits() throw(NcException);
+    const std::string& getUnits();
 
-    std::string typeToString() const throw(NcException)
+    std::string typeToString() const
     { return typeToString(getNcType()); }
 
     static std::string typeToString(nc_type type);
 
     bool matchDimension(const NcDim* dim, unsigned int idim);
 
-    void readDimensions(void) throw(NcException);
+    void readDimensions(void);
 
 protected:
-    void readAttrs(void) throw(NcException);
-    void readNcType() throw(NcException);
+    void readAttrs(void);
+    void readNcType();
 
 private:
     NcFile* _nch;

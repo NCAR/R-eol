@@ -42,12 +42,12 @@ public:
     NcFile *getNcFile(int ifile);
     const std::string& getFileName(int ifile);
 
-    std::vector<std::string> getVariableNames() throw(NcException);
+    std::vector<std::string> getVariableNames();
 
     // std::vector<std::string> getStationNames();
     // int hasNonStationTSVariables();
 
-    const std::vector<const NcDim*>& getVariableDimensions(std::string vname) throw(NcException);
+    const std::vector<const NcDim*>& getVariableDimensions(std::string vname);
 
     void addTimeDimensionName(const std::string& name);
 
@@ -57,13 +57,13 @@ public:
         return _possibleTimeDimensionNames;
     }
 
-    NcVar* getTimeVariable(NcFile* ncf) throw(NcException);
+    NcVar* getTimeVariable(NcFile* ncf);
 
     /**
      * Retrieve mapping of station number to name, read from
      * first file with a station dimension and variable.
      */
-    std::map<int,std::string> getStations() throw(NcException);
+    std::map<int,std::string> getStations();
 
 private:
     const int MAX_FILES_OPEN;

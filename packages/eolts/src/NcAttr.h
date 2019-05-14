@@ -31,12 +31,12 @@ protected:
 
 public:
 
-    static NcAttr* readNcAttr(NcVar* var,int attnum) throw(NcException);
+    static NcAttr* readNcAttr(NcVar* var,int attnum);
 
-    static NcAttr* readNcAttr(NcFile* file,int attnum) throw(NcException);
+    static NcAttr* readNcAttr(NcFile* file,int attnum);
 
     static NcAttr* readNcAttr(int ncid, const std::string& filename,
-        int varid, const std::string& varname, int attnum) throw(NcException);
+        int varid, const std::string& varname, int attnum);
 
     NcAttr(std::string name,nc_type type) : _name(name),_nctype(type) {}
     virtual ~NcAttr();

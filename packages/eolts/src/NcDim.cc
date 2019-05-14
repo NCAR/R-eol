@@ -18,7 +18,7 @@ using std::string;
 
 using namespace eolts;
 
-NcDim::NcDim(NcFile *ncf,int dimid) throw(NcException):
+NcDim::NcDim(NcFile *ncf,int dimid):
     _dimid(dimid),_name(),_length(0)
     //,_valid(false)
 {
@@ -35,7 +35,7 @@ NcDim::NcDim(NcFile *ncf,int dimid) throw(NcException):
                 status);
     // _valid = true;
 }
-void NcDim::readLength(NcFile *ncf) throw(NcException)
+void NcDim::readLength(NcFile *ncf)
 {
     int status = nc_inq_dimlen(ncf->getNcid(),_dimid,&_length);
     if (status != NC_NOERR)

@@ -106,7 +106,7 @@ const string& NcFileSet::getFileName(int ifile) {
 /**
  * Return an vector of names of all variables.
  */
-vector<string> NcFileSet::getVariableNames() throw(NcException)
+vector<string> NcFileSet::getVariableNames()
 {
 
     set<string> vset;
@@ -122,7 +122,7 @@ vector<string> NcFileSet::getVariableNames() throw(NcException)
 }
 
 const vector<const NcDim*>& NcFileSet::getVariableDimensions(string vname)
-    throw(NcException)
+   
 {
 
     vector<NcDim*> dims;
@@ -138,7 +138,7 @@ const vector<const NcDim*>& NcFileSet::getVariableDimensions(string vname)
     return res;
 }
 
-map<int,string> NcFileSet::getStations() throw(NcException)
+map<int,string> NcFileSet::getStations()
 {
 
     size_t nstations = 0;

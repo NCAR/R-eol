@@ -27,7 +27,7 @@ public:
 
     NcFileSetSummary(NcFileSet *fileset,
             const std::vector<std::string>& varnames,
-            const std::vector<int>&stations,bool getCounts) throw(NcException);
+            const std::vector<int>&stations,bool getCounts);
     ~NcFileSetSummary();
 
     /** index from 0 to _fileset->getNFiles()-1 of first existing file */

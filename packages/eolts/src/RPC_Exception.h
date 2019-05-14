@@ -20,11 +20,11 @@ class RPC_Exception : public std::exception {
 public:
     RPC_Exception(const std::string& msg):_what(msg) {}
 
-    virtual ~RPC_Exception() throw() {}
+    virtual ~RPC_Exception() noexcept {}
 
     const std::string& toString() const { return _what; }
 
-    const char* what() const throw() { return _what.c_str(); }
+    const char* what() const noexcept { return _what.c_str(); }
 
 protected:
     std::string _what;

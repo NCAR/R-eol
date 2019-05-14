@@ -32,11 +32,11 @@ public:
     NcException(const std::string& op,const std::string& fname,
             const std::string& vname, int status);
 
-    virtual ~NcException() throw() {}
+    virtual ~NcException() noexcept {}
 
     const std::string& toString() const { return _what; }
 
-    const char* what() const throw() { return _what.c_str(); }
+    const char* what() const noexcept { return _what.c_str(); }
 
     int getStatus() const { return _status; }
 

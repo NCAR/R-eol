@@ -33,7 +33,7 @@ using namespace eolts;
 
 NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
         const vector<string> &varnames,const vector<int> &stations,
-        bool getCounts) throw(NcException) :
+        bool getCounts) :
     _fileset(fs), _vnames(varnames),_nvars(varnames.size()),
     _firstFile(-1),
     _outType(NC_NAT),   // not a type

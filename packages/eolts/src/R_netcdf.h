@@ -95,7 +95,7 @@ public:
 
     SEXP read(const std::vector<std::string>& vnames,
             const std::vector<size_t> &start,
-            const std::vector<size_t> &count) throw(NcException);
+            const std::vector<size_t> &count);
 
     SEXP read(const std::vector<std::string>& vnames,
             double start, double end,
@@ -103,31 +103,31 @@ public:
             const std::vector<std::string>& tnames,
             const std::string& btname,
             const std::string& timezone,
-            int verbose) throw(NcException);
+            int verbose);
 
-    SEXP readGlobalAttrs() throw(NcException);
+    SEXP readGlobalAttrs();
 
 #ifdef HAVE_NC_SERVER
 
     int getId() const { return _id; }
 
     void write(R_nts& nts, const std::vector<NcDim>& dims,
-            double dt, double fillValue) throw(RPC_Exception);
+            double dt, double fillValue);
 
     /**
      * Request nc_server to sync files to disk.
      */
-    void sync() throw(RPC_Exception);
+    void sync();
 
-    int writeHistory(const std::string&) throw(RPC_Exception);
+    int writeHistory(const std::string&);
 
-    int writeGlobalAttr(const std::string& name, const std::string& val) throw(RPC_Exception);
+    int writeGlobalAttr(const std::string& name, const std::string& val);
 
-    int writeGlobalAttr(const std::string& name, int val) throw(RPC_Exception);
+    int writeGlobalAttr(const std::string& name, int val);
 
-    int write(datarec_float *rec) throw(RPC_Exception);
+    int write(datarec_float *rec);
 
-    int nonBatchWrite(datarec_float *rec) throw(RPC_Exception);
+    int nonBatchWrite(datarec_float *rec);
 
     /**
      * How long to wait for a non-batch write, or a batch queue flush.
@@ -152,15 +152,15 @@ public:
     struct timeval& getRPCWriteTimeout(void) { return _rpcWriteTimeout; }
     struct timeval& getRPCOtherTimeout(void) { return _rpcOtherTimeout; }
 
-    void checkError() throw(RPC_Exception);
+    void checkError();
 
 #endif
 
-    SEXP getVariables(int verbose) throw(NcException);
+    SEXP getVariables(int verbose);
 
-    SEXP getTimeSeriesVariables(int verbose) throw(NcException);
+    SEXP getTimeSeriesVariables(int verbose);
 
-    SEXP getStations() throw(NcException);
+    SEXP getStations();
 
     static bool addConnection(R_netcdf *);
 
@@ -228,10 +228,10 @@ private:
 
     public:
 
-        int open(void) throw(RPC_Exception);
+        int open(void);
 
         int write(double t,double *d,size_t nr, size_t nc,
-                size_t *start, size_t *count,double cnts) throw(RPC_Exception);
+                size_t *start, size_t *count,double cnts);
 
         void addVariable(const std::string& name,const std::string& units, const std::string& long_name);
 
@@ -267,13 +267,13 @@ private:
         const std::vector<std::string>& long_names,
         NS_rectype rectype,
         double interval, const std::vector<NcDim>& dims,
-        double fillvalue,const std::string& cntsName) throw(RPC_Exception);
+        double fillvalue,const std::string& cntsName);
 
     NSVarGroupFloat *addVarGroupFloat(NS_rectype rectype,
         double interval, const std::vector<NcDim>& dims,
         double fillvalue, const std::string& cntsName);
 
-    void rpcopen(void) throw(RPC_Exception);
+    void rpcopen(void);
 
     std::string _server;
 

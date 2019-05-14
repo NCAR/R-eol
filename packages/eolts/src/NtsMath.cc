@@ -111,7 +111,7 @@ SEXP NtsMath::averageMean(R_nts& ntsin, double avgint,
     vector<int> wmapin = ntsin.getWeightMap();
     if (wmapin.size() == 0) inWeights = 0;
 
-    std::auto_ptr<R_Matrix<double> > wtsin;
+    std::unique_ptr<R_Matrix<double> > wtsin;
     double *win = 0;
     if (inWeights) {
         wtsin.reset(new R_Matrix<double>(REALSXP,ntsin.getWeights()));

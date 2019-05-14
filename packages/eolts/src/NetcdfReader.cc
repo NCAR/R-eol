@@ -14,7 +14,7 @@
  */
 
 #include <sstream>
-#include <memory>   // auto_ptr
+#include <memory>   // unique_ptr
 
 #include "NetcdfReader.h"
 
@@ -167,7 +167,7 @@ namespace {
      * Parse time/date string using strptime and mktime system calls.
      * These are not available on MINGW.
      */
-    double parseCFTimeString(const string& ustr,double unitsMult) throw(string)
+    double parseCFTimeString(const string& ustr,double unitsMult)
     {
         if (ustr.find("second") != string::npos) unitsMult = 1.0;
         else if (ustr.find("day") != string::npos) unitsMult = 86400.0;
@@ -269,7 +269,7 @@ namespace {
      * Parse time/date string by calling R "utime" method.
      * This should work on all platforms.
      */
-    double R_parseCFTimeString(const string& ustr,double unitsMult) throw(string)
+    double R_parseCFTimeString(const string& ustr,double unitsMult)
     {
 
         if (ustr.find("second") != string::npos) unitsMult = 1.0;
@@ -403,7 +403,7 @@ int NetcdfReader::checkVarTypeCompatibility(int rmode1, int rmode2) {
  */
 SEXP NetcdfReader::read(const vector<string> & vnames,
         const vector<size_t>& startarg, const vector<size_t>&countarg)
-    throw(NcException)
+   
 {
     NcFileSet *fileset = _connection->getFileSet();
 
@@ -425,7 +425,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
 
     for (int ivar = 0; ivar < (signed)vnames.size(); ivar++) {
 
-        std::auto_ptr<R_ArrayBase> array;
+        std::unique_ptr<R_ArrayBase> array;
 
         vector<size_t> finalRdims;
         size_t lenRead = 0;
@@ -792,7 +792,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
     return result;
 }
 
-SEXP NetcdfReader::readGlobalAttrs() throw(NcException)
+SEXP NetcdfReader::readGlobalAttrs()
 {
     NcFileSet *fileset = _connection->getFileSet();
 
@@ -890,7 +890,7 @@ SEXP NetcdfReader::readGlobalAttrs() throw(NcException)
 }
 
 size_t NetcdfReader::searchTime(NcVar* var,double stime,NetcdfReader::timeTests test,double timeMult)
-    throw(NcException)
+   
 {
     /*
      * Test:      GE:  find first record >= search time
@@ -1019,7 +1019,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
         const string &baseTimeName,
         const string& timezone,
         int verbose,
-        bool readCountsOnly) throw(NcException)
+        bool readCountsOnly)
 {
 
     int ifile,ivar;
@@ -1697,7 +1697,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
      * would eliminate the need for this transpose.
      * For now we'll do it this way.
      */
-    std::auto_ptr<R_MatrixBase> matrix;
+    std::unique_ptr<R_MatrixBase> matrix;
 
     switch (rmode) {
     case REALSXP:

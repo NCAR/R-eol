@@ -20,19 +20,19 @@ using std::vector;
 
 using namespace eolts;
 
-NcAttr* NcAttr::readNcAttr(NcVar* var,int attnum) throw(NcException)
+NcAttr* NcAttr::readNcAttr(NcVar* var,int attnum)
 {
     return readNcAttr(var->getNcid(),var->getFileName(),
             var->getId(),var->getName(),attnum);
 }
 
-NcAttr* NcAttr::readNcAttr(NcFile* file,int attnum) throw(NcException)
+NcAttr* NcAttr::readNcAttr(NcFile* file,int attnum)
 {
     return readNcAttr(file->getNcid(),file->getName(), NC_GLOBAL,"NC_GLOBAL",attnum);
 }
 
 NcAttr* NcAttr::readNcAttr(int ncid, const string& filename,
-        int varid, const string& varname, int attnum) throw(NcException)
+        int varid, const string& varname, int attnum)
 {
 
     char name[NC_MAX_NAME];
