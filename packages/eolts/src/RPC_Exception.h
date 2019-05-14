@@ -13,6 +13,15 @@
 
 #include <string>
 
+#ifndef NOEXCEPT
+#if __cplusplus >= 201103L  // We are using C++11 or a later version
+#define NOEXCEPT noexcept
+#else
+#define NOEXCEPT throw()
+#endif
+#endif
+
+
 namespace eolts {
 
 class RPC_Exception : public std::exception {
@@ -20,11 +29,11 @@ class RPC_Exception : public std::exception {
 public:
     RPC_Exception(const std::string& msg):_what(msg) {}
 
-    virtual ~RPC_Exception() noexcept {}
+    virtual ~RPC_Exception() NOEXCEPT {}
 
     const std::string& toString() const { return _what; }
 
-    const char* what() const noexcept { return _what.c_str(); }
+    const char* what() const NOEXCEPT { return _what.c_str(); }
 
 protected:
     std::string _what;

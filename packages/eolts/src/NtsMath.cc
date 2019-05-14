@@ -26,6 +26,14 @@ using std::string;
 
 using namespace eolts;
 
+#if __cplusplus >= 201103L
+using std::unique_ptr;
+#else
+#ifndef unique_ptr
+#define unique_ptr std::auto_ptr
+#endif
+#endif
+
 namespace {     // anonymous namespace
     /**
      * Compute median of values in a container C using the nth_element
@@ -111,7 +119,7 @@ SEXP NtsMath::averageMean(R_nts& ntsin, double avgint,
     vector<int> wmapin = ntsin.getWeightMap();
     if (wmapin.size() == 0) inWeights = 0;
 
-    std::unique_ptr<R_Matrix<double> > wtsin;
+    unique_ptr<R_Matrix<double> > wtsin;
     double *win = 0;
     if (inWeights) {
         wtsin.reset(new R_Matrix<double>(REALSXP,ntsin.getWeights()));

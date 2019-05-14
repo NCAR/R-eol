@@ -184,7 +184,7 @@ NcVar* NcFile::getVariable(int varid)
     return _varvec[varid];
 }
 
-NcVar* NcFile::getVariable(const string &name) noexcept
+NcVar* NcFile::getVariable(const string &name) NOEXCEPT
 {
     NcVarMapIterator i = _vars.find(name);
     if (i != _vars.end()) return i->second;

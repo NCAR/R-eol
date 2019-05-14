@@ -23,6 +23,14 @@ namespace eolts {
 class NcFile;
 class NcVar;
 
+#ifndef NOEXCEPT
+#if __cplusplus >= 201103L  // We are using C++11 or a later version
+#define NOEXCEPT noexcept
+#else
+#define NOEXCEPT throw()
+#endif
+#endif
+
 class NcException : public std::exception {
 
 public:
@@ -32,11 +40,11 @@ public:
     NcException(const std::string& op,const std::string& fname,
             const std::string& vname, int status);
 
-    virtual ~NcException() noexcept {}
+    virtual ~NcException() NOEXCEPT {}
 
     const std::string& toString() const { return _what; }
 
-    const char* what() const noexcept { return _what.c_str(); }
+    const char* what() const NOEXCEPT { return _what.c_str(); }
 
     int getStatus() const { return _status; }
 

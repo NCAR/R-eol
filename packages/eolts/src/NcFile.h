@@ -24,6 +24,14 @@
 
 #include "NcException.h"
 
+#ifndef NOEXCEPT
+#if __cplusplus >= 201103L  // We are using C++11 or a later version
+#define NOEXCEPT noexcept
+#else
+#define NOEXCEPT throw()
+#endif
+#endif
+
 namespace eolts {
 
 class NcVar;
@@ -65,7 +73,7 @@ public:
     /** 
      * Return NULL if variable not found.
      */
-    NcVar* getVariable(const std::string & name) noexcept;
+    NcVar* getVariable(const std::string & name) NOEXCEPT;
 
     std::vector<NcVar*> getVariables();
 

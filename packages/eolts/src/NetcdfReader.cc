@@ -16,6 +16,16 @@
 #include <sstream>
 #include <memory>   // unique_ptr
 
+#if __cplusplus >= 201103L
+using std::unique_ptr;
+#else
+#ifndef unique_ptr
+#define unique_ptr std::auto_ptr
+#endif
+#endif
+
+
+
 #include "NetcdfReader.h"
 
 #include <assert.h>
@@ -425,7 +435,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
 
     for (int ivar = 0; ivar < (signed)vnames.size(); ivar++) {
 
-        std::unique_ptr<R_ArrayBase> array;
+        unique_ptr<R_ArrayBase> array;
 
         vector<size_t> finalRdims;
         size_t lenRead = 0;
@@ -1697,7 +1707,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
      * would eliminate the need for this transpose.
      * For now we'll do it this way.
      */
-    std::unique_ptr<R_MatrixBase> matrix;
+    unique_ptr<R_MatrixBase> matrix;
 
     switch (rmode) {
     case REALSXP:
