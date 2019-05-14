@@ -34,8 +34,9 @@ Author of original EOLsounding package: Liangying Zhang
 \keyword{ package }
 \keyword{ ts }
 \seealso{
+Use the following commands for help on a topic:
 \tabular{ll}{
-?command \tab link\cr
+command \tab topic\cr
 \code{class? nts} \tab \code{\linkS4class{nts}}\cr
 \code{? nts} \tab \code{\link{nts}}\cr
 \code{class? utime} \tab \code{\linkS4class{utime}}\cr

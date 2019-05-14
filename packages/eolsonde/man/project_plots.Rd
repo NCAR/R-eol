@@ -40,10 +40,10 @@ NULL
     dir = system.file(package="eolsonde","unitTests","data","D-file")
     Sys.setenv(SONDE_DATA=dir)
     dpar(start="2008 8 15 17:20",end="2008 8 15 18:00")
-    plotdir = tempdir()
-    project_plots(plotDir=plotdir)
-    # project_plots(plotDir="/tmp")
-    # project_plots(plotDir=NULL)
-    # unlink(plotdir, recursive=TRUE)
+    project_plots(plotDir=NULL)
+\dontrun{
+    # To save PNG files to a directory
+    project_plots(plotDir="/myplotdir")
+}
 }
 \keyword{ sounding }

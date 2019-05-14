@@ -27,8 +27,9 @@ Gordon Maclean
 \keyword{ package }
 \keyword{ ts }
 \seealso{
+Use the following commands for help on a topic:
 \tabular{ll}{
-command \tab link\cr
+command \tab topic\cr
 \code{? eolts} \tab \code{\link[eolts:eolts-package]{eolts}}\cr
 \code{? find_datasets} \tab \code{\link{find_datasets}}\cr
 \code{? datasets} \tab \code{\link{datasets}}\cr
