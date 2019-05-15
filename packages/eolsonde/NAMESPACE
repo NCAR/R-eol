@@ -25,6 +25,7 @@ export(
     get.sounding.weathersymbols,
     station.symbol,
 
-    geoid_height, geodesic_headings
+    geoid_height, geodesic_headings,
+    runTests
 )
 

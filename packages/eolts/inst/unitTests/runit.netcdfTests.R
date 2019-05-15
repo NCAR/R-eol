@@ -7,13 +7,8 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-test.netcdf <- function()
+test.netcdf <- function(pkg="eolts")
 {
-
-    wd <- getwd()
-    cat("wd=",wd,"\n")
-    pkg <- sub("\\.Rcheck$", '', basename(dirname(wd)))
-    cat("pkg=",pkg,"\n")
 
     datadir <- file.path(system.file("unitTests", package=pkg),"data")
     cat("datadir=",datadir,"\n")
@@ -53,13 +48,8 @@ test.netcdf <- function()
 
 }
 
-test.netcdf2 <- function()
+test.netcdf2 <- function(pkg="eolts")
 {
-
-    wd <- getwd()
-    cat("wd=",wd,"\n")
-    pkg <- sub("\\.Rcheck$", '', basename(dirname(wd)))
-    cat("pkg=",pkg,"\n")
 
     datadir <- file.path(system.file("unitTests", package=pkg),"data")
     cat("datadir=",datadir,"\n")

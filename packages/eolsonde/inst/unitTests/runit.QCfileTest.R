@@ -7,13 +7,8 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-test_qcfile <- function()
+test_qcfile <- function(pkg="eolsonde")
 {
-
-    wd <- getwd()
-    cat("wd=",wd,"\n")
-    pkg <- sub("\\.Rcheck$", '', basename(dirname(wd)))
-    cat("pkg=",pkg,"\n")
 
     datadir <- file.path(system.file("unitTests", package=pkg),"data","qc.eol")
     cat("datadir=",datadir,"\n")

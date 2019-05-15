@@ -7,13 +7,8 @@
 # The license and distribution terms for this file may be found in the
 # file LICENSE in this package.
 
-test_dfile <- function()
+test_dfile <- function(pkg="eolsonde")
 {
-
-    wd <- getwd()
-    cat("wd=",wd,"\n")
-    pkg <- sub("\\.Rcheck$", '', basename(dirname(wd)))
-    cat("pkg=",pkg,"\n")
 
     datadir <- file.path(system.file("unitTests", package=pkg),"data","D-file")
     cat("datadir=",datadir,"\n")

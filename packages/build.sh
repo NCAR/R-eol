@@ -111,6 +111,12 @@ do_pkg() {
         R $rargs CMD check -o /tmp ${pkg}_[0-9].[0-9]-*.tar.gz || exit $?
         # R --vanilla --environ CMD check --use-valgrind -o /tmp ${pkg}_*.tar.gz || exit $?
     fi
+    if $do_quick_test; then
+        R --vanilla <<-EOD || exit 1
+        library($pkg)
+        ${pkg}::runTests()
+EOD
+    fi
 }
 
 if $do_eolts; then
