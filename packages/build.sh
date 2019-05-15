@@ -74,17 +74,15 @@ version=${gitdesc%-*}   # remove trailing -*: 1.2-14
 
 [ $gitdesc == "$version" ] && version=${gitdesc}-0  # if no commits since tag
 
-if $do_eolts; then
-
-    pkg=eolts
+do_pkg() {
+    local pkg=$1
     cd $pkg
     autoreconf
     cd -
-
     rm -f ${pkg}_*.tar.gz
 
     # make a backup of the $pkg/DESCRIPTION file before changing the Version field
-    tmpdesc=$(mktemp /tmp/${0##*/}_XXXXXX)
+    local tmpdesc=$(mktemp /tmp/${0##*/}_XXXXXX)
     cp $pkg/DESCRIPTION $tmpdesc
 
     if $is_mac; then
@@ -94,7 +92,7 @@ if $do_eolts; then
     fi
 
     R $rargs CMD build ${pkg}
-    bstatus=$?
+    local bstatus=$?
     cp $tmpdesc ${pkg}/DESCRIPTION
     rm -f $tmpdesc
     [ $bstatus -ne 0 ] && exit $bstatus
@@ -113,94 +111,17 @@ if $do_eolts; then
         R $rargs CMD check -o /tmp ${pkg}_[0-9].[0-9]-*.tar.gz || exit $?
         # R --vanilla --environ CMD check --use-valgrind -o /tmp ${pkg}_*.tar.gz || exit $?
     fi
+}
+
+if $do_eolts; then
+    do_pkg eolts
 fi
 
 if $do_isfs; then
-
-    pkg=isfs
-    cd $pkg
-    autoreconf
-    cd -
-
-    rm -f ${pkg}_*.tar.gz
-
-    # make a backup of the isfs/DESCRIPTION file before changing the Version field
-    tmpdesc=$(mktemp /tmp/${0##*/}_XXXXXX)
-    cp ${pkg}/DESCRIPTION $tmpdesc
-
-    if $is_mac; then
-        sed -i "" -E "s/^Version:.*/Version: $version/" $pkg/DESCRIPTION
-    else
-        sed -ri "s/^Version:.*/Version: $version/" $pkg/DESCRIPTION
-    fi
-
-    R $rargs CMD build ${pkg}
-    bstatus=$?
-    cp $tmpdesc ${pkg}/DESCRIPTION
-    rm -f $tmpdesc
-    [ $bstatus -ne 0 ] && exit $bstatus
-
-
-    R $rargs CMD INSTALL -l $rlib ${pkg}_[0-9].[0-9]-*.tar.gz || exit $?
-
-    if $is_mac; then
-        # Check that the package does not have dependencies on /usr/local/lib
-        if R $rargs CMD otool -L $rlib/${pkg}/libs/isfs.so | fgrep -q /usr/local/lib; then
-            echo "otool -L $rlib/${pkg}/libs/isfs.so indicates it is using a shareable library on /usr/local/lib"
-            exit 1
-        fi
-    fi
-
-    if $do_check; then
-        R $rargs CMD check -o /tmp ${pkg}_[0-9].[0-9]*.tar.gz || exit $?
-        # R --vanilla --environ CMD check --use-valgrind -o /tmp ${pkg}_*.tar.gz || exit $?
-    fi
-    if $do_quick_test; then
-        R --vanilla <<-EOD || exit 1
-            library(isfs)
-            isfs::runTests()
-EOD
-    fi
+    do_pkg isfs
 fi
 
 if $do_eolsonde; then
-
-    pkg=eolsonde
-    cd $pkg
-    autoreconf
-    cd -
-
-    rm -f ${pkg}_*.tar.gz
-
-    # make a backup of the eolsonde/DESCRIPTION file before changing the Version field
-    tmpdesc=$(mktemp /tmp/${0##*/}_XXXXXX)
-    cp ${pkg}/DESCRIPTION $tmpdesc
-
-    if $is_mac; then
-        sed -i "" -E "s/^Version:.*/Version: $version/" $pkg/DESCRIPTION
-    else
-        sed -ri "s/^Version:.*/Version: $version/" $pkg/DESCRIPTION
-    fi
-
-    R $rargs CMD build ${pkg}
-    bstatus=$?
-    cp $tmpdesc ${pkg}/DESCRIPTION
-    rm -f $tmpdesc
-    [ $bstatus -ne 0 ] && exit $bstatus
-
-    R $rargs CMD INSTALL -l $rlib ${pkg}_[0-9].[0-9]-*.tar.gz || exit $?
-
-    if $is_mac; then
-        # Check that the package does not have dependencies on /usr/local/lib
-        if R $rargs CMD otool -L $rlib/${pkg}/libs/eolsonde | fgrep -q /usr/local/lib; then
-            echo "otool -L $rlib/${pkg}/libs/eolsonde indicates it is using a shareable library on /usr/local/lib"
-            exit 1
-        fi
-    fi
-
-    if $do_check; then
-        R $rargs CMD check -o /tmp ${pkg}_[0-9].[0-9]-*.tar.gz || exit $?
-        # R --vanilla --environ CMD check --use-valgrind -o /tmp ${pkg}_*.tar.gz || exit $?
-    fi
+    do_pkg eolsonde
 fi
 
