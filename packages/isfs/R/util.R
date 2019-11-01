@@ -41,3 +41,39 @@ sync <- function(pos,root=c("ISFS","ISFF"))
 
     invisible(rd)
 }
+
+# Two S+ functions that don't exist in R:
+# SPO 11/2019
+#
+# Similar to sync above, this version of synchronize will synchronize the first path starting with 
+# "file" -- usually a project's R directory -- if pos is not specified (exactly what sync does)
+#
+synchronize = function(pos) {
+    library(stringr)
+    if (missing(pos)) {
+       all = search()
+       wtype = substring(all,1,str_locate(all,":")[,1]-1)
+       pos = match("file",wtype)
+    }
+    if (!is.na(pos)) {
+       what = search()[pos]
+       wtype = substring(what,1,str_locate(what,":")[1]-1)
+       wstr = substring(what,str_locate(what,":")[1]+1,nchar(what))
+       detach(pos=pos)
+       if (wtype=="package") library(wstr,character.only=T)
+       if (wtype=="file") attach(wstr,pos=pos)
+    }
+    invisible(NULL)
+}
+
+#
+# This locates the search paths containing an object with the specified name
+#
+whereis = function(what) {
+    all = search()
+    out = NULL
+    for (i in 1:length(all)) {
+    if (any(objects(pos=i)==what)) out = c(out,i)
+    }
+    all[out]
+}
