@@ -592,14 +592,17 @@ xlabel.nts <- function(t1, t2, nlab)
     else if (kt == 6) {         # 1 month major tic, 5 day minor tic
         t1l$day <- t1l$yday <- 1
         t1l$hour <- t1l$min <- t1l$sec <- 0
-        ttic <- as(t1l,"utime") + 31 * 86400
+        ttic <- as(t1l,"utime")
         majtics <- mintics <- NULL
 
         maxdt <- 31 * 86400 # adjusted to day 1 of each month
         mindt <- 5 * 86400
+        nmintics <- floor(maxdt/mindt)
 
-        ntic <- floor((ttic - t1) / mindt)
-        if (ntic > 0) mintics <- ttic - (ntic:1) * mindt
+        mintics <- ttic + 1:nmintics * mindt
+        mintics <- mintics[mintics > t1]
+
+        ttic <- ttic + 31 * 86400
 
         while (TRUE) {
             t1l <- as(ttic,"list")
@@ -608,7 +611,7 @@ xlabel.nts <- function(t1, t2, nlab)
             ttic <- as(t1l,"utime")
             if (ttic > t2) break
             majtics <- c(majtics, ttic)     # day 1 of next month
-            mintics <- c(mintics, ttic + 1:floor(maxdt/mindt) * mindt)
+            mintics <- c(mintics, ttic + 1:nmintics * mindt)
             ttic <- ttic + maxdt
         }
         majtics <- utime(majtics)
