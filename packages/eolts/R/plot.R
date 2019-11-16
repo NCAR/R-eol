@@ -595,11 +595,12 @@ xlabel.nts <- function(t1, t2, nlab)
         ttic <- as(t1l,"utime") + 31 * 86400
         majtics <- mintics <- NULL
 
-        mintic <- ttic - 7 * 86400
-        while(mintic > t1) {
-            mintics <- c(mintics, mintic)
-            mintic <- mintic - 7 * 86400
-        }
+        maxdt <- 31 * 86400 # adjusted to day 1 of each month
+        mindt <- 5 * 86400
+
+        ntic <- floor((ttic - t1) / mindt)
+        if (ntic > 0) mintics <- ttic - (ntic:1) * mindt
+
         while (TRUE) {
             t1l <- as(ttic,"list")
             t1l$day <- t1l$yday <- 1
@@ -607,11 +608,8 @@ xlabel.nts <- function(t1, t2, nlab)
             ttic <- as(t1l,"utime")
             if (ttic > t2) break
             majtics <- c(majtics, ttic)     # day 1 of next month
-            for (i in 1:5) {
-                mintic <- ttic + i * 5 * 86400
-                if (mintic < t2) mintics <- c(mintics, ttic + i * 7 * 86400)
-            }
-            ttic <- ttic + 31 * 86400
+            mintics <- c(mintics, ttic + 1:floor(maxdt/mindt) * mindt)
+            ttic <- ttic + maxdt
         }
         majtics <- utime(majtics)
         mintics <- utime(mintics)
