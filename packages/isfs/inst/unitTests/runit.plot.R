@@ -40,5 +40,13 @@ test.plot <- function()
     plot(x,log="y")
     dev.off()
 
+    # test dat stack plots
+    png(file=tmp)
+    par(mfrow=c(3,1))
+    plot(x)
+    plot(x)
+    plot(x)
+    dev.off()
+
     return()
 }

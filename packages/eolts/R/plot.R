@@ -189,18 +189,18 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
         nlab <- 6
     }
 
-    tlab <- xlabel.nts((xrange[2] - xrange[1]) / nlab)
+    tlab <- xlabel.nts(xrange[1],xrange[2],nlab)
     # cat("cwidth=",cwidth," pwidth=",pwidth," nlab=",nlab,
     #   " tlabcex=",tlabcex," cex=",par("cex"),"\n")
 
     if (missing(xlab)) {
         # No sense in time labels without axis
         if (plotaxes && xaxt != "n")
-            xlab <- paste(sep="","Time(",tlab$units,"), tic=",tlab$munits)
+            xlab <- paste(sep="","Time(",tlab$majunits,"), tic=",tlab$minunits)
         else xlab <- ""
     }
     else if (is.logical(xlab)) {
-        if (xlab) xlab <- paste(sep="","Time(",tlab$units,"), tic=",tlab$munits)
+        if (xlab) xlab <- paste(sep="","Time(",tlab$majunits,"), tic=",tlab$minunits)
         else xlab <- ""
     }
     if (missing(ylab)) {
@@ -215,26 +215,14 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
                 ylab <- paste(dimnames(x)[[2]][1],"(",attr(x,"dunits")[1],")",sep="")
         }
     }
-    xrange <- switch(xaxs,
-          # regular axis, extend axis to next minor tic mark
-          r=c((ceiling(xrange[1] / tlab$mdelta)-1) * tlab$mdelta,
-            (floor(xrange[2] / tlab$mdelta)+1) * tlab$mdelta),
-          # Standard and extended axis, expand to next major tic mark
-          s=c((ceiling(xrange[1] / tlab$fdelta)-1) * tlab$fdelta,
-            (floor(xrange[2] / tlab$fdelta)+1) * tlab$fdelta),
-          e=c((ceiling(xrange[1] / tlab$fdelta)-1) * tlab$fdelta,
-            (floor(xrange[2] / tlab$fdelta)+1) * tlab$fdelta),
-          # internal axis labels, leave limits alone.
-          i=xrange,
-          # direct axis, don't change limits
-          d=xrange,
-          stop("Invalid value for xaxs"))
 
-    # Scale the data, since par("usr") seems to be stored as float
+    # Scale the data, since par("usr") seems to be stored as float,
+    # not exough significant digits for a full utime.  Basiscally scale
+    # the data from 0 to 1.
     if (xaxs != "d") {
-        scalef <- tlab$delta
+        scalef <- diff(xrange)
         x0 <- xrange[1]
-        xlim.scaled <- (xrange-x0)/scalef
+        xlim.scaled <- (xrange - x0) / scalef
     }
 
     if (all.is.na)
@@ -249,14 +237,13 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
     if (plotaxes) {
         if (xaxt != "n") {
             # First major tick
-            xftic <- ceiling(xrange[1] / tlab$fdelta) * tlab$fdelta
-            xtics <- utime(seq(from=xftic,to=xrange[2],by=tlab$delta))
-            tlabels <- format(xtics,format=tlab$format,time.zone=time.zone)
+            xmajtics <- tlab$majtics
+            tlabels <- format(xmajtics,format=tlab$format,time.zone=time.zone)
 
             # Add timezone to middle label
             mid <- length(tlabels) / 2 + 1
             tfmt <- paste(tlabels[mid],"%Z")
-            tlabels[mid] <- format(xtics[mid],format=tfmt)
+            tlabels[mid] <- format(xmajtics[mid],format=tfmt)
 
             # labwidth <- min(nchar(tlabels))
             # nlab <- pwidth / (cwidth * labwidth * 2)
@@ -272,7 +259,7 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
 
             if (xlab != "" && x0 > 86400.0 && tlab$extraformat != "") {
                 tfmt <- paste(sep="",tlabels[1],"\n",tlab$extraformat)
-                tlabels[1] <- format(xtics[1],format=tfmt)
+                tlabels[1] <- format(xmajtics[1],format=tfmt)
             }
 
             tcl <- par("tcl")
@@ -291,17 +278,14 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
             }
 
             # major ticks and labels
-            axis(1,at=(xtics-x0)/scalef,labels=tlabels,
+            axis(1,at=(xmajtics-x0)/scalef,labels=tlabels,
                 cex=tlabcex,xaxt="s", outer=outer, line=line,
                 hadj=0.5, padj=c(0.6,rep(0,length(tlabels)-1)))
-            axis(3,at=(xtics-x0)/scalef,labels=F,xaxt="s")
+            axis(3,at=(xmajtics-x0)/scalef,labels=F,xaxt="s")
 
             if (is.na(par("tck"))) {
-                # First minor tick
-                xfmtic <- xftic - tlab$delta
-                xmtics <- seq(from=xfmtic,to=xrange[2],by=tlab$mdelta)
-                axis(1,at=(xmtics-x0)/scalef,labels=F,tcl=minor_tcl,xaxt="s")
-                axis(3,at=(xmtics-x0)/scalef,labels=F,tcl=minor_tcl,xaxt="s")
+                axis(1,at=(tlab$mintics-x0)/scalef,labels=F,tcl=minor_tcl,xaxt="s")
+                axis(3,at=(tlab$mintics-x0)/scalef,labels=F,tcl=minor_tcl,xaxt="s")
             }
         }
     }
@@ -348,19 +332,18 @@ timeaxis <- function(side,labels=TRUE,tick=TRUE,time.zone,
     xlim.scaled <- par("usr")[c(1,2)]
     xrange <- xlim.scaled * scalef + x0
 
-    # First major tick
-    xftic <- ceiling(xrange[1] / tlab$fdelta) * tlab$fdelta
-    xtics <- utime(seq(from=xftic,to=xrange[2],by=tlab$delta))
+    # major tics
+    xmajtics <- tlab$majtics
 
     if (labels) {
-        tlabels <- format(xtics,format=tlab$format,time.zone=time.zone)
+        tlabels <- format(xmajtics,format=tlab$format,time.zone=time.zone)
         # Add timezone to middle label
         mid <- length(tlabels) / 2 + 1
         tfmt <- paste(tlabels[mid],"%Z")
-        tlabels[mid] <- format(xtics[mid],format=tfmt,time.zone=time.zone)
+        tlabels[mid] <- format(xmajtics[mid],format=tfmt,time.zone=time.zone)
         if (date.too && tlab$extraformat != "") {
             tfmt <- paste(sep="",tlabels[1],"\n",tlab$extraformat)
-            tlabels[1] <- format(xtics[1],format=tfmt,time.zone=time.zone)
+            tlabels[1] <- format(xmajtics[1],format=tfmt,time.zone=time.zone)
         }
     }
     else tlabels <- F
@@ -378,15 +361,12 @@ timeaxis <- function(side,labels=TRUE,tick=TRUE,time.zone,
     }
 
     # labels and major tick marks
-    axis(side,at=(xtics-x0)/scalef,labels=tlabels,tick=tick,
+    axis(side,at=(xmajtics-x0)/scalef,labels=tlabels,tick=tick,
           cex=cex, xaxt="s",line=line,outer=outer,...)
 
     # minor ticks
     if (tick && is.na(par("tck"))) {
-        # First minor tick
-        xfmtic <- xftic - tlab$delta
-        xmtics <- seq(from=xfmtic,to=xrange[2],by=tlab$mdelta)
-        axis(side,at=(xmtics-x0)/scalef,labels=F,tick=tick,tcl=minor_tcl,
+        axis(side,at=(tlab$mintics-x0)/scalef,labels=F,tick=tick,tcl=minor_tcl,
             xaxt="s",...)
     }
 }
@@ -434,125 +414,261 @@ points.nts <- function(x,...)
     tx <- (tx - sc$off) / sc$scale
     points(tx,x@data,...)
 }
-xlabel.nts <- function(deltat)
+
+# approximate time label deltas, each about .5 of preceding.
+xlabel.deltas <- c(
+    # 1:3, 4y           2y           1y        
+       4*316224.e2, 2*316224.e2, 316224.e2,
+    # 4:8, 6 mon      3 mon  1 mon      14d      7d
+       158112.e2, 79056.e2, 30*86400, 14*86400, 7*86400,
+    # 9:14, 4d    2d    1d       12h     6h        4h    2h
+       4*86400, 2*86400, 86400, 12*3600, 6*3600, 4*3600, 2*3600,
+    # 15:22, 1h 30m 10m 5m   2m  1m  30s  10s
+       3600, 1800, 600, 300, 120, 60, 30,  10,
+    # 23:34 seconds
+       5.,  2.,  1.,  .5,  .25,  .1, .05, .025, .01, .005,.0025,.001)
+         
+# vc=varies, calculated, given first time and length of plot
+# vc*=varies, but good enough for plotting, treat as fixed
+#           delta    adjusted     ftic                     mdelta
+# kt
+# 1         4 y       4 year,vc*  Jan 1 of next year,vc     year, vc*
+# 2         2 y       2 year,vc*  Jan 1 of next year,vc     4 month, vc*
+# 3         1 y       1 year,vc*  Jan 1 of next year,vc     2 month, vc*
+# 4         6 m       6 month,vc  day 1 of next month,vc    1 month, vc
+# 5         3 m       3 month,vc  day 1 of next month,vc    1 month, vc
+# 6         1 m       1 month,vc  day 1 of next month,vc    week, vc
+# 7         14 d      same        00:00:00 (LT) of next day, vc 2 day
+# 8         7  d      same        00:00:00 (LT) of next day, vc 1 day
+# 9         4  d      same        00:00:00 (LT) of next day,vc  1 day
+# 10        2  d      same        00:00:00 (LT) of next day,vc  12 hours
+# 11        1  d      same        00:00:00 (LT) of next day,vc  6 hours
+# 12        12 h      same        00 or 12:00:00 (LT) of next day,vc  3 hours
+# 13        4 h       same        *:00:00 (LT) next hour,vc     1 hours
+# 14        2 h       same        *:00:00 (LT) next hour,vc     30 min
+# 15        1 h       same        *:00:00 (LT) next hour,vc     15 min
+# 16-34               same        next even deltat              deltat/n
+
+# Number of minor tics per delta (12 month/year, etc).
+xlabel.nminor <- c(
+    4, 6, 6,        # 4,2,1 y
+    NA, NA, NA,     # 6,3,1 mon, calculated
+    7, 7, 4, 4, 4,  # 14d:2d, 7d:1d, 4d:1d, 2d:12h, 1d:6h
+    4,6,4,4,4,      # 12h:3h, 6h:1h, 4h:1h, 2h:30min, 1h:15min,
+    6,5,5,          # 30min:5min, 10min:2min, 5min:1min,
+    4,4,6,5,        # 2min:30sec, 1min:15sec, 30sec:5sec, 10sec:2sec
+    5,4,4,          # 5sec:1sec, 2sec:0.5sec, 1sec:0.25sec,
+    5,5,4,          # 0.5sec:0.1sec, 0.25sec:0.05sec, 0.1sec:0.025sec,
+    5,5,4,          # 0.05sec:0.01sec, 0.025sec:0.005sec, 0.01sec:0.0025sec,
+    5,5,4           # 0.005sec:0.001sec, 0.0025sec:0.0005sec, 0.001sec:0.00025sec)
+    )
+
+# Units per minor tic.
+xlabel.minunits <- c(
+     "YEAR", "4MONTH", "2 MONTH",
+     "MONTH", "MONTH", "5 DAY",
+     "2 DAY", "DAY", "DAY","12 HR","6 HR",
+     "3 HR", "HR", "HR", "30 MIN", "15 MIN", "5 MIN", "2 MIN", "MIN",
+     "30 SEC", "15 SEC","5 SEC","2 SEC",
+     "SEC","0.5 SEC","0.25 SEC",
+     "0.1 SEC","0.05 SEC","0.025 SEC",
+     "0.01 SEC","0.005 SEC","0.0025 SEC",
+     "0.001 SEC","0.0005 SEC","0.00025 SEC")
+
+# format of major tic labels
+xlabel.tformats <- c(
+    "%Y",	    #  1 YYYY
+    "%Y %b %d",     #  2 YYYY MON DAY
+    "%b %d %H%M",   #  3    MON DAY HH:MM
+    "%b %d %H%M",   #  4    MON DAY HH:MM
+    "%H:%M",	    #  5        HH:MM
+    "%H:%M:%S",	    #  6        HH:MM:SS
+    "%H:%M:%OS1",   #  7        HH:MM:SS.M
+    "%H:%M:%OS2",   #  8        HH:MM:SS.MM
+    "%H:%M:%OS3",   #  9        HH:MM:SS.MMM
+    "%H:%M:%OS4")   #  10       HH:MM:SS.MMMM
+
+# contents of major tic labels
+xlabel.majunits <- c(
+     "YEAR", "YR MON DAY", "MON DAY HHMM",
+     "MON DAY HHMM", "HHMM",
+     "HHMMSS", "HHMMSS", "HHMMSS", "HHMMSS", "HHMMSS")
+
+# Format of extra label on first major tic mark, plotted below regular label
+xlabel.extraformats <- c(
+    "%Z",		#  1 add timezone to year
+    "%Z",		#  2 add timezone to date
+    "%Y %Z",		#  3 add year, timezone to month,time
+    "%Y %Z",		#  4 add year, timezone to month,time
+    "%Y %b %d %Z",	#  5 add date to time
+    "%Y %b %d %Z",	#  6 add date to time
+    "%Y %b %d %Z",	#  7 add date to time
+    "%Y %b %d %Z",	#  8 add date to time
+    "%Y %b %d %Z",	#  9 add date to time
+    "%Y %b %d %Z")	#  10 add date to time
+
+#  Mapping of delta index to format
+xlabel.tltype <- c(
+    1,1,1,		# 4-1 year          YYYY
+    2,2,2,  		# 6,3,1 month       YY MON DAY
+    3,3,3,3,3,          # 14day-1day        MON DAY
+    4,4,4,4,4,          # 12hour-1hour      MON DAY HHMM
+    5,5,5,5,5,          # 30min - 1 min     HHMM
+    6,6,6,6,6,          #  30sec-1sec       HHMMSS
+    7,	                #  .5sec            HHMMSS.M
+    8,               	#  .25sec           HHMMSS.MM
+    7,	                #  .1sec            HHMMSS.M
+    9,9,9,              # .05 - .01 sec
+    10,10,10)	        # .005,.001 sec
+
+xlabel.nts <- function(t1, t2, nlab)
 {
     # Determine nice intervals and a format for labeling an X axis with
     # time labels.
-    # 
-    #
-    # deltat:  Minimum width in seconds of a time label.
-    #	   For example, if a plot is 6 inches wide, representing	
-    #	   360 seconds, and a character is 1/6 inch wide, then
-    #	   each character is 10 seconds wide.  A time label is
-    #	   about 8 character, so deltat should be 80.
-    # Time label deltas, each about .5 of preceding.
-    tdel <- c(
-        #  10y
-           315576.e3,
-        #  365.25d   100d    50d    20d
-           315576.e2,864.e4,432.e4,1728.e3,
-        #  10d    5d     2d      1d    12h     6h     4h     2h
-           864.e3,432.e3,1728.e2,864.e2,432.e2,216.e2,144.e2,72.e2,
-        #  1h    30m   20m  10m  5m    2m   1m   30s  20s   10s
-           36.e2,18.e2,12.e2,6.e2,3.e2,12.e1,6.e1,3.e1,2.e1,1.e1,
-        #  5s   2s  1s   1/2s  1/4s  1/10s
-           5.,  2.,  1.,  .5,  .25,  .1, .05, .025, .01, .005,.0025,.001)
-         
-    #  Delta before first labeled tic mark
-    tdelfirst <- c(
-        # 10y
-           315576.e3,
-        # 365.25d   100d:10 50d:10 20d:1
-          315576.e2,864.e3,864.e3, 864.e2,
-           
-        # 10d:1d 5d:1d  2d:1d   1d    12h:6h  6h:1h  4h:1h  2h
-          864.e2,864.e2, 864.e2,864.e2,216.e2, 36.e2, 36.e2,36.e2,
-           
-        # 1h    30m   15m:5 10m:5 5m:1 2m:1m 1m  30s  20s:10 10s:5
-          36.e2,18.e2, 3.e2,3.e2,6.e1, 6.e1,6.e1,3.e1,1.e1, 5.e0,
-           
-        # 5s  2s:1 1s   1/2s  1/4s   1/10s
-          5.,  2.,  1.,  .5,  .25,  .1, .05, .025, .01, .005,.0025,.001)
-   
-    # Number of minor tics between tdels (12 month/year, etc).
-    tminor <- c(			#	   1m
-      10,12,5,5,4,5,5,4,6,6,6,4,4,6,6,4,5,5,4,6, 6,4,5,5,4,4,5,5,5,5,5,5,5,5,5)
 
-    # Units per minor tic.
-    mtunits <- c(
-         "YEAR","MONTH","20DAY","10DAY","5DAY","2DAY","1DAY","12HR","4HR","2HR",
-         "1HR","1HR","30MIN","10MIN","5MIN","5MIN","2MIN","1MIN","30SEC",
-         # 1m
-         "10SEC","5SEC","5SEC","2SEC","1SEC",".5SEC",".25SEC",".1SEC",
-         ".05SEC",".02SEC",".01SEC",".005SEC",".002SEC",".001SEC",".0005SEC",
-         ".0002SEC")
+    # minimum number of seconds for a time label
+    deltat <- (t2 - t1) / nlab
 
-    tunits <- c(
-       "YEAR","DATE","DATE","DATE HHMM","HHMM","HHMMSS",
-       "HHMMSS","HHMMSS","HHMMSS","HHMMSS")
-   
-    tformats <- c(
-       "%Y",		#  1 YYYY
-       "%Y %b %d",      #  2 YYYY MON DAY
-       "%b %d",		#  3    MON DAY
-       "%b %d %H%M",    #  4    MON DAY HRMM
-       "%H%M",		#  5        HHMM
-       "%H%M%S",	#  6        HHMMSS
-       "%H%M%S",	#  7        HHMMSS
-       "%H%M%OS1",	#  8        HHMMSS.M
-       "%H%M%OS2",	#  9        HHMMSS.MM
-       "%H%M%OS3",	#  10       HHMMSS.MMM
-       "%H%M%OS4")	#  11       HHMMSS.MMMM
+    kt <- length(xlabel.deltas[xlabel.deltas >= deltat])
+    if (kt == 0) kt <- 1
 
-    # Format of extra label on first major tic mark, plotted below regular label
-    extraformats <- c(
-       "%Z",		#  1 YYYY
-       "%Z",		#  2 YYYY MON DAY
-       "%Y %Z",		#  3      MON DAY
-       "%Y %Z",		#  4      MON DAY HHMM
-       "%Y %b %d %Z",	#  5              HHMM
-       "%Y %b %d %Z",	#  6              HHMMSS
-       "%Y %b %d %Z",	#  7              HHMMSS
-       "%Y %b %d %Z",	#  8              HHMMSS.M
-       "%Y %b %d %Z",	#  9              HHMMSS.MM
-       "%Y %b %d %Z",	#  10             HHMMSS.MMM
-       "%Y %b %d %Z")	#  11             HHMMSS.MMMM
+    # return:
+    #   majtics, mintics (utimes)
+    #   majunits, minunits (strings)
+    #   tformat, extraformat (strings)
+    t1l <- as(t1,"list")
+    if (kt < 4) {       # 4,2,1 year major tic
+        t1l$year <- t1l$year + 1
+        t1l$mon <- t1l$day <- t1l$yday <- 1
+        t1l$hour <- t1l$min <- t1l$sec <- 0
+        fmajtic <- as(t1l,"utime")
+        # since a year isn't exactly 366 days, these aren't exactly correct
+        # but close enough for plotting
+        majtics <- utime(seq(from=fmajtic,to=t2,by=xlabel.deltas[kt]))
+        mindt <- xlabel.deltas[kt] / xlabel.nminor[kt]
+        ntic <- floor((fmajtic - t1) / mindt)
+        mintics <- utime(seq(from=fmajtic-ntic*mindt,to=t2,by=mindt))
+    }
+    else if (kt == 4) {         # 6 month major tic, 1 month minor tic
+        t1l$day <- t1l$yday <- 1
+        t1l$hour <- t1l$min <- t1l$sec <- 0
+        ttic <- as(t1l,"utime") + 31 * 86400    # first tic at day 1, next month
+        majtics <- mintics <- NULL
 
-    #  Mapping of delta index to format
-    tltype <- c(
-                      1,			# 10year            YY
-                      1,2,2,2,4,		# 365.25day-10day   YY MON DAY
-                      4,4,4,		#  5day-1day        MON DAY
-                      4,5,5,		# 12hour-4hour      MON DAY HHMM
-                      5,5,5,5,5,5,5,5,	#  2hour-1min       HHMM
-                      6,6,6,		#  30sec-10sec      HHMMSS
-                      7,7,7,		#   5sec-1sec       HHMMSS
-                                8,	#  .5sec            HHMMSS.M
-                                9,	#  .25sec           HHMMSS.MM
-                                8,	#  .1sec            HHMMSS.M
-                                10,10,10,10,	# .05 - .005 sec
-                                11,11)	# .0025,.001 sec
+        i <- 0
+        while (TRUE) {
+            t1l <- as(ttic,"list")
+            t1l$day <- t1l$yday <- 1
+            t1l$hour <- t1l$min <- t1l$sec <- 0
+            ttic <- as(t1l,"utime")
+            if (ttic > t2) break
+            if ((i %% 6) == 0) majtics <- c(majtics, ttic)     # day 1 of next month
+            else mintics <- c(mintics, ttic)     # day 1 of next month
+            ttic <- ttic + 31 * 86400
+            i <- i + 1
+        }
+        majtics <- utime(majtics)
+        mintics <- utime(mintics)
+    }
+    else if (kt == 5) {         # 3 month major tic, 1 month minor tic
+        t1l$day <- t1l$yday <- 1
+        t1l$hour <- t1l$min <- t1l$sec <- 0
+        ttic <- as(t1l,"utime") + 31 * 86400
+        majtics <- mintics <- NULL
+        i <- 0
+        while (TRUE) {
+            t1l <- as(ttic,"list")
+            t1l$day <- t1l$yday <- 1
+            ttic <- as(t1l,"utime")
+            if (ttic > t2) break
+            if ((i %% 3) == 0) majtics <- c(majtics, ttic)     # day 1 of next month
+            else mintics <- c(mintics, ttic)     # day 1 of next month
+            ttic <- ttic + 31 * 86400
+            i <- i + 1
+        }
+        majtics <- utime(majtics)
+        mintics <- utime(mintics)
+    }
+    else if (kt == 6) {         # 1 month major tic, 5 day minor tic
+        t1l$day <- t1l$yday <- 1
+        t1l$hour <- t1l$min <- t1l$sec <- 0
+        ttic <- as(t1l,"utime") + 31 * 86400
+        majtics <- mintics <- NULL
 
+        mintic <- ttic - 7 * 86400
+        while(mintic > t1) {
+            mintics <- c(mintics, mintic)
+            mintic <- mintic - 7 * 86400
+        }
+        while (TRUE) {
+            t1l <- as(ttic,"list")
+            t1l$day <- t1l$yday <- 1
+            t1l$hour <- t1l$min <- t1l$sec <- 0
+            ttic <- as(t1l,"utime")
+            if (ttic > t2) break
+            majtics <- c(majtics, ttic)     # day 1 of next month
+            for (i in 1:5) {
+                mintic <- ttic + i * 5 * 86400
+                if (mintic < t2) mintics <- c(mintics, ttic + i * 7 * 86400)
+            }
+            ttic <- ttic + 31 * 86400
+        }
+        majtics <- utime(majtics)
+        mintics <- utime(mintics)
+    }
+    else if (kt < 12) {         # 14 days to 1 day
+        t1l$hour <- t1l$min <- t1l$sec <- 0
+        ttic <- as(t1l,"utime") + 86400
+        t1l$hour <- t1l$min <- t1l$sec <- 0 # in case of daylight time crossover
+        ttic <- as(t1l,"utime")
+        
+        maxdt <- xlabel.deltas[kt]
+        mindt <- maxdt / xlabel.nminor[kt]
 
-    kt <- length(tdel[tdel >= deltat])
+        majtics <- utime(seq(from=ttic, to=t2, by=maxdt))
 
-    delmaj <- tdel[kt]
-    delmin <- delmaj / tminor[kt]
-    delfirst <- tdelfirst[kt]
-    type <- tltype[kt]
-    tformat <- tformats[type]
-    tunits <- tunits[type]
-    mtunits <- mtunits[kt]
+        ntic <- floor((ttic - t1) / mindt)
+        mintics <- utime(seq(from=ttic-ntic*mindt,to=t2,by=mindt))
+    }
+    else if (kt == 12) { # 12 h   00 or 12:00:00 (LT) of next day,vc  3 hours
+        t1l$hour <- t1l$min <- t1l$sec <- 0
+        ttic <- as(t1l,"utime") + 86400
+        if (ttic - 12 * 3600 > t1) ttic <- ttic - 12 * 3600
 
+        maxdt <- xlabel.deltas[kt]
+        mindt <- maxdt / xlabel.nminor[kt]
 
-    # Number of digits in fractional seconds. Not needed with %nF format
-    # if (type > 7) fsecdig <- type - 7
-    # fsecdig <- 0
+        majtics <- utime(seq(from=ttic, to=t2, by=maxdt))
+        ntic <- floor((ttic - t1) / mindt)
+        mintics <- utime(seq(from=ttic-ntic*mindt,to=t2,by=mindt))
+    }
+    else if (kt < 16) { # 4 h to 1 h
+        t1l$min <- t1l$sec <- 0
+        ttic <- as(t1l,"utime") + 3600
 
-    return (list(delta=delmaj,mdelta=delmin,fdelta=delfirst,
-                 format=tformat,units=tunits,munits=mtunits,
-                 extraformat=extraformats[type]))
+        maxdt <- xlabel.deltas[kt]
+        mindt <- maxdt / xlabel.nminor[kt]
+
+        majtics <- utime(seq(from=ttic, to=t2, by=maxdt))
+        mintics <- utime(seq(from=ceiling(t1/mindt)*mindt, to=t2, by=mindt))
+    }
+    else { # everything else, simple math
+        maxdt <- xlabel.deltas[kt]
+        mindt <- maxdt / xlabel.nminor[kt]
+
+        majtics <- utime(seq(from=ceiling(t1/maxdt) * maxdt, to=t2, by=maxdt))
+        mintics <- utime(seq(from=ceiling(t1/mindt) * mindt, to=t2, by=mindt))
+    }
+
+    labtype <- xlabel.tltype[kt]
+
+    list(majtics=majtics, mintics=mintics,
+         majunits=xlabel.majunits[labtype],
+         minunits=xlabel.minunits[kt],
+         format=xlabel.tformats[labtype],
+         extraformat=xlabel.extraformats[labtype])
 }
+
 error.bar.nts <- function(x,lower,upper,incr=T,bar.ends=T,gap=T,add=F,
 	horizontal=F,ylim=NULL,...)
 {
