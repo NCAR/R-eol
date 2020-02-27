@@ -824,6 +824,7 @@ dat.TKE <- function(what,derived=TRUE,...)
         cf <- rep(NA,length(uc))
         cf[uc=="kg/m^3"] <- 1
         cf[uc=="g/m^3"] <- 1e-3
+        cf[uc=="mg/m^3"] <- 1e-6
         cf[uc=="mmol/m^3"] <- 1e-6 * MCO2
         rhoc@data <- t(t(rhoc@data)*cf)
 
