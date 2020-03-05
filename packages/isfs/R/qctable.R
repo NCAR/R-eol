@@ -16,7 +16,7 @@
 #      a different color for maximum, minimum and median
 #	So for a given time period, the station with the max value
 #	would be shown in red, the minimum value in blue and
-# 	the mean in green.  Or red=max, green=min, yellow=median
+# 	the mean in green.  Now: orange=max, green=min, blue=median
 #
 #  Tom also felt statistics should be done with unclipped data.
 #  
@@ -221,10 +221,10 @@ qctable <- function(vars,data=NULL,ntper=4,file="",append=FALSE,title=NULL,
             "table.numdata {font-family: monospace,monospace;}\n",
             "td.nummax {color: #FF8000;}\n",
             "td.nummed {color: green;}\n",
-            "td.nummin {color: yellow;}\n",
+            "td.nummin {color: blue;}\n",
             "span.nummax {color: #FF8000;}\n",
             "span.nummed {color: green;}\n",
-            "span.nummin {color: yellow;}\n",
+            "span.nummin {color: blue;}\n",
             "#badgt0 {color: red;}\n",
             "-->\n",
             "</style>\n",
