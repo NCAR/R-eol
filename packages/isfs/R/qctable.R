@@ -162,7 +162,7 @@ qctable_list <- function(data=NULL,vars=NULL,t1=dpar("start"),t2=dpar("end"),ntp
 qctable_links_html <- function(dnames,file="",append=append)
 {
     if (length(dnames) > 1) {
-        html <- paste("<table border=1 bgcolor=\"#BBBBBB\"><caption>Clickable Table Of Variables</caption>\n")
+        html <- paste("<table border=1 bgcolor=\"#eeeeee\"><caption>Clickable Table Of Variables</caption>\n")
         for (i in seq(from=1,to=length(dnames),by=10)) {
             n <- i + 9
             if (n > length(dnames)) n <- length(dnames)
@@ -229,7 +229,7 @@ qctable <- function(vars,data=NULL,ntper=4,file="",append=FALSE,title=NULL,
             "-->\n",
             "</style>\n",
             "<title>",title,"</title>\n</head>\n",
-            "<body bgcolor=\"#AAAAAA\">\n",
+            "<body bgcolor=\"#dddddd\">\n",
             "<a id=\"top\"></a>\n",
             "<center><h2>",title,"</h2></center>\n",sep="")
 
@@ -349,7 +349,7 @@ qctable <- function(vars,data=NULL,ntper=4,file="",append=FALSE,title=NULL,
 
             if (dn == dnall[1]) html <- paste(html,"<a id=\"",dnx,"\"></a><p>\n",sep="")
 
-            html <- paste(html,"<table class=\"numdata\" border=1 bgcolor=\"#BBBBBB\"><caption><b>",dnx,
+            html <- paste(html,"<table class=\"numdata\" border=1 bgcolor=\"#eeeeee\"><caption><b>",dnx,
                 "</b>(",dunit,") ",timecapt,
                 ", clip.limits=",clip.limits,"</caption>\n",sep="")
 
