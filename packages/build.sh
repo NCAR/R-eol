@@ -21,9 +21,25 @@ do_eolsonde=false
 is_mac=false
 if [ $(uname) == Darwin ]; then
 	is_mac=true
+	# geographiclib doesn't have a static library
+	fix_lib_dirs=(fftw netcdf hdf5 szip)
 else
 	is_mac=false
 fi
+
+# Unfortunate hack...  Seems the only way on MacOSx to force linking against a
+# static library is to make sure the dynlib doesn't exist. Should be another way...
+hide_shlibs() {
+    for libdir in ${fix_lib_dirs[*]}; do
+	./hide-shared-libs.py --hide --dir /usr/local/opt/$libdir/lib
+    done
+}
+
+restore_shlibs() {
+    for libdir in ${fix_lib_dirs[*]}; do
+	./hide-shared-libs.py --restore --dir /usr/local/opt/$libdir/lib
+    done
+}
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -56,9 +72,13 @@ done
 # We generally don't use an Renviron.site anyway.
 
 if $is_mac; then
-	rlib=$(R --vanilla --slave -e 'cat(.Library[1])' )
+    rlib=$(R --vanilla --slave -e 'cat(.Library[1])' )
+
+    hide_shlibs
+    trap "restore_shlibs > /dev/null;" EXIT
+
 else
-	rlib=$(R --vanilla --slave -e 'cat(.Library.site[1])' )
+    rlib=$(R --vanilla --slave -e 'cat(.Library.site[1])' )
 fi
 
 rargs="--vanilla"
@@ -73,6 +93,8 @@ gitdesc=${gitdesc/#v}   # remove v: 1.2-14-gabcdef123
 version=${gitdesc%-*}   # remove trailing -*: 1.2-14
 
 [ $gitdesc == "$version" ] && version=${gitdesc}-0  # if no commits since tag
+
+
 
 do_pkg() {
     local pkg=$1
@@ -101,9 +123,9 @@ do_pkg() {
 
     if $is_mac; then
         # Check that the package does not have dependencies on /usr/local/lib
-        if R $rargs CMD otool -L $rlib/${pkg}/libs/eolts.so | fgrep -q /usr/local/lib; then
-            echo "otool -L $rlib/${pkg}/libs/eolts.so indicates it is using a shareable library on /usr/local/lib"
-            exit 1
+	echo "Checking that dependencies of $rlib/${pkg}/libs/${pkg}.so are static"
+        if R $rargs CMD otool -L $rlib/${pkg}/libs/${pkg}.so | fgrep -e /usr/local; then
+            echo "Warning: otool -L $rlib/${pkg}/libs/${pkg}.so indicates it is using a shareable library on /usr/local"
         fi
     fi
 
