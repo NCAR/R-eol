@@ -45,19 +45,19 @@ utime <- function(val=as.numeric(Sys.time()),
         }
         for (i in 1:length(in.format)) {
             # cat("trying format",in.format[[i]],"\n")
-            res <- strptime(val,format=in.format[[i]],tz=time.zone)
-            if (!any(is.na(res))) {
-                res <- new("utime",as.numeric(res))
+            res <- as.numeric(strptime(val,format=in.format[[i]],tz=time.zone))
+            if (any(!is.na(res))) {
                 break
             }
         }
         if (any(is.na(res))) {
+            badt <- is.na(res)
             if (length(val) == 1) warning(paste0("\"",val,"\" not parsable with any in.format=c(",
-                    paste("\"",unlist(in.format),"\"",sep="",collapse=", "),")"))
-            else warning(paste("some dates not parsable with any in.format=c(",
-                    paste("\"",unlist(in.format),"\"",sep="",collapse=", "),")"))
+                    paste("\"",unlist(in.format),"\"",sep="",collapse=", "),"). Setting to NA"))
+            else warning(paste0(sum(badt)," dates (such as \"",val[badt][1],"\") not parsable with any in.format=c(",
+                    paste("\"",unlist(in.format),"\"",sep="",collapse=", "),"). Setting to NA"))
         }
-        res
+        res <- new("utime", res)
     }
     else if (is(val,"POSIXct")) {
         res <- utime(as.numeric(val))
