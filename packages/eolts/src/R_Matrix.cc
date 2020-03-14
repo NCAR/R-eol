@@ -18,7 +18,7 @@
 using std::vector;
 using std::string;
 
-using namespace eolts;
+namespace eolts {
 
 template class R_Matrix<double>;
 template class R_Matrix<int>;
@@ -154,6 +154,9 @@ R_Matrix<char*>::R_Matrix(SEXP obj) : R_MatrixBase(STRSXP,obj)
 // #define DEBUG
 // #undef DEBUG
 
+}   // namespace eolts
+
+using namespace eolts;
 
 extern "C" {
 SEXP create_matrix(SEXP type, SEXP nrow,SEXP ncol)

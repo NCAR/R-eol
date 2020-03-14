@@ -24,8 +24,6 @@ using std::unique_ptr;
 #endif
 #endif
 
-
-
 #include "NetcdfReader.h"
 
 #include <assert.h>

@@ -17,16 +17,24 @@
 
 using namespace eolts;
 
+namespace eolts {
+
 template class R_NamedVector<double>;
 template class R_NamedVector<int>;
 // template class R_NamedVector<char*>;
 
+/**
+ * Specialization of getDataPtr() for R_NamedVector<double>.
+ */
 template<>
 double *R_NamedVector<double>::getDataPtr()
 {
     return REAL(getRObject());
 }
 
+/**
+ * Specialization of constuctor for R_NamedVector<double>.
+ */
 template<>
 R_NamedVector<double>::R_NamedVector(int type,size_t length) :
 	R_NamedVectorBase(REALSXP,length)
@@ -36,18 +44,27 @@ R_NamedVector<double>::R_NamedVector(int type,size_t length) :
     for ( ; fp < fpend; ) *fp++ = NA_REAL;
 }
 
+/**
+ * Specialization of constuctor for R_NamedVector<double>.
+ */
 template<>
 R_NamedVector<double>::R_NamedVector(int type,SEXP obj) :
 	R_NamedVectorBase(REALSXP,obj)
 {
 }
 
+/**
+ * Specialization of getDataPtr() for R_NamedVector<int>.
+ */
 template<>
 int *R_NamedVector<int>::getDataPtr()
 {
     return INTEGER(getRObject());
 }
 
+/**
+ * Specialization of constuctor for R_NamedVector<int>.
+ */
 template<>
 R_NamedVector<int>::R_NamedVector(int type, size_t length) :
 	R_NamedVectorBase(type,length)
@@ -60,9 +77,13 @@ R_NamedVector<int>::R_NamedVector(int type, size_t length) :
         for ( ; fp < fpend; ) *fp++ = NA_LOGICAL;
 }
 
+/**
+ * Specialization of constuctor for R_NamedVector<int>.
+ */
 template<>
 R_NamedVector<int>::R_NamedVector(int type, SEXP obj) :
 	R_NamedVectorBase(type,obj)
 {
 }
 
+}   // namespace eolts

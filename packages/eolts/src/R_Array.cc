@@ -19,7 +19,8 @@
 using std::vector;
 using std::string;
 
-using namespace eolts;
+
+namespace eolts {
 
 template class R_Array<double>;
 template class R_Array<int>;
@@ -108,6 +109,10 @@ template<>
 R_Array<char*>::R_Array(int type, SEXP obj) : R_ArrayBase(type,obj)
 {
 }
+
+}   // namespace eolts
+
+using namespace eolts;
 
 extern "C" {
 SEXP create_array(SEXP type, SEXP dims)
