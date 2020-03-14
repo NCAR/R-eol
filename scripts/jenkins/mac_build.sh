@@ -30,14 +30,14 @@ restore_shlibs() {
 
 # 
 export R_LIBS_USER=$(mktemp -d $WORKSPACE/Rtemp_XXXXXX)
-trap "{ rm -rf $R_LIBS_USER; }" EXIT
-
-# download the source package tar-balls
-R $rargs -e "download.packages(c('eolts','isfs','eolsonde'),repos='$repo',type='source',destdir='.')"
 
 fix_lib_dirs=(fftw netcdf hdf5 szip)
 hide_shlibs
-trap "restore_shlibs > /dev/null;" EXIT
+trap "{ rm -rf $R_LIBS_USER; restore_shibs; }" EXIT
+
+
+# download the source package tar-balls
+R $rargs -e "download.packages(c('eolts','isfs','eolsonde'),repos='$repo',type='source',destdir='.')"
 
 for pkg in eolts isfs eolsonde; do
 
