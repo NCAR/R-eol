@@ -1,0 +1,1 @@
+../../packages/hide-shared-libs.py
