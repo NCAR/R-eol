@@ -24,7 +24,7 @@ if [ $(uname) == Darwin ]; then
 	# possible paths to pdflatex
 	PATH=$PATH:/Library/TeX/texbin:/usr/texbin
 	# geographiclib doesn't have a static library
-	fix_lib_dirs=(fftw netcdf hdf5 szip)
+	fix_lib_dirs=(fftw netcdf hdf5 szip geographiclib)
 else
 	is_mac=false
 fi

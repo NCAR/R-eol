@@ -31,9 +31,9 @@ restore_shlibs() {
 # 
 export R_LIBS_USER=$(mktemp -d $WORKSPACE/Rtemp_XXXXXX)
 
-fix_lib_dirs=(fftw netcdf hdf5 szip)
+fix_lib_dirs=(fftw netcdf hdf5 szip geographiclib)
 hide_shlibs
-trap "{ rm -rf $R_LIBS_USER; restore_shibs; }" EXIT
+trap "{ rm -rf $R_LIBS_USER; restore_shlibs; }" EXIT
 
 
 # download the source package tar-balls
