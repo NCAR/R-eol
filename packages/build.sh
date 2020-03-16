@@ -127,7 +127,8 @@ do_pkg() {
         # Check that the package does not have dependencies on /usr/local/lib
 	echo "Checking that dependencies of $rlib/${pkg}/libs/${pkg}.so are static"
         if R $rargs CMD otool -L $rlib/${pkg}/libs/${pkg}.so | fgrep -e /usr/local; then
-            echo "Warning: otool -L $rlib/${pkg}/libs/${pkg}.so indicates it is using a shareable library on /usr/local"
+            echo "Error: otool -L $rlib/${pkg}/libs/${pkg}.so indicates it is using a shareable library on /usr/local"
+            exit 1
         fi
     fi
 

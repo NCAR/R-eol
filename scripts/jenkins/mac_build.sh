@@ -47,7 +47,8 @@ for pkg in eolts isfs eolsonde; do
 
     # Warn if the package has dependencies on /usr/local
     if R $rargs CMD otool -L $R_LIBS_USER/$pkg/libs/$pkg.so | fgrep /usr/local; then
-        echo "Warning: otool -L $R_LIBS_USER/$pkg/libs/$pkg.so indicates it is using a shareable library on /usr/local"
+        echo "Error: otool -L $R_LIBS_USER/$pkg/libs/$pkg.so indicates it is using a shareable library on /usr/local"
+        exit 1
     fi
     
 done
