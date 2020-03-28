@@ -189,7 +189,7 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
         nlab <- 6
     }
 
-    tlab <- xlabel.nts(xrange[1],xrange[2],nlab)
+    tlab <- xlabel.nts(xrange[1],xrange[2],nlab, time.zone=time.zone)
     # cat("cwidth=",cwidth," pwidth=",pwidth," nlab=",nlab,
     #   " tlabcex=",tlabcex," cex=",par("cex"),"\n")
 
@@ -217,7 +217,7 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
     }
 
     # Scale the data, since par("usr") seems to be stored as float,
-    # not exough significant digits for a full utime.  Basiscally scale
+    # not exough significant digits for a full utime.  Basically scale
     # the data from 0 to 1.
     if (xaxs != "d") {
         scalef <- diff(xrange)
@@ -259,7 +259,7 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
 
             if (xlab != "" && x0 > 86400.0 && tlab$extraformat != "") {
                 tfmt <- paste(sep="",tlabels[1],"\n",tlab$extraformat)
-                tlabels[1] <- format(xmajtics[1],format=tfmt)
+                tlabels[1] <- format(xmajtics[1],format=tfmt,time.zone=time.zone)
             }
 
             tcl <- par("tcl")
@@ -521,7 +521,7 @@ xlabel.tltype <- c(
     9,9,9,              # .05 - .01 sec
     10,10,10)	        # .005,.001 sec
 
-xlabel.nts <- function(t1, t2, nlab)
+xlabel.nts <- function(t1, t2, nlab, time.zone=getOption("time.zone"))
 {
     # Determine nice intervals and a format for labeling an X axis with
     # time labels.
@@ -536,7 +536,8 @@ xlabel.nts <- function(t1, t2, nlab)
     #   majtics, mintics (utimes)
     #   majunits, minunits (strings)
     #   tformat, extraformat (strings)
-    t1l <- as(t1,"list")
+
+    t1l <- as.list(t1,time.zone=time.zone)
     if (kt < 4) {       # 4,2,1 year major tic
         t1l$year <- t1l$year + 1
         t1l$mon <- t1l$day <- t1l$yday <- 1
@@ -557,7 +558,7 @@ xlabel.nts <- function(t1, t2, nlab)
 
         i <- 0
         while (TRUE) {
-            t1l <- as(ttic,"list")
+            t1l <- as.list(ttic, time.zone="time.zone")
             t1l$day <- t1l$yday <- 1
             t1l$hour <- t1l$min <- t1l$sec <- 0
             ttic <- as(t1l,"utime")
@@ -577,7 +578,7 @@ xlabel.nts <- function(t1, t2, nlab)
         majtics <- mintics <- NULL
         i <- 0
         while (TRUE) {
-            t1l <- as(ttic,"list")
+            t1l <- as.list(ttic, time.zone=time.zone)
             t1l$day <- t1l$yday <- 1
             ttic <- as(t1l,"utime")
             if (ttic > t2) break
@@ -605,7 +606,7 @@ xlabel.nts <- function(t1, t2, nlab)
         ttic <- ttic + 31 * 86400
 
         while (TRUE) {
-            t1l <- as(ttic,"list")
+            t1l <- as.list(ttic, time.zone=time.zone)
             t1l$day <- t1l$yday <- 1
             t1l$hour <- t1l$min <- t1l$sec <- 0
             ttic <- as(t1l,"utime")
@@ -619,7 +620,10 @@ xlabel.nts <- function(t1, t2, nlab)
     }
     else if (kt < 12) {         # 14 days to 1 day
         t1l$hour <- t1l$min <- t1l$sec <- 0
+        # 00:00 of next day
         ttic <- as(t1l,"utime") + 86400
+
+        t1l <- as.list(ttic, time.zone=time.zone)
         t1l$hour <- t1l$min <- t1l$sec <- 0 # in case of daylight time crossover
         ttic <- as(t1l,"utime")
         
@@ -813,14 +817,14 @@ horiz_legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,cex=1.0,bty,xax
     NULL
 }
 
-label_times <- function(t1,t2, annotate, adj, col=1, year=T, print=T,cex=par("cex"),...)
+label_times <- function(t1,t2, annotate, adj, col=1, year=T, print=T,cex=par("cex"),time.zone=getOption("time.zone"),...)
 {
     # function to print start (t1) and end (t2) times of data
     # on the upper left of a plot (or as specified by 'adj')
     # t1 <- start(data)
     # t2 <- end(data)
-    t1.list <- as(t1,"list")
-    t2.list <- as(t2,"list")
+    t1.list <- as.list(t1, time.zone=time.zone)
+    t2.list <- as.list(t2, time.zone=time.zone)
     if (t1.list$mon != t2.list$mon | t1.list$day != t2.list$day |
         t1.list$year != t2.list$year) {
         if (year)
