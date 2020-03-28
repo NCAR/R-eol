@@ -101,6 +101,7 @@ version=${gitdesc%-*}   # remove trailing -*: 1.2-14
 do_pkg() {
     local pkg=$1
     cd $pkg
+    rm -f inst/.RData inst/.Rhistory
     autoreconf
     cd -
     rm -f ${pkg}_*.tar.gz
