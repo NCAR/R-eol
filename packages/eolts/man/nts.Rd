@@ -7,7 +7,7 @@ Construct an object of class \code{"\linkS4class{nts}"}.
 Create an object of \code{"\linkS4class{nts}"} from a matrix or data.frame and an associated vector of \code{"\linkS4class{utime}"}s, whose length must be the same as the number of rows in the matrix or data frame.  Each column of the matrix or data.frame is a different time series variable. Each row is a different observation in time.
 }
 \usage{
-nts(data, positions, units, names, weights = NULL, weightmap = NULL, stations = NULL, wss = NULL, time.format = getOption("time.out.format"), time.zone = getOption("time.zone"))
+nts(data, positions, units, names, long_names=NULL, weights = NULL, weightmap = NULL, stations = NULL, wss = NULL, time.format = getOption("time.out.format"), time.zone = getOption("time.zone"))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -41,6 +41,9 @@ Character string containing the \code{\link{utime}} time format to be used when 
 }
   \item{time.zone}{
 Character string containing the \code{\link{utime}} time zone to be used when formatting times in methods such as \code{show} and \code{write}.
+}
+  \item{long_names}{
+Character string containing more descriptive variable names.
 }
 }
 \details{

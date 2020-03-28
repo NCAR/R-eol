@@ -421,7 +421,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
 
     if (missing(title) || (is.logical(title) && title) || is.character(title)) {
         if (is.null(title_txt) || length(title_txt) == 0) title_txt <- dnames
-        plot_dat_title(title_txt,first_plot,last_plot,t1,t2,plot_stns,cex=cex*par("cex"))
+        plot_dat_title(title_txt,first_plot,last_plot,t1,t2,plot_stns,cex=cex*par("cex"), time.zone=x@time.zone)
     }
 
     if (logo && last_plot) logo_stamp()
@@ -430,7 +430,8 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
 }
 
 plot_dat_title <- function(title="",first_plot,last_plot,
-    t1=dpar("start"),t2=dpar("end"),stns=NULL,cex=par("cex"))
+    t1=dpar("start"),t2=dpar("end"),stns=NULL,cex=par("cex"),
+    time.zone=getOption("time.zone"))
 {
     this_plot_date <- unlist(as.list(t1)[c("year","mon","day")])
     if (first_plot) {
@@ -487,12 +488,13 @@ plot_dat_title <- function(title="",first_plot,last_plot,
                 paste(plot_dat_title_save,collapse=","),sep=" ")
 
             if (!is.null(plot_dat_date)) {
-                t1@time.zone <- t2@time.zone <- getOption("time.zone")
-                date.text <- format(t1,format="%Y %b %d")
-                day1 <- as.list(t1)[["day"]]
-                day2 <- as.list(t2)[["day"]]
+                # t1@time.zone <- t2@time.zone <- getOption("time.zone")
+                date.text <- format(t1,format="%Y %b %d", time.zone=time.zone)
+                day1 <- as.list(t1, time.zone=time.zone)[["day"]]
+                day2 <- as.list(t2, time.zone=time.zone)[["day"]]
                 if (t2 - t1 > 86400 || day1 != day2) 
-                    date.text <- paste(date.text,format(t2,format=" - %b %d"),sep="")
+                    date.text <- paste(date.text,
+                        format(t2,format=" - %b %d", time.zone=time.zone),sep="")
                 title <- paste(title,date.text)
             }
 

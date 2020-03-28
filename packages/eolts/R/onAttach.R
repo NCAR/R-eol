@@ -22,6 +22,10 @@
 .onAttach = function(libname,pkgname)
 {
     # cat(paste("hello from libname=",libname,", pkgname=",pkgname," .onAttach\n"))
+    # package splusTimeDate has timeDateOptions() of
+    #   "time.in.format", "time.out.format", "time.zone" and others.
+    # To reduce dependency on splusTimeDate, we'll put them
+    # in options() instead.  Note these are not by default in options().
     time.zone = Sys.timezone()
     options(time.in.format=c(
             "%Y%m%d%H:%M:%OS",      # numeric month

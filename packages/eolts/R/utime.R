@@ -10,8 +10,7 @@
 # POSIX time class, with basic representation of numeric seconds
 # since Jan 1, 1970 00:00 UTC
 setClass("utime",
-    contains=c("positionsCalendar", "numeric"),
-    prototype=c(.Data=0)
+    contains=c("positionsCalendar", "numeric")
 )
 
 setMethod("initialize",
@@ -38,6 +37,7 @@ utime <- function(val=as.numeric(Sys.time()),
     }
     else if (is.character(val)) {
         # like setAs("character","utime") but in.format is an argument
+        if (is.null(time.zone)) time.zone <- getOption("time.zone")
         if (is.null(time.zone)) time.zone <- "UTC"
 
         if (length(val) == 1 && val == "now") {
@@ -69,7 +69,22 @@ utime <- function(val=as.numeric(Sys.time()),
         res <- val
     }
     else if (is.list(val)) {
-        res <- as(val,"utime")
+        time.zone <- as.character(val$TZ)
+        if (is.null(time.zone)) time.zone <- getOption("time.zone")
+        if (length(time.zone) == 0) time.zone <- "UTC"
+
+        # Unfortunately have to convert to character string and then parse.
+        # Doesn't seem to be a way to construct a POSIXlt from a list
+        # of time, date fields.
+        if (!is.null(val$yday) && is.null(val$mon) && is.null(val$day)) {
+            res <- utime(paste(val$year,val$yday-1,val$hour,val$min,val$sec),
+                in.format="%Y%j%H%M%OS",time.zone = time.zone)
+        }
+        else {
+            res <- utime(paste(val$year,val$mon,val$day,
+                val$hour,val$min,val$sec),
+                in.format="%Y%m%d%H%M%OS", time.zone=time.zone)
+        }
     }
     else {
         res <- new("utime",as.numeric(val))
@@ -173,12 +188,17 @@ setAs("character","utime",
     }
 )
 
+# Convert from utime to a list.  Note that a utime object
+# does not contain a time zone, and the function specified
+# in the setAs is only passed a from argument, and so the
+# time zone of the conversion is taken from getOption("time.zone")
 setAs("utime","list",
     function(from)
     {
         time.zone <- getOption("time.zone")
         if (is.null(time.zone)) time.zone <- "UTC"
 
+        # 
         to <- as.POSIXlt(as(from,"POSIXct"),tz=time.zone)
         list(year=to$year + 1900,
             mon=to$mon + 1,
@@ -192,23 +212,34 @@ setAs("utime","list",
     }
 )
 
-# coerce from list to utime
+# Convert from a list to utime.
 setAs("list","utime",
     function(from)
     {
-        time.zone <- as.character(from$TZ)
-        if (is.null(time.zone)) time.zone <- getOption("time.zone")
-        if (length(time.zone) == 0) time.zone <- "UTC"
+        if (is.null(from$TZ))
+            utime(from)
+        else
+            utime(from, time.zone=from$TZ)
+    }
+)
 
-        if (!is.null(from$yday) && is.null(from$mon) && is.null(from$day)) {
-            utime(paste(from$year,from$yday-1,from$hour,from$min,from$sec),
-                in.format="%Y%j%H%M%OS",time.zone = time.zone)
-        }
-        else {
-            utime(paste(from$year,from$mon,from$day,
-                from$hour,from$min,from$sec),
-                in.format="%Y%m%d%H%M%OS", time.zone=time.zone)
-        }
+setGeneric("as.list",function(x) standardGeneric("as.list"))
+setMethod("as.list",signature(x="utime"),
+    function(x, ...)
+    {
+        if (hasArg(time.zone)) time.zone <- list(...)$time.zone
+        else time.zone <- getOption("time.zone")
+
+        to <- as.POSIXlt(as(x,"POSIXct"),tz=time.zone)
+        list(year=to$year + 1900,
+            mon=to$mon + 1,
+            day=to$mday,
+            hour=to$hour,
+            min=to$min,
+            sec=to$sec,
+            yday=to$yday + 1,
+            TZ=time.zone
+        )
     }
 )
 
@@ -239,7 +270,6 @@ setMethod("show",signature(object="utime"),
                time.zone=time.zone),quote=FALSE)
     }
 )
-
 
 setGeneric("monthly",function(from,to) standardGeneric("monthly"))
 

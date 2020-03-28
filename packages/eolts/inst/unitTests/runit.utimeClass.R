@@ -37,6 +37,11 @@ test.utime <- function()
     xx <- utime(as(x,"list"))
     checkTrue(abs(xx-x) < 1.,"check equivalence of times from lists")
 
+    # try an explicit time zone in conversions to/from list
+    tz <- "Asia/Seoul"
+    xx <- utime(as.list(x, time.zone=tz), time.zone=tz)
+    checkTrue(abs(xx-x) < 1.,"check equivalence of times from lists")
+
     xx <- c(x,x+1.5)
     checkEquals(diff(xx),1.5)
     checkEquals(class(diff(xx)),"numeric")

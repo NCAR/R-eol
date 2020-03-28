@@ -77,6 +77,8 @@ cat("t1 in Pacific time zone is",tpacstr,"\n")
 
 # Convert to a list, using getOption("time.zone")
 t1l = as(t1,"list")
+# Convert to a list, using explicit time.zone
+t1l <- as.list(t1, time.zone="US/Pacific")
 
 options(time.zone="US/Eastern")
 # loop over days in Feb 2013

@@ -2,6 +2,13 @@ import(methods)
 
 import(splusTimeDate,splusTimeSeries,gWidgets2)
 
+# suggested by R
+importFrom("graphics", "axis", "locator", "mtext", "par", "segments",
+             "strheight", "strwidth", "text", "title")
+importFrom("stats", "dt", "lsfit", "mvfft")
+importFrom("utils", "tail")
+
+
 # importFrom("splusTimeDate","[")
 
 useDynLib(eolts)
@@ -13,6 +20,7 @@ export(
     diff.utime,
     seq.utime,
     nts,
+    as.list,
     as.double.nts,
     as.matrix.nts,
     as.vector.nts,
