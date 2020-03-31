@@ -27,6 +27,7 @@ export(
     plot.nts,
     write.nts,
     timeaxis,
+    timeaxis_setup,
     match.nts,
     match.delta,
     dpar,

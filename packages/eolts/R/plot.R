@@ -34,9 +34,10 @@ setMethod("plot",signature(x="nts",y="numeric"),
     }
 )
 
-plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
-	xaxs="i",xaxt,yaxt,
-        col,pch,lty,time.zone=x@time.zone,axes=T,log="",cex=1.0,...)
+plot.nts <- function(x, type="l", xlab=TRUE, xlim, ylab, ylim,
+	xaxs="i", xaxt, yaxt,
+        col, pch, lty, time.zone=x@time.zone, axes=TRUE, log="",
+        cex=1.0, ...)
 {
 
     # get the axes argument. 
@@ -144,14 +145,13 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
     #	
 
     if (xaxs == "d") {      # don't rescale
-        if (! exists(".plot.nts.scale",envir=.eoltsEnv)) {
-            stop("plot.nts.scale does not exist. Cannot plot with xaxs='d'")
+        if (! exists(".timeaxis_params",envir=.eoltsEnv)) {
+            stop("timeaxis_params does not exist. Cannot plot with xaxs='d'")
         }
-        plot.nts.scale <- get(".plot.nts.scale",envir=.eoltsEnv)
-        scalef <- plot.nts.scale$scale
-        x0 <- plot.nts.scale$off
+        tparams <- get(".timeaxis_params",envir=.eoltsEnv)
+        x0 <- tparams$toffset
         xlim.scaled <- par("usr")[c(1,2)]
-        xrange <- xlim.scaled * scalef + x0
+        xrange <- xlim.scaled + x0
     }
     else {
         if (missing(xlim)) xrange <- range(tx)
@@ -160,51 +160,19 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
             x <- x[utime(xlim),]
             tx <- x@positions
         }
+        tparams <- timeaxis_setup(xrange[1], xrange[2],
+            time.zone=time.zone, cex=cex)
+        x0 <- xrange[1]
+        xlim.scaled <- xrange - x0
     }
 
     xaxs <- "i"
 
-    cwidth <- par("cin")[1]	# character width in inches
-    pwidth <- par("pin")[1]	# plot width in inches 
+    tlabcex <- tparams$tlabcex
 
-    # Note: If the output device is motif(), par("pin") is the initial
-    # size of the motif window. If the user resizes the window,
-    # par("pin") does not change
-
-    # character expansion of x axis labels
-    # number of 12 character labels on xaxis
-    tlabcex <- cex * par("cex")
-
-    nlab <- pwidth / (cwidth * 12)
-    if (nlab < 4) {
-        tlabcex <- tlabcex * nlab / 4
-        cex <- cex * nlab / 4
-        nlab <- 4
-    }
-    else if (nlab > 6) {
-        tlabcex <- tlabcex * nlab / 6
-        cex <- cex * nlab / 6
-        if (tlabcex > 1.0) tlabcex <- 1.0
-        if (cex > 1.0) cex <- 1.0
-        nlab <- 6
-    }
-
-    tlab <- xlabel.nts(xrange[1],xrange[2],nlab, time.zone=time.zone)
-    # cat("cwidth=",cwidth," pwidth=",pwidth," nlab=",nlab,
-    #   " tlabcex=",tlabcex," cex=",par("cex"),"\n")
-
-    if (missing(xlab)) {
-        # No sense in time labels without axis
-        if (plotaxes && xaxt != "n")
-            xlab <- paste(sep="","Time(",tlab$majunits,"), tic=",tlab$minunits)
-        else xlab <- ""
-    }
-    else if (is.logical(xlab)) {
-        if (xlab) xlab <- paste(sep="","Time(",tlab$majunits,"), tic=",tlab$minunits)
-        else xlab <- ""
-    }
     if (missing(ylab)) {
         if (nc > 1) {
+            # name of y variable
             xexpr <- substitute(x)
             ylab <- deparse(xexpr)
         }
@@ -212,91 +180,30 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
             if (is.null(dunits <- attr(x,"dunits")))
                 ylab <- dimnames(x)[[2]][1]
             else
-                ylab <- paste(dimnames(x)[[2]][1],"(",attr(x,"dunits")[1],")",sep="")
+                ylab <- paste0(dimnames(x)[[2]][1],
+                     "(", attr(x,"dunits")[1], ")")
         }
     }
 
-    # Scale the data, since par("usr") seems to be stored as float,
-    # not exough significant digits for a full utime.  Basically scale
-    # the data from 0 to 1.
-    if (xaxs != "d") {
-        scalef <- diff(xrange)
-        x0 <- xrange[1]
-        xlim.scaled <- (xrange - x0) / scalef
-    }
-
+    # plot first column
     if (all.is.na)
-        plot.nas(type=type,axes=plotaxes,xlim=xlim.scaled,xlab="",
-            ylim=ylim,ylab=ylab,xaxs=xaxs,xaxt="n",yaxt=yaxt,
-            col=col[1],pch=pch[1],lty=lty[1],cex=cex,...)
+        plot.nas(type=type, axes=plotaxes, xlim=xlim.scaled, xlab="",
+            ylim=ylim, ylab=ylab, xaxs=xaxs, xaxt="n", yaxt=yaxt,
+            col=col[1], pch=pch[1], lty=lty[1], cex=cex, ...)
     else
-        plot((tx-x0)/scalef,x@data[,1],type=type,axes=plotaxes,
-            xlim=xlim.scaled,xlab="",ylim=ylim,ylab=ylab,xaxs=xaxs,
-            xaxt="n",yaxt=yaxt,col=col[1],pch=pch[1],lty=lty[1],log=log,cex=cex,...)
+        plot(tx-x0, x@data[,1], type=type, axes=plotaxes,
+            xlim=xlim.scaled, xlab="", ylim=ylim, ylab=ylab, xaxs=xaxs,
+            xaxt="n", yaxt=yaxt, col=col[1], pch=pch[1], lty=lty[1],
+            log=log,cex=cex, ...)
 
     if (plotaxes) {
         if (xaxt != "n") {
-            # First major tick
-            xmajtics <- tlab$majtics
-            tlabels <- format(xmajtics,format=tlab$format,time.zone=time.zone)
+            timeaxis(1, labels=TRUE, tick=TRUE, xlab=xlab,
+                time.zone=time.zone, date.too=TRUE, line=0, outer=FALSE,...)
 
-            # Add timezone to middle label
-            mid <- length(tlabels) / 2 + 1
-            tfmt <- paste(tlabels[mid],"%Z")
-            tlabels[mid] <- format(xmajtics[mid],format=tfmt)
-
-            # labwidth <- min(nchar(tlabels))
-            # nlab <- pwidth / (cwidth * labwidth * 2)
-
-            # if (nlab < 4) tlabcex <- par("cex") * nlab / 4
-            # else if (nlab > 10) {
-            #   tlabcex <- par("cex") * nlab / 10
-            #   if (tlabcex > 1.0) tlabcex <- 1.0
-            #  }
-
-            # cat("cwidth=",cwidth," pwidth=",pwidth," nlab=",nlab,
-            # 	" tlabcex=",tlabcex," labwidth=",labwidth,"\n")
-
-            if (xlab != "" && x0 > 86400.0 && tlab$extraformat != "") {
-                tfmt <- paste(sep="",tlabels[1],"\n",tlab$extraformat)
-                tlabels[1] <- format(xmajtics[1],format=tfmt,time.zone=time.zone)
-            }
-
-            tcl <- par("tcl")
-            minor_tcl <- tcl * 0.6
-
-            outer <- F
-            line <- 0
-            mex <- par("mex")
-            mar <- par("mar")
-            lines.avail <- mar[1] * mex / tlabcex		# in units of cex
-            label.space <- (par("mgp")[2] + line + 1) * mex / tlabcex
-
-            if (label.space > lines.avail) {
-                outer <- T
-                line <- -mar[1] + line
-            }
-
-            # major ticks and labels
-            axis(1,at=(xmajtics-x0)/scalef,labels=tlabels,
-                cex=tlabcex,xaxt="s", outer=outer, line=line,
-                hadj=0.5, padj=c(0.6,rep(0,length(tlabels)-1)))
-            axis(3,at=(xmajtics-x0)/scalef,labels=F,xaxt="s")
-
-            if (is.na(par("tck"))) {
-                axis(1,at=(tlab$mintics-x0)/scalef,labels=F,tcl=minor_tcl,xaxt="s")
-                axis(3,at=(tlab$mintics-x0)/scalef,labels=F,tcl=minor_tcl,xaxt="s")
-            }
+            timeaxis(3, labels=FALSE, tick=TRUE, xlab="",
+                time.zone=time.zone, line=0, outer=FALSE,...)
         }
-    }
-
-    plot.nts.scale <- list(scale=scalef,off=x0,tlab=tlab,cex=cex*par("cex"))
-    assign(".plot.nts.scale",plot.nts.scale,envir=.eoltsEnv)
-
-    if (plotaxes && xlab != "") {
-        # title(xlab=xlab,cex=cex*par("cex"))
-        cat("title,cex=",tlabcex,",mgp=",par("mgp"),"\n")
-        title(xlab=xlab,cex=tlabcex)
     }
 
     if (nc > 1) {
@@ -308,52 +215,47 @@ plot.nts <- function(x,type="l",xlab,xlim,ylab,ylim,
             pch=pch[(i-1)%%npch+1],type=type,...)
     }
    
-    invisible(plot.nts.scale)
+    invisible(tparams)
 }
-timeaxis <- function(side,labels=TRUE,tick=TRUE,time.zone,
-	cex=NULL,date.too=FALSE,line=0,outer=FALSE,...)
+
+timeaxis <- function(side, labels=TRUE, tick=TRUE, xlab=labels,
+    time.zone=getOption("time.zone"), date.too=labels, line=0, outer=FALSE,...)
 {
-    if (! exists(".plot.nts.scale",envir=.eoltsEnv)) {
-        stop("plot.nts.scale does not exist. Cannot add time axis to ordinary plot")
+    if (! exists(".timeaxis_params",envir=.eoltsEnv)) {
+        stop("timeaxis_params does not exist. Cannot add time axis to ordinary plot")
     }
  
-    plot.nts.scale = get(".plot.nts.scale",envir=.eoltsEnv)
+    tparams = get(".timeaxis_params",envir=.eoltsEnv)
 
-    tcl <- par("tcl")
-    minor_tcl <- tcl * 0.6
-
-    tlab <- plot.nts.scale$tlab
-    if (is.null(cex)) cex <- plot.nts.scale$cex
-    if (is.null(cex)) cex <- par("cex")
-    # cat("cex=",cex," plot.nts.scale$cex=",plot.nts.scale$cex,"\n")
-    scalef <- plot.nts.scale$scale
-
-    x0 <- plot.nts.scale$off
-    xlim.scaled <- par("usr")[c(1,2)]
-    xrange <- xlim.scaled * scalef + x0
+    x0 <- tparams$toffset
 
     # major tics
-    xmajtics <- tlab$majtics
+    xmajtics <- tparams$majtics
 
     if (labels) {
-        tlabels <- format(xmajtics,format=tlab$format,time.zone=time.zone)
+        tlabels <- format(xmajtics,format=tparams$format,time.zone=time.zone)
         # Add timezone to middle label
         mid <- length(tlabels) / 2 + 1
         tfmt <- paste(tlabels[mid],"%Z")
         tlabels[mid] <- format(xmajtics[mid],format=tfmt,time.zone=time.zone)
-        if (date.too && tlab$extraformat != "") {
-            tfmt <- paste(sep="",tlabels[1],"\n",tlab$extraformat)
+        if (date.too && x0 > 86400. && tparams$extraformat != "") {
+            tfmt <- paste0(tlabels[1],"\n",tparams$extraformat)
             tlabels[1] <- format(xmajtics[1],format=tfmt,time.zone=time.zone)
         }
     }
     else tlabels <- F
 
+    tcl <- par("tcl")
+    minor_tcl <- tcl * 0.6
+
+    tlabcex <- tparams$tlabcex
+
     # check if there is room in margin, if not silently use outer margin
     if (labels && !outer) {
         mex <- par("mex")
         mar <- par("mar")
-        lines.avail <- mar[side] * mex / cex	# in units of cex
-        label.space <- (par("mgp")[2] + line + 1) * mex / cex
+        lines.avail <- mar[side] * mex / tlabcex	# in units of tlabcex
+        label.space <- (par("mgp")[2] + line + 1) * mex / tlabcex
         if (label.space > lines.avail) {
             outer <- TRUE
             line <- -mar[side] + line
@@ -361,13 +263,23 @@ timeaxis <- function(side,labels=TRUE,tick=TRUE,time.zone,
     }
 
     # labels and major tick marks
-    axis(side,at=(xmajtics-x0)/scalef,labels=tlabels,tick=tick,
-          cex=cex, xaxt="s",line=line,outer=outer,...)
+    axis(side,at=xmajtics-x0, labels=tlabels,tick=tick,
+        cex=tlabcex, xaxt="s",line=line,outer=outer,
+        hadj=0.5, padj=c(0.6,rep(0,length(tlabels)-1)))
 
     # minor ticks
     if (tick && is.na(par("tck"))) {
-        axis(side,at=(tlab$mintics-x0)/scalef,labels=F,tick=tick,tcl=minor_tcl,
-            xaxt="s",...)
+        axis(side,at=tparams$mintics-x0, labels=FALSE,
+            tick=tick,tcl=minor_tcl, xaxt="s",...)
+    }
+
+    if (labels) {
+        if (is.logical(xlab)) {
+            if (xlab) xlab <- paste0("Time(", tparams$majunits, "), tic=",
+                tparams$minunits)
+            else xlab <- ""
+        }
+        if (xlab != "") title(xlab=xlab,cex=tlabcex)
     }
 }
 
@@ -385,11 +297,11 @@ lines.nts <- function(x,...)
     if (dim(x)[2] > 1) stop("Cannot plot more than one column in a time series. Do lines(x[,j])")
 
     tx <- x@positions
-    if (! exists(".plot.nts.scale",envir=.eoltsEnv))
-          sc = list(scale=1.,off=0.)
-    else sc = get(".plot.nts.scale",envir=.eoltsEnv)
+    if (! exists(".timeaxis_params",envir=.eoltsEnv))
+          sc = list(scale=1.,toffset=0.)
+    else sc = get(".timeaxis_params",envir=.eoltsEnv)
 
-    tx <- (tx - sc$off) / sc$scale
+    tx <- tx - sc$toffset
     lines(tx,x@data,...)
 }
 
@@ -407,11 +319,11 @@ points.nts <- function(x,...)
     if (dim(x)[2] > 1) stop("Cannot plot more than one column in a time series. Do points(x[,j])")
     tx <- x@positions
 
-    if (! exists(".plot.nts.scale",envir=.eoltsEnv))
-          sc = list(scale=1.,off=0.)
-    else sc = get(".plot.nts.scale",envir=.eoltsEnv)
+    if (! exists(".timeaxis_params",envir=.eoltsEnv))
+          sc = list(scale=1.,toffset=0.)
+    else sc = get(".timeaxis_params",envir=.eoltsEnv)
 
-    tx <- (tx - sc$off) / sc$scale
+    tx <- tx - sc$toffset
     points(tx,x@data,...)
 }
 
@@ -521,10 +433,38 @@ xlabel.tltype <- c(
     9,9,9,              # .05 - .01 sec
     10,10,10)	        # .005,.001 sec
 
-xlabel.nts <- function(t1, t2, nlab, time.zone=getOption("time.zone"))
+timeaxis_setup <- function(t1, t2, time.zone=getOption("time.zone"),
+    cex=par("cex"))
 {
+    # Compute scaling factor and offset for scaling time axis.
+
+    # par("usr") is stored as a float, and an offset must
+    # be removed from times so that precision is not lost.
+
     # Determine nice intervals and a format for labeling an X axis with
     # time labels.
+
+    # Note: on interactive output devices par("pin") is the initial
+    # size of the motif window. If the user resizes the window,
+    # par("pin") may not change
+
+    # character expansion of x axis labels
+    # number of 12 character labels on xaxis
+    cwidth <- par("cin")[1]	# character width in inches
+    pwidth <- par("pin")[1]	# plot width in inches 
+
+    tlabcex <- cex * par("cex")
+
+    nlab <- pwidth / (cwidth * 12)
+    if (nlab < 4) {
+        tlabcex <- tlabcex * nlab / 4
+        nlab <- 4
+    }
+    else if (nlab > 6) {
+        tlabcex <- tlabcex * nlab / 6
+        if (tlabcex > 1.0) tlabcex <- 1.0
+        nlab <- 6
+    }
 
     # minimum number of seconds for a time label
     deltat <- (t2 - t1) / nlab
@@ -667,11 +607,16 @@ xlabel.nts <- function(t1, t2, nlab, time.zone=getOption("time.zone"))
 
     labtype <- xlabel.tltype[kt]
 
-    list(majtics=majtics, mintics=mintics,
-         majunits=xlabel.majunits[labtype],
-         minunits=xlabel.minunits[kt],
-         format=xlabel.tformats[labtype],
-         extraformat=xlabel.extraformats[labtype])
+
+    res <- list(toffset=t1, majtics=majtics, mintics=mintics,
+        majunits=xlabel.majunits[labtype],
+        minunits=xlabel.minunits[kt],
+        format=xlabel.tformats[labtype],
+        extraformat=xlabel.extraformats[labtype],
+        tlabcex=tlabcex)
+
+    assign(".timeaxis_params", res, envir=.eoltsEnv)
+    res
 }
 
 error.bar.nts <- function(x,lower,upper,incr=T,bar.ends=T,gap=T,add=F,
@@ -691,11 +636,11 @@ error.bar.nts <- function(x,lower,upper,incr=T,bar.ends=T,gap=T,add=F,
 
     if (!add) plot(x,ylim=ylim,...)
     
-    if (! exists(".plot.nts.scale",envir=.eoltsEnv))
-        sc <- list(scale=1.,off=0.)
-    else sc <- get(".plot.nts.scale",envir=.eoltsEnv)
+    if (! exists(".timeaxis_params",envir=.eoltsEnv))
+        sc <- list(scale=1.,toffset=0.)
+    else sc <- get(".timeaxis_params",envir=.eoltsEnv)
 
-    tx <- (x@positions - sc$off) / sc$scale
+    tx <- x@positions - sc$toffset
 
     if(gap)
             gap <- 0.75 * par("cxy")[2]
@@ -727,10 +672,10 @@ setMethod("abline",signature(a="missing",b="missing",h="missing",v="utime"),
     function(v,...)
     {
         # cat("in abline, v=utime\n")
-        if (! exists(".plot.nts.scale",envir=.eoltsEnv))
-            sc <- list(scale=1.,off=0.)
-        else sc <- get(".plot.nts.scale",envir=.eoltsEnv)
-        vx <- (as.numeric(v) - sc$off) / sc$scale
+        if (! exists(".timeaxis_params",envir=.eoltsEnv))
+            sc <- list(scale=1.,toffset=0.)
+        else sc <- get(".timeaxis_params",envir=.eoltsEnv)
+        vx <- as.numeric(v) - sc$toffset
         graphics::abline(v=vx,...)
         v
     }
@@ -750,17 +695,18 @@ tlocator <- function(n=1,type="n",...)
     else
         cat("Use mouse to select times on the plot.\nClick middle button, or both buttons on two button mouse to terminate ... ")
 
-    if (! exists(".plot.nts.scale",envir=.eoltsEnv)) {
-        stop("plot.nts.scale does not exist.")
+    if (! exists(".timeaxis_params",envir=.eoltsEnv)) {
+        stop("timeaxis_params does not exist.")
     }
-    plot.nts.scale <- get(".plot.nts.scale",envir=.eoltsEnv)
+    tparams <- get(".timeaxis_params",envir=.eoltsEnv)
 
-    times <- utime(locator(n,type=type,...)$x * plot.nts.scale$scale + plot.nts.scale$off)
+    times <- utime(locator(n,type=type,...)$x + tparams$toffset)
     cat("done\n")
     times
 }
 
-horiz_legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,cex=1.0,bty,xaxt="s",yaxt="s")
+horiz_legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,
+    cex=1.0,bty,xaxt="s",yaxt="s")
 {
     # this makes a more compact legend than legend()
     uxy <- par("usr")
@@ -817,7 +763,8 @@ horiz_legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,cex=1.0,bty,xax
     NULL
 }
 
-label_times <- function(t1,t2, annotate, adj, col=1, year=T, print=T,cex=par("cex"),time.zone=getOption("time.zone"),...)
+label_times <- function(t1,t2, annotate, adj, col=1, year=T, print=T,
+    cex=par("cex"), time.zone=getOption("time.zone"),...)
 {
     # function to print start (t1) and end (t2) times of data
     # on the upper left of a plot (or as specified by 'adj')
@@ -858,7 +805,7 @@ label_times <- function(t1,t2, annotate, adj, col=1, year=T, print=T,cex=par("ce
     }
 
     if (!missing(annotate))
-        times = paste(times, ", ", annotate, sep="")
+        times = paste0(times, ", ", annotate)
 
     if (print) {
         if (missing(adj))
