@@ -12,7 +12,7 @@ setMethod("plot",signature(x="nts",y="missing"),
     function(x,...)
     {
         # cat("in plot nts\n")
-        invisible(plot.nts(x, ...))
+        invisible(plot_nts(x, ...))
     }
 )
 
@@ -34,7 +34,7 @@ setMethod("plot",signature(x="nts",y="numeric"),
     }
 )
 
-plot.nts <- function(x, type="l", xlab=TRUE, xlim, ylab, ylim,
+plot_nts <- function(x, type="l", xlab=TRUE, xlim, ylab, ylim,
 	xaxs="i", xaxt, yaxt,
         col, pch, lty, time.zone=x@time.zone, axes=TRUE, log="",
         cex=1.0, ...)

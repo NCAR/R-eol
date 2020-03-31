@@ -2,6 +2,7 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{spectra-class}
+\alias{spectra}
 \alias{Cbind}
 \alias{deltaf}
 \alias{deltaf<-}

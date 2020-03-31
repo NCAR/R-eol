@@ -6,7 +6,7 @@
 \alias{crack}
 \alias{heights}
 \alias{match.columns}
-\alias{plot.dat}
+\alias{plot_dat}
 \alias{select}
 \alias{seriesConcat}
 \alias{sites}

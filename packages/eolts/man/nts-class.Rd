@@ -13,7 +13,7 @@
 \alias{lag}
 \alias{mean}
 \alias{Ops}
-\alias{plot.nts}
+\alias{plot_nts}
 \alias{Rbind}
 \alias{replace.nas}
 \alias{seriesConcat}
@@ -119,10 +119,10 @@ Class \code{"\linkS4class{seriesVirtual}"}, by class "timeSeries", distance 2.
     \item{Ops}{\code{signature(e1 = "nts", e2 = "nts")}: ... }
     \item{Ops}{\code{signature(e1 = "nts", e2 = "timeSeries")}: ... }
     \item{Ops}{\code{signature(e1 = "timeSeries", e2 = "nts")}: ... }
-    \item{plot}{\code{signature(x = "nts", y = "missing")}: Calls \code{\link{plot.nts}(x,...)}}
+    \item{plot}{\code{signature(x = "nts", y = "missing")}: Calls \code{\link{plot_nts}(x,...)}}
     \item{plot}{\code{signature(x = "nts", y = "nts")}: ... }
     \item{plot}{\code{signature(x = "nts", y = "numeric")}: ... }
-    \item{plot.nts}{\code{signature(x = "nts", ...)}: See \link{plot.nts} }
+    \item{plot_nts}{\code{signature(x = "nts", ...)}: See \link{plot_nts} }
     \item{points}{\code{signature(x = "nts")}: ... }
     \item{positions}{\code{signature(object = "nts")}: ... }
     \item{positions<-}{\code{signature(object = "nts", value = "ANY")}: ... }

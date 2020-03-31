@@ -1,5 +1,5 @@
-\name{plot.nts}
-\alias{plot.nts}
+\name{plot_nts}
+\alias{plot_nts}
 \title{
 Create a time series plot of an nts object.
 }
@@ -7,7 +7,7 @@ Create a time series plot of an nts object.
 Create a time series plot of an nts object. Appropriate time labels on the X axis are provided for a wide range of times, from a plot spanning on the order of seconds to a plot of several years.
 }
 \usage{
-plot.nts(x, type = "l", xlab, xlim, ylab, ylim, xaxs = "i", xaxt, yaxt, col, pch, lty, time.zone = x@time.zone, axes = TRUE, log = "", cex = 1, ...)
+plot_nts(x, type = "l", xlab, xlim, ylab, ylim, xaxs = "i", xaxt, yaxt, col, pch, lty, time.zone = x@time.zone, axes = TRUE, log = "", cex = 1, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -97,7 +97,7 @@ tx <- seq(from=t1, to=t2, length=length(co2@.Data))
 co2x <- nts(co2@.Data, tx, names="CO2", units="ppm", time.zone="UTC")
 plot(co2x)
 
-# How to add a timeaxis to a plot not created with plot.nts,
+# How to add a timeaxis to a plot not created with plot_nts,
 # in this case a heatmap created with image()
 nr <- 200
 nc <- 50

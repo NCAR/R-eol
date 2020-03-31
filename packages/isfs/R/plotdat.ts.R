@@ -199,7 +199,7 @@ plotdat.ts <- function(data,data2, select, rfrnc, nsmth, ylim, yaxt, logy=F,
     # plot data
     mfg <- fun.set.mar()
     if (lwd != 1) par(lwd=lwd, cex=1.2, mar=par("mar")+c(0,1,0,0))
-    plot.nts(data, type="n", xlab=(mfg[1]==mfg[3]), log=logy, ylab=ylab, 
+    plot_nts(data, type="n", xlab=(mfg[1]==mfg[3]), log=logy, ylab=ylab, 
         yaxt=yaxt, ylim=ylim, axes=axes, ...)
 
     # add plot details

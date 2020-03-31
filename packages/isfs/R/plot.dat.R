@@ -12,11 +12,11 @@
 setMethod("plot",signature(x="dat",y="missing"),
     function(x,...) 
     {
-        invisible(plot.dat(x, ...))
+        invisible(plot_dat(x, ...))
     }
     )
 
-plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
+plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
     log="",tlwd=par("lwd"),remargin=TRUE,title,logo=TRUE,
     xaxt="s",yaxt="s",yaxs=par("yaxs"),cols,cex=1.0,...)
 {
@@ -204,7 +204,7 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
 
         # First trace, create scale, box and xaxis label
         if (! xaxis_done) {
-            plot.nts(datacol,type="n",col=1, axes=TRUE,
+            plot_nts(datacol,type="n",col=1, axes=TRUE,
                 xaxt=xaxt_tmp, xaxs=xaxs, xlim=xlim,xlab=xlab,
                 yaxt="n", yaxs=yaxs, ylim=ylim1,ylab="",
                 err=-1,cex=cex,log=log,...)
@@ -254,8 +254,8 @@ plot.dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
         }
 
         # plot traces
-        cat("plot.nts, varname=",varname," ylim1=",signif(ylim1,4),"\n")
-        plot.nts(datacol,xlim=xlim,ylim=ylim1,type=type,xaxs=xaxs,
+        cat("plot_nts, varname=",varname," ylim1=",signif(ylim1,4),"\n")
+        plot_nts(datacol,xlim=xlim,ylim=ylim1,type=type,xaxs=xaxs,
             col=col,pch=col,lty=1,ylab="",
             axes=FALSE,err=-1,log=log,lwd=tlwd,cex=cex,...)
 
