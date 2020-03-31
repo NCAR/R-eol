@@ -24,7 +24,7 @@ export(
     as.double.nts,
     as.matrix.nts,
     as.vector.nts,
-    plot.nts,
+    plot_nts,
     write.nts,
     timeaxis,
     timeaxis_setup,

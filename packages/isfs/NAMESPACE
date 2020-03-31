@@ -17,7 +17,7 @@ export(
     components,
     words,
     nwords,
-    plot.dat,
+    plot_dat,
     plotLimits,
     adjPar,
     logo_stamp,
