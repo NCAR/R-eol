@@ -2,21 +2,16 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{dat-class}
-\alias{average,dat-method}
-\alias{clip,dat-method}
-\alias{conform,ANY,dat-method}
-\alias{conform,dat,dat-method}
-\alias{conform,numeric,dat-method}
-\alias{crack,dat-method}
-\alias{dimnames<-,dat,list-method}
-\alias{heights,dat-method}
-\alias{match.columns,dat,dat-method}
-\alias{plot,dat,missing-method}
-\alias{select,dat-method}
-\alias{seriesConcat,dat,dat-method}
-\alias{sites,dat-method}
-\alias{suffixes,dat-method}
-\alias{tilt,dat,dat-method}
+\alias{conform}
+\alias{crack}
+\alias{heights}
+\alias{match.columns}
+\alias{plot.dat}
+\alias{select}
+\alias{seriesConcat}
+\alias{sites}
+\alias{suffixes}
+\alias{tilt}
 
 \title{Class \code{"dat"}}
 \description{

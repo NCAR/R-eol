@@ -2,35 +2,7 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{utime-class}
-\alias{[,utime-method}
-\alias{[<-,utime,ANY,missing,ANY-method}
-\alias{[<-,utime,ANY,missing,numeric-method}
-\alias{[<-,utime,ANY,missing,utime-method}
-\alias{abline,missing,missing,missing,utime-method}
-\alias{all,utime-method}
-\alias{any,utime-method}
-\alias{c,utime-method}
-\alias{as,character,utime-method}
-\alias{as,list,utime-method}
-\alias{as,numeric,utime-method}
-\alias{as,POSIXct,utime-method}
-\alias{as,timeDate,utime-method}
-\alias{as,utime,character-method}
-\alias{as,utime,list-method}
-\alias{as,utime,POSIXct-method}
-\alias{as,utime,timeDate-method}
-\alias{deltat,utime-method}
-\alias{format,utime-method}
-\alias{Math,utime-method}
-\alias{monthly,utime,utime-method}
-\alias{Ops,numeric,utime-method}
-\alias{Ops,utime,numeric-method}
-\alias{Ops,utime,utime-method}
-\alias{prod,utime-method}
-\alias{show,utime-method}
-\alias{sum,utime-method}
-\alias{summary,utime-method}
-\alias{Summary,utime-method}
+\alias{monthly}
 
 \title{Class \code{"utime"}}
 \description{

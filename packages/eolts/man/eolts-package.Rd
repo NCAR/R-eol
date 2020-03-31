@@ -77,6 +77,7 @@ command \tab topic\cr
 \code{? nts} \tab \code{\link{nts}}\cr
 \code{class? netcdf} \tab \code{\linkS4class{netcdf}}\cr
 \code{? netcdf} \tab \code{\link{netcdf}}\cr
+\code{class? spectra} \tab \code{\linkS4class{spectra}}\cr
 \code{? dpar} \tab \code{\link{dpar}}\cr
 \code{? isfs} \tab \code{\link[isfs:isfs-package]{isfs}}\cr
 }

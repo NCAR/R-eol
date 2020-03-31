@@ -2,22 +2,12 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{netcdf-class}
-\alias{close,netcdf-method}
-\alias{format,netcdf-method}
-\alias{is.open,netcdf-method}
-\alias{readnc,netcdf,character,integer,integer-method}
-\alias{readnc,netcdf,character,missing,missing-method}
-\alias{readnc,netcdf,list,integer,integer-method}
-\alias{readnc,netcdf,list,missing,missing-method}
-\alias{readts,netcdf,character,missing,missing-method}
-\alias{readts,netcdf,character,utime,utime-method}
-\alias{readts,netcdf,list,missing,missing-method}
-\alias{readts,netcdf,list,utime,utime-method}
-\alias{show,netcdf-method}
-\alias{stations,netcdf-method}
-\alias{variables,netcdf-method}
-\alias{writets,netcdf,missing-method}
-\alias{writets,netcdf,nts-method}
+\alias{is.open}
+\alias{readnc}
+\alias{readts}
+\alias{stations}
+\alias{variables}
+\alias{writets}
 
 \title{Class \code{"netcdf"}}
 \description{

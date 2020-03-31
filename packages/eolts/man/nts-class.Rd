@@ -2,90 +2,35 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{nts-class}
-\alias{!,nts-method}
-\alias{[,nts-method}
-\alias{[<-,nts,ANY,ANY,nts-method}
-\alias{[<-,nts,ANY,ANY,vector-method}
-\alias{\%*\%,matrix,nts-method}
-\alias{\%*\%,nts,matrix-method}
-\alias{align,nts-method}
-\alias{approx,nts-method}
-\alias{as.logical,nts-method}
-\alias{as.numeric,nts-method}
-\alias{atan2,ANY,nts-method}
-\alias{atan2,nts,ANY-method}
-\alias{atan2,nts,nts-method}
-\alias{autocorr,nts,missing-method}
-\alias{autocorr,nts,numeric-method}
-\alias{average,nts-method}
-\alias{Cbind,ANY,nts-method}
-\alias{Cbind,nts,ANY-method}
-\alias{Cbind,nts,nts-method}
-\alias{coerce,nts,logical-method}
-\alias{coerce,nts,matrix-method}
-\alias{coerce,nts,numeric-method}
-\alias{Complex,nts-method}
-\alias{crosscorr,nts,missing-method}
-\alias{crosscorr,nts,numeric-method}
-\alias{cumsum,nts-method}
-\alias{deltat,nts-method}
-\alias{deltat<-,nts,numeric-method}
-\alias{detrend,nts,matrix-method}
-\alias{detrend,nts,missing-method}
-\alias{dim,nts-method}
-\alias{dim<-,nts,numeric-method}
-\alias{dimnames,nts-method}
-\alias{dimnames<-,nts,list-method}
-\alias{end,nts-method}
-\alias{end<-,nts,utime-method}
-\alias{fftw,nts,missing,logical-method}
-\alias{fftw,nts,missing,missing-method}
-\alias{is.finite,nts-method}
-\alias{is.infinite,nts-method}
-\alias{is.na,nts-method}
-\alias{lag,nts-method}
-\alias{lines,nts-method}
-\alias{Math,nts-method}
-\alias{mean,nts-method}
-\alias{Ops,ANY,nts-method}
-\alias{Ops,nts,ANY-method}
-\alias{Ops,nts,missing-method}
-\alias{Ops,nts,nts-method}
-\alias{Ops,nts,timeSeries-method}
-\alias{Ops,timeSeries,nts-method}
-\alias{plot,nts,missing-method}
-\alias{plot,nts,nts-method}
-\alias{plot,nts,numeric-method}
-\alias{points,nts-method}
-\alias{positions,nts-method}
-\alias{positions<-,nts,ANY-method}
-\alias{positions<-,nts,utime-method}
-\alias{Rbind,nts,nts-method}
-\alias{replace.nas,nts,logical-method}
-\alias{replace.nas,nts,missing-method}
-\alias{seriesConcat,nts,nts-method}
-\alias{seriesMerge,nts,nts-method}
-\alias{seriesMerge,nts,numeric-method}
-\alias{seriesMerge,nts,timeSeries-method}
-\alias{seriesMerge,timeSeries,nts-method}
-\alias{show,nts-method}
-\alias{start,nts-method}
-\alias{start<-,nts,utime-method}
-\alias{stations,nts-method}
-\alias{stations<-,nts,ANY-method}
-\alias{stations<-,nts,integer-method}
-\alias{summary,nts-method}
-\alias{Summary,nts-method}
-\alias{t,nts-method}
-\alias{trend,nts,logical-method}
-\alias{trend,nts,missing-method}
-\alias{tspar,nts-method}
-\alias{units,nts-method}
-\alias{units<-,nts,character-method}
-\alias{var,nts,ANY-method}
-\alias{window,nts-method}
-\alias{write,nts-method}
-\alias{writets,netcdf,nts-method}
+\alias{autocorr}
+\alias{average}
+\alias{Cbind}
+\alias{crosscorr}
+\alias{cumsum}
+\alias{detrend}
+\alias{end}
+\alias{fftw}
+\alias{lag}
+\alias{mean}
+\alias{Ops}
+\alias{plot.nts}
+\alias{Rbind}
+\alias{replace.nas}
+\alias{seriesConcat}
+\alias{seriesMerge}
+\alias{start}
+\alias{start<-}
+\alias{stations}
+\alias{stations<-}
+\alias{trend}
+\alias{trend}
+\alias{tspar}
+\alias{units}
+\alias{units<-}
+\alias{var}
+\alias{window}
+\alias{write}
+\alias{writets}
 
 \title{Class \code{"nts"}}
 \description{
@@ -174,9 +119,10 @@ Class \code{"\linkS4class{seriesVirtual}"}, by class "timeSeries", distance 2.
     \item{Ops}{\code{signature(e1 = "nts", e2 = "nts")}: ... }
     \item{Ops}{\code{signature(e1 = "nts", e2 = "timeSeries")}: ... }
     \item{Ops}{\code{signature(e1 = "timeSeries", e2 = "nts")}: ... }
-    \item{plot}{\code{signature(x = "nts", y = "missing")}: ... }
+    \item{plot}{\code{signature(x = "nts", y = "missing")}: Calls \code{\link{plot.nts}(x,...)}}
     \item{plot}{\code{signature(x = "nts", y = "nts")}: ... }
     \item{plot}{\code{signature(x = "nts", y = "numeric")}: ... }
+    \item{plot.nts}{\code{signature(x = "nts", ...)}: See \link{plot.nts} }
     \item{points}{\code{signature(x = "nts")}: ... }
     \item{positions}{\code{signature(object = "nts")}: ... }
     \item{positions<-}{\code{signature(object = "nts", value = "ANY")}: ... }
@@ -207,7 +153,7 @@ Class \code{"\linkS4class{seriesVirtual}"}, by class "timeSeries", distance 2.
     \item{window}{\code{signature(x = "nts")}: ... }
     \item{write}{\code{signature(x = "nts")}: ... }
     \item{writets}{\code{signature(con = "netcdf", x = "nts")}: ... }
-	 }
+}
 }
 \references{
 }
@@ -218,9 +164,11 @@ Gordon Maclean
 }
 
 \seealso{
+\code{\linkS4class{nts}}: \code{class? nts}
+
 \code{\link{nts}}: \code{? nts}
 
-\code{"\linkS4class{utime}"}: \code{class? utime}
+\code{\linkS4class{utime}}: \code{class? utime}
 
 \code{\link{utime}}: \code{? utime}
 }
