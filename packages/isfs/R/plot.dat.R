@@ -220,11 +220,12 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
             by_row <- mfg[2] != mfg2[2]
             assign(".by_row",by_row,envir=.isfsEnv)
 
-            if (!bottom_row && xaxt != "n") timeaxis(1,labels=FALSE,
-                tick=TRUE,time.zone=x@time.zone,cex=cex*par("cex"))
+            if (!bottom_row && xaxt != "n")
+                timeaxis(1,labels=FALSE, tick=TRUE, xlab=xlab,
+                    time.zone=x@time.zone,cex=cex*par("cex"))
 
             # put GMT across top of top row
-            if (xaxt != "n") timeaxis(3,labels=top_row,
+            if (xaxt != "n") timeaxis(3,labels=top_row, xlab=xlab,
                 tick=TRUE,time.zone="GMT",cex=cex*par("cex"))
             xaxis_done <- TRUE
         }
