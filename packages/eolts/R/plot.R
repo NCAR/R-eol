@@ -264,8 +264,8 @@ timeaxis <- function(side, labels=TRUE, tick=TRUE, xlab=labels,
 
     # labels and major tick marks
     axis(side,at=xmajtics-x0, labels=tlabels,tick=tick,
-        cex=tlabcex, xaxt="s",line=line,outer=outer,
-        hadj=0.5, padj=c(0.6,rep(0,length(tlabels)-1)))
+        cex=tlabcex, xaxt="s",line=line,outer=outer, hadj=0.5,
+        padj=c(ifelse(side==1,0.6,0.2), rep(0,length(tlabels)-1)))
 
     # minor ticks
     if (tick && is.na(par("tck"))) {

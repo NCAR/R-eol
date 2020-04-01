@@ -41,6 +41,7 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
     mfg <- par("mfg")
     # cat("mfg1=",paste(mfg,collapse=","),"\n")
     first_plot <- identical(mfg[1:2],mfg[3:4])
+    nplotsPerPage <- mfg[3] * mfg[4]
 
     # Must figure out if this next plot will be on the bottom row
     # of figures on this page.  If the user specifies par(mfrow=c(r,c))
@@ -80,7 +81,22 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
     yinfo <- plotLimits(x,ylim,one_scale,axs=yaxs,log=log)
     nscales <- yinfo$nscales
 
-    if (remargin && first_plot) adjPar(nyscales=nscales)
+    if (remargin) {
+        # list: mar, delta
+        if (first_plot) adjmar <- adjPar(nyscales=nscales)
+        else adjmar <- get(".adjmar",envir=.isfsEnv)
+        mar <- adjmar$mar
+        dmar <- adjmar$delta
+        if (nplotsPerPage > 1) {
+            if (first_plot) mar[1] <- max(mar[1] - dmar, 0) # shrink bottom
+            else if (bottom_row) mar[3] <- max(mar[3] - dmar, 0) # shrink top
+            else {
+                mar[1] <- max(mar[1] - 0.5 * dmar, 0) # shrink bottom
+                mar[3] <- max(mar[3] - 0.5 * dmar, 0) # shrink top
+            }
+        }
+        par(mar=mar)
+    }
 
     ylim <- yinfo$lim
     yscales <- yinfo$scales
@@ -209,7 +225,7 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
                 yaxt="n", yaxs=yaxs, ylim=ylim1,ylab="",
                 err=-1,cex=cex,log=log,...)
 
-            # mfg[1:2] have been incremented
+            # mfg[1:2] have been incremented by the plot above
             mfg2 <- par("mfg")
             # cat("mfg2=",paste(mfg,collapse=","),"\n")
             top_row <- mfg2[1] == 1
@@ -691,7 +707,7 @@ logo_stamp <- function(print.motto=TRUE,cex=0.75 * par("cex"))
 
     mex <- par("mex")
 
-    lineoff <- cex / mex + .5
+    lineoff <- cex / mex + .8
 
     if (is.null(platform <- dpar("platform"))) {
         platform <- Sys.getenv("PLATFORM")
@@ -777,16 +793,26 @@ adjPar <- function(nxscales=1,nyscales=1)
     lscales <- (nyscales-1) %/% 2 + 1
     rscales <- nyscales %/% 2
 
-    mar[2] <- max((mgp[1] + linecex) * lscales,linecex)
+    mar[2] <- max((mgp[1] + linecex * 1.5) * lscales,linecex)
     mar[4] <- max((mgp[1] + linecex) * rscales,linecex)
+
+    # TODO:
+    # figure out how much one can increase each plot, in units of lines.
+    # top row of multiple: decrease bottom margin by delta
+    # middle plot: decrease top and margins by 1/2 delta
+    # bottom row of multiple: decrease top margin by delta
+    # one row: no change to margins
+    # two rows: same as above, no middle row
+    # Save the initial mar values in environment, and the line width,
+    # tweak for each row. Don't set mar here, set before each plot
 
     bscales <- (nxscales-1) %/% 2 + 1
     tscales <- nxscales %/% 2
-    mar[1] <- max((mgp[1] + linecex) * bscales,linecex)
-    mar[3] <- max((mgp[1] + linecex) * tscales,linecex)
+    mar[1] <- max((mgp[1] + linecex * 1.3) * bscales,linecex * 1.3)
+    mar[3] <- max((mgp[1] + linecex * 1.3) * tscales,linecex * 1.3)
 
     # outer margin lines
-    oma <- c(linecex,linecex,linecex*2,linecex)
+    oma <- c(linecex * 1.5,linecex,linecex*2.5,linecex)
 
     # oma[1] <- max(5.0 - mar[1],linecex)
     # oma[3] <- max(5.0 - mar[3],linecex)
@@ -795,5 +821,10 @@ adjPar <- function(nxscales=1,nyscales=1)
     # warning:  put cex and mex before mar and oma in this par call.
     # Set cex to original value, and mex to cex, so margin lines are
     # measured in cex units
-    par(cex=cex,mex=cex,oma=oma,mar=mar,mgp=mgp)
+    par(cex=cex,mex=cex,oma=oma,mgp=mgp)
+
+    adjmar <- list(mar=mar, delta=1.3 * linecex)
+
+    assign(".adjmar", adjmar, envir=.isfsEnv)
+    adjmar
 }
