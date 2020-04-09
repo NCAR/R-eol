@@ -26,11 +26,14 @@ test.plot <- function()
     tmp = tempfile("test.plot",fileext=".png")
     on.exit(unlink(tmp))
 
+    iactive <- interactive()
+
     while (plen > .001) {
         x <- nts(dx,utime(seq(from=t1,to=t1+plen,length=nrow)))
-        png(file=tmp)
+        if (!iactive) png(file=tmp)
+        else par(ask=TRUE)
         plot(x)
-        dev.off()
+        if (!iactive) dev.off()
         plen <- plen / 2
     }
 
