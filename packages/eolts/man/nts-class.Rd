@@ -13,7 +13,6 @@
 \alias{lag}
 \alias{mean}
 \alias{Ops}
-\alias{plot_nts}
 \alias{Rbind}
 \alias{replace.nas}
 \alias{seriesConcat}

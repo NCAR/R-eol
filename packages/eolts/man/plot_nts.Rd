@@ -1,13 +1,13 @@
 \name{plot_nts}
 \alias{plot_nts}
 \title{
-Create a time series plot of an nts object.
+Make a time series plot of an nts object.
 }
 \description{
 Create a time series plot of an nts object. Appropriate time labels on the X axis are provided for a wide range of times, from a plot spanning on the order of seconds to a plot of several years.
 }
 \usage{
-plot_nts(x, type = "l", xlab, xlim, ylab, ylim, xaxs = "i", xaxt, yaxt, col, pch, lty, time.zone = x@time.zone, axes = TRUE, log = "", cex = 1, ...)
+plot_nts(x, type = "l", xlab=TRUE, xlim, ylab, ylim, xaxs = "i", xaxt, yaxt, col, pch, lty, time.zone = x@time.zone, axes = TRUE, log = "", cex = 1, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -18,7 +18,7 @@ A nts time series object.
 Usually plot parameter, "l" for a line plot, "p" for points, "b" for both.
 }
   \item{xlab}{
-X axis label, if you want to override the default time lable.
+X axis label, if you want to override the default time lable. Set to FALSE for no label.
 }
   \item{xlim}{
 Time limits to plot. If not specified, the entire nts time series is plotted.
@@ -56,8 +56,11 @@ Whether both axes should be drawn. See \code{plot.default}.
   \item{log}{
 See \code{plot.default}.
 }
-  \item{cex}{
-Character magnification, see \code{par}.
+  \item{remargin}{
+Whether to adjust the X and Y plot margins, removing wasted space..
+}
+  \item{remarginY}{
+Whether to adjust the Y plot margins, removing wasted space. If TRUE and remargin is TRUE, only the X plot margins are adjusted.
 }
   \item{\dots}{
 Other par plotting parameters, see \code{par}.
@@ -86,7 +89,7 @@ Gordon Maclean
 \code{\link{plot.default}}.
 }
 \examples{
-# make an nts out of the standard Mauna Loa CO2 dataset, and plot it
+# make an nts out of the Keeling Mauna Loa CO2 dataset, and plot it
 tco2 <- tsp(co2)
 # Convert tsp time values to utimes, approximate
 t1 <- utime(paste(as.integer(tco2[1]), "01 01 00:00:00"),
