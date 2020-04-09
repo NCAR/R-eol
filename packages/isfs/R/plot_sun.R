@@ -110,7 +110,7 @@ plot_sunangle <- function(browse=F,year=2006,lat=40,lon=-105,
     plot(sun[,1], sun[,2], type="l",
         xlim=c(xlow,xhi),ylim=c(ylow,yhi),
         xlab="Sun Azimuth",ylab="Sun Elevation",
-        axes=F,err=-1)
+        axes=F)
     text(180,max(sun[,2])+1.5,"6/21",cex=.8)
 
     # Plot the Rest, labeling each beginning with December
@@ -121,14 +121,14 @@ plot_sunangle <- function(browse=F,year=2006,lat=40,lon=-105,
 
     dpar(start=utime(tlist))
     sun <- dat("azel.sun")
-    lines(sun[,1],sun[,2],lty=1,err=-1)
+    lines(sun[,1],sun[,2],lty=1)
     text(180,max(sun[,2])+1.5,"12/21",cex=.8)
 
     for(i in c(1,2,3,4,5)) {
         tlist$mon <- i
         dpar(start=utime(tlist))
         sun <- dat("azel.sun")
-        lines(sun[,1],sun[,2],lty=1,err=-1)
+        lines(sun[,1],sun[,2],lty=1)
         jdstamp <- paste(i,"/",day,"-",12-i,"/",day,sep="")
         text(180,max(sun[,2])+1.5,jdstamp,cex=.8)
     }
@@ -137,7 +137,7 @@ plot_sunangle <- function(browse=F,year=2006,lat=40,lon=-105,
         tlist$mon <- i
         dpar(start=utime(tlist))
         sun <- dat("azel.sun")
-        lines(sun[,1],sun[,2],lty=2,err=-1)
+        lines(sun[,1],sun[,2],lty=2)
     }
 
 
@@ -375,11 +375,11 @@ plot_sunshadow <- function(year=2006,browse=F,lat=40,lon=-105,
     plot(x[ix,3],y[ix,3], type="l",
         xlim=c(xlow,xhi),ylim=c(ylow,yhi),
         xlab=axislabel,ylab=axislabel,
-        axes=F,err=-1)
+        axes=F)
 
     for(i in c(1,2,4,5,6,12)) {
         #	ix <- sort.list(x[,i])
-        lines(x[ix,i],y[ix,i],lty=1,err=-1)
+        lines(x[ix,i],y[ix,i],lty=1)
     }
 
     # Put on Month labels
@@ -489,10 +489,10 @@ plot_sunshadow <- function(year=2006,browse=F,lat=40,lon=-105,
 
         # plot lines are different for 1st 6-mos, vs 2nd...
         #	select <- abs(x[i,])<=range & !is.na(x[i,]) & abs(y[i,])<=range & !is.na(y[i,])
-        #	lines(x[i,select],y[i,select]-2,lty=5,col=2,err=-1)
+        #	lines(x[i,select],y[i,select]-2,lty=5,col=2)
 
-        lines(x[i,c(26:52)],y[i,c(26:52)],lty=5,col=2,err=-1)
-        lines(x[i,c(53,1:26)],y[i,c(53,1:26)],lty=6,col=3,err=-1)
+        lines(x[i,c(26:52)],y[i,c(26:52)],lty=5,col=2)
+        lines(x[i,c(53,1:26)],y[i,c(53,1:26)],lty=6,col=3)
     }
 
     # and Hour Label
