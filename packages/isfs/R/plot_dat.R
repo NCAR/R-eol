@@ -357,7 +357,7 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
                     mtext(text=ylab_txt, side=side, line=yaxis_line + mgp[1],
                         col=1, cex=par("cex.lab") * par("cex"))
                 }
-                else if (nyscales > 1 || length(yaxis_done) == 0) {
+                else {
                     axis(side=side,at=at,line=yaxis_line,col=1, yaxt=yaxt,
                         labels=ylabels)
                     mtext(text=ylab_txt, side=side, line=yaxis_line + mgp[1],
