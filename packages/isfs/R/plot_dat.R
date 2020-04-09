@@ -18,7 +18,8 @@ setMethod("plot",signature(x="dat",y="missing"),
 
 plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
     log="",tlwd=par("lwd"),remargin=TRUE,title,logo=TRUE,
-    xaxt="s",yaxt="s",yaxs=par("yaxs"),cols,cex=1.0,...)
+    xaxt="s", xaxs="i", yaxt=par("yaxt"), yaxs=par("yaxs"), cols,cex=1.0,
+    debug=FALSE, ...)
 {
 
     # tlwd: trace line width.  Use that option if you want to
@@ -38,30 +39,9 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
 
     dnames <- colnames(x)
 
-    mfg <- par("mfg")
-    # cat("mfg1=",paste(mfg,collapse=","),"\n")
-    first_plot <- identical(mfg[1:2],mfg[3:4])
-    nplotsPerPage <- mfg[3] * mfg[4]
+    nextp <- eolts::next_plot()
 
-    # Must figure out if this next plot will be on the bottom row
-    # of figures on this page.  If the user specifies par(mfrow=c(r,c))
-    # the figures will be placed by row (column varying most rapidly).
-    # If par(mfcol=c(r,c)) they will be placed by column.
-    # Before the first figure is drawn, mfg[1:2] are the row and
-    # column of the last figure plotted.
-    if (first_plot) {
-        bottom_row <- mfg[3] == 1   # only one row of figures
-    }
-    else {
-        by_row <- get(".by_row",envir=.isfsEnv)
-        if (by_row) {
-            bottom_row <- (mfg[1] == mfg[3]) ||
-                (mfg[1] == (mfg[3] - 1)) && (mfg[2] == mfg[4])
-        }
-        else bottom_row <- mfg[1] == (mfg[3] - 1)
-    }
-
-    if (first_plot) xaxs <- "i"
+    if (nextp$first) xaxs <- "i"
     else xaxs <- "d"                # don't rescale
 
     # unique looses the station names
@@ -79,31 +59,14 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
     names(dunits) <- dnames
 
     yinfo <- plotLimits(x,ylim,one_scale,axs=yaxs,log=log)
-    nscales <- yinfo$nscales
-
-    if (remargin) {
-        # list: mar, delta
-        if (first_plot) adjmar <- adjPar(nyscales=nscales)
-        else adjmar <- get(".adjmar",envir=.isfsEnv)
-        mar <- adjmar$mar
-        dmar <- adjmar$delta
-        if (nplotsPerPage > 1) {
-            if (first_plot) mar[1] <- max(mar[1] - dmar, 0) # shrink bottom
-            else if (bottom_row) mar[3] <- max(mar[3] - dmar, 0) # shrink top
-            else {
-                mar[1] <- max(mar[1] - 0.5 * dmar, 0) # shrink bottom
-                mar[3] <- max(mar[3] - 0.5 * dmar, 0) # shrink top
-            }
-        }
-        par(mar=mar)
-    }
-
-    ylim <- yinfo$lim
+    nyscales <- yinfo$nyscales
     yscales <- yinfo$scales
-
-    # T for variables with different limits but the same units.
-    # If T, we want to add the variable name to the Y axis
+    ylim <- yinfo$lim
+    # TRUE for variables with different limits but the same units.
+    # If TRUE, we want to add the variable name to the Y axis
     ydupunits <- yinfo$dupunits
+
+    if (remargin && nextp$first) side_margins(nyscales=nyscales)
 
     # cat("names yscales=",paste(names(yscales),collapse=","),"\n")
 
@@ -141,24 +104,18 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
 
     logy <- any(substring(log,1:nchar(log),1:nchar(log)) == "y")
 
-    xaxt_tmp <- "n"
     xlab <- FALSE
-    if (bottom_row) {
-        xaxt_tmp <- xaxt
+    if (nextp$nrow == nextp$nrows) {
         if (xaxt == "n") xlab <- FALSE
         else xlab <- TRUE
     }
-    mgp <- par("mgp")
-
-    old_par <- par(c("mgp","mgp"))
-    on.exit(par(old_par),add=TRUE)
 
     tckadj <- par("tck")
     if (is.na(tckadj)) tckadj <- -0.01
-    if (tckadj < 0) {	# outside ticks, move axis labels 1/2 char width
-        mgp[1:2] <- mgp[1:2] + .3
-        par(mgp=mgp)
-    }
+    # if (tckadj < 0) {	# outside ticks, move axis labels 1/2 char width
+    #     mgp[1:2] <- mgp[1:2] + .3
+    #     par(mgp=mgp)
+    # }
 
     yaxis_done <- NULL
     xaxis_done <- FALSE
@@ -218,42 +175,76 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
         if (colnum > length(cols))  col <- cols[colnum %% length(cols)]
         else col <- cols[colnum]
 
-        # First trace, create scale, box and xaxis label
+        # First trace, sets up plot scaling, plots box and xaxis label,
+        # no yaxis
         if (! xaxis_done) {
-            plot_nts(datacol,type="n",col=1, axes=TRUE,
-                xaxt=xaxt_tmp, xaxs=xaxs, xlim=xlim,xlab=xlab,
-                yaxt="n", yaxs=yaxs, ylim=ylim1,ylab="",
-                err=-1,cex=cex,log=log,...)
+            if (debug) 
+                cat("plot_dat, first plot_nts, varname=",varname,
+                    ", ylim1=",signif(ylim1,4),
+                    ", side=", side, ",
+                    ", nyscales=", nyscales, ",
+                    ", xaxs=", xaxs,
+                    ", yaxs=", yaxs,
+                    ", mgp=", paste0(par("mgp"),collapse=","),
+                    ", mar=", paste0(par("mar"),collapse=","),
+                    ", yaxis_done=", paste0(yaxis_done,collapse=","),"\n")
+                
+            plot_nts(datacol,type="n",col=1, axes=TRUE, remargin=remargin,
+                xlim=xlim,xlab=xlab,
+                ylim=ylim1,ylab="",
+                xaxt=xaxt, xaxs=xaxs,
+                yaxt="n", yaxs=yaxs,
+                log=log,...)
 
-            # mfg[1:2] have been incremented by the plot above
-            mfg2 <- par("mfg")
-            # cat("mfg2=",paste(mfg,collapse=","),"\n")
-            top_row <- mfg2[1] == 1
-            bottom_row <- mfg2[1] == mfg2[3]
-            last_plot <- identical(mfg2[1:2],mfg2[3:4])
+            currp <- eolts::current_plot()
 
-            # if by_row, the column number changes between plots
-            by_row <- mfg[2] != mfg2[2]
-            assign(".by_row",by_row,envir=.isfsEnv)
+            if (debug)
+                cat("varname=", varname,
+                    ", nrow=", currp$nrow,
+                    ", nrows=", currp$nrows, "\n")
 
-            if (!bottom_row && xaxt != "n")
-                timeaxis(1,labels=FALSE, tick=TRUE, xlab=xlab,
-                    time.zone=x@time.zone,cex=cex*par("cex"))
-
-            # put GMT across top of top row
-            if (xaxt != "n") timeaxis(3,labels=top_row, xlab=xlab,
-                tick=TRUE,time.zone="GMT",cex=cex*par("cex"))
+            if (xaxt != "n") {
+                if (currp$nrow == currp$nrows)
+                    timeaxis(1, labels=TRUE, tick=TRUE, xlab=xlab,
+                        time.zone=x@time.zone)
+                # else
+                #     timeaxis(1, labels=FALSE, tick=TRUE,
+                #       time.zone=x@time.zone)
+                # put GMT across top of top row
+                if (currp$nrow == 1)
+                    timeaxis(3, labels=TRUE, xlab=FALSE,
+                        tick=TRUE,time.zone="GMT", date.too=TRUE)
+            }
             xaxis_done <- TRUE
         }
 
-        par(new=TRUE)
+        par(new=TRUE)   # next plotting command should not clean the frame
 
-        side <- line <- ylab_txt <- NULL
+        # plot traces
+        if (debug) 
+            cat("plot_dat, plot_nts of traces, varname=",varname," ylim1=",signif(ylim1,4),
+                ", side=", side, ",
+                ", nyscales=", nyscales, ",
+                ", xaxs=", xaxs,
+                ", yaxs=", yaxs,
+                ", mgp=", paste0(par("mgp"),collapse=","),
+                ", mar=", paste0(par("mar"),collapse=","),
+                ", yaxis_done=", paste0(yaxis_done,collapse=","),"\n")
+
+        plot_nts(datacol,xlim=xlim,ylim=ylim1,type=type,
+            xaxs=xaxs, xaxt="n", yaxs=yaxs, yaxt="n",
+            col=col,pch=col,lty=1,ylab="",
+            axes=FALSE,log=log,lwd=tlwd,...)
+
+        mgp <- par("mgp")
+        usr <- par("usr")	# used in various places below
+
+        side <- ylab_txt <- NULL
         if (!missing(ylab)) ylab_txt <- ylab
         if (do.yaxis <- (yaxt != "n" && is.na(match(yaxis_num,yaxis_done)))) {
-            if (nscales == 1) {
+            if (nyscales == 1) {
                 side <- 2
-                line <- 0
+                yaxis_line <- 0
                 if (missing(ylab)) {
                     if (all_same_vars) ylab_txt <- paste(varname," (",vunits,")",sep="")
                     else ylab_txt <- paste("(",vunits,")",sep="")
@@ -261,22 +252,15 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
             }
             else {
                 iplot <- yaxis_num
-                side <- if (iplot %% 2) 2 else 4
-                line <- (mgp[1] + 1) * ((iplot-1) %/% 2)
+                side <- ifelse(iplot %% 2, 2, 4)
+                ny_on_side <- (iplot-1) %/% 2
+                yaxis_line <- ny_on_side * (mgp[1] + 1.5)
                 if (missing(ylab)) {
                     if (dupunits) ylab_txt <- paste(varname," (",vunits,")",sep="")
                     else ylab_txt <- paste("(",vunits,")",sep="")
                 }
             }
         }
-
-        # plot traces
-        cat("plot_nts, varname=",varname," ylim1=",signif(ylim1,4),"\n")
-        plot_nts(datacol,xlim=xlim,ylim=ylim1,type=type,xaxs=xaxs,
-            col=col,pch=col,lty=1,ylab="",
-            axes=FALSE,err=-1,log=log,lwd=tlwd,cex=cex,...)
-
-        usr <- par("usr")	# used in various places below
 
         if (clipped) {
             # clip.min and clip.max are nts objects of logical values,
@@ -285,16 +269,16 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
             if (any(as.vector(clp <- clip.min[,1]@data))) {
                 tmpd <- clip.min[clp,1]
                 tmpd[] <- usr[3]
-                points(tmpd,pch=4,col=col,cex=cex)
+                points(tmpd,pch=4,col=col)
             }
             if (any(as.vector(clp <- clip.max[,1]@data))) {
                 tmpd <- clip.max[clp,1]
                 tmpd[] <- usr[4]
-                points(tmpd,pch=4,col=col,cex=cex)
+                points(tmpd,pch=4,col=col)
             }
         }
 
-        # if (nscales == 1) if (usr[3] * usr[4] < 0) abline(h=0)
+        # if (nyscales == 1) if (usr[3] * usr[4] < 0) abline(h=0)
         if (usr[3] * usr[4] < 0) abline(h=0,lty=2)
 
         if (do.yaxis) {
@@ -310,26 +294,28 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
                 mtics <- l0tic + as.vector(outer(log10(2:9),(0:ndec-1),"+"))
 
                 if (side == 4) {
-                    axis(side=side,at=10^(l0lab:lnlab),labels=10^(l0lab:lnlab),
-                        xaxt="s",yaxt="s",col=1,cex=cex*par("cex"),srt=-90)
-                    axis(side=side,at=10^mtics,labels=FALSE,
-                        xaxt="s",yaxt="s",col=1)
-                    mtext(side=side,line=line+mgp[1],ylab_txt,col=1,
-                        at=mean(usr[3:4]),srt=-90,cex=cex*par("cex"))
+                    axis(side=side,line=yaxis_line, at=10^(l0lab:lnlab),
+                        labels=10^(l0lab:lnlab),
+                        yaxt=yaxt, col=1)
+                    axis(side=side,line=yaxis_line, at=10^mtics,labels=FALSE,
+                        yaxt=yaxt, col=1)
+                    mtext(side=side,line=yaxis_line+mgp[1],
+                        text=ylab_txt, col=1, cex=par("cex.axis")*par("cex"))
                 }
                 else {
-                    axis(side=side,at=10^(l0lab:lnlab),labels=10^(l0lab:lnlab),
-                        xaxt="s",yaxt="s",col=1,cex=cex*par("cex"),srt=90)
-                    axis(side=side,at=10^mtics,labels=FALSE,
-                        xaxt="s",yaxt="s",col=1)
-                    mtext(side=side,line=line+mgp[1],ylab_txt,col=1,
-                        cex=cex*par("cex"))
+                    axis(side=side,line=yaxis_line,at=10^(l0lab:lnlab),labels=10^(l0lab:lnlab),
+                        yaxt="s",col=1)
+                    axis(side=side,line=yaxis_line, at=10^mtics,labels=FALSE,
+                        yaxt=yaxt, col=1)
+                    mtext(side=side,line=yaxis_line+mgp[1], text=ylab_txt, col=1,
+                        cex=par("cex.axis")*par("cex"))
                 }
-                if (nscales == 1 || length(dnames) == 1) {
-                    axis(4, at=10^(l0lab:lnlab), labels=FALSE,
-                        xaxt="s",yaxt="s",col=1)
-                    axis(4, at=10^mtics, labels=FALSE,
-                        xaxt="s",yaxt="s",col=1)
+                # repeat labels on right
+                if (nyscales == 1 || length(dnames) == 1) {
+                    axis(4, line=yaxis_line, at=10^(l0lab:lnlab),
+                        labels=FALSE, yaxt=yaxt, col=1)
+                    axis(4, line=yaxis_line, at=10^mtics, labels=FALSE,
+                        yaxt=yaxt, col=1)
                 }
             }
             else {
@@ -352,31 +338,36 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
                         abline(h=seq(from=y1,to=y2,by=tic),lty=2)
                     }
                     else {
-                        at <- pretty(ylim1)
+                        at <- NULL
                         ylabels <- TRUE
                     }
                 } else {
-                    at <- pretty(ylim1)
+                    at <- NULL
                     ylabels <- TRUE
                 }
                 # rotate right hand side labels so they're easier to read
-                # (must use at= argument for srt to work)
-                # cat("nscales=",nscales,"length(yaxis_done)=",length(yaxis_done),"side=",side,"at=",at,"line=",line,"ylabels=",paste(ylabels,collapse=","),"\n")
+                # cat("nyscales=",nyscales,"length(yaxis_done)=",length(yaxis_done),"side=",side,"at=",at,"ylabline=",ylabline,"ylabels=",paste(ylabels,collapse=","),"\n")
+                if (debug)
+                    cat("ylab_txt=", ylab_txt, ", yaxis_line=", yaxis_line,
+                        ", mgp[1]=", mgp[1],
+                        ", ylabels=", paste(ylabels, collapse=","),"\n")
                 if (side == 4) {    # right
-                    axis(side=side,at=at,line=line,col=1,srt=-90,cex=cex*par("cex"),labels=ylabels)
-                    mtext(side=side,line=line+mgp[1],ylab_txt,col=1,
-                        at=mean(usr[3:4]),srt=-90,cex=cex*par("cex"))
+                    axis(side=side,at=at,line=yaxis_line,col=1, yaxt=yaxt,
+                        labels=ylabels)
+                    mtext(text=ylab_txt, side=side, line=yaxis_line + mgp[1],
+                        col=1, cex=par("cex.lab") * par("cex"))
                 }
-                else if (nscales > 1 || length(yaxis_done) == 0) {
-                    # axis(side=side,line=line,col=1,cex=cex*par("cex"),at=at,labels=ylabels,adj=1)
-                    axis(side=side,at=at,line=line,col=1,srt=90,cex=cex*par("cex"),labels=ylabels)
-                    mtext(side=side,line=line+mgp[1],ylab_txt,col=1,cex=cex*par("cex"))
+                else if (nyscales > 1 || length(yaxis_done) == 0) {
+                    axis(side=side,at=at,line=yaxis_line,col=1, yaxt=yaxt,
+                        labels=ylabels)
+                    mtext(text=ylab_txt, side=side, line=yaxis_line + mgp[1],
+                        col=1, cex=par("cex.lab") * par("cex"))
                 }
-                if (nscales == 1 || length(dnames) == 1) axis(4,labels=FALSE,at=at)
+                if (nyscales == 1 || length(dnames) == 1)
+                    axis(4,labels=FALSE,at=at, line=yaxis_line)
             }
             yaxis_done <- c(yaxis_done,yaxis_num)
         }
-
 
         colv <- c(colv,col)
 
@@ -420,16 +411,16 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
             warning(paste("legend and color vectors are not same length: legend=",
                     paste(legv,collapse=",")," cols=",paste(cols,collapse=",")))
         else {
-            cxy <- par("cxy") * cex * par("cex") * 1.0
+            cxy <- par("cxy") * par("cex.lab") * par("cex")
             lx <- usr[1] + cxy[1] * 1.0
             ly <- usr[4] - cxy[2] * .3
 
             if (type == "l")
                 horiz_legend(lx,ly,legv,col=colv,lty=rep(1,length(colv)),
-                    bty="n",cex=cex)
+                    bty="n",cex=par("cex.lab") * par("cex"))
             else
                 horiz_legend(lx,ly,legv,col=colv,marks=colv,
-                    bty="n", cex=cex)
+                    bty="n", cex=par("cex.lab") * par("cex"))
         }
     }
 
@@ -438,16 +429,16 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
 
     if (missing(title) || (is.logical(title) && title) || is.character(title)) {
         if (is.null(title_txt) || length(title_txt) == 0) title_txt <- dnames
-        plot_dat_title(title_txt,first_plot,last_plot,t1,t2,plot_stns,cex=cex*par("cex"), time.zone=x@time.zone)
+        plot_dat_title(title_txt,nextp$first,currp$last_plot,t1,t2,plot_stns, time.zone=x@time.zone)
     }
 
-    if (logo && last_plot) logo_stamp()
+    if (logo && currp$last_plot) logo_stamp()
     par(new=FALSE)
     invisible(NULL)
 }
 
 plot_dat_title <- function(title="",first_plot,last_plot,
-    t1=dpar("start"),t2=dpar("end"),stns=NULL,cex=par("cex"),
+    t1=dpar("start"),t2=dpar("end"),stns=NULL,
     time.zone=getOption("time.zone"))
 {
     this_plot_date <- unlist(as.list(t1)[c("year","mon","day")])
@@ -516,7 +507,9 @@ plot_dat_title <- function(title="",first_plot,last_plot,
             }
 
             oma <- par("oma")
-            mtext(title,outer=TRUE,line=oma[3]-1.5,cex=cex)
+            # mtext(title,outer=TRUE,line=oma[3]-1.5,
+            #     cex=par("cex.main") * par("cex"))
+            title(main=title,outer=TRUE,line=oma[3]-1.5)
     }
 
     if (last_plot && !first_plot && exists(".plot_dat_title_save",envir=.isfsEnv))
@@ -552,7 +545,7 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".",log="")
 
     # Fixed limits for all traces on plot
     if (!is.null(lim) && !is.list(lim))
-        return(list(nscales=1,lim=lim,scales=scales))
+        return(list(nyscales=1,lim=lim,scales=scales))
 
     if (one_scale) {
         lim <- range(unlist(sapply(unique(dnames),
@@ -583,7 +576,7 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".",log="")
                         l
                     })),na.rm=TRUE,finite=TRUE)
         # if xaxs or yaxs is "r", extend axis by 4% on each end
-        return(list(nscales=1,lim=lim,scales=scales))
+        return(list(nyscales=1,lim=lim,scales=scales))
     }
 
     # lim is now either NULL or a list
@@ -695,8 +688,7 @@ plotLimits <- function(data,lim,one_scale=FALSE,axs="i",namesep=".",log="")
     }
 
     # dn <- names(lim_res)
-    lim <- list(nscales=iscale,lim=lim_res,scales=scales,dupunits=dupunits)
-    cat("nscales=",iscale," units=",paste("\"",dunits,"\"",sep="",collapse=","),"\n")
+    lim <- list(nyscales=iscale,lim=lim_res,scales=scales,dupunits=dupunits)
 
     lim
 }
@@ -761,70 +753,26 @@ trellis_logo <- function(print.motto=TRUE,cex=0.75 * par("cex"))
     NULL
 }
 
-adjPar <- function(nxscales=1,nyscales=1)
+side_margins <- function(nyscales=1)
 {
-    # This function tightens up the plot margins, setting the par options:
-    # par,mar and mfrow based on input.
+    # tighten up left and right plot margins
     #
     # nyscales:  number of scales desired on y axis
     #	room for these scales will be set aside using the mar
     #	parameter to par, in an alternating fashion, first on
     #	on the left, then right,left etc.
     #
-    # We reduce wasted space in stacked plots (prows > 1) by reducing
-    # the margin lines above and below each plot, and use the outer
-    # margin lines for the top and bottom axis labels. This works
-    # well when all plots have the same time axis, and the
-    # time labels do not need to be repeated for each plot.
 
-    # line spacing in cex
-    linecex <- 1.3
-
-    # get cex before calling mfrow
-    cex <- par("cex")
-
-    # line of axis title, labels, axis
-    mgp <- c(linecex + 0.5,0.5,0)
-
-    # lines of margin on each side of plot
-    mar <- rep(0,4)
+    mar <- par("mar")
+    mgp <- eolts::tight_mgp()
 
     # separate Y scales, reserve margin space
     lscales <- (nyscales-1) %/% 2 + 1
     rscales <- nyscales %/% 2
 
-    mar[2] <- max((mgp[1] + linecex * 1.5) * lscales,linecex)
-    mar[4] <- max((mgp[1] + linecex) * rscales,linecex)
+    # add tics
+    mar[2] <- max((mgp[1] + 1.5) * max(lscales,1)) + 0.5
+    mar[4] <- max((mgp[1] + 1.5) * max(rscales,1)) + 0.5
 
-    # TODO:
-    # figure out how much one can increase each plot, in units of lines.
-    # top row of multiple: decrease bottom margin by delta
-    # middle plot: decrease top and margins by 1/2 delta
-    # bottom row of multiple: decrease top margin by delta
-    # one row: no change to margins
-    # two rows: same as above, no middle row
-    # Save the initial mar values in environment, and the line width,
-    # tweak for each row. Don't set mar here, set before each plot
-
-    bscales <- (nxscales-1) %/% 2 + 1
-    tscales <- nxscales %/% 2
-    mar[1] <- max((mgp[1] + linecex * 1.3) * bscales,linecex * 1.3)
-    mar[3] <- max((mgp[1] + linecex * 1.3) * tscales,linecex * 1.3)
-
-    # outer margin lines
-    oma <- c(linecex * 1.5,linecex,linecex*2.5,linecex)
-
-    # oma[1] <- max(5.0 - mar[1],linecex)
-    # oma[3] <- max(5.0 - mar[3],linecex)
-    # oma[2] <- oma[4] <- linecex
-
-    # warning:  put cex and mex before mar and oma in this par call.
-    # Set cex to original value, and mex to cex, so margin lines are
-    # measured in cex units
-    par(cex=cex,mex=cex,oma=oma,mgp=mgp)
-
-    adjmar <- list(mar=mar, delta=1.3 * linecex)
-
-    assign(".adjmar", adjmar, envir=.isfsEnv)
-    adjmar
+    par(mar=mar, mgp=mgp)
 }

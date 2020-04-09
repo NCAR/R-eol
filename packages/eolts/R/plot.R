@@ -35,9 +35,9 @@ setMethod("plot",signature(x="nts",y="numeric"),
 )
 
 plot_nts <- function(x, type="l", xlab=TRUE, xlim, ylab, ylim,
-	xaxs="i", xaxt, yaxt,
+	xaxs="i", xaxt="s", yaxs=par("yaxs"), yaxt=par("yaxt"),
         col, pch, lty, time.zone=x@time.zone, axes=TRUE, log="",
-        cex=1.0, ...)
+        remargin=TRUE, remarginY=TRUE, debug=FALSE, ...)
 {
 
     # get the axes argument. 
@@ -46,9 +46,7 @@ plot_nts <- function(x, type="l", xlab=TRUE, xlim, ylab, ylim,
     # argument for points.
     plotaxes <- axes
 
-    args <- list(...)
-
-    nc <- dim(x)[2]
+    ncolumn <- dim(x)[2]
 
     # This is no longer a fatal error.  plot.nas will be called to
     # create the plot frame.
@@ -57,7 +55,7 @@ plot_nts <- function(x, type="l", xlab=TRUE, xlim, ylab, ylim,
 
     # yaxt values: n(none), s(standard), t(time), l(log)
     # defaults to "s" after graphics device is created.
-    # par("yaxt")	plot(yaxt)	plot(log)	par("yaxt") after plot()
+    # par("yaxt") plot(yaxt)	plot(log)	par("yaxt") after plot()
     #	s	missing				s
     #	s	missing		y		l log plot
     #	s	l				s std plot, yaxt arg ignored
@@ -94,13 +92,9 @@ plot_nts <- function(x, type="l", xlab=TRUE, xlim, ylab, ylim,
     #	n	n		y		n log plot no yaxis
     #
     # Conclusions:
-    #   only time yaxt function parameter is useful is when it
-    #   is "n"
+    #   only time yaxt function parameter is useful is when it is "n"
     #   do par(yaxt="s") unless it is "n"
     #   
-
-    if (par("xaxt") != "n") par(xaxt="s")
-    if (missing(xaxt)) xaxt = par("xaxt")
 
     logy = any(substring(log,1:nchar(log),1:nchar(log)) == "y")
     if (par("yaxt") != "n") {
@@ -117,16 +111,16 @@ plot_nts <- function(x, type="l", xlab=TRUE, xlim, ylab, ylim,
     tx <- x@positions
 
     if (missing(col)) {
-        if (nc > 1) col <- 1:8		# default for matplot()
+        if (ncolumn > 1) col <- 1:8		# default for matplot()
         else col <- par("col")
     }
     if (missing(pch)) {
-        if (nc > 1) pch <-
+        if (ncolumn > 1) pch <-
             c("1","2","3","4","5","6","7","8","9","0","A","B","C","D","E")
         else pch <- par("pch")
     }
     if (missing(lty)) {
-        if (nc > 1) lty <- 1:5
+        if (ncolumn > 1) lty <- 1:5
         lty <- par("lty")
     }
 
@@ -161,17 +155,18 @@ plot_nts <- function(x, type="l", xlab=TRUE, xlim, ylab, ylim,
             tx <- x@positions
         }
         tparams <- timeaxis_setup(xrange[1], xrange[2],
-            time.zone=time.zone, cex=cex)
+            time.zone=time.zone)
         x0 <- xrange[1]
         xlim.scaled <- xrange - x0
     }
 
+    # If adding to an existing plot, don't redo margins
+    if (!par("new") && remargin) set_plot_margins(debug=debug, doY=remarginY)
+
     xaxs <- "i"
 
-    tlabcex <- tparams$tlabcex
-
     if (missing(ylab)) {
-        if (nc > 1) {
+        if (ncolumn > 1) {
             # name of y variable
             xexpr <- substitute(x)
             ylab <- deparse(xexpr)
@@ -184,42 +179,56 @@ plot_nts <- function(x, type="l", xlab=TRUE, xlim, ylab, ylim,
                      "(", attr(x,"dunits")[1], ")")
         }
     }
+    if (debug)
+        cat("plot_nts, ylab=", ylab, ", plotaxes=", plotaxes,
+            ", xaxs=", xaxs, ", yaxs=", yaxs, ", yaxt=", yaxt,
+            ", mar=", paste(par("mar"),collapse=","),
+            ", nrow=", current_plot()$nrow, "\n")
 
     # plot first column
     if (all.is.na)
-        plot.nas(type=type, axes=plotaxes, xlim=xlim.scaled, xlab="",
-            ylim=ylim, ylab=ylab, xaxs=xaxs, xaxt="n", yaxt=yaxt,
-            col=col[1], pch=pch[1], lty=lty[1], cex=cex, ...)
+        plot.nas(type=type, axes=plotaxes,
+            xlim=xlim.scaled, xlab="",
+            ylim=ylim, ylab=ylab,
+            xaxs=xaxs, xaxt="n", yaxs=yaxs, yaxt=yaxt,
+            col=col[1], pch=pch[1], lty=lty[1], ...)
     else
         plot(tx-x0, x@data[,1], type=type, axes=plotaxes,
-            xlim=xlim.scaled, xlab="", ylim=ylim, ylab=ylab, xaxs=xaxs,
-            xaxt="n", yaxt=yaxt, col=col[1], pch=pch[1], lty=lty[1],
-            log=log,cex=cex, ...)
+            xlim=xlim.scaled, xlab="",
+            ylim=ylim, ylab=ylab,
+            xaxs=xaxs, xaxt="n", yaxs=yaxs, yaxt=yaxt,
+            col=col[1], pch=pch[1], lty=lty[1],
+            log=log, ...)
 
     if (plotaxes) {
         if (xaxt != "n") {
-            timeaxis(1, labels=TRUE, tick=TRUE, xlab=xlab,
-                time.zone=time.zone, date.too=TRUE, line=0, outer=FALSE,...)
+            # may not always want labels on bottom time axis
+            # let user specify
+            currp <- current_plot()
+            xlabels <- currp$nrow == currp$nrows
+            timeaxis(1, labels=xlabels, tick=TRUE, xaxt=xaxt, xlab=xlab,
+                time.zone=time.zone, date.too=TRUE, line=0, ...)
 
-            timeaxis(3, labels=FALSE, tick=TRUE, xlab="",
-                time.zone=time.zone, line=0, outer=FALSE,...)
+            timeaxis(3, labels=FALSE, tick=TRUE, xaxt=xaxt, xlab="",
+                time.zone=time.zone, line=0, ...)
         }
     }
 
-    if (nc > 1) {
+    if (ncolumn > 1) {
         ncolor <- length(col)
         nlty <- length(lty)
         npch <- length(pch)
 
-        for (i in 2:nc) points(x[,i],col=col[(i-1)%%ncolor+1],
+        for (i in 2:ncolumn) points(x[,i],col=col[(i-1)%%ncolor+1],
             pch=pch[(i-1)%%npch+1],type=type,...)
     }
    
     invisible(tparams)
 }
 
-timeaxis <- function(side, labels=TRUE, tick=TRUE, xlab=labels,
-    time.zone=getOption("time.zone"), date.too=labels, line=0, outer=FALSE,...)
+timeaxis <- function(side, labels=TRUE, tick=TRUE,
+    xaxt=par("xaxt"), xlab=labels, 
+    time.zone=getOption("time.zone"), date.too=labels, line=0, ...)
 {
     if (! exists(".timeaxis_params",envir=.eoltsEnv)) {
         stop("timeaxis_params does not exist. Cannot add time axis to ordinary plot")
@@ -232,6 +241,8 @@ timeaxis <- function(side, labels=TRUE, tick=TRUE, xlab=labels,
     # major tics
     xmajtics <- tparams$majtics
 
+    padj <- NA
+
     if (labels) {
         tlabels <- format(xmajtics,format=tparams$format,time.zone=time.zone)
         # Add timezone to middle label
@@ -239,38 +250,28 @@ timeaxis <- function(side, labels=TRUE, tick=TRUE, xlab=labels,
         tfmt <- paste(tlabels[mid],"%Z")
         tlabels[mid] <- format(xmajtics[mid],format=tfmt,time.zone=time.zone)
         if (date.too && x0 > 86400. && tparams$extraformat != "") {
-            tfmt <- paste0(tlabels[1],"\n",tparams$extraformat)
+            tfmt <- paste0("    ", tlabels[1],"\n",tparams$extraformat)
             tlabels[1] <- format(xmajtics[1],format=tfmt,time.zone=time.zone)
+            padj <- c(ifelse(side==1, 0.6, 0.2), rep(0,length(tlabels)-1))
+        }
+        else {
+            tlabels[1] <- paste0("    ", tlabels[1])
         }
     }
-    else tlabels <- F
+    else tlabels <- FALSE
 
     tcl <- par("tcl")
     minor_tcl <- tcl * 0.6
 
-    tlabcex <- tparams$tlabcex
-
-    # check if there is room in margin, if not silently use outer margin
-    if (labels && !outer) {
-        mex <- par("mex")
-        mar <- par("mar")
-        lines.avail <- mar[side] * mex / tlabcex	# in units of tlabcex
-        label.space <- (par("mgp")[2] + line + 1) * mex / tlabcex
-        if (label.space > lines.avail) {
-            outer <- TRUE
-            line <- -mar[side] + line
-        }
-    }
-
     # labels and major tick marks
-    axis(side,at=xmajtics-x0, labels=tlabels,tick=tick,
-        cex=tlabcex, xaxt="s",line=line,outer=outer, hadj=0.5,
-        padj=c(ifelse(side==1,0.6,0.2), rep(0,length(tlabels)-1)))
+    # if specified, hadj must be length=1, applies to all labels
+    axis(side,at=xmajtics-x0, labels=tlabels, tick=tick,
+        xaxt=xaxt, line=line, padj=padj,...)
 
     # minor ticks
     if (tick && is.na(par("tck"))) {
         axis(side,at=tparams$mintics-x0, labels=FALSE,
-            tick=tick,tcl=minor_tcl, xaxt="s",...)
+            tick=tick, xaxt=xaxt, tcl=minor_tcl, xaxt=xaxt,...)
     }
 
     if (labels) {
@@ -279,7 +280,8 @@ timeaxis <- function(side, labels=TRUE, tick=TRUE, xlab=labels,
                 tparams$minunits)
             else xlab <- ""
         }
-        if (xlab != "") title(xlab=xlab,cex=tlabcex)
+        if (xlab != "") mtext(side=side, text=xlab, line=line+par("mgp")[1],
+            cex=par("cex.lab") * par("cex"), ...)
     }
 }
 
@@ -378,7 +380,7 @@ xlabel.nminor <- c(
 # Units per minor tic.
 xlabel.minunits <- c(
      "YEAR", "4MONTH", "2 MONTH",
-     "MONTH", "MONTH", "5 DAY",
+     "MONTH", "MONTH", "WEEK",
      "2 DAY", "DAY", "DAY","12 HR","6 HR",
      "3 HR", "HR", "HR", "30 MIN", "15 MIN", "5 MIN", "2 MIN", "MIN",
      "30 SEC", "15 SEC","5 SEC","2 SEC",
@@ -434,7 +436,7 @@ xlabel.tltype <- c(
     10,10,10)	        # .005,.001 sec
 
 timeaxis_setup <- function(t1, t2, time.zone=getOption("time.zone"),
-    cex=par("cex"))
+    cex.axis=par("cex.axis"))
 {
     # Compute scaling factor and offset for scaling time axis.
 
@@ -448,37 +450,33 @@ timeaxis_setup <- function(t1, t2, time.zone=getOption("time.zone"),
     # size of the motif window. If the user resizes the window,
     # par("pin") may not change
 
-    # character expansion of x axis labels
-    # number of 12 character labels on xaxis
-    cwidth <- par("cin")[1]	# character width in inches
+    # cwidth <- par("cin")[1]	# character width in inches
+    swidth <- strwidth("xxxxxxxxxxxx", units="inches")
     pwidth <- par("pin")[1]	# plot width in inches 
+    
+    # cat("pwidth=", pwidth, ", 12 char=", cwidth*12,
+    #     ", swidth=", swidth, "\n")
 
-    tlabcex <- cex * par("cex")
-
-    nlab <- pwidth / (cwidth * 12)
-    if (nlab < 4) {
-        tlabcex <- tlabcex * nlab / 4
-        nlab <- 4
-    }
-    else if (nlab > 6) {
-        tlabcex <- tlabcex * nlab / 6
-        if (tlabcex > 1.0) tlabcex <- 1.0
-        nlab <- 6
-    }
-
+    # nlab <- min(max(pwidth / (cwidth * 12), 2), 10)
+    nlab <- min(max(pwidth / swidth, 2), 8)
+    
     # minimum number of seconds for a time label
     deltat <- (t2 - t1) / nlab
 
     kt <- length(xlabel.deltas[xlabel.deltas >= deltat])
     if (kt == 0) kt <- 1
+    # cat("nlab=", nlab, ", deltat=", deltat, ", kt=", kt,"\n")
 
     # return:
     #   majtics, mintics (utimes)
     #   majunits, minunits (strings)
     #   tformat, extraformat (strings)
 
+    # generally the first major tic is shifted right by one minor tic
+
     t1l <- as.list(t1,time.zone=time.zone)
     if (kt < 4) {       # 4,2,1 year major tic
+        mindt <- xlabel.deltas[kt] / xlabel.nminor[kt]
         t1l$year <- t1l$year + 1
         t1l$mon <- t1l$day <- t1l$yday <- 1
         t1l$hour <- t1l$min <- t1l$sec <- 0
@@ -486,7 +484,6 @@ timeaxis_setup <- function(t1, t2, time.zone=getOption("time.zone"),
         # since a year isn't exactly 366 days, these aren't exactly correct
         # but close enough for plotting
         majtics <- utime(seq(from=fmajtic,to=t2,by=xlabel.deltas[kt]))
-        mindt <- xlabel.deltas[kt] / xlabel.nminor[kt]
         ntic <- floor((fmajtic - t1) / mindt)
         mintics <- utime(seq(from=fmajtic-ntic*mindt,to=t2,by=mindt))
     }
@@ -498,12 +495,12 @@ timeaxis_setup <- function(t1, t2, time.zone=getOption("time.zone"),
 
         i <- 0
         while (TRUE) {
-            t1l <- as.list(ttic, time.zone="time.zone")
+            t1l <- as.list(ttic, time.zone=time.zone)
             t1l$day <- t1l$yday <- 1
             t1l$hour <- t1l$min <- t1l$sec <- 0
             ttic <- as(t1l,"utime")
             if (ttic > t2) break
-            if ((i %% 6) == 0) majtics <- c(majtics, ttic)     # day 1 of next month
+            if ((i %% 6) == 1) majtics <- c(majtics, ttic)     # day 1 of next month
             else mintics <- c(mintics, ttic)     # day 1 of next month
             ttic <- ttic + 31 * 86400
             i <- i + 1
@@ -522,7 +519,7 @@ timeaxis_setup <- function(t1, t2, time.zone=getOption("time.zone"),
             t1l$day <- t1l$yday <- 1
             ttic <- as(t1l,"utime")
             if (ttic > t2) break
-            if ((i %% 3) == 0) majtics <- c(majtics, ttic)     # day 1 of next month
+            if ((i %% 3) == 1) majtics <- c(majtics, ttic)     # day 1 of next month
             else mintics <- c(mintics, ttic)     # day 1 of next month
             ttic <- ttic + 31 * 86400
             i <- i + 1
@@ -530,69 +527,76 @@ timeaxis_setup <- function(t1, t2, time.zone=getOption("time.zone"),
         majtics <- utime(majtics)
         mintics <- utime(mintics)
     }
-    else if (kt == 6) {         # 1 month major tic, 5 day minor tic
+    else if (kt == 6) {         # 1 month major tic, 7 day minor tic
+        maxdt <- 31 * 86400 # adjusted to day 1 of each month
+        mindt <- 7 * 86400
+
         t1l$day <- t1l$yday <- 1
         t1l$hour <- t1l$min <- t1l$sec <- 0
         ttic <- as(t1l,"utime")
-        majtics <- mintics <- NULL
 
-        maxdt <- 31 * 86400 # adjusted to day 1 of each month
-        mindt <- 5 * 86400
-        nmintics <- floor(maxdt/mindt)
+        ttic2 <- ttic + maxdt
+        t2l <- as.list(ttic2, time.zone=time.zone)
+        t2l$day <- t2l$yday <- 1
+        t2l$hour <- t2l$min <- t2l$sec <- 0
+        ttic2 <- as(t2l,"utime")
 
-        mintics <- ttic + 1:nmintics * mindt
+        mintics <- seq(from=ttic, to=ttic2, by=mindt)
         mintics <- mintics[mintics > t1]
 
-        ttic <- ttic + 31 * 86400
+        majtics <- NULL
+        nmintics <- floor(maxdt/mindt)
+
+        ttic <- ttic2
 
         while (TRUE) {
-            t1l <- as.list(ttic, time.zone=time.zone)
-            t1l$day <- t1l$yday <- 1
-            t1l$hour <- t1l$min <- t1l$sec <- 0
-            ttic <- as(t1l,"utime")
             if (ttic > t2) break
             majtics <- c(majtics, ttic)     # day 1 of next month
             mintics <- c(mintics, ttic + 1:nmintics * mindt)
             ttic <- ttic + maxdt
+            t1l <- as.list(ttic, time.zone=time.zone)
+            t1l$day <- t1l$yday <- 1
+            t1l$hour <- t1l$min <- t1l$sec <- 0
+            ttic <- as(t1l,"utime")
         }
+        mintics <- mintics[mintics < t2]
         majtics <- utime(majtics)
         mintics <- utime(mintics)
     }
-    else if (kt < 12) {         # 14 days to 1 day
-        t1l$hour <- t1l$min <- t1l$sec <- 0
-        # 00:00 of next day
-        ttic <- as(t1l,"utime") + 86400
-
-        t1l <- as.list(ttic, time.zone=time.zone)
-        t1l$hour <- t1l$min <- t1l$sec <- 0 # in case of daylight time crossover
-        ttic <- as(t1l,"utime")
-        
+    else if (kt < 12) {         # 14 days to 1 day, minor tic from 2d to 6h
         maxdt <- xlabel.deltas[kt]
         mindt <- maxdt / xlabel.nminor[kt]
+
+        t1l$hour <- t1l$min <- t1l$sec <- 0
+        # 00:00 of day
+        ttic <- as(t1l,"utime")
+
+        nminor <- ceiling((t1 - ttic) / mindt) + 1
+        ttic <- ttic + nminor * mindt
 
         majtics <- utime(seq(from=ttic, to=t2, by=maxdt))
 
         ntic <- floor((ttic - t1) / mindt)
         mintics <- utime(seq(from=ttic-ntic*mindt,to=t2,by=mindt))
     }
-    else if (kt == 12) { # 12 h   00 or 12:00:00 (LT) of next day,vc  3 hours
-        t1l$hour <- t1l$min <- t1l$sec <- 0
-        ttic <- as(t1l,"utime") + 86400
-        if (ttic - 12 * 3600 > t1) ttic <- ttic - 12 * 3600
-
+    else if (kt == 12) { # 12 h delta, 00 or 12:00:00 (LT) of next day, minor 3 hours
         maxdt <- xlabel.deltas[kt]
         mindt <- maxdt / xlabel.nminor[kt]
+
+        t1l$hour <- t1l$min <- t1l$sec <- 0
+        ttic <- as(t1l,"utime") + 86400
+        if (ttic - 12 * 3600 > t1 + mindt) ttic <- ttic - 12 * 3600
 
         majtics <- utime(seq(from=ttic, to=t2, by=maxdt))
         ntic <- floor((ttic - t1) / mindt)
         mintics <- utime(seq(from=ttic-ntic*mindt,to=t2,by=mindt))
     }
     else if (kt < 16) { # 4 h to 1 h
-        t1l$min <- t1l$sec <- 0
-        ttic <- as(t1l,"utime") + 3600
-
         maxdt <- xlabel.deltas[kt]
         mindt <- maxdt / xlabel.nminor[kt]
+
+        t1l$min <- t1l$sec <- 0
+        ttic <- as(t1l,"utime") + mindt
 
         majtics <- utime(seq(from=ttic, to=t2, by=maxdt))
         mintics <- utime(seq(from=ceiling(t1/mindt)*mindt, to=t2, by=mindt))
@@ -600,20 +604,18 @@ timeaxis_setup <- function(t1, t2, time.zone=getOption("time.zone"),
     else { # everything else, simple math
         maxdt <- xlabel.deltas[kt]
         mindt <- maxdt / xlabel.nminor[kt]
-
-        majtics <- utime(seq(from=ceiling(t1/maxdt) * maxdt, to=t2, by=maxdt))
+        
+        majtics <- utime(seq(from=ceiling(t1/maxdt) * maxdt + mindt, to=t2, by=maxdt))
         mintics <- utime(seq(from=ceiling(t1/mindt) * mindt, to=t2, by=mindt))
     }
 
     labtype <- xlabel.tltype[kt]
 
-
     res <- list(toffset=t1, majtics=majtics, mintics=mintics,
         majunits=xlabel.majunits[labtype],
         minunits=xlabel.minunits[kt],
         format=xlabel.tformats[labtype],
-        extraformat=xlabel.extraformats[labtype],
-        tlabcex=tlabcex)
+        extraformat=xlabel.extraformats[labtype])
 
     assign(".timeaxis_params", res, envir=.eoltsEnv)
     res
@@ -662,7 +664,7 @@ plot.nas <- function(xlim,ylim,...)
 {
     x <- xlim[1] - .1 * (xlim[2] - xlim[1])
     y <- ylim[1] - .1 * (ylim[2] - ylim[1])
-    plot(x,y,xlim=xlim,ylim=ylim,err=-1,...)
+    plot(x,y,xlim=xlim,ylim=ylim,...)
 }
 
 setGeneric("abline")
@@ -831,3 +833,166 @@ stamp <- function (string = date(), print = TRUE, plot = TRUE, cex=par("cex"),..
     }
 }
 
+next_plot <- function()
+{
+    # Return: first, nrow, nrows
+
+    # mfg[1], mfg[2] after a call to plot are the current plot
+    # So before a call to plot, are the indexes of the last plot
+    mfg <- par("mfg")
+    # cat("mfg1=",paste(mfg,collapse=","),"\n")
+    first <- identical(mfg[1:2],mfg[3:4])
+    nrows <- mfg[3]
+
+    # Determine if this next plot will be on the bottom row
+    # of figures on this page.  If the user specifies par(mfrow=c(r,c))
+    # the figures will be placed by row (column varying most rapidly).
+    # If par(mfcol=c(r,c)) they will be placed by column.
+    # Before the first figure is drawn, mfg[1:2] are the row and
+    # column of the last figure plotted.
+
+    if (first) nrow <- 1
+    else {
+        by_row <- TRUE
+        if (exists(".plot_mfg", envir=.eoltsEnv)) {
+            prev_mfg = get(".plot_mfg", envir=.eoltsEnv)
+            by_row <- prev_mfg[2] != mfg[2]
+        }
+        if (by_row) {
+            # at right-most column, row will increment on plot
+            if (mfg[2] == mfg[4]) nrow <- mfg[1] %% mfg[3] + 1
+            else nrow <- mfg[1]
+        }
+        else {
+            # by column, row will increment
+            nrow <- mfg[1] %% mfg[3] + 1
+        }
+    }
+    assign(".plot_mfg", mfg, envir=.eoltsEnv)
+    list(first=first, nrows=nrows, nrow=nrow, mfg=mfg)
+}
+
+current_plot <- function(prev_mfg=NULL)
+{
+    if (is.null(prev_mfg))
+        prev_mfg = get(".plot_mfg", envir=.eoltsEnv)
+    mfg <- par("mfg")
+
+    # if by_row, the column number changes between plots
+    by_row <- prev_mfg[2] != mfg[2]
+    assign(".by_row", by_row, envir=.eoltsEnv)
+    
+    nrow <- mfg[1]
+    nrows <- mfg[3]
+    last_plot <- identical(mfg[1:2],mfg[3:4])
+
+    list(nrow=nrow, nrows=nrows, last_plot=last_plot)
+}
+
+compute_margins <- function(nrows=4, mgp=par("mgp"))
+{
+
+    pag <- par("din")[2] / par("csi")   # size of page in lines
+
+    tic <- mgp[2]       # spacing for tic, typically 0.5
+    ttl <- mgp[1]       # top title space or bottom label space
+    lab <- mgp[1] - tic # label space
+
+    # wid: wide margin gap, top or bottom, ttl + lab + tic
+    # nar: narrow gap, for tics but nothing else:  nar <- tic
+    # mid: mid gap: 2 * tic + lab
+
+    wid <- ttl + lab + 2 * tic	# initial wide margin at top, bottom
+    mid <- 4 * tic + lab	# initial middle gaps
+
+    # nrows number of plots, wide margins at top and bottom
+    #   nrows-1 number of middle gaps
+    # pag = nrows*plt + 2 * wid + (nrows - 1) * mid
+    # plt: size of each plot in lines
+    plt = (pag - 2 * wid - (nrows - 1) * mid) / nrows
+
+    # cat("pag=", pag, ", plt=", plt, ", wid=", wid, ",mid=", mid "\n")
+
+    # page line of the top of each plot
+    tplt <- wid + ((1:nrows) - 1) * plt + ((1:nrows) - 1) * mid
+    # page line of the bottom of each plot
+    bplt <- wid + (1:nrows) * plt + ((1:nrows) - 1) * mid
+
+    # par(mfrow=c(nrows,x)) splits vertical space into nrows equal parts
+    # page line at the top border of each figure
+    blines <- (pag / nrows) * 0:nrows
+
+    # bottom margins
+    bmars <- blines[2:(nrows+1)] - bplt
+    # tweak if negative
+    mneg <- seq(along=bmars)[bmars < tic]
+    if (length(mneg) > 0) {
+        # browser()
+        ineg <- mneg[1]
+        dt <- tic - bmars[ineg]
+        tplt[ineg:nrows] <- tplt[ineg:nrows] - dt
+        bplt[ineg:nrows] <- bplt[ineg:nrows] - dt
+        bmars <- blines[2:(nrows+1)] - bplt
+    }
+
+    # top margins
+    tmars <- tplt - blines[1:nrows]
+
+    # tweak if negative
+    mneg <- seq(along=tmars)[tmars < tic]
+    if (length(mneg) > 0) {
+        # browser()
+        ineg <- mneg[1]
+        dt <- tic - tmars[ineg]
+        tplt[ineg:nrows] <- tplt[ineg:nrows] + dt
+        bplt[ineg:nrows] <- bplt[ineg:nrows] + dt
+        bmars <- blines[2:(nrows+1)] - bplt
+        tmars <- tplt - blines[1:nrows]
+    }
+    tmars[tmars < tic] <- tic
+    bmars[bmars < tic] <- tic
+    list(tmars=tmars, bmars=bmars)
+}
+
+# Return preferred margin lines, tighter than the default of # c(3,1,0), 
+# resulting in less waste of space between tick and numeric labels,
+# and labels and axis title.
+tight_mgp <- function()
+{
+    c(1.5, 0.5, 0)
+}
+
+set_plot_margins <- function(debug=FALSE, doY=TRUE)
+{
+
+    nextp <- next_plot()
+
+    mgp <- tight_mgp()
+
+    tbmars <- compute_margins(nrows=nextp$nrows, mgp=mgp)
+
+    mar <- par("mar")   # default c(5.1, 4.1, 4.1, 2.1)
+
+    bmar <- tbmars$bmars[nextp$nrow]
+    tmar <- tbmars$tmars[nextp$nrow]
+
+    lmar <- mar[2]
+    rmar <- mar[4]
+    if (doY) {
+        # If doY, and the left and right margins are still the defaults,
+        # tighten them.
+        if (lmar == 4.1 && rmar == 2.1) {
+            lmar <- mgp[1] + 2
+            rmar <- mgp[1] + 2
+        }
+    }
+   
+    par(mgp=mgp, mar=c(bmar, lmar, tmar, rmar))
+    if (debug) 
+        cat("set_plot_margins",
+            ", nrow=" ,nextp$nrow, ", nrows=", nextp$nrows,
+            ", mgp=", paste(par("mgp"),collapse=","),
+            ", mar=", paste(par("mar"),collapse=","),
+            ", mai=", paste(par("mai"),collapse=","),"\n")
+    NULL
+}
