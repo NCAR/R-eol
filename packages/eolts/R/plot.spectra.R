@@ -204,7 +204,7 @@ plot.spectra <- function(x,log,multfreq=T,falloff,
         plot(x@frequencies,ytmp,log=logarg,type="n",
             xlab=xlab,ylab=ylab,
             xaxt=xaxt,yaxt=yaxt,
-            xlim=frange,ylim=yrange,col=1,err=-1,mgp=mgp,...)
+            xlim=frange,ylim=yrange,col=1,mgp=mgp,...)
     }
 
     # colv <- 2:(nc+1)
