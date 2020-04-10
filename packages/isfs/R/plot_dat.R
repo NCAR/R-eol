@@ -254,7 +254,7 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
                 iplot <- yaxis_num
                 side <- ifelse(iplot %% 2, 2, 4)
                 ny_on_side <- (iplot-1) %/% 2
-                yaxis_line <- ny_on_side * (mgp[1] + 1.5)
+                yaxis_line <- ny_on_side * (mgp[1] + 1.0)
                 if (missing(ylab)) {
                     if (dupunits) ylab_txt <- paste(varname," (",vunits,")",sep="")
                     else ylab_txt <- paste("(",vunits,")",sep="")
@@ -767,12 +767,12 @@ side_margins <- function(nyscales=1)
     mgp <- eolts::tight_mgp()
 
     # separate Y scales, reserve margin space
-    lscales <- (nyscales-1) %/% 2 + 1
-    rscales <- nyscales %/% 2
+    lscales <- (nyscales+1) %/% 2       # left scales
+    rscales <- max(nyscales %/% 2, 1)   # right scales
 
     # add tics
-    mar[2] <- max((mgp[1] + 1.5) * max(lscales,1)) + 0.5
-    mar[4] <- max((mgp[1] + 1.5) * max(rscales,1)) + 0.5
+    mar[2] <- (mgp[1] + 1.0) * lscales + 0.5
+    mar[4] <- (mgp[1] + 1.0) * rscales + 0.5
 
     par(mar=mar, mgp=mgp)
 }
