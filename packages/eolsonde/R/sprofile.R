@@ -13,7 +13,7 @@ sprofile <- function(sdng,xnames=NULL,yname=NULL,title=names(sdng)[1],
     ylim=NULL,ylab=NULL,yaxt=par("yaxt"),yaxs=par("yaxs"),
     col=c("black","red","green","blue","purple","cyan",
         "orange","yellow","gray","pink"),tlwd=par("lwd"),
-    pcex=0.25,...)
+    pcex=0.25, debug=FALSE, ...)
 {
     # Plot profiles of one or more variables vs pressure or altitude,
     # one sounding per plot
@@ -95,9 +95,9 @@ sprofile <- function(sdng,xnames=NULL,yname=NULL,title=names(sdng)[1],
     }
     else legcol <- 2:mci
 
-    xinfo <- plotLimits(sdng[,xnames],xlim,FALSE,xaxs)
+    xinfo <- isfs::plotLimits(sdng[,xnames],xlim,FALSE,xaxs)
 
-    nscales <- xinfo$nscales
+    nscales <- xinfo$nyscales
     xscales <- xinfo$scales # 1=bottom,2=top,3=2nd axis on bottom, etc
     xlim <- xinfo$lim
 
@@ -121,10 +121,18 @@ sprofile <- function(sdng,xnames=NULL,yname=NULL,title=names(sdng)[1],
     mfg <- par("mfg")
     # cat("par(mfg)=",paste(par("mfg"),collapse=","),"\n")
 
-    # If first plot on page, call adjPar
+    # If first plot on page, set margins
     if (identical(mfg[1:2],mfg[3:4])) {
-        # cat("calling adjPar\n")
-        adjPar(nxscales=nscales)
+        mgp <- eolts::tight_mgp()
+        bscales <- (nscales + 1) %/% 2
+        tscales <- max(nscales %/% 2, 1)
+        mar <- c((mgp[1]+1.5) * bscales + 0.5, 2.5,
+                (mgp[1]+1.5) * tscales + 1.5, 2.5)
+        if (debug) 
+            cat("nscales=", nscales, ", bscales=", bscales, ", tscales=", tscales,
+                "mgp=", paste0(mgp, collapse=","),
+                "mar=", paste0(mar, collapse=","), "\n")
+        par(mgp=mgp, mar=mar)
     }
 
     args <- list(...)
@@ -143,10 +151,10 @@ sprofile <- function(sdng,xnames=NULL,yname=NULL,title=names(sdng)[1],
 
     tckadj <- par("tck")
     if (is.na(tckadj)) tckadj = -0.01
-    if (tckadj < 0) {   # outside ticks, move axis labels 1/2 char width
-        mgp[1:2] <- mgp[1:2] + .3
-        par(mgp=mgp)
-    }
+    # if (tckadj < 0) {   # outside ticks, move axis labels 1/2 char width
+    #     mgp[1:2] <- mgp[1:2] + .3
+    #     par(mgp=mgp)
+    # }
 
     xaxis_done <- NULL  # how many axes have been labeled?
     yaxis_done <- FALSE # has the vertical axis been done
@@ -199,8 +207,8 @@ sprofile <- function(sdng,xnames=NULL,yname=NULL,title=names(sdng)[1],
             }
             else {
                 iplot <- xaxis_num # 1:bottom, 2:top, 3:2nd scale on bottom, etc
-                side <- if (iplot %% 2) 1 else 3
-                line <- (mgp[1] + 1) * ((iplot-1) %/% 2)
+                side <- ifelse(iplot %% 2, 1 , 3)
+                line <- (mgp[1] + 1.0) * ((iplot-1) %/% 2)
                 if (is.null(xlab)) {
                   if (dupunits) xlab.txt <- paste(xname," (",xunits,")",sep="")
                   else xlab.txt <- paste("(",xunits,")",sep="")
@@ -215,7 +223,7 @@ sprofile <- function(sdng,xnames=NULL,yname=NULL,title=names(sdng)[1],
             if (is.null(ylim)) ylim <- range(ydata,na.rm=T)
             if (reverse_yaxis) ylim <- rev(ylim)
             # xaxs="r" (extend by 4%) or xaxs="i" was passed
-            # to plotLimits when determining xlim1.
+            # to isfs::plotLimits when determining xlim1.
             # So the axes are not extended again by 4% set xaxs="i" here.
             plot(xdata,ydata,type="n",col=1,axes=TRUE,
                 xlim=xlim1,xlab="",xaxs="i",xaxt="n",
@@ -277,11 +285,13 @@ sprofile <- function(sdng,xnames=NULL,yname=NULL,title=names(sdng)[1],
             at <- pretty(xlim1)
             if (side == 3) {        # top
                 axis(side=side,at=at,line=line,col=1,cex=cex*.8,labels=TRUE)
-                mtext(side=side,line=line+mgp[1]*.8,xlab.txt,col=1,cex=cex)
+                mtext(side=side,line=line+mgp[1],xlab.txt,col=1,
+                    cex=par("cex.axis") * cex)
             }
             else if (nscales > 1 || length(xaxis_done) == 0) {
                 axis(side=side,at=at,line=line,col=1,cex=cex*.8,labels=TRUE)
-                mtext(side=side,line=line+mgp[1]*.8,xlab.txt,col=1,cex=cex)
+                mtext(side=side,line=line+mgp[1],xlab.txt,col=1,
+                    cex=par("cex.axis") * cex)
             }
             if (nscales == 1 || length(xnames) == 1) axis(4,labels=F,at=at)
         }
