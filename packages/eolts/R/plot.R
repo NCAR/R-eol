@@ -982,8 +982,8 @@ set_plot_margins <- function(debug=FALSE, doY=TRUE)
         # If doY, and the left and right margins are still the defaults,
         # tighten them.
         if (lmar == 4.1 && rmar == 2.1) {
-            lmar <- mgp[1] + 2
-            rmar <- mgp[1] + 2
+            lmar <- mgp[1] + 1.5
+            rmar <- mgp[1] + 1.5
         }
     }
    
