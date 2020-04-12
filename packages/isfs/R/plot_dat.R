@@ -16,10 +16,11 @@ setMethod("plot",signature(x="dat",y="missing"),
     }
     )
 
-plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
-    log="",tlwd=par("lwd"),remargin=TRUE,title,logo=TRUE,
-    xaxt="s", xaxs="i", yaxt=par("yaxt"), yaxs=par("yaxs"), cols,cex=1.0,
-    debug=FALSE, ...)
+plot_dat <- function(x,type="l",
+    xlab,xlim, xaxs="i", xaxt="s",
+    ylab,ylim=NULL, yaxs=par("yaxs"), yaxt=par("yaxt"),
+    log="", cols, one_scale=FALSE,
+    tlwd=par("lwd"),remargin=TRUE,title,logo=TRUE, debug=FALSE, ...)
 {
 
     # tlwd: trace line width.  Use that option if you want to
@@ -214,6 +215,8 @@ plot_dat <- function(x,type="l",xlab,xlim,ylab,ylim=NULL,one_scale=FALSE,
                 if (currp$nrow == 1)
                     timeaxis(3, labels=TRUE, xlab=FALSE,
                         tick=TRUE,time.zone="GMT", date.too=TRUE)
+                else
+                    timeaxis(3, labels=FALSE, xlab=FALSE, tick=TRUE)
             }
             xaxis_done <- TRUE
         }

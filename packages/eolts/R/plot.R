@@ -34,10 +34,11 @@ setMethod("plot",signature(x="nts",y="numeric"),
     }
 )
 
-plot_nts <- function(x, type="l", xlab=TRUE, xlim, ylab, ylim,
-	xaxs="i", xaxt="s", yaxs=par("yaxs"), yaxt=par("yaxt"),
-        col, pch, lty, time.zone=x@time.zone, axes=TRUE, log="",
-        remargin=TRUE, remarginY=TRUE, debug=FALSE, ...)
+plot_nts <- function(x, type="l", axes=TRUE,
+        xlab=TRUE, xlim, xaxs="i", xaxt="s",
+        ylab, ylim, yaxs=par("yaxs"), yaxt=par("yaxt"),
+        log="", col, pch, lty, time.zone=x@time.zone,
+        remargin="xy", debug=FALSE, ...)
 {
 
     # get the axes argument. 
@@ -161,7 +162,11 @@ plot_nts <- function(x, type="l", xlab=TRUE, xlim, ylab, ylim,
     }
 
     # If adding to an existing plot, don't redo margins
-    if (!par("new") && remargin) set_plot_margins(debug=debug, doY=remarginY)
+    if (is.logical(remargin)) {
+        if (remargin) remargin <- "xy"
+        else remargin <- ""
+    }
+    if (!par("new") && remargin != "") set_plot_margins(debug=debug, remargin=remargin)
 
     xaxs <- "i"
 
@@ -206,11 +211,13 @@ plot_nts <- function(x, type="l", xlab=TRUE, xlim, ylab, ylim,
             # let user specify
             currp <- current_plot()
             xlabels <- currp$nrow == currp$nrows
-            timeaxis(1, labels=xlabels, tick=TRUE, xaxt=xaxt, xlab=xlab,
+
+            timeaxis(side=1, labels=xlabels, tick=TRUE, xaxt=xaxt, xlab=xlab,
                 time.zone=time.zone, date.too=TRUE, line=0, ...)
 
-            timeaxis(3, labels=FALSE, tick=TRUE, xaxt=xaxt, xlab="",
-                time.zone=time.zone, line=0, ...)
+            # No side=3 axis be default
+            # timeaxis(side=3, labels=FALSE, tick=FALSE, xaxt=xaxt, xlab="",
+            #     time.zone=time.zone, line=0, ...)
         }
     }
 
@@ -222,6 +229,9 @@ plot_nts <- function(x, type="l", xlab=TRUE, xlim, ylab, ylim,
         for (i in 2:ncolumn) points(x[,i],col=col[(i-1)%%ncolor+1],
             pch=pch[(i-1)%%npch+1],type=type,...)
     }
+
+    # if (!is.null(title)) title(main=title, line=mgp[1] + 1)
+    # if (!is.null(title)) title(main=title, line=-par("cex.main"), outer=TRUE)
    
     invisible(tparams)
 }
@@ -233,7 +243,7 @@ timeaxis <- function(side, labels=TRUE, tick=TRUE,
     if (! exists(".timeaxis_params",envir=.eoltsEnv)) {
         stop("timeaxis_params does not exist. Cannot add time axis to ordinary plot")
     }
- 
+
     tparams = get(".timeaxis_params",envir=.eoltsEnv)
 
     x0 <- tparams$toffset
@@ -271,7 +281,7 @@ timeaxis <- function(side, labels=TRUE, tick=TRUE,
     # minor ticks
     if (tick && is.na(par("tck"))) {
         axis(side,at=tparams$mintics-x0, labels=FALSE,
-            tick=tick, xaxt=xaxt, tcl=minor_tcl, xaxt=xaxt,...)
+            tick=tick, xaxt=xaxt, tcl=minor_tcl, ...)
     }
 
     if (labels) {
@@ -714,7 +724,7 @@ horiz_legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,
     uxy <- par("usr")
     if (is.null(cex)) cex <- par("cex")
     # cxy <- par("cxy") * cex / cex
-    cxy <- c(strwidth("X"),strheight("X")) * cex / cex
+    cxy <- c(strwidth("X"),strheight("X"))
 
     # cat("cex=",cex,",cex=",cex,"\n")
     # cat("cxy=",cxy,",dy=",(uxy[4]-uxy[3]),",nrows=",(uxy[4]-uxy[3])/cxy[2],"\n")
@@ -736,14 +746,17 @@ horiz_legend <- function(x,y,legend,col=NULL,lty=NULL,marks=NULL,
     nc <- floor((uxy[2] - uxy[1]) / maxlw)
     nr <- ceiling(nl / nc)
 
+    # line spacing as a multiple of character height
+    linespace <- 1.2
+
     # Lay it out column by column (takes less vertical space)
-    y0 <- y - 1.0 * cxy[2]
+    y0 <- y - linespace * cxy[2]
     ir <- 0
     putx  <- if(par("xlog")) function(x){10^x} else function(x)x
     puty  <- if(par("ylog")) function(x){10^x} else function(x)x
 
     for (i in 1:nl) {
-        y <- y0 - ir * 1.0 * cxy[2]
+        y <- y0 - ir * linespace * cxy[2]
         if (ptln.size > 0) {
             if (is.null(marks))
               lines(putx(c(x,x+ptln.size*2)),puty(c(y,y)),col=col[i],lty=lty[i],
@@ -962,29 +975,32 @@ tight_mgp <- function()
     c(1.5, 0.5, 0)
 }
 
-set_plot_margins <- function(debug=FALSE, doY=TRUE)
+set_plot_margins <- function(debug=FALSE, remargin="xy")
 {
 
     nextp <- next_plot()
 
+    ncm <- nchar(remargin)
+    remargin <- substring(remargin,1:ncm, 1:ncm)
+
     mgp <- tight_mgp()
-
-    tbmars <- compute_margins(nrows=nextp$nrows, mgp=mgp)
-
     mar <- par("mar")   # default c(5.1, 4.1, 4.1, 2.1)
 
-    bmar <- tbmars$bmars[nextp$nrow]
-    tmar <- tbmars$tmars[nextp$nrow]
-
+    bmar <- mar[1]
     lmar <- mar[2]
+    tmar <- mar[3]
     rmar <- mar[4]
-    if (doY) {
-        # If doY, and the left and right margins are still the defaults,
-        # tighten them.
-        if (lmar == 4.1 && rmar == 2.1) {
-            lmar <- mgp[1] + 1.5
-            rmar <- mgp[1] + 1.5
-        }
+
+    if (any(remargin == "x")) {
+        tbmars <- compute_margins(nrows=nextp$nrows, mgp=mgp)
+        bmar <- tbmars$bmars[nextp$nrow]
+        tmar <- tbmars$tmars[nextp$nrow]
+    }
+
+    if (any(remargin == "y")) {
+        # tighten y axis margins
+        lmar <- mgp[1] + 1.5
+        rmar <- mgp[1] + 1.5
     }
    
     par(mgp=mgp, mar=c(bmar, lmar, tmar, rmar))
