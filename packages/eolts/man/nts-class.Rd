@@ -167,6 +167,8 @@ Gordon Maclean
 
 \code{\link{nts}}: \code{? nts}
 
+\code{\link{plot_nts}}: \code{? plot_nts}
+
 \code{\linkS4class{utime}}: \code{class? utime}
 
 \code{\link{utime}}: \code{? utime}

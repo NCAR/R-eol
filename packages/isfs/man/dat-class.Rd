@@ -6,7 +6,6 @@
 \alias{crack}
 \alias{heights}
 \alias{match.columns}
-\alias{plot_dat}
 \alias{select}
 \alias{seriesConcat}
 \alias{sites}
@@ -78,7 +77,7 @@ Gordon Maclean
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{dat}}, \code{\link{select-methods}}, \code{\linkS4class{nts}}, \code{\link{nts}}
+\code{\link{dat}}, \code{\link{plot_dat}}, \code{\link{select-methods}}, \code{\linkS4class{nts}}, \code{\link{nts}}
 }
 \examples{
 }

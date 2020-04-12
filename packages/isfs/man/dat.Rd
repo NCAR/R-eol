@@ -138,11 +138,43 @@ Gordon Maclean
 \note{
 }
 \seealso{
-\code{\linkS4class{dat}}, \code{\link{nts}}
+\code{\linkS4class{dat}}
+\code{\link{plot_dat}}
+\code{\link{nts}}
 }
 \examples{
 \dontrun{
-    x = dat("RH")
+# Look for datasets in /data/netcdf
+find_datasets("/data","netcdf")
+# Look for datasets in /data, in sub-directories with names starting with netcdf
+find_datasets("/data","^netcdf")
+# List the names of found datasets
+names(datasets())
+# select a dataset by name
+dataset("geo_tiltcor")
+# or select the first dataset found
+dataset(1)
+
+# select a time period
+dpar(start="2002 jan 12 00:00")
+dpar(end="2002 jan 19 00:00")
+
+# Read all RH variables
+x = dat("RH")
+plot(x)
 }
+
+# build a dat from a sample netcdf file
+datadir <- file.path(system.file("unitTests", package="eolts"),"data")
+ncfile <- "test_\%Y\%m\%d.nc"
+
+t1  <- utime("2012 oct 10 19:00:00",time.zone="US/Mountain")
+t2  <- utime("2012 oct 11 20:00:00",time.zone="US/Mountain")
+
+con <- netcdf(file=ncfile,dir=datadir,start=t1,end=t2)
+# read u.1m from 21 stations
+x <- dat(readts(con,"u.1m", start=t1, end=t2))
+close(con)
+
 }
 \keyword{ ts }

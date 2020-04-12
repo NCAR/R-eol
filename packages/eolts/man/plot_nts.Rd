@@ -1,33 +1,35 @@
 \name{plot_nts}
 \alias{plot_nts}
 \title{
-Make a time series plot of an nts object.
+Make a time series plot of an \code{\link{nts}} object.
 }
 \description{
-Create a time series plot of an nts object. Appropriate time labels on the X axis are provided for a wide range of times, from a plot spanning on the order of seconds to a plot of several years.
+Calling \code{plot(x,...)}, with x an object of type \code{\linkS4class{nts}} will invoke \code{plot_nts(x,...)}.
+\code{plot_nts(x,...)} creates a time series plot of \code{x}. \code{timeaxis} is used to create and label the bottom X (time) axis. \code{plot_nts} is like \code{link{plot.default}}, in that tick marks and labels for the top and right axes are not generated. Use \code{timeaxis(side=3,...)} to add a top time axis, and \code{axis(side=4,...)} for a right Y axis. If there are multiple columns in x, then all columns are plotted together.
+
+If there are multiple figures on a page, e.g. \code{par(mfrow=c(4,1))}, only the bottom X axis of the bottom plot will be labeled. The bottom X axes of the plots above it will have ticks, but no labels.
+
+Depending on the value of \code{remargin}, the margins of the plot are adjusted to reduce wasted space, by reducing the margin lines for axis labels and title with \code{par(mgp=c(1.5, 0.5, 0))} and corresponding reductions in the values for the margins on each side of the plot, \code{par("mar")}.
 }
 \usage{
-plot_nts(x, type = "l", xlab=TRUE, xlim, ylab, ylim, xaxs = "i", xaxt, yaxt, col, pch, lty, time.zone = x@time.zone, axes = TRUE, log = "", cex = 1, ...)
+plot_nts(x, type = "l", axes = TRUE, xlab=TRUE, xlim, xaxs = "i", xaxt="s", ylab, ylim, yaxs=par("yaxs"), yaxt=par("yaxt"), log = "", col, pch, lty, time.zone = x@time.zone, remargin = "xy", debug=FALSE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-A nts time series object.
+An \code{\link{nts}} time series object.
 }
   \item{type}{
-Usually plot parameter, "l" for a line plot, "p" for points, "b" for both.
+See parameter \code{type} for \code{\link{plot.default}}. "l" for a line plot, "p" for points, "b" for both.
+}
+  \item{axes}{
+Whether both axes should be drawn. See \code{plot.default}.
 }
   \item{xlab}{
-X axis label, if you want to override the default time lable. Set to FALSE for no label.
+X axis title, logical or character. If TRUE, an appropriate time axis label is shown on the bottom axis. To change the time label, set to a character string, or set to FALSE or "" for no label.
 }
   \item{xlim}{
-Time limits to plot. If not specified, the entire nts time series is plotted.
-}
-  \item{ylab}{
-Y axis label.
-}
-  \item{ylim}{
-Y limits.
+Time limits, in \code{utime} to plot. If not specified, the entire nts time series is plotted.
 }
   \item{xaxs}{
 See \code{par}.
@@ -35,8 +37,17 @@ See \code{par}.
   \item{xaxt}{
 See \code{par}.
 }
+  \item{ylab}{
+Title for the left-hand Y axis. The default is a string of the form \code{paste0(colnames(x)," (",units(x),")")} for a 1 column time series, or the name of the y argument if more than one column. Set to "" for no y label.
+}
+  \item{ylim}{
+Y limits.
+}
   \item{yaxt}{
 See \code{par}.
+}
+  \item{log}{
+See \code{plot.default}.
 }
   \item{col}{
 Plotting color, see \code{par}.
@@ -50,17 +61,8 @@ Line type, see \code{par}.
   \item{time.zone}{
 Time zone to use for labeling X axis. If not specified, the time.zone is provided in the nts object.
 }
-  \item{axes}{
-Whether both axes should be drawn. See \code{plot.default}.
-}
-  \item{log}{
-See \code{plot.default}.
-}
   \item{remargin}{
-Whether to adjust the X and Y plot margins, removing wasted space..
-}
-  \item{remarginY}{
-Whether to adjust the Y plot margins, removing wasted space. If TRUE and remargin is TRUE, only the X plot margins are adjusted.
+A character string, "xy" meaning adjust margins on both x and y axis, or "x" or "y" for one axis, or "" for neither axis. If logical, TRUE means "xy" and FALSE means "".
 }
   \item{\dots}{
 Other par plotting parameters, see \code{par}.
@@ -87,9 +89,13 @@ Gordon Maclean
 
 \seealso{
 \code{\link{plot.default}}.
+
+\code{\linkS4class{nts}}: \code{class? nts}
+
+\code{\link{nts}}: \code{? nts}
 }
 \examples{
-# make an nts out of the Keeling Mauna Loa CO2 dataset, and plot it
+# make an nts out of the Keeling Mauna Loa CO2 from the R datasets package, and plot it
 tco2 <- tsp(co2)
 # Convert tsp time values to utimes, approximate
 t1 <- utime(paste(as.integer(tco2[1]), "01 01 00:00:00"),

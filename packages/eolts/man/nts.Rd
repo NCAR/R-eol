@@ -63,6 +63,7 @@ Gordon Maclean
 
 \seealso{
 \code{\link{utime}}
+\code{\link{plot_nts}}
 }
 \examples{
 # create a 20x4 time series of random data, at 10 second time resolution
