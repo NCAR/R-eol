@@ -2225,3 +2225,64 @@ setMethod( "summary","nts", function( object, ... )
         allcols
     }
 )
+
+d_by_dt <- function(x, dtmax=NULL, lag=2, differences=1, time=0)
+{
+    # Compute time derivative (per second) of a time series:
+    #    dx/dt(i) <- (x(i+1) - x(i-1)) / (t(i+1) - t(i-1))
+    #
+
+    if (!isClass(x, "nts")) stop("d_by_dt(x) is only supported when x is an nts")
+    nr <- nrow(x)
+    nc <- ncol(x)
+    stns <- stations(x)
+
+    # arbitrary
+    if (is.null(dtmax)) dtmax <- deltat(x)[1] * 10
+
+    ts <- as.numeric(positions(x))
+
+    dx <- diff(x@data,lag=lag)
+    dt <- diff(ts,lag=lag)
+
+    # result of diff is lag points shorter
+    if (time == 0) {
+        # middle times
+        mx <- -((nr-lag+1):nr)
+        ts <- ts[mx] + dt / 2
+    }
+    else if (time == -1) {
+        # first times
+        mx <- -((nr-lag+1):nr)
+        ts <- ts[mx]
+    }
+    else if (time == 1) {
+        # end times
+        mx <- -(1:lag)
+        ts <- ts[mx]
+    }
+
+    keep <- dt > 0 & dt < dtmax
+    dx <- dx[keep,]
+    dt <- dt[keep]
+    ts <- ts[keep]
+
+    dunits <- sapply(x@units,function(x) {
+        if (x=="") "s-1" 
+        else paste(x,"s-1")
+    })
+    dnames <- paste0("d_", words(colnames(x),1,1), "_by_dt",
+        sapply(words(colnames(x),2),function(x) {
+            if (x == "") x
+            else paste0(".",x)
+    }))
+
+    x <- nts(matrix(as.vector(dx/dt),ncol=nc,dimnames=list(NULL,dnames)),
+            as(ts,"utime"),units=dunits,stations=stns)
+    #
+    # recursively call again if differences > 1
+    if (differences > 1) x <- d_by_dt(x,dtmax=dtmax,lag=lag,differences=differences-1,time=time)
+    x
+}
+
+setGeneric("d_by_dt", d_by_dt)

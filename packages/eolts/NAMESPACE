@@ -99,6 +99,7 @@ exportMethods(
     "seriesMerge","is.finite",
     "seriesConcat","Rbind","Cbind",
     "average","approx","align",
+    "d_by_dt",
     "replace.nas","window","trend","detrend","lag",
     "is.open","close","stations","readnc","readts",
     "writets",

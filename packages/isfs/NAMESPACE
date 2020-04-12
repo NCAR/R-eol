@@ -9,7 +9,6 @@ useDynLib(isfs)
 export(
     sync,
     dat,
-    d_by_dt, d.by.dt,
     derived,
     expand,
     other_dat_func,
@@ -65,6 +64,7 @@ exportMethods(
     "clip",
     "suffixes",
     "heights",
+    "d_by_dt",
     "sites", "sites<-",
     "seriesMerge",
     "dimnames<-",
