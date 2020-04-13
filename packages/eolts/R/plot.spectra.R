@@ -251,14 +251,15 @@ plot.spectra <- function(x,log,multfreq=T,falloff,
 
     # cat("logarg=",logarg,"lim=",lim,"logx=",logx,"logy=",logy,"xaxt=",xaxt,"yaxt=",yaxt,"\n")
     if (nc > 1) {
-        if (is.null(args$cex)) cex <- par("cex")
+        if (is.null(args$cex)) cex <- par("cex.lab")
         else cex <- args$cex
         lx <- lim[1] + strheight("X") * 1.0
         ly <- lim[4] - strwidth("X") * 1.0
         colv <- col
         if (length(colv) < nc) colv <- rep(colv,(nc/length(colv))+1)
         # browser()
-        horiz_legend(lx,ly,legv,col=colv,lty=rep(1,length(colv)),bty="n",cex=cex*1.0)
+        horiz_legend(lx,ly,legv,col=colv,lty=rep(1,length(colv)),bty="n",
+                cex=cex)
     }
 
     assign("spectra_multfreq",multfreq,envir=.eoltsEnv);

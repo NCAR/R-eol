@@ -420,10 +420,10 @@ plot_dat <- function(x,type="l",
 
             if (type == "l")
                 horiz_legend(lx,ly,legv,col=colv,lty=rep(1,length(colv)),
-                    bty="n",cex=par("cex.lab") * par("cex"))
+                    bty="n",cex=par("cex.lab"))
             else
                 horiz_legend(lx,ly,legv,col=colv,marks=colv,
-                    bty="n", cex=par("cex.lab") * par("cex"))
+                    bty="n", cex=par("cex.lab"))
         }
     }
 
