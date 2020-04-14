@@ -10,7 +10,7 @@ sprofile(sdng, xnames=NULL, yname=NULL, title=names(sdng)[1], type = "b",
     ylim = NULL, ylab=NULL, yaxt = par("yaxt"), yaxs = par("yaxs"),
     col = c("black", "red", "green", "blue", "purple", "cyan",
         "orange", "yellow", "gray", "pink"), tlwd = par("lwd"),
-    pcex=0.25, ...)
+    pcex=0.25, debug=FALSE, ...)
 }
 \arguments{
   \item{sdng}{

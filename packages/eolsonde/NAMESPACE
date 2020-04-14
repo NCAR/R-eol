@@ -8,6 +8,14 @@ useDynLib(eolsonde)
 #   "function 'dataptr' not provided by package 'Rcpp'"
 importFrom(Rcpp, evalCpp)
 
+# suggested by R CMD CHECK
+importFrom("grDevices", "colorRampPalette", "dev.off", "png")
+importFrom("graphics", "axis", "filled.contour", "grid", "legend",
+             "mtext", "par", "strwidth")
+importFrom("methods", "existsFunction")
+importFrom("stats", "sd")
+importFrom("utils", "read.table", "tail", "type.convert")
+
 # exported functions
 export(
     set_sproject,
@@ -21,11 +29,6 @@ export(
     interpSoundings,
     project_plots,
 
-    get.sounding.histograms,
-    get.sounding.weathersymbols,
-    station.symbol,
-
-    geoid_height, geodesic_headings,
-    runTests
+    geoid_height, geodesic_headings
 )
 
