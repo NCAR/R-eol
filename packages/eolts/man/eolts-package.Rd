@@ -58,8 +58,7 @@ When the eolts package is attached to an R session, the following values are set
 }
 }
 \author{
-Gordon Maclean\cr
-Maintainer: Gordon Maclean <maclean@ucar.edu>
+Gordon Maclean
 }
 \references{
 }

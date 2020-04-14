@@ -20,7 +20,7 @@ prep(variables, rate = 0, dsm="", config = "")
 \details{
 }
 \value{
-A \code{\linkS4class{prep}} object for use with \code{\link{readts-methods}} and \code{\link{close-methods}}.
+A \code{\linkS4class{prep}} object for use with \code{\link{readts-methods}} and \code{\link{close}}.
 }
 \references{
 }

@@ -4,9 +4,6 @@
 \alias{prep-class}
 \alias{close,prep-method}
 \alias{pid,prep-method}
-\alias{readts,prep,missing,character,character-method}
-\alias{readts,prep,missing,missing,missing-method}
-\alias{readts,prep,missing,utime,utime-method}
 
 \title{Class \code{"prep"}}
 \description{
