@@ -18,14 +18,14 @@ if(require("RUnit", quietly = TRUE))
 
     ## --- Testing ---
 
-    ## Define tests
-    testSuite <- defineTestSuite(name = pkg, dirs = path)
+    ## Define tests, save to .globalEnv with <<-
+    testSuite <<- defineTestSuite(name = pkg, dirs = path)
 
     if(interactive()) {
         cat("Now have RUnit Test Suite 'testSuite' for package '",
             pkg, "' :\n", sep='')
         str(testSuite)
-        cat('', "To test, do:",
+        cat('', "To execute tests, do",
             "\t  tests <- runTestSuite(testSuite)", "\nand later",
             "\t  printTextProtocol(tests)", '', sep = "\n")
     } else {

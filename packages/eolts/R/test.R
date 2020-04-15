@@ -10,6 +10,6 @@
 runTests <- function(pkg="eolts")
 {
     path <- system.file("unitTests", package = pkg)
-    source(file.path(path, "runTests.R"), echo = TRUE)
+    source(file.path(path, "runTests.R"), echo = TRUE, local=TRUE)
 }
 
