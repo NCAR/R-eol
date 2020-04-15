@@ -140,7 +140,7 @@ do_pkg() {
     if $do_quick_test; then
         R --vanilla <<-EOD || exit 1
         library($pkg)
-        ${pkg}::runTests()
+        runTests("$pkg")
 EOD
     fi
 }
