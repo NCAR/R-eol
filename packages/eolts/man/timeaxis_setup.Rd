@@ -28,12 +28,15 @@ Character magnification for time axis notation, relative to the current setting 
 Using the width of a 12 character label (\code{strwidth}) on the current graphics device, an appropriate major tick interval is determined so that there will be between 2 and 8 labels across the axis.
 }
 \value{
-list, containing
-%%  \item{toffset}{Offset that is removed from all times before plotting to avoid loss of floating point precision, simply \code{t1}.
-%%  \item{majtics}{Location of labeled major ticks, vector of \code{linkS4class{utime}}s.
-%%  \item{mintics}{Location of unlabeled minor ticks, vector of \code{linkS4class{utime}}s.
-%%  \item{format}{\code{linkS4class{utime}} format to use when generating major tick labels.
-%%  \item{extraformat}{\code{linkS4class{utime}} format to use on the first, leftmost time label, typically including the date.
+
+Returns a list, containing
+\item{toffset}{Offset that is removed from all times before plotting to avoid loss of floating point precision, simply \code{t1}.}
+\item{majtics}{Location of labeled major ticks, vector of \code{linkS4class{utime}}s.}
+\item{mintics}{Location of unlabeled minor ticks, vector of \code{linkS4class{utime}}s}.
+\item{format}{\code{linkS4class{utime}} format to use when generating major tick labels}.
+\item{extraformat}{\code{linkS4class{utime}} format to use on the first, leftmost time label, typically including the date.}
+
+This list is also written to \code{.timeaxis_params} on \code{.eoltsEnv}, where it is read by a subsequent call to \code{\link{timeaxis}}.
 }
 \references{
 }

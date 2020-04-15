@@ -72,7 +72,9 @@ Other par plotting parameters, see \code{\link{par}}.
 }
 }
 \details{
-\code{\link{timeaxis_setup}} and \code{\link{timeaxis}} is used to create and label the bottom X (time) axis. \code{plot_nts} is like \code{\link{plot.default}}, in that tick marks and labels for the top and right axes are not generated. Use \code{timeaxis(side=3,...)} to add a top time axis, and \code{axis(side=4,...)} for a right Y axis. If there are multiple columns in x, then all columns are plotted together.
+\code{\link{timeaxis_setup}} and \code{\link{timeaxis}} are used to create and label the bottom X (time) axis.
+
+\code{plot_nts} is like \code{\link{plot.default}}, in that tick marks and labels for the top and right axes are not generated. Use \code{timeaxis(side=3,...)} to add a top time axis, and \code{axis(side=4,...)} for a right Y axis. If there are multiple columns in x, then all columns are plotted together.
 
 If there are multiple figures on a page, e.g. \code{par(mfrow=c(4,1))}, only the bottom X axis of the bottom plot will be labeled. The bottom X axes of the plots above it will have ticks, but no labels.
 

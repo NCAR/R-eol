@@ -28,7 +28,7 @@
 \title{Class \code{"spectra"}}
 \description{
 spectra is a base class for data series with associated frequencies, such as FFTs (class fftw), power spectra (class pspectra), cross-spectra (class xspectra), co-spectra  (class cospectra), quadrature spectra (quadspectra), phase and coherence.
-Class supporting generation of spectra from nts time series, along with smoothing, analysis and plotting.
+This class supports generation of spectra from \linkS4class{nts} time series, along with smoothing, analysis and plotting.
 }
 \section{Objects from the Class}{
 Spectra objects are typically created from FFTs performed on a time series, \code{xs <- pspectra(fftw(window(ts)))}.
