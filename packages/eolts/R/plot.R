@@ -207,10 +207,11 @@ plot_nts <- function(x, type="l", axes=TRUE,
 
     if (plotaxes) {
         if (xaxt != "n") {
-            # may not always want labels on bottom time axis
-            # let user specify
+            # For stack plots, mfrow!=c(1,1), only put labels on bottom
+            # plot, unless the axis parameters have changed.
             currp <- current_plot()
-            xlabels <- currp$nrow == currp$nrows
+    
+            xlabels <- currp$nrow == currp$nrows || tparams$new
 
             timeaxis(side=1, labels=xlabels, tick=TRUE, xaxt=xaxt, xlab=xlab,
                 time.zone=time.zone, date.too=TRUE, line=0, ...)
@@ -620,12 +621,19 @@ timeaxis_setup <- function(t1, t2, time.zone=getOption("time.zone"),
     }
 
     labtype <- xlabel.tltype[kt]
+    
+    new <- TRUE
+    if (exists(".timeaxis_params", envir=.eoltsEnv)) {
+        oldres <- get(".timeaxis_params", envir=.eoltsEnv)
+        new <- !identical(oldres$majtics, majtics)
+    }
 
     res <- list(toffset=t1, majtics=majtics, mintics=mintics,
         majunits=xlabel.majunits[labtype],
         minunits=xlabel.minunits[kt],
         format=xlabel.tformats[labtype],
-        extraformat=xlabel.extraformats[labtype])
+        extraformat=xlabel.extraformats[labtype],
+        new=new)
 
     assign(".timeaxis_params", res, envir=.eoltsEnv)
     res

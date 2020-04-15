@@ -35,6 +35,7 @@ Returns a list, containing
 \item{mintics}{Location of unlabeled minor ticks, vector of \code{linkS4class{utime}}s}.
 \item{format}{\code{linkS4class{utime}} format to use when generating major tick labels}.
 \item{extraformat}{\code{linkS4class{utime}} format to use on the first, leftmost time label, typically including the date.}
+\item{new}{\code{linkS4class{utime}} Whether the \code{majtics} vector differs from the previous value - used as a guide of whether to label the axis on a stack of plots.}
 
 This list is also written to \code{.timeaxis_params} on \code{.eoltsEnv}, where it is read by a subsequent call to \code{\link{timeaxis}}.
 }
