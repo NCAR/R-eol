@@ -29,24 +29,25 @@ test.plot <- function()
     x = dat(nts(seq(from=0.01,to=100,len=len),
             utime(seq(as.numeric(tx),by=1,length=len)),names="test"))
 
-    png(file=tmp)
+    if (!interactive()) png(file=tmp)
     plot(x)
-    dev.off()
+    if (!interactive()) dev.off()
 
     # check for crashes when doing log plots. If the scale is
     # expanded incorrectly you will get errors about taking a log of
     # a non-positive number.
-    png(file=tmp)
+    if (interactive()) par(ask=TRUE)
+    else png(file=tmp)
     plot(x,log="y")
-    dev.off()
+    if (!interactive()) dev.off()
 
     # test dat stack plots
-    png(file=tmp)
+    if (!interactive()) png(file=tmp)
     par(mfrow=c(3,1))
     plot(x)
     plot(x)
     plot(x)
-    dev.off()
+    if (!interactive()) dev.off()
 
     return()
 }
