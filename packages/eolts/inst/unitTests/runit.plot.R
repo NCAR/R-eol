@@ -16,6 +16,9 @@ test.plot <- function()
     checkEquals(max(eolts:::xlabel.tltype), length(eolts:::xlabel.majunits))
     checkEquals(max(eolts:::xlabel.tltype), length(eolts:::xlabel.extraformats))
 
+    # Test time labels on plots covering a range of times
+    # from 20 years to .001 seconds
+
     t1 <- utime("2019 feb 13 00:00")
     nrow <- 5
     ncol <- 2
@@ -23,19 +26,22 @@ test.plot <- function()
 
     plen <- 20*365*86400
 
-    tmp = tempfile("test.plot",fileext=".png")
-    on.exit(unlink(tmp))
-
     iactive <- interactive()
+    if (iactive) {
+        old.par <- par(mfrow=c(1,1), ask=TRUE)
+    else {
+        tmp = tempfile("test.plot",fileext=".png")
+        on.exit(unlink(tmp))
+    }
 
     while (plen > .001) {
         x <- nts(dx,utime(seq(from=t1,to=t1+plen,length=nrow)))
         if (!iactive) png(file=tmp)
-        else par(ask=TRUE)
         plot(x)
         if (!iactive) dev.off()
         plen <- plen / 2
     }
+    if (iactive) par(old.par)
 
     return()
 }

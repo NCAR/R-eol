@@ -30,6 +30,7 @@ test.plot <- function()
             utime(seq(as.numeric(tx),by=1,length=len)),names="test"))
 
     if (!interactive()) png(file=tmp)
+    old.par <- par(mfrow=c(1,1))
     plot(x)
     if (!interactive()) dev.off()
 
@@ -47,6 +48,7 @@ test.plot <- function()
     plot(x)
     plot(x)
     plot(x)
+    par(old.par)
     if (!interactive()) dev.off()
 
     return()
