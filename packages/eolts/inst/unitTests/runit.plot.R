@@ -29,6 +29,7 @@ test.plot <- function()
     iactive <- interactive()
     if (iactive) {
         old.par <- par(mfrow=c(1,1), ask=TRUE)
+    }
     else {
         tmp = tempfile("test.plot",fileext=".png")
         on.exit(unlink(tmp))
