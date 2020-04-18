@@ -64,7 +64,11 @@ Trace line width, see \code{par("lwd")}.
 A character string, "xy" meaning adjust margins on both x and y axis, or "x" or "y" for one axis, or "" for neither axis. If logical, TRUE means "xy" and FALSE means "".
 }
   \item{title}{
-To specify a title for the top plot on the page, use the \code{title="string"} argument, or to suppress a title, use \code{title=""} or \code{title=FALSE}. Otherwise, a title is placed at the top of the page. If the \code{x} objects that were plotted have a title slot, \code{x@title}, it is used in the title, otherwise the column names are concatenated for the title.
+The main title which is placed at the top of the page. If multiple plots are placed on a page, with the \code{mfrow} or \code{mfcol} parameters to par, then the title is assembled from the titles of each plot. To suppress a title, specify \code{title=FALSE} or \code{title=""} for each plot.
+
+If the \code{title} argument is missing, it defaults to the title slot of the \code{\linkS4class{dat}} argument, \code{x@title}, or if that is NULL, to the column names of \code{x}.
+
+For those plots with a title, their \code{stations(x)} and date range are added to the title. The final title will be "stations titles date-range", where stations and title are concatenated from the values of each plot on the page, and the  date range is formatted as \code{"\%Y \%b \%d"} or \code{"\%Y \%b \%d - \%b \%d"} if more than one day.
 }
   \item{logo}{
 Logo to be placed at the bottom of the page.
@@ -79,8 +83,9 @@ Other par plotting parameters, see \code{\link{par}}.
 \details{
 If \code{one.scale=FALSE}, and \code{x} contains more than one column, then multiple traces are plotted, with different colors, and a color legend is added to the top of the plot. Multiple Y axes are generated, alternating left and right, if the columns have different units, and the units will be shown in the Y axis title.  A right-hand Y axes is always shown, with ticks, but will not be labeled if all traces have the same units.
 
-If multiple figures are plotted on a page, e.g. \code{par(mfrow=c(4,1))}, the top figure
 If there are multiple figures on a page, e.g. \code{par(mfrow=c(4,1))}, only the bottom X axis of the bottom plot will be labeled. The bottom X axes of the plots above it will have ticks, but no labels. The top X axis of the top plot will be labeled using time.zone="GMT".
+
+For a semi-log plot, log="y", minor tick marks are placed at the times 2 to times 9 points on the Y axis.
 
 By default, a title is placed at the top of the page. See the \code{title} parameter.
 }

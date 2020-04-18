@@ -444,7 +444,7 @@ plot_dat_title <- function(title="",first_plot,last_plot,
     t1=dpar("start"),t2=dpar("end"),stns=NULL,
     time.zone=getOption("time.zone"))
 {
-    this_plot_date <- unlist(as.list(t1)[c("year","mon","day")])
+    this_plot_date <- unlist(as.list(t1, time.zone=time.zone)[c("year","mon","day")])
     if (first_plot) {
         plot_dat_title_save <- NULL
         plot_dat_date <- this_plot_date
@@ -499,7 +499,6 @@ plot_dat_title <- function(title="",first_plot,last_plot,
                 paste(plot_dat_title_save,collapse=","),sep=" ")
 
             if (!is.null(plot_dat_date)) {
-                # t1@time.zone <- t2@time.zone <- getOption("time.zone")
                 date.text <- format(t1,format="%Y %b %d", time.zone=time.zone)
                 day1 <- as.list(t1, time.zone=time.zone)[["day"]]
                 day2 <- as.list(t2, time.zone=time.zone)[["day"]]
