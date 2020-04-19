@@ -177,11 +177,11 @@ plot_nts <- function(x, type="l", axes=TRUE,
             ylab <- deparse(xexpr)
         }
         else {
-            if (is.null(dunits <- attr(x,"dunits")))
-                ylab <- dimnames(x)[[2]][1]
+            dunits <- units(x)[1]
+            if (dunits == "")
+                ylab <- colnames(x)[1]
             else
-                ylab <- paste0(dimnames(x)[[2]][1],
-                     "(", attr(x,"dunits")[1], ")")
+                ylab <- paste0(colnames(x)[1], "(", dunits, ")")
         }
     }
     if (debug)
@@ -461,8 +461,18 @@ timeaxis_setup <- function(t1, t2, time.zone=getOption("time.zone"),
     # size of the motif window. If the user resizes the window,
     # par("pin") may not change
 
-    # cwidth <- par("cin")[1]	# character width in inches
-    swidth <- strwidth("xxxxxxxxxxxx", units="inches")
+    # On x11() devices, logged in through ssh, started seeing these
+    # errors when calling strwidth():
+    # "Error in axis(...), X11 font -adobe-helvetica-... face 1 size 8 could not be loaded"
+    # Catching the error here doesn't help - it shows up in the call to
+    # axis() later.
+    # What did fix it was running the cairo version of x11, which can
+    # scale fonts, by specifying type="cairo" option in x11() or
+    # X11.options(). Running "Font Book" on macOS did show the smallest
+    # size for helvetica (and others) was 9.
+
+    swidth <- tryCatch(swidth <- strwidth("xxxxxxxxxxxx", units="inches"),
+        error=function(e) { par("cin")[1] * 12 })
     pwidth <- par("pin")[1]	# plot width in inches 
     
     # cat("pwidth=", pwidth, ", 12 char=", cwidth*12,

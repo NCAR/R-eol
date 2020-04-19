@@ -35,7 +35,7 @@ See \code{\link{par}}.
 See \code{\link{par}}.
 }
   \item{ylab}{
-Title for the left-hand Y axis. The default is a string of the form \code{paste0(colnames(x)," (",units(x),")")} for a 1 column time series, or the name of the y argument if more than one column. Set to "" for no y label.
+Title for the left-hand Y axis. The default is a string of the form \code{paste0(colnames(x),"(",units(x),")")} for a 1 column time series, or the name of the y argument if more than one column. Set to "" for no y label.
 }
   \item{ylim}{
 Y limits.
