@@ -11,7 +11,7 @@ rver=${repopath##*/}		# trailing portion
 
 # echo "${repopath}x"
 if [ -d /tmp$repopath ]; then
-	cd /tmp$repopath/..
+	cd /tmp$repopath/.. || exit 1
 	rm -rf $rver
 	cd -
 fi
