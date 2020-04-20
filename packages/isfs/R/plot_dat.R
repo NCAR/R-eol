@@ -239,31 +239,7 @@ plot_dat <- function(x,type="l",
             col=col,pch=col,lty=1,ylab="",
             axes=FALSE,log=log,lwd=tlwd,...)
 
-        mgp <- par("mgp")
-        usr <- par("usr")	# used in various places below
-
-        side <- ylab_txt <- NULL
-        if (!missing(ylab)) ylab_txt <- ylab
-        if (do.yaxis <- (yaxt != "n" && is.na(match(yaxis_num,yaxis_done)))) {
-            if (nyscales == 1) {
-                side <- 2
-                yaxis_line <- 0
-                if (missing(ylab)) {
-                    if (all_same_vars) ylab_txt <- paste(varname," (",vunits,")",sep="")
-                    else ylab_txt <- paste("(",vunits,")",sep="")
-                }
-            }
-            else {
-                iplot <- yaxis_num
-                side <- ifelse(iplot %% 2, 2, 4)
-                ny_on_side <- (iplot-1) %/% 2
-                yaxis_line <- ny_on_side * (mgp[1] + 1.0)
-                if (missing(ylab)) {
-                    if (dupunits) ylab_txt <- paste(varname," (",vunits,")",sep="")
-                    else ylab_txt <- paste("(",vunits,")",sep="")
-                }
-            }
-        }
+        usr <- par("usr")
 
         if (clipped) {
             # clip.min and clip.max are nts objects of logical values,
@@ -281,10 +257,42 @@ plot_dat <- function(x,type="l",
             }
         }
 
-        # if (nyscales == 1) if (usr[3] * usr[4] < 0) abline(h=0)
+        # dotted line at y=0
         if (usr[3] * usr[4] < 0) abline(h=0,lty=2)
 
-        if (do.yaxis) {
+        mgp <- par("mgp")
+
+        if (yaxt != "n" && is.na(match(yaxis_num,yaxis_done))) {
+
+            ylab_txt <- NULL
+
+            if (!missing(ylab)) {
+                if (is.logical(ylab)) {
+                     if (!ylab) ylab_txt <- ""
+                }
+                else ylab_txt <- ylab
+            }
+            if (nyscales == 1) {
+                side <- 2
+                yaxis_line <- 0
+                if (is.null(ylab_txt)) {
+                    if (all_same_vars)
+                        ylab_txt <- paste(varname," (",vunits,")",sep="")
+                    else ylab_txt <- paste("(",vunits,")",sep="")
+                }
+            }
+            else {
+                iplot <- yaxis_num
+                side <- ifelse(iplot %% 2, 2, 4)
+                ny_on_side <- (iplot-1) %/% 2
+                yaxis_line <- ny_on_side * (mgp[1] + 1.0)
+                if (is.null(ylab_txt)) {
+                    if (dupunits)
+                        ylab_txt <- paste(varname," (",vunits,")",sep="")
+                    else ylab_txt <- paste("(",vunits,")",sep="")
+                }
+            }
+
             if (logy) {
 
                 l0lab <- ceiling(usr[3])
@@ -296,24 +304,18 @@ plot_dat <- function(x,type="l",
                 ndec <- lntic - l0tic
                 mtics <- l0tic + as.vector(outer(log10(2:9),(0:ndec-1),"+"))
 
-                if (side == 4) {
-                    axis(side=side,line=yaxis_line, at=10^(l0lab:lnlab),
-                        labels=10^(l0lab:lnlab),
-                        yaxt=yaxt, col=1)
-                    axis(side=side,line=yaxis_line, at=10^mtics,labels=FALSE,
-                        yaxt=yaxt, col=1)
+                axis(side=side,line=yaxis_line, at=10^(l0lab:lnlab),
+                    labels=10^(l0lab:lnlab),
+                    yaxt=yaxt, col=1)
+                # minor log ticks
+                axis(side=side,line=yaxis_line, at=10^mtics,labels=FALSE,
+                    yaxt=yaxt, col=1)
+                if (ylab_txt != "")
                     mtext(side=side,line=yaxis_line+mgp[1],
-                        text=ylab_txt, col=1, cex=par("cex.axis")*par("cex"))
-                }
-                else {
-                    axis(side=side,line=yaxis_line,at=10^(l0lab:lnlab),labels=10^(l0lab:lnlab),
-                        yaxt="s",col=1)
-                    axis(side=side,line=yaxis_line, at=10^mtics,labels=FALSE,
-                        yaxt=yaxt, col=1)
-                    mtext(side=side,line=yaxis_line+mgp[1], text=ylab_txt, col=1,
+                        text=ylab_txt, col=1,
                         cex=par("cex.axis")*par("cex"))
-                }
-                # repeat labels on right
+
+                # repeat labels on right if one Y scale
                 if (nyscales == 1 || length(dnames) == 1) {
                     axis(4, line=yaxis_line, at=10^(l0lab:lnlab),
                         labels=FALSE, yaxt=yaxt, col=1)
@@ -354,18 +356,12 @@ plot_dat <- function(x,type="l",
                     cat("ylab_txt=", ylab_txt, ", yaxis_line=", yaxis_line,
                         ", mgp[1]=", mgp[1],
                         ", ylabels=", paste(ylabels, collapse=","),"\n")
-                if (side == 4) {    # right
-                    axis(side=side,at=at,line=yaxis_line,col=1, yaxt=yaxt,
-                        labels=ylabels)
-                    mtext(text=ylab_txt, side=side, line=yaxis_line + mgp[1],
-                        col=1, cex=par("cex.lab") * par("cex"))
-                }
-                else {
-                    axis(side=side,at=at,line=yaxis_line,col=1, yaxt=yaxt,
-                        labels=ylabels)
-                    mtext(text=ylab_txt, side=side, line=yaxis_line + mgp[1],
-                        col=1, cex=par("cex.lab") * par("cex"))
-                }
+
+                axis(side=side,at=at,line=yaxis_line,col=1, yaxt=yaxt,
+                    labels=ylabels)
+                if (ylab_txt != "") mtext(text=ylab_txt, side=side, line=yaxis_line + mgp[1],
+                    col=1, cex=par("cex.lab") * par("cex"))
+
                 if (nyscales == 1 || length(dnames) == 1)
                     axis(4,labels=FALSE,at=at, line=yaxis_line)
             }
