@@ -17,13 +17,7 @@ useDynLib(eolts)
 export(
     netcdf,
     utime,
-    diff.utime,
-    seq.utime,
     nts,
-    as.list,
-    as.double.nts,
-    as.matrix.nts,
-    as.vector.nts,
     plot_nts,
     write.nts,
     timeaxis,
@@ -64,6 +58,11 @@ exportClasses(
     fftw,spectra,pspectra,xspectra,cospectra,quadspectra,phase,coherence
 )
 
+S3method(as.matrix, nts)
+S3method(as.vector, nts)
+S3method(diff, utime)
+S3method(as.list, utime)
+
 exportMethods(
     "Compare",
     "Math",
@@ -80,7 +79,9 @@ exportMethods(
     "summary",
     "monthly",
     "write",
-    "as.numeric",
+    "as.list",
+    "as.matrix",
+    "as.vector",
     "is.na",
     "is.finite",
     "is.infinite",

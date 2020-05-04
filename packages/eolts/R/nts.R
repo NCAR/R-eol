@@ -125,6 +125,22 @@ setAs("nts","numeric",
     }
     )
 
+setMethod("as.vector", signature(x="nts"),
+    function(x, mode="any")
+    {
+        # cat("as.vector nts\n")
+        as.vector(x@data, mode=mode)
+    }
+    )
+
+setMethod("as.matrix", signature(x="nts"),
+    function(x, ...)
+    {
+        # cat("as.matrix nts\n")
+        as.matrix(x@data, ...)
+    }
+    )
+
 setAs("nts","matrix",
     function(from)
     {
@@ -146,23 +162,17 @@ setAs("nts","logical",
     }
     )
 
-as.logical.nts <- function(x,...)
-{
-    as.logical(x@data,...)
-}
-
-as.double.nts <- function(x,...)
-{
-    as.numeric(x@data,...)
-}
-
+# S3 method
 as.vector.nts <- function(x,mode="any")
 {
+    # cat("as.vector.nts\n")
     as.vector(x@data,mode=mode)
 }
 
+# S3 method
 as.matrix.nts <- function(x,...)
 {
+    # cat("as.matrix.nts\n")
     x@data
 }
 
