@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# set -v
+
 # script to build macOS binary packages without using jenkins
 
 # returns binary path portion of the repo URL, e.g.
@@ -32,6 +34,9 @@ cat << EOD
 Copy /tmp/mac_${rver}.tar.gz to EOL server (barolo).
 
 On server:
+
+# if necessary
+mkdir /net/www/docs/software/R$repopath
 
 cd /net/www/docs/software/R$repopath
 
