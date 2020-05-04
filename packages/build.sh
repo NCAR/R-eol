@@ -122,7 +122,12 @@ do_pkg() {
     rm -f $tmpdesc
     [ $bstatus -ne 0 ] && exit $bstatus
 
-    R $rargs CMD INSTALL -l $rlib ${pkg}_[0-9].[0-9]-*.tar.gz || exit $?
+    if $do_check; then
+        R $rargs CMD check -l $rlib -o /tmp ${pkg}_[0-9].[0-9]-*.tar.gz || exit $?
+        # R --vanilla --environ CMD check --use-valgrind -o /tmp ${pkg}_*.tar.gz || exit $?
+    else
+	R $rargs CMD INSTALL -l $rlib ${pkg}_[0-9].[0-9]-*.tar.gz || exit $?
+    fi
 
     if $is_mac; then
         # Check that the package does not have dependencies on /usr/local/lib
@@ -133,10 +138,6 @@ do_pkg() {
         fi
     fi
 
-    if $do_check; then
-        R $rargs CMD check -o /tmp ${pkg}_[0-9].[0-9]-*.tar.gz || exit $?
-        # R --vanilla --environ CMD check --use-valgrind -o /tmp ${pkg}_*.tar.gz || exit $?
-    fi
     if $do_quick_test; then
         R --vanilla <<-EOD || exit 1
         library($pkg)
