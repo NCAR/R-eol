@@ -216,12 +216,32 @@ setAs("utime","list",
 setAs("list","utime",
     function(from)
     {
+        # cat("setAs list method for utime","\n")
         if (is.null(from$TZ))
             utime(from)
         else
             utime(from, time.zone=from$TZ)
     }
 )
+as.list.utime <- function(x, ...)
+{
+
+    if (hasArg(time.zone)) time.zone <- list(...)$time.zone
+    else time.zone <- getOption("time.zone")
+
+    # cat("as.list.utime, time.zone=", time.zone,"\n")
+
+    to <- as.POSIXlt(as(x,"POSIXct"),tz=time.zone)
+    list(year=to$year + 1900,
+        mon=to$mon + 1,
+        day=to$mday,
+        hour=to$hour,
+        min=to$min,
+        sec=to$sec,
+        yday=to$yday + 1,
+        TZ=time.zone
+    )
+}
 
 setGeneric("as.list",function(x) standardGeneric("as.list"))
 setMethod("as.list",signature(x="utime"),
@@ -229,6 +249,7 @@ setMethod("as.list",signature(x="utime"),
     {
         if (hasArg(time.zone)) time.zone <- list(...)$time.zone
         else time.zone <- getOption("time.zone")
+        # cat("as.list method for utime, time.zone=", time.zone,"\n")
 
         to <- as.POSIXlt(as(x,"POSIXct"),tz=time.zone)
         list(year=to$year + 1900,
@@ -475,27 +496,35 @@ setMethod("summary",signature(object="utime"),
     }
 )
 
+if (FALSE) {
+    # not needed, default seq with from=utime returns utimes
 seq.utime <- function(...)
 {
+    # cat("seq.utime\n")
     # from,to,by=((to-from)/(length-1)),length=NULL)
-    length <- NULL
-    if (hasArg(from)) from <- list(...)$from
-    if (hasArg(to)) to <- list(...)$to
-    if (hasArg(length)) length <- list(...)$length
-    else if (hasArg(along)) length <- length(list(...)$along)
+    from <- lenarg <- to <- by <- along.with <- NULL
+    args <- list(...)
 
-    if (hasArg(by)) by <- list(...)$by
+    if (hasArg(from)) from <- args$from
 
-    if (hasArg(from)) {
-        if (!hasArg(to))
-            utime(seq(from=as.numeric(from),by=by,length=length))
-        else if (is.null(length))
+    if (hasArg(to)) to <- args$to
+
+    if (hasArg(length)) lenarg <- args$length
+    else if (hasArg(along.with)) lenarg <- length(args$along.with)
+
+    if (hasArg(by)) by <- args$by
+
+    if (!is.null(from)) {
+        if (is.null(to))
+            utime(seq(from=as.numeric(from),by=by,length=lenarg))
+        else if (is.null(lenarg))
             utime(seq(from=as.numeric(from),to=as.numeric(to),by=by))
         else
-            utime(seq(from=as.numeric(from),to=as.numeric(to),length=length))
+            utime(seq(from=as.numeric(from),to=as.numeric(to),length=lenarg))
     }
-    else if (hasArg(to)) {
-        utime(seq(to=as.numeric(to),by=by,length=length))
+    else if (!is.null(to)) {
+        utime(seq(to=as.numeric(to),by=by,length=lenarg))
     }
-    else 1:length
+    else 1:lenarg
+}
 }
