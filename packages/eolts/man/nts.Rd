@@ -92,6 +92,22 @@ y = x[it,]
 it = tlocator(2)
 plot(x[it,])
 
+# change some values in x
+x[x < 0.5] <- -x[x < 0.5]
+x[x > 0.9] <- 99
+
+# A similiar expression, but will result in an error.
+# You can't do x[i,] <- y if i is a multi-column nts,
+# must do x[i] <- y, as above.
+\dontrun{
+x[x < 0.9, ] <- 99
+}
+
+# An nts on the right-hand-side of an expression that is
+# indexed with only one argument is no longer an nts.
+# In this case y will be a numeric vector with all
+# time information lost.
+y <- x[x < 0.5]
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
