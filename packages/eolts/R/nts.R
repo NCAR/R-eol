@@ -736,10 +736,11 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
         if (is(i,"nts")) {
             if (nargs() == 3) {
                 if (is.logical(i@data)) {
-                    # If called as "x[i] <- y", and i is a logical nts, then
-                    # match the i and x nts's, and select those matching for
-                    # which i is true
-                    ii <- matrix(F,ncol=nc,nrow=nr)
+                    # If called as "x[i] <- y", and i is an nts of logicals,
+                    # then match the i and x nts's, and select those matching
+                    # for which i is true
+                    ii <- matrix(FALSE, ncol=nc, nrow=nr)
+                    # for each time in x, its position in i
                     xi <- match.nts(x,i)
                     ii[xi != 0,] <- i@data[xi,]
                     i <- as.vector(ii)
@@ -750,15 +751,19 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
                 }
             }
             else {
-                # treat column of the i timeseries as a set of selection times
-                i <- i[,1]
+                # x[i,] <- value or x[i,j] <- value
+                if (ncol(i) > 1)
+                    stop('Cannot do "x[i,] <- y" if "i" is a multicolumn nts. Do "x[i] <- y" or "x[i[,j],] <- y')
                 if (is.logical(i@data)) {
-                    # If called as "x[i,] <- y", and i is a logical nts, then use first
-                    # column of i
+                    # If called as "x[i,] <- y", and i is a logical nts,
+                    # then apply logical selection to i first, then use
+                    # times of i to select times from x.
                     i <- i[!is.na(i@data) & i@data,]
                     # for each time in i, its position in x
                     i <- match.nts(i,x)
                 } else {
+                    # ignoring the data values of i, just using times in i to
+                    # select times from x
                     i <- match.nts(i,x)
                     if (all(i==0)) warning("Time series are not synchronized. No matching observations found.  Increase 'options(dt.eps=seconds)'")
                 }
@@ -892,9 +897,9 @@ setReplaceMethod("[",signature(x="nts",value="vector"),
         if (is(i,"nts")) {
             if (nargs() == 3) {
                 if (is.logical(i@data)) {
-                    # If called as "x[i] <- y", and i is a logical nts, then
-                    # match the i and x nts's, and select those matching for
-                    # which i is true
+                    # If called as "x[i] <- y", and i is an nts of logicals,
+                    # then match the i and x nts's, and select those matching
+                    # for which i is true
                     ii <- matrix(FALSE,ncol=nc,nrow=nr)
                     xi <- match.nts(x,i)
                     ii[xi != 0,] <- i@data[xi,]
@@ -907,14 +912,18 @@ setReplaceMethod("[",signature(x="nts",value="vector"),
             }
             else {
                 # treat column of the i timeseries as a set of selection times
-                i <- i[,1]
+                if (ncol(i) > 1)
+                    stop('Cannot do "x[i,] <- y" if "i" is a multicolumn nts. Do "x[i] <- y"')
                 if (is.logical(i@data)) {
-                    # If called as "x[i,] <- y", and i is a logical nts, then use first
-                    # column of i
+                    # If called as "x[i,] <- y", and i is an nts of logicals,
+                    # then apply logical selection to i first, then use
+                    # times of i to select times from x.
                     i <- i[!is.na(i@data) & i@data,]
                     # for each time in i, its position in x
                     i <- match.nts(i,x)
                 } else {
+                    # ignoring the data values of i, just using times in i to
+                    # select times from x
                     i <- match.nts(i,x)
                     if (all(i==0)) warning("Time series are not synchronized. No matching observations found.  Increase 'options(dt.eps=seconds)'")
                 }
