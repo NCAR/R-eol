@@ -27,13 +27,12 @@ plot_sunangle <- function(browse=F,year=2006,lat=40,lon=-105,
     # beginning with "Etc/GMT" have their sign reversed from what most people expect. In this style,
     # zones west of GMT have a positive sign and those east have a negative sign in their name
     # (e.g "Etc/GMT-14" is 14 hours ahead/east of GMT.)
-    # The above also applies to GMT+-N timezones, without the "Etc".
     # Sys.setenv(TZ=paste0("Etc/",timezone))
     if (TZoffset >= 0)
-        timezone <- paste0("GMT",-TZoffset)
+        timezone <- paste0("Etc/GMT",-TZoffset)
     else
-        timezone <- paste0("GMT+",-TZoffset)
-    options(time.zone=paste0("Etc/",timezone))
+        timezone <- paste0("Etc/GMT+",-TZoffset)
+    options(time.zone=timezone)
 
     #----------------------------------------
     # Graphical Setups
@@ -266,13 +265,12 @@ plot_sunshadow <- function(year=2006,browse=F,lat=40,lon=-105,
     # beginning with "Etc/GMT" have their sign reversed from what most people expect. In this style,
     # zones west of GMT have a positive sign and those east have a negative sign in their name
     # (e.g "Etc/GMT-14" is 14 hours ahead/east of GMT.)
-    # The above also applies to GMT+-N timezones, without the "Etc".
     # Sys.setenv(TZ=paste0("Etc/",timezone))
     if (TZoffset >= 0)
-        timezone <- paste0("GMT",-TZoffset)
+        timezone <- paste0("Etc/GMT",-TZoffset)
     else
-        timezone <- paste0("GMT+",-TZoffset)
-    options(time.zone=paste0("Etc/",timezone))
+        timezone <- paste0("Etc/GMT+",-TZoffset)
+    options(time.zone=timezone)
 
     #----------------------------------------
     # Graphical Setups
