@@ -10,12 +10,12 @@
 test.nts <- function()
 {
     t1 <- utime("2013 10 13 01:02:03.4")
-    nr <- 5
+    nr <- 20
     nc <- 3
     dt <- 10
     tx <- seq(from=t1,by=dt,length=nr)
-    dns <- paste("c",1:nc,sep="")
-    xunits <- paste("u",1:nc,sep="")
+    dns <- paste0("c",1:nc)
+    xunits <- paste0("u",1:nc)
 
     x <- nts(matrix(1:(nr*nc),nrow=nr,dimnames=list(NULL,dns)), tx,xunits)
 
@@ -56,10 +56,58 @@ test.nts <- function()
 
     xx <- x[-2,]
     checkEquals(class(xx)[1],"nts")
+    checkEquals(nrow(xx), nr - 1)
 
     # operation where operands have different number of rows
     xxx <- xx * x
     checkEquals(xxx@data,(x[-2,]^2)@data)
+
+    # using one nts to index another. 
+    # generate shorter nts with slightly different times
+    nry <- nr - 5
+    ncy <- nc
+    # different times than x
+    ty <- tx[3:(nry+2)] + runif(nry) - 0.5
+    y <- nts(matrix(runif(nry*ncy), nrow=nry),ty, names=paste0("y",1:ncy),
+        units=paste0("u",1:ncy))
+
+    # Times are matched within options("dt.eps")
+    # default dt.eps is 1/10 of deltat(x) which is 1 in this test
+    # save default, probably NULL
+    dt.eps <- options("dt.eps")
+
+    # this check should all be TRUE, so no change in length returned
+    n1 <- length(x[y < 1.5])
+    checkEquals(n1, prod(dim(y)))
+
+    # length of result should be less than length of x
+    n1 <- length(x[y < 0.5])
+    checkTrue(n1 < prod(dim(x)))
+
+    # tighten time comparison limit, should match fewer elements
+    options(dt.eps=dt/100)
+    n2 <- length(x[y < 0.5])
+    checkTrue(n2 < prod(dim(x)), "length(x[y < 0.5]), dt.eps=dt/100")
+    checkTrue(n2 < n1, "length(x[y < 0.5]) decreasing, dt.eps=dt/100")
+
+    options(dt.eps=dt.eps)
+    xx <- x
+    checkEquals(sum(is.na(xx)), 0)
+
+    xx[y < 0.5] <- xx[y < 0.5] + NA
+    n1 <- sum(is.na(xx))
+    # should have matched some elements
+    checkTrue(n1 > 0)
+
+    # tighten time comparison limit, should match fewer elements
+    options(dt.eps=dt / 100)
+    xx <- x
+    xx[y < 0.5] <- xx[y < 0.5] + NA
+    n2 <- sum(is.na(xx))
+    checkTrue(n2 < n1, "sum(is.na(xx))")
+
+    # reset back to original value
+    options(dt.eps)
 
     # add weights and stations
     wts <- matrix(rep(seq(from=1.0,by=0.1,length=nc-1),rep(nr,nc-1)),nrow=nr)
@@ -141,7 +189,6 @@ test.nts <- function()
     # last value of x won't exist in new timeseries. 
     checkTrue(all(abs((x@data[-nr,]-xx@data[-1,])) < .00001))
     checkTrue(all(abs((xx@data[1,]-xx@data[2,])) < .00001))
-
 
     # TODO: seriesMerge
 
