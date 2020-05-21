@@ -49,18 +49,21 @@ sync <- function(pos,root=c("ISFS","ISFF"))
 # "file" -- usually a project's R directory -- if pos is not specified (exactly what sync does)
 #
 synchronize = function(pos) {
-    library(stringr)
+    requireNamespace("stringr")
     if (missing(pos)) {
        all = search()
-       wtype = substring(all,1,str_locate(all,":")[,1]-1)
+       wtype = substring(all,1,stringr::str_locate(all,":")[,1]-1)
        pos = match("file",wtype)
     }
     if (!is.na(pos)) {
        what = search()[pos]
-       wtype = substring(what,1,str_locate(what,":")[1]-1)
-       wstr = substring(what,str_locate(what,":")[1]+1,nchar(what))
+       wtype = substring(what,1,stringr::str_locate(what,":")[1]-1)
+       wstr = substring(what,stringr::str_locate(what,":")[1]+1,nchar(what))
        detach(pos=pos)
-       if (wtype=="package") library(wstr,character.only=T)
+       # One is not supposed to use library() or require() within packages.
+       # So library(wstr, character.only=TRUE) was replaced with requireNamespace(wstr).
+       # May not have the same functionality...
+       if (wtype=="package") requireNamespace(wstr)
        if (wtype=="file") attach(wstr,pos=pos)
     }
     invisible(NULL)
