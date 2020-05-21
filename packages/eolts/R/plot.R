@@ -263,7 +263,7 @@ timeaxis <- function(side, labels=TRUE, tick=TRUE,
         if (date.too && x0 > 86400. && tparams$extraformat != "") {
             tfmt <- paste0("    ", tlabels[1],"\n",tparams$extraformat)
             tlabels[1] <- format(xmajtics[1],format=tfmt,time.zone=time.zone)
-            padj <- c(ifelse(side==1, 0.6, 0.2), rep(0,length(tlabels)-1))
+            padj <- c(if(side==1) 0.6 else 0.2, rep(0,length(tlabels)-1))
         }
         else {
             tlabels[1] <- paste0("    ", tlabels[1])

@@ -96,8 +96,7 @@ readSoundings <- function(
         {
             fp <- file.path(fx$d,fx$f)
             # shortened name for messages
-            fpshort <- ifelse(nchar(fp) > 45,
-                paste0("...",substring(fp,nchar(fp)-45)),fp)
+            fpshort <- if(nchar(fp) > 45) paste0("...",substring(fp,nchar(fp)-45)) else fp
             # read first string of the file. If it contains "AVAPS", call readDFile
             ftype <- scan(fp,nmax=1,what="",quiet=TRUE)
             if (grepl("AVAPS",ftype,fixed=TRUE)) {

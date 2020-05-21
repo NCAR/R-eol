@@ -207,7 +207,7 @@ sprofile <- function(sdng,xnames=NULL,yname=NULL,title=names(sdng)[1],
             }
             else {
                 iplot <- xaxis_num # 1:bottom, 2:top, 3:2nd scale on bottom, etc
-                side <- ifelse(iplot %% 2, 1 , 3)
+                side <- if(iplot %% 2) 1 else 3
                 line <- (mgp[1] + 1.0) * ((iplot-1) %/% 2)
                 if (is.null(xlab)) {
                   if (dupunits) xlab.txt <- paste(xname," (",xunits,")",sep="")

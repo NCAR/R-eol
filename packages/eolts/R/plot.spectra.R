@@ -103,9 +103,9 @@ plot.spectra <- function(x,log,multfreq=T,falloff,
     logx <- any(substring(logarg,1:nchar(logarg),1:nchar(logarg)) == "x")
     logy <- any(substring(logarg,1:nchar(logarg),1:nchar(logarg)) == "y")
 
-    if (par("xaxt") != "n") par(xaxt=ifelse(logx,"l","s"))
+    if (par("xaxt") != "n") par(xaxt=if(logx) "l" else "s")
     if (missing(xaxt)) xaxt <- par("xaxt")
-    if (par("yaxt") != "n") par(yaxt=ifelse(logy,"l","s"))
+    if (par("yaxt") != "n") par(yaxt=if(logy) "l" else "s")
     if (missing(yaxt)) yaxt <- par("yaxt")
 
     if (missing(mgp)) {
@@ -148,7 +148,7 @@ plot.spectra <- function(x,log,multfreq=T,falloff,
         # " s" from units or add "/s".
         if (multfreq) {
             sec <- regexpr(" s$",units)
-            units <- ifelse(sec < 0,paste(units,"/s"),substring(units,1,sec-1))
+            units <- if(sec < 0) paste(units,"/s") else substring(units,1,sec-1)
         }
         if (nc == 1) {
             if (multfreq) ylab <- paste("f * S(",dns,") (",units,")",sep="")
