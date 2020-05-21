@@ -229,7 +229,7 @@ plot_sunangle <- function(browse=F,year=2006,lat=40,lon=-105,
     }
 
     if( localhours ) {
-        text(360,yhi-5, paste0("gmt",ifelse(TZoffset >= 0,"+",""),TZoffset," hrs, POSIX TZ=",timezone),adj=1)
+        text(360,yhi-5, paste0("gmt",if (TZoffset >= 0) "+" else "",TZoffset," hrs, POSIX TZ=",timezone),adj=1)
         text(360,yhi-8, "Add 1 for DayLight Savings Time",adj=1)
     }
     legend("topleft",c("Dec-Jun hours","Jun-Dec hours"),lty=c(5,6),col=c(2:3),cex=.8,bty="n")
@@ -350,8 +350,8 @@ plot_sunshadow <- function(year=2006,browse=F,lat=40,lon=-105,
         sun[select,1] <- sun[select,1] -360
         sun[,1] <- (sun[,1] * pi) / 180
 
-        allelev[,i] <- 1/tan(sun@data[c(1:288),2])
-        allazm[,i] <- sun@data[c(1:288),1]
+        allelev[,i] <- 1/tan(sun@data[,2])
+        allazm[,i] <- sun@data[,1]
 
         # Put these into cartesian coordinates for plotting
         y[,i] <- allelev[,i] * cos(allazm[,i])
@@ -518,7 +518,7 @@ plot_sunshadow <- function(year=2006,browse=F,lat=40,lon=-105,
     # title, legend and useful info
     #----------------------------------------
     if( localhours ) {
-        text(xlow*.5,ylow*.84, paste0("gmt",ifelse(TZoffset >= 0,"+",""),
+        text(xlow*.5,ylow*.84, paste0("gmt",if (TZoffset >= 0) "+" else "",
                 TZoffset," hrs, POSIX TZ=",timezone,"\n Add 1 for Daylight Savings Time",sep=""))
     }
     text(xhi*.5,ylow*.8, "Shadow extends from 'center'

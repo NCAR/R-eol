@@ -283,7 +283,7 @@ plot_dat <- function(x,type="l",
             }
             else {
                 iplot <- yaxis_num
-                side <- ifelse(iplot %% 2, 2, 4)
+                side <- if(iplot %% 2) 2 else 4
                 ny_on_side <- (iplot-1) %/% 2
                 yaxis_line <- ny_on_side * (mgp[1] + 1.0)
                 if (is.null(ylab_txt)) {
