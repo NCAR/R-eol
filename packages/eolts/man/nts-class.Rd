@@ -181,10 +181,10 @@ dt = 10
 options(time.zone="US/Central")
 tx = seq(from=utime("2013 oct 13 14:00"), by=dt, length=nr)
 dx = matrix(runif(nr*nc), ncol=nc)
-x = nts(dx, tx, units=rep("m",nc), names=c("V1","V2","V3","V4"))
+x = nts(dx, tx, units=rep("m",nc), names=paste0("X",1:nc))
 
-# Time series line plot
-plot(x[,c("V1","V3")])
+# Time series line plot of selected columns
+plot(x[,c("X1","X3")])
 
 # Medians of each column. For actual data, na.rm argument is commonly used.
 apply(x, 2, median, na.rm=TRUE)
@@ -200,23 +200,58 @@ y = x[it,]
 it = tlocator(2)
 plot(x[it,])
 
-# change some values in x
+# change some values in x. This is an example of selecting
+# elements of an nts with an nts.
 x[x < 0.5] <- -x[x < 0.5]
 x[x > 0.9] <- 99
 
 # A similiar expression, but will result in an error.
-# You can't do x[i,] <- y if i is a multi-column nts,
-# must do x[i] <- y, as above.
+# You can't do x[i,] <- y if i is a multi-column nts.
 \dontrun{
-x[x < 0.9, ] <- 99
+x[x > 0.9, ] <- 99
 }
+# Instead do, as above:
+x[x > 0.9] <- 99
+# Or to change multiple columns of all matching rows, use
+# the form:  x[i,j] <- val, where i is a one column
+# nts, and j is either empty or selects the columns to
+# replace in x:
+x[x[,1] > 0.9,] <- 99
+x[x[,1] > 0.9, c(2,3)] <- 99
 
 # An nts on the right-hand-side of an expression that is
 # indexed with only one argument is no longer an nts.
-# In this case y will be a numeric vector with all
+# In this case the result will be a numeric vector with all
 # time information lost.
-y <- x[x < 0.5]
-}
+xx <- x[x < 0.5]
 
+# create time series with slightly different times than x,
+# and different number of observations, but same number
+# of columns
+nry <- nr - 5
+ncy <- nc
+ty <- tx[4:(nry+3)] + runif(nry)
+dy <- matrix(runif(nry*ncy), ncol=ncy)
+y <- nts(dy, ty, units=rep("m",ncy), names=paste0("Y",1:ncy))
+
+# Select values in x with times that are within options("dt.eps") of
+# the times in y, and for which the expression "y < 0.5" is TRUE.
+# If options("dt.eps") is NULL, then a dt.eps of deltat(x) / 10 is used.
+# Result is a numeric vector, not an nts.
+xx <- x[y < 0.5]
+
+# Select rows in x with times that are within options("dt.eps") of
+# the times in y, and for which the expression "y[,1] < 0.5" is TRUE.
+# If options("dt.eps") is NULL, then a dt.eps of deltat(x) / 10 is used.
+# Result is an nts.
+xx <- x[y[,1] < 0.5,]
+
+# Replace values in x with times that are within options("dt.eps") of the
+# times in y, and for which the expression "y < 0.5" is TRUE.
+x[y < 0.5] <- y[y < 0.5] * 2
+
+# Replace rows in x whose times match an nts logical expression
+# with time series rows from the RHS of the assignment.
+x[y[,1] < 0.5,] <- y[y[,1] < 0.5,] * 2
 }
 \keyword{classes}
