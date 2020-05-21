@@ -512,7 +512,7 @@ setReplaceMethod("deltat", signature(x="nts",value="numeric"),
     }
     )
 
-match.nts <- function(e1,e2,dt=getOption("dt.eps"),...)
+match.nts <- function(e1,e2,dt=unlist(getOption("dt.eps")),dupOK=TRUE, ...)
 {
     d1 <- deltat(e1)
     d2 <- deltat(e2)
@@ -528,7 +528,7 @@ match.nts <- function(e1,e2,dt=getOption("dt.eps"),...)
     e2 <- as.numeric(as(e2@positions,"utime"))
 
     if (is.null(dt)) 
-        if (is.na(dt <- min(d1[1],d2[1]) * .01)) dt <- 1
+        if (is.na(dt <- min(d1[1],d2[1]) * .1)) dt <- 1
 
     # avoid warnings of non-unique indices if there are repeated
     # timetags but the two sets are identical
@@ -538,14 +538,15 @@ match.nts <- function(e1,e2,dt=getOption("dt.eps"),...)
     # deltat() for a one-row time series is null, min(NULL) is NA
     if (dt == 0.) return(match(e1,e2,nomatch=0))
 
-    match.delta(e1,e2,dt)
+    match.delta(e1,e2,dt, dupOK=dupOK)
 }
 
-match.delta <- function(e1,e2,delta,cond="nearest")
+match.delta <- function(e1,e2,delta,cond="nearest", dupOK=TRUE)
 {
     icond <- if (cond == "nearest") 1L else if (cond == "first") 0L 
         else stop(paste("cond=",cond,"should be either nearest or first"))
-    .Call("match_within",e1,e2,as.numeric(delta),icond,PACKAGE="eolts")
+    dupok <- if (dupOK) 1L else 0L
+    .Call("match_within",e1,e2,as.numeric(delta),icond,dupok,PACKAGE="eolts")
 }
 
 setMethod("[",signature(x="nts"),
@@ -563,6 +564,9 @@ setMethod("[",signature(x="nts"),
         # x[,j]         nargs()==3, !has.i, has,j
         # x[i,j]        nargs()==3, has.i, has.j
 
+        nr <- nrow(x)
+        nc <- ncol(x)
+
         # with only one indice, x[i] is no longer an nts.
         # Samples from each observation time are selectively removed.
         # However, there seems to be a bug in timeSeries, such that
@@ -573,15 +577,23 @@ setMethod("[",signature(x="nts"),
         has.i <- !missing(i)
         if (nargs() == 2) {
             if (!has.i) return(x)
-            else {
-                if (is(i,"nts")) i <- i@data
-                return(x@data[i])
+            # x[i]
+            if (is(i,"nts")) {
+                if (is.logical(i@data)) {
+                    if (nc != ncol(i@data)) stop("x and i must have same number of columns")
+                    ii <- matrix(FALSE, ncol=nc, nrow=nr)
+
+                    # for each time in i, its position in x
+                    xi <- match.nts(i,x, dupOK=FALSE)
+                    ii[xi,] <- i@data[xi != 0,]
+                    i <- as.vector(ii)
+                }
+                else i <- match.nts(i,x, dupOK=FALSE)
             }
+            return(x@data[i])
         }
         has.j <- !missing(j)
 
-        nr <- nrow(x)
-        nc <- ncol(x)
 
         # row index i can be an nts or a pair of utimes.
         # Convert these to integer vectors, and then call "[" again.
@@ -594,22 +606,23 @@ setMethod("[",signature(x="nts"),
 
             if (is(i,"nts")) {
                 # i is an nts, but is not the only argument (x[i,] or x[i,j]),
-                #	use its times to subsample x.
-                #	If it is logical, just use column 1 (this is debateable)
+                # match times of i and x
                 if (is.logical(i@data)) {
-                    ii <- !is.na(as.logical(i@data[,1])) & as.logical(i@data[,1])
-                    if (!any(ii)) {
-                        warning("i[,1] is all false")
-                        return(numeric(0))
-                    }
-                    i <- i[ii,1]
+                    if (ncol(i) > 1)
+                        stop('Cannot do "x[i,]" if "i" is a multicolumn nts. Do "x[i]" or "x[i[,1],]')
+                    ii <- rep(FALSE, nr)
+                    # for each time in i, its position in x
+                    xi <- match.nts(i,x, dupOK=FALSE)
+                    ii[xi] <- i@data[xi != 0,]
+                    i <- as.vector(ii)
+                    # if (!any(i)) warning("No matching observations found. May want to increase 'options(dt.eps=seconds)'")
                 }
-                i[] <- TRUE
-
-                # for each time in i, its position in x
-                i <- match.nts(i,x)
-                if (all(i==0)) warning("Time series are not synchronized. No matching observations found.  Increase 'options(dt.eps=seconds)'")
-                i <- i[i & !duplicated(i)]
+                # If i time series is not logical, find matching times
+                # then treat as if all elements of i are TRUE
+                else {
+                    i <- match.nts(i,x, dupOK=FALSE)
+                    # if (!any(i!=0)) warning("No matching observations found. May want to increase 'options(dt.eps=seconds)'")
+                }
             }
             else if(is(i, "utime") || is(i[1], "utime")) {
                 if (length(dim(i)) != 2) i <- matrix(as.numeric(i),nrow=2)
@@ -735,20 +748,19 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
 
         if (is(i,"nts")) {
             if (nargs() == 3) {
+                # x[i] <- y
                 if (is.logical(i@data)) {
                     # If called as "x[i] <- y", and i is an nts of logicals,
-                    # then match the i and x nts's, and select those matching
-                    # for which i is true
+                    # then match the times in i and x, and select those
+                    # matching times for which i is true
+                    if (nc != ncol(i@data)) stop("x and i must have same number of columns")
                     ii <- matrix(FALSE, ncol=nc, nrow=nr)
-                    # for each time in x, its position in i
-                    xi <- match.nts(x,i)
-                    ii[xi != 0,] <- i@data[xi,]
+                    # for each time in i, its position in x
+                    xi <- match.nts(i,x, dupOK=FALSE)
+                    ii[xi,] <- i@data[xi != 0,]
                     i <- as.vector(ii)
                 }
-                else {
-                    warning("When doing \"x[i] <- value\" , and i is a timeseries, then i should be time series of logical values. Converting i to an integer matrix.")
-                    i <- as.integer(i@data)
-                }
+                else i <- match.nts(i,x, dupOK=FALSE)
             }
             else {
                 # x[i,] <- value or x[i,j] <- value
@@ -756,18 +768,18 @@ setReplaceMethod("[",signature(x="nts",value="nts"),
                     stop('Cannot do "x[i,] <- y" if "i" is a multicolumn nts. Do "x[i] <- y" or "x[i[,j],] <- y')
                 if (is.logical(i@data)) {
                     # If called as "x[i,] <- y", and i is a logical nts,
-                    # then apply logical selection to i first, then use
-                    # times of i to select times from x.
-                    i <- i[!is.na(i@data) & i@data,]
+                    # match times of i and x, and use values for which i is TRUE
+                    ii <- rep(FALSE, nr)
                     # for each time in i, its position in x
-                    i <- match.nts(i,x)
+                    xi <- match.nts(i,x, dupOK=FALSE)
+                    ii[xi] <- i@data[xi != 0,]
+                    i <- ii
                 } else {
                     # ignoring the data values of i, just using times in i to
                     # select times from x
-                    i <- match.nts(i,x)
-                    if (all(i==0)) warning("Time series are not synchronized. No matching observations found.  Increase 'options(dt.eps=seconds)'")
+                    i <- match.nts(i,x, dupOK=FALSE)
+                    # if (all(i==0)) warning("Time series are not synchronized. No matching observations found.  Increase 'options(dt.eps=seconds)'")
                 }
-                i <- i[i!=0 & !duplicated(i)]
             }
         }
         else if(is(i, "utime")) {
@@ -896,38 +908,41 @@ setReplaceMethod("[",signature(x="nts",value="vector"),
 
         if (is(i,"nts")) {
             if (nargs() == 3) {
+                # x[i] <- y
                 if (is.logical(i@data)) {
                     # If called as "x[i] <- y", and i is an nts of logicals,
                     # then match the i and x nts's, and select those matching
                     # for which i is true
+                    if (nc != ncol(i@data)) stop("x and i must have same number of columns")
+                    
                     ii <- matrix(FALSE,ncol=nc,nrow=nr)
-                    xi <- match.nts(x,i)
-                    ii[xi != 0,] <- i@data[xi,]
+                    xi <- match.nts(i,x, dupOK=FALSE)
+                    ii[xi,] <- i@data[xi!=0,]
                     i <- as.vector(ii)
                 }
                 else {
-                    warning("When doing \"x[i] <- value\" , and i is a timeseries, then i should be time series of logical values. Converting i to an integer matrix.")
-                    i <- as.integer(i@data)
+                    i <- match.nts(i,x, dupOK=FALSE)
                 }
             }
             else {
-                # treat column of the i timeseries as a set of selection times
+                # x[i,] <- value or x[i,j] <- value      
                 if (ncol(i) > 1)
                     stop('Cannot do "x[i,] <- y" if "i" is a multicolumn nts. Do "x[i] <- y"')
+
                 if (is.logical(i@data)) {
-                    # If called as "x[i,] <- y", and i is an nts of logicals,
-                    # then apply logical selection to i first, then use
-                    # times of i to select times from x.
-                    i <- i[!is.na(i@data) & i@data,]
+                    # If called as "x[i,] <- y", and i is a logical nts,
+                    # match times of i and x, and use values for which i is TRUE
+                    ii <- rep(FALSE, nr)
                     # for each time in i, its position in x
-                    i <- match.nts(i,x)
+                    xi <- match.nts(i,x, dupOK=FALSE)
+                    ii[xi] <- i@data[xi != 0,]
+                    i <- ii
                 } else {
                     # ignoring the data values of i, just using times in i to
                     # select times from x
-                    i <- match.nts(i,x)
-                    if (all(i==0)) warning("Time series are not synchronized. No matching observations found.  Increase 'options(dt.eps=seconds)'")
+                    i <- match.nts(i,x, dupOK=FALSE)
+                    # if (all(i==0)) warning("Time series are not synchronized. No matching observations found.  Increase 'options(dt.eps=seconds)'")
                 }
-                i <- i[i!=0 & !duplicated(i)]
             }
         }
         else if(is(i, "utime")) {

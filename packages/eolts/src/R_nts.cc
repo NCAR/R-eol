@@ -261,7 +261,7 @@ extern "C" {
      * Do a match within a delta.
      * Returns an error if it detects that the sequences are not ordered.
      */
-    SEXP match_within(SEXP t1p, SEXP t2p, SEXP dtp, SEXP typep)
+    SEXP match_within(SEXP t1p, SEXP t2p, SEXP dtp, SEXP typep, SEXP dupokp)
     {
         int nprot = 0;
 
@@ -298,6 +298,12 @@ extern "C" {
             Rf_error("match type is not integer, length 1");
         }
         int type = INTEGER(typep)[0];
+
+        if (TYPEOF(dupokp) != INTSXP || Rf_length(dupokp) != 1) {
+            UNPROTECT(nprot);
+            Rf_error("duplicate type is not integer, length 1");
+        }
+        int dupok = INTEGER(dupokp)[0];
 
         double t1l = -std::numeric_limits<double>::max();
         double t2l = -std::numeric_limits<double>::max();
@@ -367,6 +373,7 @@ extern "C" {
                 // assert(i1 < l1);
                 // assert(i2 < l2);
                 match[i1] = i2 + 1;	/* 1 based indexing */
+                if (!dupok) i2++;       /* no duplicates */
             }
         }
         UNPROTECT(nprot);
