@@ -126,10 +126,10 @@ fftw.ctor <- function(data,type,units,deltat,deltaf,start,end,wss)
     res
 }
 
-setGeneric("fftw",function(x,inverse,use.mvfft) standardGeneric("fftw"))
+setGeneric("fftw",function(x,inverse,use.mvfft,...) standardGeneric("fftw"))
 
 setMethod("fftw",signature(x="matrix",inverse="logical",use.mvfft="logical"),
-    function(x,inverse,use.mvfft)
+    function(x,inverse,use.mvfft,...)
     {
 
         # cat("fftw: inverse=",inverse,", use.mvfft=",use.mvfft,", nr=",nrow(x),", nc=",ncol(x), ", is.complex(x)=",is.complex(x),"\n")
@@ -149,7 +149,7 @@ setMethod("fftw",signature(x="matrix",inverse="logical",use.mvfft="logical"),
                 x <- mvfft(x,inverse=inverse)
             else
                 x <- .Call("R_cfftw", x, inverse, PACKAGE="eolts")
-            fftw.ctor(x,type=restype)
+            fftw.ctor(x,type=restype, ...)
         }
         else {
             if (any(is.na(x))) x <- replace.nas(x,warn=TRUE)
@@ -170,32 +170,41 @@ setMethod("fftw",signature(x="matrix",inverse="logical",use.mvfft="logical"),
                 x <- .Call("R_rfftw", x, inverse, PACKAGE="eolts")
 
             # cat("fftw x dimnames=",paste(dimnames(x)[[2]],collapse=","),"\n")
-            fftw.ctor(x,type=restype)
+            fftw.ctor(x,type=restype,...)
         }
     }
 )
 
 setMethod("fftw",signature(x="matrix",inverse="logical",use.mvfft="missing"),
-    function(x,inverse,use.mvfft)
+    function(x,inverse,use.mvfft,...)
     {
-        fftw(x,inverse=inverse,use.mvfft=.Platform$OS.type == "windows")
+        fftw(x,inverse=inverse,use.mvfft=.Platform$OS.type == "windows",...)
     }
 )
 
 setMethod("fftw",signature(x="matrix",inverse="missing",use.mvfft="missing"),
-    function(x,inverse,use.mvfft)
+    function(x,inverse,use.mvfft, ...)
     {
-        fftw(x,inverse=FALSE,use.mvfft=.Platform$OS.type == "windows")
+        fftw(x,inverse=FALSE,use.mvfft=.Platform$OS.type == "windows",...)
+    }
+)
+
+setMethod("fftw",signature(x="numeric",inverse="missing",use.mvfft="missing"),
+    function(x,inverse,use.mvfft, ...)
+    {
+        fftw(matrix(x,ncol=1),inverse=FALSE,use.mvfft=.Platform$OS.type == "windows", ...)
     }
 )
 
 setMethod("fftw",signature(x="spectra",inverse="logical",use.mvfft="logical"),
-    function(x,inverse,use.mvfft)
+    function(x,inverse,use.mvfft, units=NULL, ...)
     {
 
         nr <- nrow(x@data)
         mid <- trunc(nr / 2) + 1
         # browser()
+
+        if (is.null(units)) units <- units(x)
 
         if (x@type == "forwardcomplex") 
             x <- x@data[c(mid:nr,1:(mid-1)),,drop=FALSE]
@@ -213,32 +222,33 @@ setMethod("fftw",signature(x="spectra",inverse="logical",use.mvfft="logical"),
             x <- x@data
         else stop(paste("unknown spectra type:",x@type))
 
-        fftw(x,inverse=inverse,use.mvfft=use.mvfft)
+        fftw(x,inverse=inverse,use.mvfft=use.mvfft, units=units,...)
     }
 )
 
-
 setMethod("fftw",signature(x="spectra",inverse="logical",use.mvfft="missing"),
-    function(x,inverse,use.mvfft)
+    function(x,inverse,use.mvfft, ...)
     {
-        fftw(x,inverse=inverse,use.mvfft=(.Platform$OS.type == "windows"))
+        fftw(x,inverse=inverse,use.mvfft=(.Platform$OS.type == "windows"), ...)
     }
     )
 
 setMethod("fftw",signature(x="spectra",inverse="missing",use.mvfft="missing"),
-    function(x,inverse,use.mvfft)
+    function(x,inverse,use.mvfft, ...)
     {
-        fftw(x,inverse=TRUE,use.mvfft=(.Platform$OS.type == "windows"))
+        fftw(x,inverse=TRUE,use.mvfft=(.Platform$OS.type == "windows"), ...)
     }
     )
 
 setMethod("fftw",signature(x="nts",inverse="missing",use.mvfft="logical"),
-    function(x,inverse,use.mvfft)
+    function(x,inverse,use.mvfft, units=NULL, ...)
     {
         nr <- nrow(x@data)
 
+        if (is.null(units)) units <- units(x)
+
         # fftw removes NAs if necessary
-        res <- fftw(x@data,inverse=FALSE,use.mvfft=use.mvfft)
+        res <- fftw(x@data,inverse=FALSE,use.mvfft=use.mvfft, units=units, ...)
 
         dt <- deltat(x)
         if (abs(dt["max"]-dt["min"])/dt[1] > .5)
@@ -248,7 +258,6 @@ setMethod("fftw",signature(x="nts",inverse="missing",use.mvfft="logical"),
         names(df) <- NULL
 
         stations(res) <- stations(x)
-        units(res) <- units(x)
         deltat(res) <- dt[1]
         deltaf(res) <- df
         start(res) <- start(x)
@@ -265,9 +274,9 @@ setMethod("fftw",signature(x="nts",inverse="missing",use.mvfft="logical"),
 )
 
 setMethod("fftw",signature(x="nts",inverse="missing",use.mvfft="missing"),
-    function(x,inverse,use.mvfft)
+    function(x,inverse,use.mvfft, ...)
     {
-        fftw(x,use.mvfft=(.Platform$OS.type == "windows"))
+        fftw(x,use.mvfft=(.Platform$OS.type == "windows"), ...)
     }
     )
 

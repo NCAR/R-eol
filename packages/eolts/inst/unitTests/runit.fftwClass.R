@@ -51,14 +51,14 @@ do.test.fftw <- function(use.mvfft)
 
     # browser()
     checkTrue(all(abs(Re(fx)) < eps) && all(abs(Im(fx[m1,]) + nr / 2) < eps) &&
-        all(abs(Mod(fx[-m1,])) < eps))
+        all(Mod(fx[-m1,]) < eps))
 
     cat("\n---- testing fftw(fftw(x,inverse=FALSE),inverse=TRUE)/N with x real, n=",nr,"\n")
     x <- matrix(c(sawfunc(nr,m,sin,3), sawfunc(nr,m,cos,3)),ncol=2)
 
     xx <- fftw(fftw(x,inverse=FALSE,use.mvfft=use.mvfft),inverse=TRUE,use.mvfft=use.mvfft) / nr
+    checkTrue(max(Mod(xx-x)) < eps)
     checkTrue(max(abs(Im(xx))) < eps)
-    checkTrue(max(abs(Re(xx)-x)) < eps)
 
     nr <- 101
     cat("\n---- testing fftw(fftw(x,inverse=FALSE),inverse=TRUE)/N with x real, n=",nr,"\n")
@@ -86,8 +86,6 @@ do.test.fftw <- function(use.mvfft)
 
     xx <- fftw(fftw(x,inverse=F,use.mvfft=use.mvfft),inverse=T,use.mvfft=use.mvfft) / nr
 
-    checkTrue(max(Re(xx - x)) < eps)
-    checkTrue(max(Im(xx - x)) < eps)
     checkTrue(max(Mod(xx - x)) < eps)
 
     nr <- 101
@@ -96,14 +94,15 @@ do.test.fftw <- function(use.mvfft)
         nr,"\n")
     options(time.zone="GMT")
 
+    xunits <- c("foo", "bar")
+
     x <- nts(matrix(rnorm(nr*nc),nrow=nr),
         seq(from=utime("2002 feb 01 00:00"),length=nr,by=1),
-        names=c("col1","col2"),stations=c(0,3))
+        names=c("col1","col2"),units=xunits, stations=c(0,3))
 
     xx <- fftw(fftw(x,use.mvfft=use.mvfft),inverse=T,use.mvfft=use.mvfft) / nr
-    checkTrue(max(Re(xx - x)) < eps)
-    checkTrue(max(Im(xx - x)) < eps)
     checkTrue(max(Mod(xx - x)) < eps)
+    checkTrue(identical(units(xx), xunits))
 
     nr <- 100
     m <- 10
