@@ -542,11 +542,12 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
             }
             for (i = 0; i < startreq.size() && i < ndims; i++)
                 start.push_back(startreq[i]);
-            for (; i < ndims; i++) start.push_back(0);
+            for (; i < std::max(1U,ndims); i++) start.push_back(0);
 
             for (i = 0; i < countreq.size() && i < ndims; i++)
                 count.push_back(countreq[i]);
             for (; i < ndims; i++) count.push_back(vedges[i]-start[i]);
+            for (; i < std::max(1U, ndims); i++) count.push_back(1);
 
             if (countreq.size() > 0 && ndims > 0) {
                 // asking to read next file
