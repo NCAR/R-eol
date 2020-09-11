@@ -188,7 +188,11 @@ setMethod("readnc",
     function(con,variables,start,count,...)
     {
         x <- .Call("read_netcdf",con,variables,start,count,PACKAGE="eolts")
-        if (length(x) == 1) x <- x[[1]]
+        if (length(x) == 1) {
+            x <- x[[1]]
+            if (length(dim(x)) == 1) x <- as.vector(x)
+        }
+        else x <- lapply(x,function(e){if (length(dim(e))==1) as.vector(e) else e})
         x
     }
 )
