@@ -18,14 +18,12 @@ using std::string;
 
 using namespace eolts;
 
-SEXP R_utime::_classDef = 0;
-// PROTECT_INDEX R_utime::_cindx = -1;
 // SEXP R_utime::_dotDataSlotName;
+SEXP R_utime::_classDef = 0;
 
 R_utime::R_utime() : _obj(0),_length(1),_pindx(-1)
 {
-    // I don't believe this needs to be protected
-    if (!_classDef) _classDef = R_do_MAKE_CLASS("utime");
+    if (!_classDef) _classDef =  PROTECT(R_do_MAKE_CLASS("utime"));
 
     PROTECT_WITH_INDEX(_obj = R_do_new_object(_classDef),&_pindx);
 
@@ -40,6 +38,7 @@ R_utime::R_utime() : _obj(0),_length(1),_pindx(-1)
 
 R_utime::R_utime(SEXP obj) : _obj(obj),_length(0),_pindx(-1)
 {
+    // Assumes obj has been protected.
 #ifdef DEBUG
     Rprintf("R_utime::R_utime(SEXP), TYPEOF(obj)=%d\n",TYPEOF(obj));
 #endif

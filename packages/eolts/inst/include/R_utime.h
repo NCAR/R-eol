@@ -24,12 +24,16 @@ protected:
     SEXP _obj;
     size_t _length;
     PROTECT_INDEX _pindx;
-    // static PROTECT_INDEX _cindx;
     static SEXP _classDef;
 
 public:
     R_utime();
 
+    /**
+     * Create instance from another instance of utime.
+     * The SEXP must be PROTECTed by the caller for the
+     * lifetime of the R_utime.
+     */
     R_utime(SEXP);
 
     ~R_utime();
