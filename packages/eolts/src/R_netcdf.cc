@@ -120,7 +120,7 @@ SEXP get_variables(SEXP obj, SEXP allobj, SEXP ncverbose)
     catch (const NcException& nce) {
         Rf_error(nce.toString().c_str());
     }
-    return 0;
+    return R_NilValue;
 }
 
 SEXP get_stations(SEXP obj)
@@ -140,7 +140,7 @@ SEXP get_stations(SEXP obj)
     catch (const NcException& nce) {
         Rf_error(nce.toString().c_str());
     }
-    return 0;
+    return R_NilValue;
 }
 
 SEXP read_global_attrs(SEXP obj)
@@ -156,7 +156,7 @@ SEXP read_global_attrs(SEXP obj)
     catch (const NcException& nce) {
         Rf_error(nce.toString().c_str());
     }
-    return 0;
+    return R_NilValue;
 }
 
 SEXP read_netcdf(SEXP obj,SEXP variables, SEXP startreq, SEXP countreq)
@@ -191,7 +191,7 @@ SEXP read_netcdf(SEXP obj,SEXP variables, SEXP startreq, SEXP countreq)
     catch (const NcException& nce) {
         Rf_error(nce.toString().c_str());
     }
-    return 0;
+    return R_NilValue;
 }
 
 SEXP read_netcdf_ts(SEXP args)
@@ -289,7 +289,7 @@ SEXP read_netcdf_ts(SEXP args)
     catch (const NcException& nce) {
         Rf_error(nce.toString().c_str());
     }
-    return 0;
+    return R_NilValue;
 }
 
 #ifdef HAVE_NC_SERVER

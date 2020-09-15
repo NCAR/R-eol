@@ -957,7 +957,7 @@ size_t NetcdfReader::searchTime(NcVar* var,double stime,NetcdfReader::timeTests 
             break;
         }
         if (nread++ > nreads) {
-            Rprintf("Error in binary search of variable %s in file %s, nreads=%d,nread=%d",
+            Rprintf("Error in binary search of variable %s in file %s, nreads=%d,nread=%d\n",
                     var->getName().c_str(),var->getFileName().c_str(),nreads,nread);
             std::ostringstream ost;
             ost << "Variable " << var->getName() << " in file " <<
@@ -1065,6 +1065,8 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
     }
 
     unsigned int ncols = vs.getNumOutputColumns();
+
+    if (ncols == 0) return R_NilValue;
     size_t maxSampleDim = vs.getMaxSampleDimension();
 
     // imap:
@@ -1311,11 +1313,11 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                 Rprintf("Reallocating: %zd records, previous=%zd\n", nra,nrecAlloc);
 
 
-#ifdef DEBUG
-            Rprintf("realloc, nra=%d, ncols=%d, nrecAlloc=%d,tot=%d\n",
-                    nra,ncols,nrecAlloc,nra * ncols);
-#endif
             size_t nalloc = nra * ncols * maxSampleDim;
+#ifdef DEBUG
+            Rprintf("realloc, nra=%d, ncols=%d, nrecAlloc=%d,tot=%d, nalloc=%d\n",
+                    nra,ncols,nrecAlloc,nra * ncols, nalloc);
+#endif
 
             switch (rmode) {
             case INTSXP:

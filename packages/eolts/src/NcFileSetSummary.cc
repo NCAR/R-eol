@@ -29,8 +29,6 @@ using std::string;
 
 using namespace eolts;
 
-// #define DEBUG
-
 NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
         const vector<string> &varnames,const vector<int> &stations,
         bool getCounts) :
@@ -265,9 +263,9 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                 if (id != stationid && id != sampleid) {
                     std::ostringstream ost;
                     ost << "error in file " << ncf->getName() <<
-                        ", variable \"" << var->getName() << "\": don't know how to handle dimension \"" <<
-                        dim->getName() << " of length " << dim->getLength() <<
-                        ". Skipping variable";
+                        ", variable \"" << var->getName() << "\": dimension \"" <<
+                        dim->getName() << "\" of length " << dim->getLength() <<
+                        " is not a sample or station dimension and cannot be added to time series, skipping.";
 
                     Rf_warning(ost.str().c_str());
                     _dims[ivar].resize(0);
