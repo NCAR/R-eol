@@ -102,8 +102,7 @@ find_datasets <- function(path=NULL, pattern="^netcdf", verbose=TRUE)
                 if (is.null(dname)) {
                     # cat("dirlev12=",dirlev12,",pattern=",pattern,"\n")
                     dname <- sub(pattern,"",dirlev12)
-                    if (nchar(dname) == 0 || dname == "/") dname <- catpath
-                    # cat("dname=",dname,"\n")
+                    if (nchar(dname) == 0 || dname == "/") next()
 
                     dname <- sub("^_+","",dname)    # remove leading underscores
                     dname <- sub("^/+","",dname)    # remove leading slashes
