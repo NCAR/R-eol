@@ -18,22 +18,19 @@ using std::string;
 
 using namespace eolts;
 
-SEXP R_utime::classDef;
-SEXP R_utime::dotDataSlotName;
+SEXP R_utime::_classDef = 0;
+// PROTECT_INDEX R_utime::_cindx = -1;
+// SEXP R_utime::_dotDataSlotName;
 
 R_utime::R_utime() : _obj(0),_length(1),_pindx(-1)
 {
+    // I don't believe this needs to be protected
+    if (!_classDef) _classDef = R_do_MAKE_CLASS("utime");
 
-    if (!classDef) classDef = R_do_MAKE_CLASS("utime");
-
-    PROTECT_WITH_INDEX(_obj = R_do_new_object(classDef),&_pindx);
-
-    SEXP cls = PROTECT(Rf_allocVector(STRSXP,1));
-    SET_STRING_ELT(cls,0,Rf_mkChar("utime"));
-    Rf_classgets(_obj,cls);
-    UNPROTECT(1);
+    PROTECT_WITH_INDEX(_obj = R_do_new_object(_classDef),&_pindx);
 
 #ifdef DEBUG
+    Rprintf("pindx=%d, cindx=%d\n", _pindx, _cindx);
     Rprintf("R_utime::R_utime(), TYPEOF(_obj)=%d\n",TYPEOF(_obj));
     Rprintf("R_utime::R_utime(), IS_S4_OBJECT(_obj)=%d\n",IS_S4_OBJECT(_obj));
 #endif
@@ -177,9 +174,15 @@ string R_utime::format(double time,
     t = s = PROTECT(Rf_allocList(4));
 
     SET_TYPEOF(s, LANGSXP);
-    SETCAR(t, Rf_install("format")); t = CDR(t);
 
-    SETCAR(t, utime.getRObject()); t = CDR(t);
+    SETCAR(t, Rf_install("format_utime")); t = CDR(t);
+
+    // this results in the numeric part of a utime being string-ified,
+    // and so the format method will be called for numeric.
+    // So we have to define a format_time method to convert the
+    // numeric to a utime and format it.
+    SETCAR(t, utime.getRObject());
+    SET_TAG(t, Rf_install("x")); t = CDR(t);
 
     SETCAR(t, Rf_mkString(format.c_str()));
     SET_TAG(t, Rf_install("format")); t = CDR(t);

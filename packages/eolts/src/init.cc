@@ -57,7 +57,7 @@ extern "C" {
         R_nts::timeFormatSlotName = Rf_install("time.format");
         R_nts::timeZoneSlotName = Rf_install("time.zone");
 
-        R_utime::dotDataSlotName = Rf_install(".Data");
+        // R_utime::dotDataSlotName = Rf_install(".Data");
 
     }
 

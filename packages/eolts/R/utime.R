@@ -280,6 +280,16 @@ setMethod("format","utime",
     }
 )
 
+format_utime <- function(x, format=getOption("time.out.format"),
+    time.zone=getOption("time.zone"))
+{
+    if (is.numeric(x)) x <- utime(x)
+    if (is.null(time.zone)) time.zone <- "UTC"
+    x <- as(x,"POSIXct")
+    attr(x,"tzone") <- time.zone
+    format(x,format=format,tz=time.zone)
+}
+
 setMethod("show",signature(object="utime"),
     function(object)
     {

@@ -34,6 +34,7 @@ export(
     cache_object,
     current_plot,
     get_cache_object,
+    format_utime,
     rm_cache_object,
     check_cache,
     tlocator,

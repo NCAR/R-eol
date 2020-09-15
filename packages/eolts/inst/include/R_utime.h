@@ -24,6 +24,8 @@ protected:
     SEXP _obj;
     size_t _length;
     PROTECT_INDEX _pindx;
+    // static PROTECT_INDEX _cindx;
+    static SEXP _classDef;
 
 public:
     R_utime();
@@ -46,9 +48,7 @@ public:
 
     static std::string format(double,const std::string& format,const std::string& tz);
 
-    static SEXP classDef;
-
-    static SEXP dotDataSlotName;
+    // static SEXP dotDataSlotName;
 
 private:
     // declared private to prevent copying and assignment
