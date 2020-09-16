@@ -19,16 +19,39 @@ using std::string;
 using namespace eolts;
 
 // SEXP R_utime::_dotDataSlotName;
+#ifdef STATIC_CLASSDEF
 SEXP R_utime::_classDef = 0;
+#endif
 
 R_utime::R_utime() : _obj(0),_length(1),_pindx(-1)
+#ifndef STATIC_CLASSDEF
+                     ,_classDef(0)
+#endif
 {
-    if (!_classDef) _classDef =  PROTECT(R_do_MAKE_CLASS("utime"));
+
+    // Seems like a good idea to protect _classDev, though we've run this
+    // package with no errors for many years as a static member
+    // without PROTECTing it. Perhaps the pointer to the the class is saved
+    // in the object, and so doesn't need to be protected.
+    //
+    // If _classDev is static and PROTECTed then we see
+    // "Warning: stack imbalance in '<-', 2 then 3" from R, because
+    // it isn't (ever) UNPROTECTed. So if it is static, then don't
+    // PROTECT it.
+    //
+    // We'll make it non-static and PROTECT it, and UNPROTECT it and _obj
+    // in the destructor.
+
+#ifdef STATIC_CLASSDEF
+    if (!_classDef) _classDef =  R_do_MAKE_CLASS("utime");
+#else
+    _classDef =  PROTECT(R_do_MAKE_CLASS("utime"));
+#endif
 
     PROTECT_WITH_INDEX(_obj = R_do_new_object(_classDef),&_pindx);
 
 #ifdef DEBUG
-    Rprintf("pindx=%d, cindx=%d\n", _pindx, _cindx);
+    Rprintf("pindx=%d\n", _pindx);
     Rprintf("R_utime::R_utime(), TYPEOF(_obj)=%d\n",TYPEOF(_obj));
     Rprintf("R_utime::R_utime(), IS_S4_OBJECT(_obj)=%d\n",IS_S4_OBJECT(_obj));
 #endif
@@ -56,7 +79,11 @@ R_utime::~R_utime()
 #ifdef DEBUG
     Rprintf("~R_utime, _pindx=%d\n",_pindx);
 #endif
+#ifdef STATIC_CLASSDEF
     if (_pindx >= 0) UNPROTECT(1);
+#else
+    if (_pindx >= 0) UNPROTECT(2);
+#endif
 }
 
 void R_utime::setLength(size_t val)

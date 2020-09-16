@@ -16,6 +16,8 @@
 #include <R.h>
 #include <Rinternals.h>
 
+// #define STATIC_CLASSDEF
+
 namespace eolts {
 
 class R_utime {
@@ -24,7 +26,10 @@ protected:
     SEXP _obj;
     size_t _length;
     PROTECT_INDEX _pindx;
-    static SEXP _classDef;
+#ifdef STATIC_CLASSDEF
+    static
+#endif
+    SEXP _classDef;
 
 public:
     R_utime();
