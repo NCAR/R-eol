@@ -53,7 +53,7 @@ netcdf <- function(
         server=server,interval=interval,cdlfile=cdlfile)
 
     if (length(file) == 1) {
-        hastimefmt <- any(sapply(c("%Y","%y","%m","%d","%b","%H","%M","%S"),
+        hastimefmt <- any(sapply(c("%Y","%y","%m","%d","%b","%H","%M","%S","%b"),
                 function(x,str){grepl(x,str,fixed=TRUE)},str=file))
         if (lenfile == 0) {
             if (hastimefmt) {
@@ -64,6 +64,7 @@ netcdf <- function(
                 nmformat <- gsub("%H","[0-2][0-9]",nmformat,fixed=TRUE)
                 nmformat <- gsub("%M","[0-5][0-9]",nmformat,fixed=TRUE)
                 nmformat <- gsub("%S","[0-5][0-9]",nmformat,fixed=TRUE)
+                nmformat <- gsub("%b","[A-Za-z]{3}",nmformat,fixed=TRUE)
 
                 files <- list.files(dir,nmformat)
 
