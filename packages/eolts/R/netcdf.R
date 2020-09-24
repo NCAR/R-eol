@@ -53,11 +53,13 @@ netcdf <- function(
         server=server,interval=interval,cdlfile=cdlfile)
 
     if (length(file) == 1) {
-        hastimefmt <- any(sapply(c("%Y","%y","%m","%d","%b","%H","%M","%S","%b"),
+        hastimefmt <- any(sapply(
+                c("%Y","%y","%m","%d","%b","%H","%M","%S","%b"),
                 function(x,str){grepl(x,str,fixed=TRUE)},str=file))
         if (lenfile == 0) {
             if (hastimefmt) {
-                nmformat <- gsub("%Y","[12][0-9]{3}",file[1],fixed=TRUE)
+                nmformat <- glob2rx(file)
+                nmformat <- gsub("%Y","[12][0-9]{3}",nmformat,fixed=TRUE)
                 nmformat <- gsub("%y","[0-9]{2}",nmformat,fixed=TRUE)
                 nmformat <- gsub("%m","[01][0-9]",nmformat,fixed=TRUE)
                 nmformat <- gsub("%d","[0-3][0-9]",nmformat,fixed=TRUE)
@@ -90,7 +92,7 @@ netcdf <- function(
                         format(start,format="%Y %b %d %H:%M:%S",time.zone="GMT"),"and",
                         format(end,format="%Y %b %d %H:%M:%S %Z",time.zone="GMT")))
             }
-            else files <- list.files(dir,file)
+            else files <- list.files(dir,glob2rx(file))
         }
         else {
             if (hastimefmt) {
@@ -99,10 +101,10 @@ netcdf <- function(
                 else times <- seq(from=utime(floor(start/lenfile)*lenfile),to=end-1,by=lenfile)
                 files <- unique(format(times,format=as(file,"character"),time.zone="GMT"))
             }
-            else files <- list.files(dir,file)
+            else files <- list.files(dir,glob2rx(file))
         }
     }
-    else files <- list.files(dir,file)
+    else files <- list.files(dir,glob2rx(file))
 
     if (length(files) == 0) stop(paste("no files found in",dir,"matching",file))
 

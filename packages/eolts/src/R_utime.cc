@@ -29,18 +29,18 @@ R_utime::R_utime() : _obj(0),_length(1),_pindx(-1)
 #endif
 {
 
-    // Seems like a good idea to protect _classDev, though we've run this
-    // package with no errors for many years as a static member
+    // Seems like a good idea to protect _classDef, though we've run this
+    // package with no errors for many years with _classDef as a static member
     // without PROTECTing it. Perhaps the pointer to the the class is saved
     // in the object, and so doesn't need to be protected.
     //
-    // If _classDev is static and PROTECTed then we see
+    // If _classDef is static and PROTECTed then we see
     // "Warning: stack imbalance in '<-', 2 then 3" from R, because
     // it isn't (ever) UNPROTECTed. So if it is static, then don't
     // PROTECT it.
     //
-    // We'll make it non-static and PROTECT it, and UNPROTECT it and _obj
-    // in the destructor.
+    // We'll make _classDef non-static and PROTECT it, and then UNPROTECT
+    // it and _obj in the destructor.
 
 #ifdef STATIC_CLASSDEF
     if (!_classDef) _classDef =  R_do_MAKE_CLASS("utime");
