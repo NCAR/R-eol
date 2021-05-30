@@ -146,7 +146,7 @@ readDFile <- function (file, checkStatus=dpar("checkSondeStatus"), sondeRecords=
             x <- type.convert(sdng[,n],as.is=TRUE)
             # From help page for type.convert:
             # Vectors which are entirely missing values are converted to
-            # logical, since ‘NA’ is primarily logical.
+            # logical, since 'NA' is primarily logical.
             if (is.logical(x)) x <- as.numeric(x)
             nas <- na_vals[[n]]
             if (!is.null(nas)) x[x %in% nas] <- NA_real_

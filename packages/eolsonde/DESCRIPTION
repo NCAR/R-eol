@@ -1,10 +1,9 @@
 Package: eolsonde
-Title: Read and Visualize EOL sounding data
+Title: Read and Visualize EOL Sounding Data
 Version: 2.4-1
 Author: Liangying Zhang
 Maintainer: Gordon Maclean <maclean@ucar.edu>
-Description: This package contains functions for reading EOL sounding files
-    and plotting the soundings.
+Description: Functions for reading EOL sounding files and plotting the soundings.
 Depends: lattice,maps, eolts, isfs
 License: BSD_2_clause + file LICENSE
 Date: 2014-05-01

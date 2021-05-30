@@ -2,7 +2,17 @@
 
 # Script to send a source package to win-builder.r-project.org to be built for windows.
 
-rver=3.2.3
+if [ $# -gt 0 ]; then
+    pkg=$1
+    shift
+fi
+
+if [ $# -gt 0 ]; then
+    buildver=$1
+    shift
+fi
+
+rver=4.1
 
 ftphost=win-builder.r-project.org
 
@@ -17,13 +27,10 @@ version=${gitdesc%-*}   # remove trailing -*: 1.2-14
 
 [ $gitdesc == "$version" ] && version=${gitdesc}-0  # if no commits since tag
 
-
 tmpdesc=$(mktemp /tmp/${0##*/}_XXXXXX)
 trap "{ rm -f $tmpdesc; }" EXIT
 
-if [ $# -gt 0 ]; then
-    pkg=$1
-else
+if [ -z "$pkg" ]; then
 
     echo "You usually must send the eolts package first to win-builder.r-project.org.
 Then if that build is successful, send isfs, and when that is successful, send eolsonde.
@@ -40,6 +47,17 @@ so after eolts is successfully built there, then builds of isfs should work.
     oldps3=$PS3
     PS3="Choose a package to build, by number: "
     select pkg in ${packages[*]}; do
+        break
+    done
+    PS3=$oldps3
+fi
+
+if [ -z "$buildver" ]; then
+    echo "Browse to http://$ftphost to see what versions of R are available for builds"
+    bvers=(R-release R-oldrelease R-devel)
+    oldps3=$PS3
+    PS3="Choose an R version for building on $ftphost: "
+    select buildver in ${bvers[*]}; do
         break
     done
     PS3=$oldps3
@@ -70,12 +88,12 @@ trap "{ rm -f $tmpdesc $pkgz; }" EXIT
 
 maintainer=$(grep "^Maintainer:" $pkg/DESCRIPTION | sed "s/^Maintainer://")
 
-echo "ftp-ing $pkgz to R-release directory on $ftphost "
+echo "ftp-ing $pkgz to $buildver directory on $ftphost "
 
 ftp -p -n $ftphost << EOD || exit 1
 user anonymous $USER@ucar.edu
 binary
-cd R-release
+cd $buildver
 put $pkgz
 quit
 EOD
