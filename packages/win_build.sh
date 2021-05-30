@@ -2,6 +2,12 @@
 
 # Script to send a source package to win-builder.r-project.org to be built for windows.
 
+usage() {
+    echo "$0 [pkg] [win-builder R version]
+win-builder R version must be R-oldrelease, R-release or R-devel"
+    exit 1
+}
+
 if [ $# -gt 0 ]; then
     pkg=$1
     shift
@@ -10,9 +16,15 @@ fi
 if [ $# -gt 0 ]; then
     buildver=$1
     shift
-fi
 
-rver=4.1
+    case $buildver in
+    R-oldrelease | R-release | R-devel)
+        ;;
+    *)
+        usage
+        ;;
+    esac
+fi
 
 ftphost=win-builder.r-project.org
 
@@ -32,7 +44,7 @@ trap "{ rm -f $tmpdesc; }" EXIT
 
 if [ -z "$pkg" ]; then
 
-    echo "You usually must send the eolts package first to win-builder.r-project.org.
+    echo "You first must send the eolts package first to win-builder.r-project.org.
 Then if that build is successful, send isfs, and when that is successful, send eolsonde.
 
 isfs depends on eolts.  eolsonde depends on isfs and eolts.
@@ -108,7 +120,8 @@ download the .zip file and copy it to
 /net/www/docs/software/R/bin/windows/contrib/\$rver, where \$rver
 is the version of R that was used to do the build on win-build,
 which can be determined by looking at 00check.log on the results page.
+Two digits, e.g. 4.1, are generally sufficient for \$rver.
 Then, to update the PACKAGES file on the R repository: run:
-R --vanilla -e 'tools::write_PACKAGES(dir=\"/net/www/docs/software/R/bin/windows/contrib/\$rver\",type=\"win.binary\")'
+R --vanilla -e \"tools::write_PACKAGES(dir='/net/www/docs/software/R/bin/windows/contrib/\$rver',type='win.binary')\"
 "
 
