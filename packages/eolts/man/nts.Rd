@@ -62,8 +62,12 @@ Gordon Maclean
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{utime}}
-\code{\link{plot_nts}}
+\tabular{ll}{
+?command \tab link\cr
+\code{class? nts} \tab \code{\linkS4class{nts}}\cr
+\code{? utime} \tab \code{\link{utime}}\cr
+\code{? plot_nts} \tab \code{\link{plot_nts}}\cr
+}
 }
 \examples{
 # create a 20x4 time series of random data, at 10 second time resolution

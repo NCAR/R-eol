@@ -163,15 +163,16 @@ Gordon Maclean
 }
 
 \seealso{
-\code{\linkS4class{nts}}: \code{class? nts}
+\tabular{ll}{
+?command \tab link\cr
+\code{? nts} \tab \code{\link{nts}}\cr
 
-\code{\link{nts}}: \code{? nts}
+\code{? plot_nts} \tab \code{\link{plot_nts}}\cr
 
-\code{\link{plot_nts}}: \code{? plot_nts}
+\code{class? utime} \tab \code{\linkS4class{utime}}\cr
 
-\code{\linkS4class{utime}}: \code{class? utime}
-
-\code{\link{utime}}: \code{? utime}
+\code{? utime} \tab \code{\link{utime}}\cr
+}
 }
 \examples{
 # create a 20x4 time series of random data, at 10 second time resolution
@@ -219,9 +220,9 @@ x[x > 0.9] <- 99
 x[x[,1] > 0.9,] <- 99
 x[x[,1] > 0.9, c(2,3)] <- 99
 
-# An nts on the right-hand-side of an expression that is
+# An nts on the right-hand-side of an assignment which is
 # indexed with only one argument is no longer an nts.
-# In this case the result will be a numeric vector with all
+# In this case the result in xx will be a numeric vector with all
 # time information lost.
 xx <- x[x < 0.5]
 
@@ -242,8 +243,8 @@ xx <- x[y < 0.5]
 
 # Select rows in x with times that are within options("dt.eps") of
 # the times in y, and for which the expression "y[,1] < 0.5" is TRUE.
-# If options("dt.eps") is NULL, then a dt.eps of deltat(x) / 10 is used.
-# Result is an nts.
+# If options("dt.eps") is NULL, by default, then a dt.eps of
+# deltat(x) / 10 is used.  The result is an nts.
 xx <- x[y[,1] < 0.5,]
 
 # Replace values in x with times that are within options("dt.eps") of the

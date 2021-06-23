@@ -90,11 +90,7 @@ For a semi-log plot, log="y", minor tick marks are placed at the times 2 to time
 By default, a title is placed at the top of the page. See the \code{title} parameter.
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+NULL
 }
 \references{
 }
