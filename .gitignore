@@ -3,6 +3,7 @@
 .R*
 *.tar.gz
 *.tgz
+*~
 !.Rbuildignore
 # History files
 .Rhistory

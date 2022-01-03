@@ -1,0 +1,29 @@
+# Rprofile.site for EOL users
+local({
+
+    # Initialize things for ISFS (aka ISFF) users
+    if (is.na(isfs <- Sys.getenv("ISFS",unset=NA))) {
+        isfs <- Sys.getenv("ISFF",unset=NA)
+    }
+    if (!is.na(isfs)) {
+	# If $ISFS/scripts/Rprofile.isfs exists, source it.
+	isfsprofile <- file.path(isfs,"scripts","Rprofile.isfs")
+
+	if (file.exists(isfsprofile)) {
+	    cat(paste("doing: source(\"",isfsprofile,"\")\n",sep=""))
+	    source(isfsprofile)
+	}
+    }
+
+    # Initialize things for sounding users (those with SONDE_ROOT defined)
+    if (!is.na(sonde <- Sys.getenv("SONDE_ROOT",unset=NA))) {
+	# If $SONDE_ROOT/R/Rprofile exists, source it.
+	sondeprofile <- file.path(sonde,"R","Rprofile")
+
+	if (file.exists(sondeprofile)) {
+	    cat(paste("doing: source(\"",sondeprofile,"\")\n",sep=""))
+	    source(sondeprofile)
+	}
+    }
+})
+
