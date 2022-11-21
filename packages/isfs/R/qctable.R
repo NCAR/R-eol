@@ -212,12 +212,11 @@ qctable <- function(vars,data=NULL,ntper=4,file="",append=FALSE,title=NULL,
 
     # color: #FF8000 is a shade of orange. May be more readable than just "orange"
     if (!is.null(title)) {
-        html <- paste(
-            "<!doctype html public \"-//w3c//dtd html 4.0 transitional//en\">\n",
-            "<html>\n<head>\n",
-            "<meta charset=\"UTF-8\">\n",
-            "<style>\n",
-            "<!--\n",
+        nw = nwords(file,sep="/")
+        qctdir = words(file,1,nw-1,sep="/")
+        cssfile = paste0(qctdir,"/qctable.css")
+        if (!file.exists(cssfile)) {
+          css <- paste(
             "table.numdata {font-family: monospace,monospace;}\n",
             "td.nummax {color: #FF8000;}\n",
             "td.nummed {color: green;}\n",
@@ -225,14 +224,18 @@ qctable <- function(vars,data=NULL,ntper=4,file="",append=FALSE,title=NULL,
             "span.nummax {color: #FF8000;}\n",
             "span.nummed {color: green;}\n",
             "span.nummin {color: blue;}\n",
-            "#badgt0 {color: red;}\n",
-            "-->\n",
-            "</style>\n",
+            "#badgt0 {color: red;}\n",sep="")
+          cat(css,file=cssfile)
+        }
+        html <- paste(
+            "<!doctype html public \"-//w3c//dtd html 4.0 transitional//en\">\n",
+            "<html>\n<head>\n",
+            "<meta charset=\"UTF-8\">\n",
+            "<link rel=\"stylesheet\" type=\"text/css\" rel=\"noopener\" target=\"_blank\" href=\"qctable.css\">\n",
             "<title>",title,"</title>\n</head>\n",
             "<body bgcolor=\"#dddddd\">\n",
             "<a id=\"top\"></a>\n",
             "<center><h2>",title,"</h2></center>\n",sep="")
-
         cat(html,file=file,append=append)
         append <- file != "" 
     }
