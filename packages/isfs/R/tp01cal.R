@@ -231,7 +231,7 @@ dat.asoil <- function(what,derived=TRUE,cache=FALSE,...)
     # pre-Wisard (max) deployments
     #
     vars <- words(variables(),1,1)
-    if (any(vars=="Lambdasoil")) tau <- dat("Tau63") else tau <- dat("Tau63_max")
+    if (any(vars=="Lambdasoil") || any(vars=="Lambda")) tau <- dat("Tau63") else tau <- dat("Tau63_max")
     if (is.null(tau)) return(NULL)
 
     a <- a.ref * dt.ref / tau
