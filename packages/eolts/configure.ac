@@ -2,7 +2,7 @@
 #  Initialize                                                    		#
 #-------------------------------------------------------------------------------#
 
-AC_INIT([eolts], 0.0.-1, [maclean@ucar.edu])
+AC_INIT([eolts],[0.0.-1],[maclean@ucar.edu])
 
 PKG_PROG_PKG_CONFIG([0])
 
@@ -28,8 +28,7 @@ AC_LANG(C++)
 
 #-- NetCDF include and library path --------------------------------------------#
 AC_ARG_WITH([netcdf-include],
-    AC_HELP_STRING([--with-netcdf-include=DIR],
-                   [location of netcdf header files]),
+    AS_HELP_STRING([--with-netcdf-include=DIR],[location of netcdf header files]),
     [netcdf_include_path=$withval])
 
 AS_IF([test -n "$netcdf_include_path"], 
@@ -37,8 +36,7 @@ AS_IF([test -n "$netcdf_include_path"],
 )
 
 AC_ARG_WITH([netcdf-lib],
-    AC_HELP_STRING([--with-netcdf-lib=DIR],
-                   [location of netcdf libraries]),
+    AS_HELP_STRING([--with-netcdf-lib=DIR],[location of netcdf libraries]),
     [netcdf_lib_path=$withval])
 
 AS_IF([test -n "$netcdf_lib_path"], 
@@ -64,8 +62,7 @@ AC_CHECK_HEADER([netcdf.h], [], AC_MSG_ERROR(netcdf header netcdf.h not found))
 
 #-- fftw3 include and library path ---------------------------------------------#
 AC_ARG_WITH([fftw3-include],
-    AC_HELP_STRING([--with-fftw3-include=DIR],
-                   [location of fftw3 headers]),
+    AS_HELP_STRING([--with-fftw3-include=DIR],[location of fftw3 headers]),
     [fftw3_header_path=$withval]
 )
 
@@ -84,8 +81,7 @@ AC_CHECK_HEADER([fftw3.h],,
 )
 
 AC_ARG_WITH([fftw3-lib],
-    AC_HELP_STRING([--with-fftw3-lib=DIR],
-                   [location of fftw3 library]),
+    AS_HELP_STRING([--with-fftw3-lib=DIR],[location of fftw3 library]),
     [fftw3_lib_path=$withval]
 )
 
@@ -108,8 +104,7 @@ AC_CHECK_LIB([fftw3],[fftw_execute],
 #-- nc_server_rpc include and library path ---------------------------------#
 
 AC_ARG_WITH([nc_server-include],
-    AC_HELP_STRING([--with-nc_server-include=DIR],
-                   [location of nc_server headers]),
+    AS_HELP_STRING([--with-nc_server-include=DIR],[location of nc_server headers]),
     [nc_server_header_path=$withval]
 )
 
@@ -131,8 +126,7 @@ AS_IF([test -n "$nc_server_header_path"],
 AC_CHECK_HEADER([nc_server_rpc.h])
 
 AC_ARG_WITH([nc_server-lib],
-    AC_HELP_STRING([--with-nc_server-lib=DIR],
-                   [location of nc_server library]),
+    AS_HELP_STRING([--with-nc_server-lib=DIR],[location of nc_server library]),
     [nc_server_lib_path=$withval]
 )
 
@@ -172,7 +166,7 @@ AC_CHECK_LIB([nc_server_rpc],[write_datarec_float_2],
     [
         HAVE_NC_SERVER=TRUE
         CPPFLAGS+=" -DHAVE_NC_SERVER"
-        AC_OUTPUT_COMMANDS([${SED} -i -e 's/HAVE_NC_SERVER <- FALSE/HAVE_NC_SERVER <- TRUE/' R/netcdfWrite.R])
+        AC_CONFIG_COMMANDS([default-1],[[${SED} -i -e 's/HAVE_NC_SERVER <- FALSE/HAVE_NC_SERVER <- TRUE/' R/netcdfWrite.R]],[[]])
     ],
     [
         HAVE_NC_SERVER=FALSE
@@ -191,7 +185,8 @@ AC_SUBST([CPPFLAGS])
 AC_SUBST([LDFLAGS])
 AC_SUBST([LIBS])
 
-AC_OUTPUT(src/Makevars)
+AC_CONFIG_FILES([src/Makevars])
+AC_OUTPUT
 
 #-------------------------------------------------------------------------------#
 

@@ -2,7 +2,7 @@
 #  Initialize                                                    		#
 #-------------------------------------------------------------------------------#
 
-AC_INIT([isfs], 0.0.-1, [maclean@ucar.edu])
+AC_INIT([isfs],[0.0.-1],[maclean@ucar.edu])
 
 #-------------------------------------------------------------------------------#
 #  Find the compiler and compiler options to use   	                 	#
@@ -53,7 +53,7 @@ if test "$HAVE_PREP" == TRUE; then
     # That has not been done, and we instead issue a sed command to
     # set the correct value in R/prep.R.
     #
-    AC_OUTPUT_COMMANDS([${SED} -i -e 's/HAVE_PREP <- FALSE/HAVE_PREP <- TRUE/' R/prep.R])
+    AC_CONFIG_COMMANDS([default-1],[[${SED} -i -e 's/HAVE_PREP <- FALSE/HAVE_PREP <- TRUE/' R/prep.R]],[[]])
 fi
 #-------------------------------------------------------------------------------#
 #  Optional include paths
@@ -71,7 +71,8 @@ AC_SUBST(PKG_LIBS)
 AC_ARG_VAR(HAVE_PREP)
 # AC_CONFIG_FILES([R/prep.R],[chmod -w R/prep.R])
 
-AC_OUTPUT(src/Makevars)
+AC_CONFIG_FILES([src/Makevars])
+AC_OUTPUT
 
 #-------------------------------------------------------------------------------#
 
