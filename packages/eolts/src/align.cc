@@ -96,7 +96,7 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
     int how, error_how;
     int over_set, under_set;
 
-    Sint *na_data, *drop_data, *sub1_data, *sub2_data=0;
+    int *na_data, *drop_data, *sub1_data, *sub2_data=0;
     double *weight1_data=0, *weight2_data=0;
 
     if(
