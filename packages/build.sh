@@ -25,13 +25,13 @@ no_echo=--no-echo
 
 is_mac=false
 if [ $(uname) == Darwin ]; then
-	is_mac=true
-	# possible paths to pdflatex
-	PATH=$PATH:/Library/TeX/texbin:/usr/texbin
-	# geographiclib doesn't have a static library
-	fix_lib_dirs=(fftw netcdf hdf5 szip geographiclib)
+    is_mac=true
+    # possible paths to pdflatex
+    PATH=$PATH:/Library/TeX/texbin:/usr/texbin
+    # geographiclib doesn't have a static library
+    fix_lib_dirs=(fftw netcdf hdf5 szip geographiclib)
 else
-	is_mac=false
+    is_mac=false
 fi
 
 
@@ -56,13 +56,13 @@ get_r_version
 # static library is to make sure the dynlib doesn't exist. Should be another way...
 hide_shlibs() {
     for libdir in ${fix_lib_dirs[*]}; do
-	./hide-shared-libs.py --hide --dir /usr/local/opt/$libdir/lib
+        ./hide-shared-libs.py --hide --dir /usr/local/opt/$libdir/lib
     done
 }
 
 restore_shlibs() {
     for libdir in ${fix_lib_dirs[*]}; do
-	./hide-shared-libs.py --restore --dir /usr/local/opt/$libdir/lib
+        ./hide-shared-libs.py --restore --dir /usr/local/opt/$libdir/lib
     done
 }
 
@@ -158,12 +158,12 @@ do_pkg() {
         R $rargs CMD check -l $rlib -o /tmp ${pkg}_[0-9].[0-9]-*.tar.gz || exit $?
         # R --vanilla --environ CMD check --use-valgrind -o /tmp ${pkg}_*.tar.gz || exit $?
     else
-	R $rargs CMD INSTALL -l $rlib ${pkg}_[0-9].[0-9]-*.tar.gz || exit $?
+        R $rargs CMD INSTALL -l $rlib ${pkg}_[0-9].[0-9]-*.tar.gz || exit $?
     fi
 
     if $is_mac; then
         # Check that the package does not have dependencies on /usr/local/lib
-	echo "Checking that dependencies of $rlib/${pkg}/libs/${pkg}.so are static"
+        echo "Checking that dependencies of $rlib/${pkg}/libs/${pkg}.so are static"
         if R $rargs CMD otool -L $rlib/${pkg}/libs/${pkg}.so | fgrep -e /usr/local; then
             echo "Error: otool -L $rlib/${pkg}/libs/${pkg}.so indicates it is using a shareable library on /usr/local"
             exit 1
@@ -210,4 +210,3 @@ fi
 if $do_eolsonde; then
     do_pkg eolsonde
 fi
-
