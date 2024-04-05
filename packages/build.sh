@@ -4,6 +4,7 @@
 
 if [ $# -eq 0 ]; then
     echo "Usage: ${0##*/} [-e] [-c] [-i] [-s] [-t]
+-d: install dependencies
 -c: do R CMD check after builds
 -e: eolts (R CMD build, R CMD INSTALL)
 -i: isfs (R CMD build, R CMD INSTALL)
@@ -12,11 +13,15 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
+do_depends=false
 do_eolts=false
 do_check=false
 do_quick_test=false
 do_isfs=false
 do_eolsonde=false
+r_version=
+no_echo=--no-echo
+
 
 is_mac=false
 if [ $(uname) == Darwin ]; then
@@ -28,6 +33,24 @@ if [ $(uname) == Darwin ]; then
 else
 	is_mac=false
 fi
+
+
+get_r_version() {
+    vline=`R --vanilla --version | head -1`
+    case "$vline" in
+        R\ version\ 3*)
+            r_version=3 ;;
+        R\ version\ 4*)
+            r_version=4 ;;
+    esac
+    test -n "$r_version" || (echo "could not determine R version"; exit 1)
+    if [ "$r_version" == 3 ]; then
+        no_echo="--slave"
+    fi
+}
+
+get_r_version
+
 
 # Unfortunate hack...  Seems the only way on MacOSx to force linking against a
 # static library is to make sure the dynlib doesn't exist. Should be another way...
@@ -45,6 +68,9 @@ restore_shlibs() {
 
 while [ $# -gt 0 ]; do
     case $1 in
+    -d)
+        do_depends=true
+        ;;
     -e)
         do_eolts=true
         ;;
@@ -74,16 +100,22 @@ done
 # We generally don't use an Renviron.site anyway.
 
 if $is_mac; then
-    rlib=$(R --vanilla --slave -e 'cat(.Library[1])' )
+    rlib=$(R --vanilla $no_echo -e 'cat(.Library[1])' )
 
     hide_shlibs
     trap "restore_shlibs > /dev/null;" EXIT
 
+elif [ -n "${R_LIBS_USER}" ]; then
+    rlib="${R_LIBS_USER}"
 else
-    rlib=$(R --vanilla --slave -e 'cat(.Library.site[1])' )
+    rlib=$(R --vanilla $no_echo -e 'cat(.Library.site[1])' )
+    if [ -z "$rlib" -o "$rlib" == "NA" ]; then
+        echo "first rlib query failed: $rlib"
+        rlib=$(R --vanilla $no_echo -e 'cat(.Library)' )
+    fi
 fi
-
-rargs="--vanilla"
+echo "using rlib: $rlib"
+rargs="--vanilla --quiet"
 
 # Revision info from output of git describe based on a tag of the form vX.Y
 if ! gitdesc=$(git describe --match "v[0-9]*"); then
@@ -145,6 +177,27 @@ do_pkg() {
 EOD
     fi
 }
+
+
+stdsrc="https://cran.r-project.org/src/contrib/Archive/splusTimeDate/splusTimeDate_2.5.4.tar.gz"
+stssrc="https://cran.r-project.org/src/contrib/Archive/splusTimeSeries/splusTimeSeries_1.5.5.tar.gz"
+
+install_depends() {
+    packages='"gWidgets2", "quantreg", "maps", "Rcpp", "RUnit"'
+    R $rargs --vanilla << EOD
+options(repos=c("http://cran.us.r-project.org"))
+install.packages(c($packages))
+install.packages("${stdsrc}", repo=NULL, type="source")
+install.packages("${stssrc}", repo=NULL, type="source")
+EOD
+    # R CMD INSTALL "$stdsrc"
+    # R CMD INSTALL "$stssrc"
+}
+
+
+if $do_depends; then
+    install_depends
+fi
 
 if $do_eolts; then
     do_pkg eolts
