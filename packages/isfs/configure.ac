@@ -13,6 +13,7 @@ if test -z "${R_HOME}"; then
     echo "Could not determine R_HOME"
     exit 1
 fi
+export SED=/bin/sed
 CC=`${R_HOME}/bin/R CMD config CC`
 CPPFLAGS=`${R_HOME}/bin/R CMD config CPPFLAGS`
 CFLAGS=`${R_HOME}/bin/R CMD config CFLAGS`
