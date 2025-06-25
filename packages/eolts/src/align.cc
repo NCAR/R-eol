@@ -104,7 +104,7 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
         !Rf_isReal( match_tol_a ) || (Rf_length(match_tol_a) < 1) ||
         !Rf_isString( how_obj ) || (Rf_length(how_obj) < 2)
       )
-        Rf_error( "Invalid data in c function time_align" ); 
+        Rf_error("%s\n", "Invalid data in c function time_align" ); 
 
     /* extract input data*/
     eolts::R_utime itime(time_obj);
@@ -128,7 +128,7 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
     else if( !strcmp( CHAR(STRING_ELT(how_obj, 0)), "interp" ))
         how = 5;
     else
-        Rf_error( "Invalid third argument in C function time_align" );
+        Rf_error("%s\n", "Invalid third argument in C function time_align" );
 
     if( !strcmp( CHAR(STRING_ELT(how_obj, 1)), "NA" ))
         error_how = 0;
@@ -137,11 +137,11 @@ SEXP utime_align( SEXP time_obj, SEXP align_pos,
     else if( !strcmp( CHAR(STRING_ELT(how_obj, 1)), "nearest" ))
         error_how = 2;
     else
-        Rf_error( "invalid third argument in C function time_align" );
+        Rf_error("%s\n", "invalid third argument in C function time_align" );
 
     match_tol = REAL( match_tol_a )[0];
     if(match_tol < 0)
-        Rf_error( "invalid fourth argument in C function num_align" );
+        Rf_error("%s\n", "invalid fourth argument in C function num_align" );
 
     /* see if the inputs are increasing or decreasing series */
     in_start = align_start = 0;

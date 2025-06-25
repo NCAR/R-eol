@@ -86,7 +86,7 @@ SEXP close_netcdf(SEXP obj)
 {
     R_netcdf *con = R_netcdf::getR_netcdf(obj);
     if (!con) {
-        Rf_warning("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_warning("%s\n", "netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
     delete con;
 
@@ -105,7 +105,7 @@ SEXP get_variables(SEXP obj, SEXP allobj, SEXP ncverbose)
 
     R_netcdf *con = R_netcdf::getR_netcdf(obj);
     if (!con) {
-        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_error("%s\n","netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
 
     bool all = LOGICAL(allobj)[0];
@@ -118,7 +118,7 @@ SEXP get_variables(SEXP obj, SEXP allobj, SEXP ncverbose)
         else return con->getTimeSeriesVariables(verbose);
     }
     catch (const NcException& nce) {
-        Rf_error(nce.toString().c_str());
+        Rf_error("%s\n",nce.toString().c_str());
     }
     return R_NilValue;
 }
@@ -131,14 +131,14 @@ SEXP get_stations(SEXP obj)
 
     R_netcdf *con = R_netcdf::getR_netcdf(obj);
     if (!con) {
-        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_error("%s\n","netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
 
     try {
         return con->getStations();
     }
     catch (const NcException& nce) {
-        Rf_error(nce.toString().c_str());
+        Rf_error("%s\n",nce.toString().c_str());
     }
     return R_NilValue;
 }
@@ -147,14 +147,14 @@ SEXP read_global_attrs(SEXP obj)
 {
     R_netcdf *con = R_netcdf::getR_netcdf(obj);
     if (!con) {
-        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_error("%s\n","netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
 
     try {
         return con->readGlobalAttrs();
     }
     catch (const NcException& nce) {
-        Rf_error(nce.toString().c_str());
+        Rf_error("%s\n",nce.toString().c_str());
     }
     return R_NilValue;
 }
@@ -165,11 +165,11 @@ SEXP read_netcdf(SEXP obj,SEXP variables, SEXP startreq, SEXP countreq)
 
     R_netcdf *con = R_netcdf::getR_netcdf(obj);
     if (!con) {
-        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_error("%s\n","netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
 
     // if (Rf_length(variables) == 0)
-        // Rf_error("netcdf read error: length of variables argument is zero");
+        // Rf_error("%s\n","netcdf read error: length of variables argument is zero");
 
     // Rf_length(variables) can be 0, then the user wants to read the global
     // attributes
@@ -189,7 +189,7 @@ SEXP read_netcdf(SEXP obj,SEXP variables, SEXP startreq, SEXP countreq)
         return con->read(vnames,start,count);
     }
     catch (const NcException& nce) {
-        Rf_error(nce.toString().c_str());
+        Rf_error("%s\n",nce.toString().c_str());
     }
     return R_NilValue;
 }
@@ -222,7 +222,7 @@ SEXP read_netcdf_ts(SEXP args)
         SEXP vars = CAR(args);
         size_t nvars = Rf_xlength(vars);
         if (nvars == 0)
-            Rf_error("netcdf read error: length of variables argument is zero");
+            Rf_error("%s\n","netcdf read error: length of variables argument is zero");
 
         for (size_t i = 0; i < nvars; i++) {
             SEXP dn = STRING_ELT(vars,i);
@@ -280,14 +280,14 @@ SEXP read_netcdf_ts(SEXP args)
 
     R_netcdf *nccon = R_netcdf::getR_netcdf(con);
     if (!nccon) {
-        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_error("%s\n","netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
 
     try {
         return nccon->read(vnames,startTime,endTime,stations,tnames,btname,timezone,verbose);
     }
     catch (const NcException& nce) {
-        Rf_error(nce.toString().c_str());
+        Rf_error("%s\n",nce.toString().c_str());
     }
     return R_NilValue;
 }
@@ -298,11 +298,11 @@ SEXP write_ts_ns(SEXP args)
 {
     args = CDR(args);
 
-    if (args == R_NilValue) Rf_error("connection not specified");
+    if (args == R_NilValue) Rf_error("%s\n","connection not specified");
     SEXP obj = CAR(args);
     R_netcdf *con = eolts::R_netcdf::getR_netcdf(obj);
     if (!con) {
-        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_error("%s\n","netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
 
     args = CDR(args);
@@ -330,7 +330,7 @@ SEXP write_ts_ns(SEXP args)
         SEXP robj = CAR(args);
         size_t ndims = Rf_xlength(robj);
         if (ndims != nonTimeDimNames.size())
-            Rf_error("write_ts_ns error: length of non_time_dimensions argument is not the same as the length of the non_time_dimension names");
+            Rf_error("%s\n","write_ts_ns error: length of non_time_dimensions argument is not the same as the length of the non_time_dimension names");
 
         for (size_t i = 0; i < ndims; i++) {
             nonTimeDims.push_back(NcDim(nonTimeDimNames[i],(size_t)INTEGER(robj)[i]));
@@ -342,7 +342,7 @@ SEXP write_ts_ns(SEXP args)
     if (args != R_NilValue) {
         SEXP robj = CAR(args);
         if (Rf_length(robj) != 1)
-            Rf_error("write_ts_ns error: length of dt argument is not one");
+            Rf_error("%s\n","write_ts_ns error: length of dt argument is not one");
         dt = REAL(robj)[0];
         args = CDR(args);
     }
@@ -351,7 +351,7 @@ SEXP write_ts_ns(SEXP args)
     if (args != R_NilValue) {
         SEXP robj = CAR(args);
         if (Rf_length(robj) != 1)
-            Rf_error("write_ts_ns error: length of fill_value argument is not one");
+            Rf_error("%s\n","write_ts_ns error: length of fill_value argument is not one");
         fill = REAL(robj)[0];
         args = CDR(args);
     }
@@ -360,7 +360,7 @@ SEXP write_ts_ns(SEXP args)
         con->write(nts,nonTimeDims,dt,fill);
     }
     catch (const RPC_Exception& rpcerr) {
-        Rf_error(rpcerr.toString().c_str());
+        Rf_error("%s\n",rpcerr.toString().c_str());
     }
 
     SEXP ans = PROTECT(Rf_allocVector(INTSXP,1));
@@ -373,11 +373,11 @@ SEXP write_history_ns(SEXP args)
 {
     args = CDR(args);
 
-    if (args == R_NilValue) Rf_error("connection not specified");
+    if (args == R_NilValue) Rf_error("%s\n","connection not specified");
     SEXP obj = CAR(args);
     R_netcdf *con = eolts::R_netcdf::getR_netcdf(obj);
     if (!con) {
-        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_error("%s\n","netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
 
     args = CDR(args);
@@ -398,7 +398,7 @@ SEXP write_history_ns(SEXP args)
             con->writeHistory(history[i]);
     }
     catch (const RPC_Exception& e) {
-        Rf_error(e.what());
+        Rf_error("%s\n",e.what());
     }
 
     SEXP ans = PROTECT(Rf_allocVector(INTSXP,1));
@@ -411,11 +411,11 @@ SEXP write_global_attrs_ns(SEXP args)
 {
     args = CDR(args);
 
-    if (args == R_NilValue) Rf_error("connection not specified");
+    if (args == R_NilValue) Rf_error("%s\n","connection not specified");
     SEXP obj = CAR(args);
     R_netcdf *con = eolts::R_netcdf::getR_netcdf(obj);
     if (!con) {
-        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_error("%s\n","netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
 
     args = CDR(args);
@@ -427,7 +427,7 @@ SEXP write_global_attrs_ns(SEXP args)
 
             SEXP names = Rf_getAttrib(robj,R_NamesSymbol);
 
-            if (!Rf_isString(names)) Rf_error("gattrs argument does not have names");
+            if (!Rf_isString(names)) Rf_error("%s\n","gattrs argument does not have names");
 
             for (size_t i = 0; i < ndims; i++) {
                 const char* name = R_CHAR(STRING_ELT(names,i));
@@ -447,7 +447,7 @@ SEXP write_global_attrs_ns(SEXP args)
                             std::ostringstream ost;
                             ost << "gattrs[[\"" << name << "\"]] has length " <<
                                 Rf_xlength(robj2) << ". write not supported";
-                            Rf_error(ost.str().c_str());
+                            Rf_error("%s\n",ost.str().c_str());
                         }
 
                         int val = 0;
@@ -459,7 +459,7 @@ SEXP write_global_attrs_ns(SEXP args)
                     }
                 }
                 catch (const RPC_Exception& e) {
-                    Rf_error(e.what());
+                    Rf_error("%s\n",e.what());
                 }
             }
         }
@@ -477,11 +477,11 @@ SEXP ncsync_r(SEXP args)
 {
     args = CDR(args);
 
-    if (args == R_NilValue) Rf_error("connection not specified");
+    if (args == R_NilValue) Rf_error("%s\n","connection not specified");
     SEXP obj = CAR(args);
     R_netcdf *con = eolts::R_netcdf::getR_netcdf(obj);
     if (!con) {
-        Rf_error("netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
+        Rf_error("%s\n","netcdf object is not open. Has it already been closed? You must reopen with netcdf(...)");
     }
 
     con->sync();
@@ -519,24 +519,24 @@ R_netcdf::R_netcdf(SEXP con, SEXP files, SEXP cdlfile,
     // store a pointer to the C++ object into the cppPtr slot of the
     // con argument.
     if (TYPEOF(slot) != RAWSXP || Rf_length(slot) != 8)
-        Rf_error("cppPtr of object is not of type \"raw\", length 8");
+        Rf_error("%s\n","cppPtr of object is not of type \"raw\", length 8");
 
     *((R_netcdf **)RAW(slot)) = this;
 
 #ifdef HAVE_NC_SERVER
     slot = Rf_getAttrib(con,serverSlotName);
     if (TYPEOF(slot) != STRSXP || Rf_length(slot) != 1)
-        Rf_error("server slot of netcdf object is not character, length 1");
+        Rf_error("%s\n","server slot of netcdf object is not character, length 1");
     _server = string(CHAR(STRING_ELT(slot,0)));
 
     slot = Rf_getAttrib(con,intervalSlotName);
     if (TYPEOF(slot) != REALSXP || Rf_length(slot) != 1)
-        Rf_error("interval slot of netcdf object is not numeric, length 1");
+        Rf_error("%s\n","interval slot of netcdf object is not numeric, length 1");
     _interval = REAL(slot)[0];
 
     slot = Rf_getAttrib(con,lenfileSlotName);
     if (TYPEOF(slot) != INTSXP || Rf_length(slot) != 1)
-        Rf_error("lenfile slot of netcdf object is not integer, length 1");
+        Rf_error("%s\n","lenfile slot of netcdf object is not integer, length 1");
     _lenfile = INTEGER(slot)[0];
 
     /*
@@ -545,26 +545,26 @@ R_netcdf::R_netcdf(SEXP con, SEXP files, SEXP cdlfile,
      * queue is flushed every _rpcBatchPeriod seconds.
      */
     if (TYPEOF(rpcTimeout) != INTSXP || Rf_length(rpcTimeout) != 1)
-        Rf_error("rpcTimeout is not integer, length 1");
+        Rf_error("%s\n","rpcTimeout is not integer, length 1");
     setRPCTimeoutSecs(INTEGER(rpcTimeout)[0]);
 
     if (TYPEOF(rpcBatchPeriod) != INTSXP || Rf_length(rpcBatchPeriod) != 1)
-        Rf_error("rpcBatchPeriod is not integer, length 1");
+        Rf_error("%s\n","rpcBatchPeriod is not integer, length 1");
     _rpcBatchPeriod = INTEGER(rpcBatchPeriod)[0];
 #endif
 
     slot = Rf_getAttrib(con,fileSlotName);
     if (TYPEOF(slot) != STRSXP)
-        Rf_error("file slot of netcdf object is not character");
+        Rf_error("%s\n","file slot of netcdf object is not character");
 
     if (TYPEOF(slot) != STRSXP || Rf_length(slot) == 0)
-        Rf_error("file slot of netcdf object is not character, length >= 1");
+        Rf_error("%s\n","file slot of netcdf object is not character, length >= 1");
     // only used by NC_SERVER, when creating files
     _filenamefmt = string(CHAR(STRING_ELT(slot,0)));
 
     slot = Rf_getAttrib(con,dirSlotName);
     if (TYPEOF(slot) != STRSXP || Rf_length(slot) != 1)
-        Rf_error("directory slot of netcdf object is not character, length 1");
+        Rf_error("%s\n","directory slot of netcdf object is not character, length 1");
     _dir = string(CHAR(STRING_ELT(slot,0)));
 
     addConnection(this);
@@ -587,7 +587,7 @@ R_netcdf::~R_netcdf()
                         (xdrproc_t) xdr_int, (caddr_t) &result,
                         _rpcOtherTimeout)) != RPC_SUCCESS)
         {
-            Rf_warning(clnt_sperror(_clnt,"nc_server close failed"));
+            Rf_warning("%s\n", clnt_sperror(_clnt,"nc_server close failed"));
         }
         clnt_destroy(_clnt);
         _clnt = 0;
@@ -701,7 +701,7 @@ SEXP R_netcdf::getVariables(int verbose)
             if (!var) {
                 std::ostringstream ost;
                 ost << "bad variable in " << ncf->getName();
-                Rf_error(ost.str().c_str());
+                Rf_error("%s\n",ost.str().c_str());
             }
 #ifdef DEBUG
             Rprintf("file=%s, var=%s\n",ncf->getName().c_str(),var->getName().c_str());
@@ -946,7 +946,7 @@ void R_netcdf::write(R_nts &nts,
     int stn;
     vector<int> stations = nts.getStationNumbers();
     if (stations.size() == 0) {
-        Rf_warning("No stations in time series");
+        Rf_warning("%s\n", "No stations in time series");
         stn = -1;
     }
     else stn = stations[0] - 1;
@@ -956,7 +956,7 @@ void R_netcdf::write(R_nts &nts,
             std::ostringstream ost;
             ost << "Cannot write time series from more than one station. stations=c("
                 << stations[0] << ',' << stations[i] << ")";
-            Rf_error(ost.str().c_str());
+            Rf_error("%s\n",ost.str().c_str());
         }
     }
     vector<size_t> start,count;
@@ -971,7 +971,7 @@ void R_netcdf::write(R_nts &nts,
         std::ostringstream ost;
         ost << "Length of weightmap(" << wm.size() <<
             ") not equal to number of columns(" << nc << ")";
-        Rf_warning(ost.str().c_str());
+        Rf_warning("%s\n", ost.str().c_str());
         wc = -1;
     }
     else wc = wm[0] - 1;
@@ -984,7 +984,7 @@ void R_netcdf::write(R_nts &nts,
         if (wm[0] != wm[i]) {
             std::ostringstream ost;
             ost << "Cannot write time series with more than one weights column. weightmap=c(" << wm[0] << ',' << wm[i] << ")";
-            Rf_error(ost.str().c_str());
+            Rf_error("%s\n",ost.str().c_str());
         }
 
     double *wtsArray = wts.getDataPtr();
@@ -1037,7 +1037,7 @@ void R_netcdf::sync()
                 (xdrproc_t) xdr_int, (caddr_t) &result,
                 _rpcOtherTimeout)) != RPC_SUCCESS)
         {
-            Rf_warning(clnt_sperror(_clnt,"nc_server sync failed"));
+            Rf_warning("%s\n", clnt_sperror(_clnt,"nc_server sync failed"));
         }
     }
 }

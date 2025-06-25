@@ -44,7 +44,7 @@ NcFile::~NcFile()
         close();
     }
     catch (const NcException& e) {
-        Rprintf("Error: %e\n",e.what());
+        Rprintf("Error: %s\n",e.what());
     }
 }
 
@@ -444,7 +444,7 @@ map<int,string> NcFile::getStations(const NcDim *tdim)
     if (var->getNcType() != NC_CHAR) {
         std::ostringstream ost;
         ost << "error in " << getName() << ": station variable is not character";
-        Rf_warning(ost.str().c_str());
+        Rf_warning("%s\n", ost.str().c_str());
         return stations;
     }
     const NcDim* stnVarDim = 0;
@@ -453,7 +453,7 @@ map<int,string> NcFile::getStations(const NcDim *tdim)
     if (!stnVarDim || stnVarDim->getId() != stationDim->getId()) {
         std::ostringstream ost;
         ost << "error in " << getName() << ": station variable does not have dimensions of (station,namelen)";
-        Rf_warning(ost.str().c_str());
+        Rf_warning("%s\n", ost.str().c_str());
         return stations;
     }
 

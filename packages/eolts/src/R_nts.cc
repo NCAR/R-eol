@@ -153,7 +153,7 @@ void R_nts::setTimeFormat(const string& val)
 #ifdef DEBUG
         std::ostringstream ost;
         ost << "time.format slot is " << Rf_type2char(TYPEOF(cobj)) << " not STRSXP";
-        Rf_warning(ost.str().c_str());
+        Rf_warning("%s\n", ost.str().c_str());
 #endif
         cobj = PROTECT(Rf_allocVector(STRSXP,1));
         Rf_setAttrib(_obj,timeFormatSlotName,cobj);
@@ -174,7 +174,7 @@ string R_nts::getTimeFormat() const
 #ifdef DEBUG
         std::ostringstream ost;
         ost << "time.format slot is " << Rf_type2char(TYPEOF(cobj)) << " not STRSXP";
-        Rf_warning(ost.str().c_str());
+        Rf_warning("%s\n", ost.str().c_str());
 #endif
         cobj = PROTECT(Rf_allocVector(STRSXP,1));
         Rf_setAttrib(_obj,timeFormatSlotName,cobj);
@@ -191,7 +191,7 @@ void R_nts::setTimeZone(const string& val)
 #ifdef DEBUG
         std::ostringstream ost;
         ost << "time.zone slot is " << Rf_type2char(TYPEOF(cobj)) << " not STRSXP";
-        Rf_warning(ost.str().c_str());
+        Rf_warning("%s\n", ost.str().c_str());
 #endif
         cobj = PROTECT(Rf_allocVector(STRSXP,1));
         Rf_setAttrib(_obj,timeZoneSlotName,cobj);
@@ -212,7 +212,7 @@ string R_nts::getTimeZone() const
 #ifdef DEBUG
         std::ostringstream ost;
         ost << "time.zone slot is " << Rf_type2char(TYPEOF(cobj)) << " not STRSXP";
-        Rf_warning(ost.str().c_str());
+        Rf_warning("%s\n", ost.str().c_str());
 #endif
         cobj = PROTECT(Rf_allocVector(STRSXP,1));
         Rf_setAttrib(_obj,timeZoneSlotName,cobj);
@@ -282,7 +282,7 @@ extern "C" {
         double dt;
         if (Rf_length(dtp) != 1) {
             UNPROTECT(nprot);
-            Rf_error("delta argument is not length 1");
+            Rf_error("%s\n","delta argument is not length 1");
         }
         if (TYPEOF(dtp) == REALSXP)
             dt = REAL(dtp)[0];
@@ -290,18 +290,18 @@ extern "C" {
             dt = INTEGER(dtp)[0];
         else {
             UNPROTECT(nprot);
-            Rf_error("delta argument is not numeric");
+            Rf_error("%s\n","delta argument is not numeric");
         }
 
         if (TYPEOF(typep) != INTSXP || Rf_length(typep) != 1) {
             UNPROTECT(nprot);
-            Rf_error("match type is not integer, length 1");
+            Rf_error("%s\n","match type is not integer, length 1");
         }
         int type = INTEGER(typep)[0];
 
         if (TYPEOF(dupokp) != INTSXP || Rf_length(dupokp) != 1) {
             UNPROTECT(nprot);
-            Rf_error("duplicate type is not integer, length 1");
+            Rf_error("%s\n","duplicate type is not integer, length 1");
         }
         int dupok = INTEGER(dupokp)[0];
 
@@ -319,7 +319,7 @@ extern "C" {
             double x1 = t1[i1];
             if (x1 < t1l) {
                 UNPROTECT(nprot);
-                Rf_error("first series is not ordered");
+                Rf_error("%s\n","first series is not ordered");
             }
             t1l = x1;
 
@@ -330,7 +330,7 @@ extern "C" {
             for (; i2 < l2; i2++) {
                 if (t2[i2] < t2l) {
                     UNPROTECT(nprot);
-                    Rf_error("second series is not ordered");
+                    Rf_error("%s\n","second series is not ordered");
                 }
                 t2l = t2[i2];
                 if (t2l >= xc) break;
@@ -357,7 +357,7 @@ extern "C" {
                     for (size_t j2 = i2 + 1; j2 < l2; j2++) {
                         if (t2[j2] < t2lx) {
                             UNPROTECT(nprot);
-                            Rf_error("second series is not ordered");
+                            Rf_error("%s\n","second series is not ordered");
                         }
                         t2lx = t2[j2];
                         if (t2lx > xc) break;

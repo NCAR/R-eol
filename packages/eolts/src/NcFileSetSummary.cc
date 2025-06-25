@@ -152,7 +152,7 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                 std::ostringstream ost;
                 ost << "time series variable \"" << vname <<
                     "\" not found in file " << ncf->getName();
-                // Rf_warning(ost.str().c_str());
+                // Rf_warning("%s\n", ost.str().c_str());
                 Rprintf("%s\n",ost.str().c_str());
                 continue;
             }
@@ -186,7 +186,7 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                         "\"(" << dimToString(vedges,ndim) <<
                         ") are different than dimensions in previous file: " <<
                         dimToString(_dims[ivar]) << " Skipping variable";
-                    Rf_warning(ost.str().c_str());
+                    Rf_warning("%s\n", ost.str().c_str());
                     _dims[ivar].resize(0);
                 }
             }
@@ -217,7 +217,7 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                         ", variable \"" << var->getName() << "\": sample dimension with length " <<
                         sampleDim->getLength() <<
                         " is not the second dimension. I don't know what to do! Skipping variable";
-                    Rf_warning(ost.str().c_str());
+                    Rf_warning("%s\n", ost.str().c_str());
                     _dims[ivar].resize(0);
                     continue;
                 }
@@ -238,7 +238,7 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                             ", variable \"" << var->getName() << "\": station dimension with length " <<
                         stationDim->getLength() <<
                         " is less than requested station=%d. Skipping variable";
-                        Rf_warning(ost.str().c_str());
+                        Rf_warning("%s\n", ost.str().c_str());
                         _dims[ivar].resize(0);
                         continue;
                     }
@@ -267,7 +267,7 @@ NcFileSetSummary::NcFileSetSummary(NcFileSet *fs,
                         dim->getName() << "\" of length " << dim->getLength() <<
                         " is not a sample or station dimension and cannot be added to time series, skipping.";
 
-                    Rf_warning(ost.str().c_str());
+                    Rf_warning("%s\n", ost.str().c_str());
                     _dims[ivar].resize(0);
                 }
             }
@@ -308,7 +308,7 @@ void NcFileSetSummary::checkType(NcVar*var)
      * If any input column is character, then they all must be character.
      */
     if (_outType != NC_NAT && (_outType == NC_CHAR || type == NC_CHAR) && _outType != type) {
-        Rf_error("error: cannot mix character and numeric variables");
+        Rf_error("%s\n", "error: cannot mix character and numeric variables");
     }
 
     switch (type) {
@@ -351,7 +351,7 @@ void NcFileSetSummary::checkType(NcVar*var)
             std::ostringstream ost;
             ost << "unknown type for variable \"" << var->getName() <<
                 "\" in file " << var->getFileName();
-            Rf_error(ost.str().c_str());
+            Rf_error("%s\n",ost.str().c_str());
         }
         break;
     }
@@ -367,7 +367,7 @@ void NcFileSetSummary::resolveOutType() {
     if (_outType == NC_NAT) {
         std::ostringstream ost;
         ost << "error: no requested variables found";
-        Rf_error(ost.str().c_str());
+        Rf_error("%s\n",ost.str().c_str());
     }
 
     if (_outType == NC_SHORT || _outType == NC_BYTE) _outType = NC_INT;

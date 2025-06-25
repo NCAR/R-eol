@@ -163,7 +163,7 @@ SEXP create_matrix(SEXP type, SEXP nrow,SEXP ncol)
 {
     SEXP ans = 0;
     if (!Rf_isInteger(nrow) || !Rf_isInteger(ncol))
-        Rf_error("nrow and ncol must be integer");
+        Rf_error("%s\n","nrow and ncol must be integer");
     size_t nr = INTEGER(nrow)[0];
     size_t nc = INTEGER(ncol)[0];
     if (Rf_isReal(type)) {
@@ -178,7 +178,7 @@ SEXP create_matrix(SEXP type, SEXP nrow,SEXP ncol)
         R_Matrix<int> mat(LGLSXP,nr,nc);
         ans = mat.getRObject();
     }
-    if (!ans) Rf_error("unvalid type");
+    if (!ans) Rf_error("%s\n","unvalid type");
     return ans;
 }
 
@@ -186,7 +186,7 @@ SEXP set_dims(SEXP x, SEXP nrow,SEXP ncol)
 {
     SEXP ans = 0;
     if (!Rf_isInteger(nrow) || !Rf_isInteger(ncol))
-        Rf_error("nrow and ncol must be integer");
+        Rf_error("%s\n","nrow and ncol must be integer");
     size_t nr = INTEGER(nrow)[0];
     size_t nc = INTEGER(ncol)[0];
     if (Rf_isReal(x)) {
@@ -204,14 +204,14 @@ SEXP set_dims(SEXP x, SEXP nrow,SEXP ncol)
         mat.setDims(nr,nc);
         ans = mat.getRObject();
     }
-    if (!ans) Rf_error("unvalid type of x");
+    if (!ans) Rf_error("%s\n","unvalid type of x");
     return ans;
 }
 SEXP set_dimnames(SEXP x, SEXP names)
 {
     SEXP ans = 0;
     if (!Rf_isNewList(names))
-        Rf_error("names is not a list");
+        Rf_error("%s\n","names is not a list");
     vector<vector<string> > dimnames;
     for (size_t i = 0; i < (size_t) Rf_xlength(names); i++) {
         vector<string> dnames;
@@ -241,7 +241,7 @@ SEXP set_dimnames(SEXP x, SEXP names)
             mat.setDimNames(i,dimnames[i]);
         ans = mat.getRObject();
     }
-    if (!ans) Rf_error("unvalid type of x");
+    if (!ans) Rf_error("%s\n","unvalid type of x");
     return ans;
 }
 

@@ -463,7 +463,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                 std::ostringstream ost;
                 ost << "variable \"" << vnames[ivar] << "\" not found in " <<
                     ncf->getName();
-                Rf_warning(ost.str().c_str());
+                Rf_warning("%s\n", ost.str().c_str());
 #else
                 Rprintf("variable \"%s\" not found in file %s\n",
                         vnames[ivar].c_str(),ncf->getName().c_str());
@@ -499,7 +499,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                                 var1->getFileName() << " is of type " << var1->typeToString() <<
                                 ", variable " << var->getName() << " in file " <<
                                 var->getFileName() << " is of type " << var->typeToString();
-                            Rf_warning(ost.str().c_str());
+                            Rf_warning("%s\n", ost.str().c_str());
                         }
                         break;
                     case -1:
@@ -510,7 +510,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                                 var1->getFileName() << " is of type " << var1->typeToString() <<
                                 ", variable " << var->getName() << " in file " <<
                                 var->getFileName() << " is of type " << var->typeToString();
-                            Rf_error(ost.str().c_str());
+                            Rf_error("%s\n",ost.str().c_str());
                         }
                         break;
                     }
@@ -525,7 +525,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                         " in file " << var1->getFileName() << " has different dimensions than " <<
                         "variable " << var->getName() << '(' << dimToString(vedges,ndims) << ')' <<
                         " in file " << var->getFileName();
-                    Rf_error(ost.str().c_str());
+                    Rf_error("%s\n",ost.str().c_str());
                 }
             }
 
@@ -568,7 +568,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                     ost << "netcdf read error: start=c(" << dimToString(start) << ')' <<
                         " exceeds dimensions of variable " << vnames[ivar] << '(' << 
                         dimToString(vedges,ndims) << ')' << " in file " << ncf->getShortName();
-                    Rf_error(ost.str().c_str());
+                    Rf_error("%s\n",ost.str().c_str());
                 }
                 if (start[i]+count[i] > vedges[i]) {
                     std::ostringstream ost;
@@ -576,7 +576,7 @@ SEXP NetcdfReader::read(const vector<string> & vnames,
                         " + count=c(" << dimToString(count) << ')' <<
                         " exceeds dimensions of variable " << vnames[ivar] << '(' << 
                         dimToString(vedges,ndims) << ')' << " in file " << ncf->getShortName();
-                    Rf_error(ost.str().c_str());
+                    Rf_error("%s\n",ost.str().c_str());
                 }
             }
 
@@ -828,7 +828,7 @@ SEXP NetcdfReader::readGlobalAttrs()
                 ost << "File " << ncf->getName() << ", global attribute " <<
                     attr->getName() << " has length " << attr->getLength() <<
                     " which this function is not prepared to handle" << std::endl;
-                Rf_warning(ost.str().c_str());
+                Rf_warning("%s\n", ost.str().c_str());
                 continue;
             }
             switch(attr->getNcType()) {
@@ -840,7 +840,7 @@ SEXP NetcdfReader::readGlobalAttrs()
                         std::ostringstream ost;
                         ost << "File " << ncf->getName() << ", global attribute " <<
                             attr->getName() << " type is not consistently NC_CHAR" << std::endl;
-                        Rf_warning(ost.str().c_str());
+                        Rf_warning("%s\n", ost.str().c_str());
                         continue;
                     }
                 }
@@ -854,7 +854,7 @@ SEXP NetcdfReader::readGlobalAttrs()
                         std::ostringstream ost;
                         ost << "File " << ncf->getName() << ", global attribute " <<
                             attr->getName() << " type is not consistent" << std::endl;
-                        Rf_warning(ost.str().c_str());
+                        Rf_warning("%s\n", ost.str().c_str());
                         continue;
                     }
                 }
@@ -962,7 +962,7 @@ size_t NetcdfReader::searchTime(NcVar* var,double stime,NetcdfReader::timeTests 
             std::ostringstream ost;
             ost << "Variable " << var->getName() << " in file " <<
                     var->getFileName() << " does not seem to be ordered";
-            Rf_warning(ost.str().c_str());
+            Rf_warning("%s\n", ost.str().c_str());
             n2 = 0;
             break;
         }
@@ -1173,7 +1173,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
             std::ostringstream ost;
             ost << "error reading file " << ncf->getName() <<
                 ", cannot find a time dimension";
-            Rf_warning(ost.str().c_str());
+            Rf_warning("%s\n", ost.str().c_str());
             continue;
         }
 
@@ -1189,7 +1189,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
             std::ostringstream ost;
             ost << "error reading file " << ncf->getName() <<
                 ", cannot find time variables";
-            Rf_warning(ost.str().c_str());
+            Rf_warning("%s\n", ost.str().c_str());
             continue;
         }
 
@@ -1214,7 +1214,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                         basetime += toff;
                     }
                     catch(const string& e) {
-                        Rf_warning(e.c_str());
+                        Rf_warning("%s\n", e.c_str());
                     }
                 }
             }
@@ -1231,7 +1231,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                     basetime = R_parseCFTimeString(tunits,timemult);
                 }
                 catch(const string& e) {
-                    Rf_warning(e.c_str());
+                    Rf_warning("%s\n", e.c_str());
                 }
             }
         }
@@ -1442,7 +1442,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                         " does not divide evenly into maximum sample rate of requested variables, which is " <<
                     maxSampleDim << ". Timetags of " << vnames[ivar] <<
                     " will be approximate";
-                    Rf_warning(ost.str().c_str());
+                    Rf_warning("%s\n", ost.str().c_str());
                 }
                 else if (!(sampleRatio % 2)) {
                     std::ostringstream ost;
@@ -1450,7 +1450,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                         ". Maximum sample rate of requested variables is " <<
                         maxSampleDim << ". Since " << maxSampleDim << "/" << sampleDim << "=" <<
                         sampleRatio << " is not odd, timetags of " << vnames[ivar] << " will be approximate";
-                    Rf_warning(ost.str().c_str());
+                    Rf_warning("%s\n", ost.str().c_str());
                 }
 
                 sampleDimNum = -1;
@@ -1464,7 +1464,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                                 var->getName() << ": dimension " <<
                                 dim->getName() << " has length " <<
                                 dim->getLength() << " should be " << sampleDim;
-                            Rf_error(ost.str().c_str());
+                            Rf_error("%s\n",ost.str().c_str());
                         }
                         sampleDimNum = i;
                     }
@@ -1592,7 +1592,7 @@ SEXP NetcdfReader::read(const vector<string> &vnames,
                 std::ostringstream ost;
                 ost << "variable \"" << vnames[ivar] << "\" not found in " <<
                     ncf->getName();
-                Rf_warning(ost.str().c_str());
+                Rf_warning("%s\n", ost.str().c_str());
 #else
                 Rprintf("variable \"%s\" not found in %s\n",
                         vnames[ivar].c_str(),ncf->getShortName().c_str());

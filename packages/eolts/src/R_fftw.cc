@@ -47,17 +47,17 @@ SEXP R_cfftw(SEXP cmatp, SEXP invp)
      * Check the size just to be paranoid.
      */
     if (sizeof(Rcomplex) != sizeof(fftw_complex))
-        Rf_error("incompatible complex types");
+        Rf_error("%s\n","incompatible complex types");
 
     if (TYPEOF(cmatp) != CPLXSXP)
-        Rf_error("data parameter is not of type complex");
+        Rf_error("%s\n","data parameter is not of type complex");
     R_Matrix<Rcomplex> cmat(CPLXSXP,cmatp);
 
     size_t nr = cmat.getNrows();
     size_t nc = cmat.getNcols();
 
     if (TYPEOF(invp) != LGLSXP || Rf_length(invp) != 1)
-        Rf_error("inverse parameter is object is not type logical, length 1");
+        Rf_error("%s\n","inverse parameter is object is not type logical, length 1");
     bool inverse = (bool)LOGICAL(invp)[0];
 
     fftw_complex* cpin = (fftw_complex*) cmat.getDataPtr();
@@ -116,14 +116,14 @@ SEXP R_cfftw(SEXP cmatp, SEXP invp)
 SEXP R_rfftw(SEXP dmatp, SEXP invp)
 {
     if (TYPEOF(dmatp) != REALSXP)
-        Rf_error("data parameter is not of type real");
+        Rf_error("%s\n","data parameter is not of type real");
     R_Matrix<double> dmat(REALSXP,dmatp);
 
     size_t nr = dmat.getNrows();
     size_t nc = dmat.getNcols();
 
     if (TYPEOF(invp) != LGLSXP || Rf_length(invp) != 1)
-        Rf_error("inverse parameter is object is not type logical, length 1");
+        Rf_error("%s\n","inverse parameter is object is not type logical, length 1");
     bool inverse = (bool)LOGICAL(invp)[0];
 
     R_Matrix<double> dmatout(REALSXP,nr,nc);

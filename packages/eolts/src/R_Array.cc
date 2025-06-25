@@ -119,7 +119,7 @@ SEXP create_array(SEXP type, SEXP dims)
 {
     SEXP ans = 0;
     if (!Rf_isInteger(dims))
-        Rf_error("dims must be integer");
+        Rf_error("%s\n","dims must be integer");
     vector<size_t> dvec;
     for (unsigned int i = 0; i < (unsigned)Rf_length(dims); i++)
         dvec.push_back(INTEGER(dims)[i]);
@@ -140,7 +140,7 @@ SEXP create_array(SEXP type, SEXP dims)
         R_Array<char*> arr(LGLSXP,dvec);
         ans = arr.getRObject();
     }
-    if (!ans) Rf_error("unvalid type");
+    if (!ans) Rf_error("%s\n","unvalid type");
     return ans;
 }
 
@@ -148,7 +148,7 @@ SEXP set_adims(SEXP x, SEXP dims)
 {
     SEXP ans = 0;
     if (!Rf_isInteger(dims))
-        Rf_error("dims must be integer");
+        Rf_error("%s\n","dims must be integer");
     vector<size_t> dvec;
     for (unsigned int i = 0; i < (unsigned)Rf_length(dims); i++)
         dvec.push_back(INTEGER(dims)[i]);
@@ -173,16 +173,16 @@ SEXP set_adims(SEXP x, SEXP dims)
         arr.setDims(dvec);
         ans = arr.getRObject();
     }
-    if (!ans) Rf_error("unvalid type of x");
+    if (!ans) Rf_error("%s\n","unvalid type of x");
     return ans;
 }
 SEXP set_adimnames(SEXP x, SEXP names)
 {
     SEXP ans = 0;
     if (!Rf_isNewList(names))
-        Rf_warning("names is not a new list"); 
+        Rf_warning("%s\n", "names is not a new list"); 
     if (!Rf_isList(names))
-        Rf_warning("names is not a list"); 
+        Rf_warning("%s\n", "names is not a list"); 
     vector<vector<string> > dimnames;
     for (unsigned int i = 0; i < (unsigned) Rf_length(names); i++) {
         vector<string> dnames;
@@ -218,7 +218,7 @@ SEXP set_adimnames(SEXP x, SEXP names)
             arr.setDimNames(i,dimnames[i]);
         ans = arr.getRObject();
     }
-    if (!ans) Rf_error("unvalid type of x");
+    if (!ans) Rf_error("%s\n","unvalid type of x");
     return ans;
 }
 }

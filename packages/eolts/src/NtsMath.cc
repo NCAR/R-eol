@@ -103,7 +103,7 @@ SEXP NtsMath::averageMean(R_nts& ntsin, double avgint,
     if (fabs(avgint/outint - nsum) > 1.e-5 || nsum < 1) {
         std::ostringstream ost;
         ost <<  "average interval=" << avgint << " is not a multiple of the output interval=" << outint;
-        Rf_error(ost.str().c_str());
+        Rf_error("%s\n",ost.str().c_str());
     }
 
     R_Matrix<double> matin(REALSXP,ntsin.getMatrix());
@@ -157,14 +157,14 @@ SEXP NtsMath::averageMean(R_nts& ntsin, double avgint,
         ost << "not enough data to average,nout=" << nout <<
             ",dt=" << ttmp-tsum0 <<
             ",nsum=" << nsum << ",tsum0=" << tsum0;
-        Rf_error(ost.str().c_str());
+        Rf_error("%s\n",ost.str().c_str());
     }
 
     if (inWeights && wmapin.size() != nc) {
         std::ostringstream ost;
         ost << "invalid weightmap, length=" << wmapin.size() <<
             ",ncols=" << nc;
-        Rf_error(ost.str().c_str());
+        Rf_error("%s\n",ost.str().c_str());
     }
 
     R_nts ntsout;
@@ -223,7 +223,7 @@ SEXP NtsMath::averageMean(R_nts& ntsin, double avgint,
                         ost << "navg=" << navg << ",nout=" << nout <<
                             ", tdiff=" << ttmp-tsum0 << ", outint=" << outint <<
                             ",nsum=" << nsum;
-                        Rf_error(ost.str().c_str());
+                        Rf_error("%s\n",ost.str().c_str());
                     }
                     if (ic == 0) posout.setTime(navg,tsum - avgint * .5);
 
@@ -264,7 +264,7 @@ SEXP NtsMath::averageMean(R_nts& ntsin, double avgint,
                 ost << "navg=" << navg << ",nout=" << nout <<
                     ", tdiff=" << ttmp-tsum0 << ", outint=" << outint <<
                     ",nsum=" << nsum;
-                Rf_error(ost.str().c_str());
+                Rf_error("%s\n",ost.str().c_str());
             }
             if (ic == 0) posout.setTime(navg,tsum - avgint * .5);
 
@@ -318,7 +318,7 @@ SEXP NtsMath::averageMedian(R_nts& ntsin, double avgint,
     if (fabs(avgint/outint - nint) > 1.e-5 || nint < 1) {
         std::ostringstream ost;
         ost <<  "average interval=" << avgint << " is not a multiple of the output interval=" << outint;
-        Rf_error(ost.str().c_str());
+        Rf_error("%s\n",ost.str().c_str());
     }
 
     R_Matrix<double> matin(REALSXP,ntsin.getMatrix());
@@ -355,7 +355,7 @@ SEXP NtsMath::averageMedian(R_nts& ntsin, double avgint,
             ",dt=" << ttmp-tint0 <<
             ",nint=" << nint <<
             ",tint0=" << tint0;
-        Rf_error(ost.str().c_str());
+        Rf_error("%s\n",ost.str().c_str());
     }
 
 
@@ -406,7 +406,7 @@ SEXP NtsMath::averageMedian(R_nts& ntsin, double avgint,
                         ost << "navg=" << navg << ",nout=" << nout <<
                             ", tdiff=" << ttmp-tint0 << ", outint=" << outint <<
                             ",nint" << nint;
-                        Rf_error(ost.str().c_str());
+                        Rf_error("%s\n",ost.str().c_str());
                     }
 
                     if (sortBuffer.size() > 0) 
@@ -452,7 +452,7 @@ SEXP NtsMath::averageMedian(R_nts& ntsin, double avgint,
                 ost << "navg=" << navg << ",nout=" << nout <<
                     ", tdiff=" << ttmp-tint0 << ", outint=" << outint <<
                     ",nint" << nint;
-                Rf_error(ost.str().c_str());
+                Rf_error("%s\n",ost.str().c_str());
             }
 
             if (sortBuffer.size() > 0) 

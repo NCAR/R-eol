@@ -82,7 +82,7 @@ int eolts::sizeOfRMode(int mode)
         {
             std::ostringstream ost;
             ost << "sizeOfRMode, programmer's error, unknown R type " << mode;
-            Rf_error(ost.str().c_str());
+            Rf_error("%s\n",ost.str().c_str());
         }
         return 0;
     }

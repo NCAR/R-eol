@@ -72,7 +72,7 @@ R_ArrayBase::R_ArrayBase(int type, SEXP obj) :
             _dims.push_back(l);
             len *= l;
         }
-        if (len != _length) Rf_error("incorrect dimensions");
+        if (len != _length) Rf_error("%s\n","incorrect dimensions");
     }
     _dnobj = Rf_getAttrib(_obj,R_DimNamesSymbol);
 }
@@ -96,13 +96,13 @@ vector<string> R_ArrayBase::getDimNames(unsigned int idim)
 
     if (idim >= _dims.size()) {
         Rprintf("R_ArrayBase::getDimNames: idim=%u exceeds maximum index for number of dimensions, %zu\n",idim,_dims.size());
-        Rf_error("invalid idim argument");
+        Rf_error("%s\n","invalid idim argument");
     }
 
     if (!_dnobj || Rf_length(_dnobj) == 0) return names;
 
     if (!Rf_isNewList(_dnobj)) {
-        Rf_warning("dimnames is not a list");
+        Rf_warning("%s\n", "dimnames is not a list");
         _dnobj = PROTECT(Rf_allocVector(VECSXP,_dims.size()));
         Rf_setAttrib(_obj,R_DimNamesSymbol,_dnobj);
         UNPROTECT(1);
@@ -112,7 +112,7 @@ vector<string> R_ArrayBase::getDimNames(unsigned int idim)
     if ((unsigned)Rf_length(_dnobj) != _dims.size()) {
         Rprintf("R_ArrayBase::getDimNames: length of dimnames list, %u, is not equal to number of dimensions, %zu\n",
                 (unsigned)Rf_length(_dnobj),_dims.size());
-        Rf_error("internal error: bad length of dimnames list");
+        Rf_error("%s\n","internal error: bad length of dimnames list");
     }
 
     SEXP dobj = VECTOR_ELT(_dnobj,idim);
@@ -121,7 +121,7 @@ vector<string> R_ArrayBase::getDimNames(unsigned int idim)
     if ((unsigned)Rf_length(dobj) != _dims[idim]) {
         Rprintf("R_ArrayBase::getDimNames: length of dimnames for dimension %d is %u, and not equal to dimension length %zu\n",
                 idim,(unsigned)Rf_length(dobj),_dims[idim]);
-        Rf_error("wrong length for dimnames");
+        Rf_error("%s\n","wrong length for dimnames");
     }
 
     for (size_t i = 0; i < _dims[idim]; i++) {
@@ -136,7 +136,7 @@ void R_ArrayBase::setDimNames(unsigned int idim,const vector<string>& names)
     if (idim >= _dims.size()) {
         Rprintf("R_ArrayBase::setDimNames: idim=%u exceeds maximum index for number of dimensions, %zu\n",
                 idim,_dims.size());
-        Rf_error("invalid idim argument");
+        Rf_error("%s\n","invalid idim argument");
     }
 
     if (!_dnobj || !Rf_isNewList(_dnobj) || (unsigned) Rf_length(_dnobj) != _dims.size()) {
@@ -148,7 +148,7 @@ void R_ArrayBase::setDimNames(unsigned int idim,const vector<string>& names)
     if (names.size() > 0 && names.size() != _dims[idim]) {
         Rprintf("R_ArrayBase::setDimNames: length of dimension %d is %zu, and not equal to number of names for that dimension, %zu\n",
                 idim,_dims[idim],names.size());
-        Rf_error("wrong length for dimension names");
+        Rf_error("%s\n","wrong length for dimension names");
     }
 
     SEXP dobj = VECTOR_ELT(_dnobj,idim);

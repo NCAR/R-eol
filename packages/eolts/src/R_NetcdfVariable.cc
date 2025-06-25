@@ -53,7 +53,7 @@ R_NetcdfVariable::R_NetcdfVariable(R_netcdf *con,NcVar *var):
         std::ostringstream ost;
         ost << "NetcdfReader::rMode, unsupported nctype " <<
             var->typeToString() <<" for variable " << var->getName();
-        Rf_error(ost.str().c_str());
+        Rf_error("%s\n",ost.str().c_str());
     }
     setMode(rModeToString(rmode));
     setNcType(var->typeToString());

@@ -85,7 +85,7 @@ vector<string> R_MatrixBase::getDimNames(size_t idim)
     const size_t ndims = sizeof(_dims)/sizeof(_dims[0]);
     if (idim >= ndims) {
         Rprintf("R_MatrixBase::getDimNames: idim=%u exceeds maximum index for number of dimensions, %zu\n",idim,ndims);
-        Rf_error("invalid idim argument");
+        Rf_error("%s\n","invalid idim argument");
     }
 
     vector<string> names;
@@ -93,7 +93,7 @@ vector<string> R_MatrixBase::getDimNames(size_t idim)
     if (!_dnobj || Rf_xlength(_dnobj) == 0) return names;
 
     if (!Rf_isNewList(_dnobj)) {
-        // Rf_warning("dimnames is not a new list");
+        // Rf_warning("%s\n", "dimnames is not a new list");
         _dnobj = PROTECT(Rf_allocVector(VECSXP,ndims));
         Rf_setAttrib(_obj,R_DimNamesSymbol,_dnobj);
         UNPROTECT(1);
@@ -103,7 +103,7 @@ vector<string> R_MatrixBase::getDimNames(size_t idim)
     if ((size_t)Rf_xlength(_dnobj) != ndims) {
         Rprintf("R_ArrayBase::getDimNames: length of dimnames list, %u, is not equal to number of dimensions, %zu\n",
                 (size_t)Rf_xlength(_dnobj),ndims);
-        Rf_error("internal error: bad length of dimnames list");
+        Rf_error("%s\n","internal error: bad length of dimnames list");
     }
 
     SEXP dobj = VECTOR_ELT(_dnobj,idim);
@@ -112,7 +112,7 @@ vector<string> R_MatrixBase::getDimNames(size_t idim)
     if ((size_t) Rf_xlength(dobj) != _dims[idim]) {
         Rprintf("R_MatrixBase::getDimNames: length of dimnames for dimension %d is %u, and not equal to dimension length %zu\n",
                 idim,(size_t)Rf_xlength(dobj),_dims[idim]);
-        Rf_error("wrong length for dimnames");
+        Rf_error("%s\n","wrong length for dimnames");
     }
 
     for (size_t i = 0; i < _dims[idim]; i++) {
@@ -136,7 +136,7 @@ void R_MatrixBase::setDimNames(size_t idim, const vector<string>& names)
     const size_t ndims = sizeof(_dims)/sizeof(_dims[0]);
     if (idim >= ndims) {
         Rprintf("R_MatrixBase::getDimNames: idim=%u exceeds maximum index for number of dimensions, %zu\n",idim,ndims);
-        Rf_error("invalid idim argument");
+        Rf_error("%s\n","invalid idim argument");
     }
 
     if (!_dnobj || !Rf_isNewList(_dnobj) || (size_t) Rf_xlength(_dnobj) != ndims) {
@@ -148,7 +148,7 @@ void R_MatrixBase::setDimNames(size_t idim, const vector<string>& names)
     if (names.size() > 0 && names.size() != _dims[idim]) {
         Rprintf("R_MatrixBase::setDimNames: length of dimension %d is %zu, and not equal to number of names for that dimension, %zu\n",
                 idim,_dims[idim],names.size());
-        Rf_error("wrong length for dimension names");
+        Rf_error("%s\n","wrong length for dimension names");
     }
 
     SEXP dobj = VECTOR_ELT(_dnobj,idim);

@@ -49,7 +49,7 @@ R_NamedVectorBase::R_NamedVectorBase(int type, SEXP obj):
     }
 
     if ((size_t)Rf_xlength(_names) != _length) {
-        Rf_warning("length of names of R_NamedVector is not equal to length of vector");
+        Rf_warning("%s\n", "length of names of R_NamedVector is not equal to length of vector");
         _names = Rf_xlengthgets(_names,_length);
         Rf_setAttrib(_obj,R_NamesSymbol,_names);
     }
@@ -91,11 +91,11 @@ void R_NamedVectorBase::setNames(const vector<string>& names)
     if ((size_t)Rf_xlength(_names) != _length) {
         Rprintf("Rf_xlength(_names)=%td, _length=%zd\n",
                 Rf_xlength(_names),_length);
-        Rf_error("bad length in R_NamedVectorBase::setNames");
+        Rf_error("%s\n","bad length in R_NamedVectorBase::setNames");
     }
 
     if (_length != names.size())
-        Rf_warning("bad length in R_NamedVectorBase::setNames");
+        Rf_warning("%s\n", "bad length in R_NamedVectorBase::setNames");
 
     size_t i;
     for (i = 0; i < names.size() && i < _length; i++)
