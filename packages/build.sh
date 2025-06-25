@@ -178,22 +178,37 @@ EOD
     fi
 }
 
+# splusTimeDate and splusTimeSeries packages were missing from CRAN for
+# a while, but were added back in Sept 2024. If they are not available for a
+# version of R on CRAN, but the tar sources are on
+# https://cran.r-project.org/src/contrib/Archive/
+# change splusPkgsOnCRAN to false
 
-stdsrc="https://cran.r-project.org/src/contrib/Archive/splusTimeDate/splusTimeDate_2.5.4.tar.gz"
-stssrc="https://cran.r-project.org/src/contrib/Archive/splusTimeSeries/splusTimeSeries_1.5.5.tar.gz"
+splusPkgsOnCRAN=true
 
 install_depends() {
-    packages='"gWidgets2", "quantreg", "maps", "Rcpp", "RUnit"'
+    if $splusPkgsOnCRAN; then
+        packages='"gWidgets2", "quantreg", "maps", "Rcpp", "RUnit", "splusTimeDate", "splusTimeSeries"'
+    else
+        packages='"gWidgets2", "quantreg", "maps", "Rcpp", "RUnit"'
+        stdsrc="https://cran.r-project.org/src/contrib/Archive/splusTimeDate/splusTimeDate_2.5.4.tar.gz"
+        stssrc="https://cran.r-project.org/src/contrib/Archive/splusTimeSeries/splusTimeSeries_1.5.5.tar.gz"
+    fi
+
     R $rargs --vanilla << EOD
-options(repos=c("http://cran.us.r-project.org"))
-install.packages(c($packages))
-install.packages("${stdsrc}", repo=NULL, type="source")
-install.packages("${stssrc}", repo=NULL, type="source")
+    options(repos=c("http://cran.us.r-project.org"))
+    install.packages(c($packages))
+EOD
+if ! $splusPkgsOnCRAN; then
+    R $rargs --vanilla << EOD
+    options(repos=c("http://cran.us.r-project.org"))
+    install.packages("${stdsrc}", repo=NULL, type="source")
+    install.packages("${stssrc}", repo=NULL, type="source")
 EOD
     # R CMD INSTALL "$stdsrc"
     # R CMD INSTALL "$stssrc"
+fi
 }
-
 
 if $do_depends; then
     install_depends
