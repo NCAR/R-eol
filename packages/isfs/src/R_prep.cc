@@ -84,7 +84,7 @@ SEXP prep_get_period(SEXP con)
 {
     R_prep *prep = R_prep::getR_prep(con);
     if (!prep)
-        Rf_error("prep object is not open. Has it already been closed? You must reopen with prep(...)");
+        Rf_error("%s\n", "prep object is not open. Has it already been closed? You must reopen with prep(...)");
 
     SEXP ans = PROTECT(Rf_allocVector(REALSXP,1));
     REAL(ans)[0] = prep->getPeriod();
@@ -96,13 +96,13 @@ SEXP prep_set_period(SEXP con,SEXP val)
 {
     R_prep *prep = R_prep::getR_prep(con);
     if (!prep)
-        Rf_error("prep object is not open. Has it already been closed? You must reopen with prep(...)");
+        Rf_error("%s\n", "prep object is not open. Has it already been closed? You must reopen with prep(...)");
 
     if (Rf_length(val) != 1) {
         std::ostringstream ost;
         ost << "prep_set_period error: length of period argument is " <<
             Rf_length(val) << " It should be 1";
-        Rf_error(ost.str().c_str());
+        Rf_error("%s\n", ost.str().c_str());
     }
     prep->setPeriod(REAL(val)[0]);
     return val;
@@ -113,7 +113,7 @@ SEXP prep_get_nrows(SEXP con)
 
     R_prep *prep = R_prep::getR_prep(con);
     if (!prep)
-        Rf_error("prep object is not open. Has it already been closed? You must reopen with prep(...)");
+        Rf_error("%s\n", "prep object is not open. Has it already been closed? You must reopen with prep(...)");
 
     SEXP ans = PROTECT(Rf_allocVector(INTSXP,1));
     INTEGER(ans)[0] = prep->getNrows();
@@ -125,13 +125,13 @@ SEXP prep_set_nrows(SEXP con,SEXP val)
 {
     R_prep *prep = R_prep::getR_prep(con);
     if (!prep)
-        Rf_error("prep object is not open. Has it already been closed? You must reopen with prep(...)");
+        Rf_error("%s\n", "prep object is not open. Has it already been closed? You must reopen with prep(...)");
 
     if (Rf_length(val) != 1) {
         std::ostringstream ost;
         ost << "prep_set_nrows error: length of nrows argument is " <<
             Rf_length(val) << " It should be 1";
-        Rf_error(ost.str().c_str());
+        Rf_error("%s\n", ost.str().c_str());
     }
     prep->setNrows(INTEGER(val)[0]);
     return val;
@@ -141,15 +141,15 @@ SEXP start_prep(SEXP con, SEXP prog,SEXP argsp, SEXP envp, SEXP unitsp)
 {
     R_prep *prep = R_prep::getR_prep(con);
     if (!prep)
-        Rf_error("prep object is not open. Has it already been closed? You must reopen with prep(...)");
+        Rf_error("%s\n", "prep object is not open. Has it already been closed? You must reopen with prep(...)");
 
     if (TYPEOF(prog) != STRSXP || Rf_length(prog) != 1)
-        Rf_error("error: prog argument is not a character vector of length 1");
+        Rf_error("%s\n", "error: prog argument is not a character vector of length 1");
 
     string progName(CHAR(STRING_ELT(prog,0)));
 
     if (TYPEOF(argsp) != STRSXP)
-        Rf_error("error: args argument is not a character vector");
+        Rf_error("%s\n", "error: args argument is not a character vector");
 
     vector<string> args;
     for (size_t i = 0; i < (size_t)Rf_xlength(argsp); i++) {
@@ -158,7 +158,7 @@ SEXP start_prep(SEXP con, SEXP prog,SEXP argsp, SEXP envp, SEXP unitsp)
     }
 
     if (TYPEOF(envp) != STRSXP)
-        Rf_error("error: env argument is not a character vector");
+        Rf_error("%s\n", "error: env argument is not a character vector");
 
     vector<string> env;
     for (size_t i = 0; i < (size_t)Rf_xlength(envp); i++) {
@@ -167,7 +167,7 @@ SEXP start_prep(SEXP con, SEXP prog,SEXP argsp, SEXP envp, SEXP unitsp)
     }
 
     if (TYPEOF(unitsp) != STRSXP)
-        Rf_error("error: units argument is not a character vector");
+        Rf_error("%s\n", "error: units argument is not a character vector");
 
     vector<string> units;
     for (size_t i = 0; i < (size_t)Rf_xlength(unitsp); i++) {
@@ -188,13 +188,13 @@ SEXP read_prep(SEXP con,SEXP beginp, SEXP endp, SEXP nrowsp)
 
     R_prep *prep = R_prep::getR_prep(con);
     if (!prep)
-        Rf_error("prep object is not open. Has it already been closed? You must reopen with prep(...)");
+        Rf_error("%s\n", "prep object is not open. Has it already been closed? You must reopen with prep(...)");
 
     R_utime begin(beginp);
     R_utime end(endp);
 
     if (TYPEOF(nrowsp) != INTSXP && Rf_length(nrowsp) != 1)
-        Rf_error("error: nrows argument is not an integer of length 1");
+        Rf_error("%s\n", "error: nrows argument is not an integer of length 1");
 
     size_t nrows = INTEGER(nrowsp)[0];
 
@@ -205,7 +205,7 @@ SEXP close_prep(SEXP con)
 {
     R_prep *prep = R_prep::getR_prep(con);
     if (!prep)
-        Rf_error("prep object is not open. Has it already been closed?");
+        Rf_error("%s\n", "prep object is not open. Has it already been closed?");
 
     int status = prep->send_cont();
     status = prep->close();
@@ -221,7 +221,7 @@ SEXP stop_sig_prep(SEXP con)
 {
     R_prep *prep = R_prep::getR_prep(con);
     if (!prep)
-        Rf_error("prep object is not open. Has it already been closed? You must reopen with prep(...)");
+        Rf_error("%s\n", "prep object is not open. Has it already been closed? You must reopen with prep(...)");
 
     int status = prep->send_stop();
 
@@ -235,7 +235,7 @@ SEXP cont_sig_prep(SEXP con)
 {
     R_prep *prep = R_prep::getR_prep(con);
     if (!prep)
-        Rf_error("prep object is not open. Has it already been closed? You must reopen with prep(...)");
+        Rf_error("%s\n", "prep object is not open. Has it already been closed? You must reopen with prep(...)");
 
     int status = prep->send_cont();
 
@@ -269,7 +269,7 @@ R_prep::R_prep(SEXP obj): _obj(obj), _pid(-1),_inputfp(0),
     SEXP slot = Rf_getAttrib(obj,cppSlotName);
 
     if (TYPEOF(slot) != RAWSXP || Rf_length(slot) != 8)
-        Rf_error("cppPtr slot of object is not of type \"raw\", length 8");
+        Rf_error("%s\n", "cppPtr slot of object is not of type \"raw\", length 8");
 
     *((R_prep **)RAW(slot)) = this;
 
@@ -290,7 +290,7 @@ R_prep::~R_prep()
 #endif
 
     if (removeConnection(this) == 0) {
-        Rf_error("programming error, can't find object in open list");
+        Rf_error("%s\n", "programming error, can't find object in open list");
     }
     close();
 
@@ -351,7 +351,7 @@ int R_prep::close()
                 std::ostringstream ost;
                 ost << "error sending signal " << strsignal(sig) << " to prep: kill(" << 
                     _pid << ',' << sig << "): " << strerror(errno);
-                Rf_warning(ost.str().c_str());
+                Rf_warning("%s\n", ost.str().c_str());
                 break;
             }
             sleep(1);
@@ -360,7 +360,7 @@ int R_prep::close()
                 std::ostringstream ost;
                 ost << "prep error in waitpid(" << _pid << ",...) : " <<
                         strerror(errno);
-                Rf_warning(ost.str().c_str());
+                Rf_warning("%s\n", ost.str().c_str());
                 break;
             }
         }
@@ -379,7 +379,7 @@ int R_prep::close()
         else if (waitres == 0) {
             std::ostringstream ost;
             ost <<  "wait timeout waiting for prep, pid=" << _pid;
-            Rf_warning(ost.str().c_str());
+            Rf_warning("%s\n", ost.str().c_str());
             ret = -1;
         }
     }
@@ -396,7 +396,7 @@ int R_prep::send_stop() {
             std::ostringstream ost;
             ost << "error sending signal " << strsignal(sig) << " to prep: kill(" << 
                 _pid << ',' << sig << "): " << strerror(errno);
-            Rf_warning(ost.str().c_str());
+            Rf_warning("%s\n", ost.str().c_str());
             ret = -1;
         }
     }
@@ -413,7 +413,7 @@ int R_prep::send_cont() {
             std::ostringstream ost;
             ost << "error sending signal " << strsignal(sig) << " to prep: ::kill(" << 
                 _pid << ',' << sig << "): " << strerror(errno);
-            Rf_warning(ost.str().c_str());
+            Rf_warning("%s\n", ost.str().c_str());
             ret = -1;
         }
     }
@@ -431,7 +431,7 @@ void R_prep::start(const string& prog,
     if (::pipe(fd) < 0) {
         std::ostringstream ost;
         ost << "prep start error: pipe(fd) failure: " << strerror(errno);
-        Rf_error(ost.str().c_str());
+        Rf_error("%s\n", ost.str().c_str());
     }
 
     switch (_pid = ::vfork()) {
@@ -492,14 +492,14 @@ void R_prep::start(const string& prog,
         {
             std::ostringstream ost;
             ost << "prep start error: vfork() failure: " << strerror(errno);
-            Rf_error(ost.str().c_str());
+            Rf_error("%s\n", ost.str().c_str());
         }
     default:	// parent
         ::close(fd[1]);
         if ((_inputfp = ::fdopen(fd[0],"r")) == NULL) {
             std::ostringstream ost;
             ost << "prep start error: fdopen() failure: " << strerror(errno);
-            Rf_error(ost.str().c_str());
+            Rf_error("%s\n", ost.str().c_str());
         }
         _units.clear();
         if (units.empty()) {
@@ -507,7 +507,7 @@ void R_prep::start(const string& prog,
             // skip first line containing variable names
             while ((c = ::fgetc(_inputfp)) != EOF && c != '\n');
             if (c == EOF && ferror(_inputfp)) {
-                Rf_error(strerror(errno));
+                Rf_error("%s\n", strerror(errno));
             }
             Rprintf("units=");
             unsigned int n;
@@ -518,12 +518,12 @@ void R_prep::start(const string& prog,
                 // So we'll use fgetc
                 while ((c = ::fgetc(_inputfp)) != EOF && (c == ' ' || c == '\t'));
                 if (c == EOF && ferror(_inputfp)) {
-                    Rf_error(strerror(errno));
+                    Rf_error("%s\n", strerror(errno));
                 }
                 if (c == EOF || c != '"') break;
                 for ( ; (c = ::fgetc(_inputfp)) != EOF && c != '"'; ) unitstr += c;
                 if (c == EOF && ferror(_inputfp)) {
-                    Rf_error(strerror(errno));
+                    Rf_error("%s\n", strerror(errno));
                 }
                 Rprintf("\"%s\" ",unitstr.c_str());
                 _units.push_back(unitstr);
@@ -594,7 +594,7 @@ SEXP R_prep::read(R_utime &begin, R_utime &end, size_t nrows)
             _haveSavedTime = 0;
         }
         else if ((res = ::fread((char *)&trec,sizeof(double),1,_inputfp)) != 1) {
-            if (ferror(_inputfp)) Rf_error(strerror(errno));
+            if (ferror(_inputfp)) Rf_error("%s\n", strerror(errno));
             break;
         }
 
@@ -616,7 +616,7 @@ SEXP R_prep::read(R_utime &begin, R_utime &end, size_t nrows)
 
         if ((res = ::fread((char *)&drec.front(),sizeof(float),nc,_inputfp)) != nc)
         {
-            if (ferror(_inputfp)) Rf_error(strerror(errno));
+            if (ferror(_inputfp)) Rf_error("%s\n", strerror(errno));
             break;
         }
 
