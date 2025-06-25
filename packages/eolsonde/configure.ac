@@ -2,7 +2,7 @@
 #  Initialize                                                    		#
 #-------------------------------------------------------------------------------#
 
-AC_INIT([eolsonde], 0.0.-1, [maclean@ucar.edu])
+AC_INIT([eolsonde],[0.0.-1],[maclean@ucar.edu])
 
 AC_LANG(C++)
 
@@ -26,8 +26,7 @@ AC_LANG(C++)
 
 #-- GeographicLib include and library path ---------------------------------------------#
 AC_ARG_WITH([geographiclib-include],
-    AC_HELP_STRING([--with-geographiclib-include=DIR],
-                   [location of GeographicLib headers]),
+    AS_HELP_STRING([--with-geographiclib-include=DIR],[location of GeographicLib headers]),
     [geographiclib_header_path=$withval]
 )
 
@@ -36,7 +35,7 @@ AS_IF([test -n "$geographic_header_path"],
 )
 
 AC_CHECK_HEADER([GeographicLib/Geoid.hpp],
-    [ LIBS=-lGeographic ${LIBS} ],
+    [ LIBS=-lGeographicLib ${LIBS} ],
     [
         PKG_CHECK_MODULES([GEOGRAPHICLIB],[Geographic],
             [
@@ -48,8 +47,7 @@ AC_CHECK_HEADER([GeographicLib/Geoid.hpp],
 )
 
 AC_ARG_WITH([geographiclib],
-    AC_HELP_STRING([--with-geographiclib=DIR],
-                   [location of GeographicLib library]),
+    AS_HELP_STRING([--with-geographiclib=DIR],[location of GeographicLib library]),
     [geographiclib_path=$withval]
 )
 
@@ -57,17 +55,14 @@ AS_IF([test -n "$geographiclib_path"],
     [LDFLAGS+=" -L${geographiclib_path}"]
 )
 
-AC_TRY_LINK([#include <GeographicLib/Geoid.hpp>],
-            [GeographicLib::Geoid g("");],
-    [
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <GeographicLib/Geoid.hpp>]], [[GeographicLib::Geoid g("");]])],[
         HAVE_GEOGRAPHICLIB=TRUE
         CPPFLAGS+=" -DHAVE_GEOGRAPHICLIB"
         AC_OUTPUT_COMMANDS([${SED} -i -e 's/HAVE_GEOGRAPHICLIB <- FALSE/HAVE_GEOGRAPHICLIB <- TRUE/' R/geolib.R])
-    ],
-    [
+    ],[
         HAVE_GEOGRAPHICLIB=FALSE
-    ]
-)
+    
+])
 
 
 #-------------------------------------------------------------------------------#
