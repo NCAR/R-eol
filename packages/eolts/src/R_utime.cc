@@ -151,8 +151,7 @@ double R_utime::parse(const std::string& tstr,
 #else
     // build an expression pairlist and evaluate it.
     SEXP s, t;
-    t = s = PROTECT(Rf_allocList(4));
-    SET_TYPEOF(s, LANGSXP);
+    t = s = PROTECT(Rf_allocVector(LANGSXP,4));
 
     SETCAR(t, Rf_install("utime")); t = CDR(t);
 
@@ -197,9 +196,7 @@ string R_utime::format(double time,
 
     SEXP s, t;
 
-    t = s = PROTECT(Rf_allocList(4));
-
-    SET_TYPEOF(s, LANGSXP);
+    t = s = PROTECT(Rf_allocVector(LANGSXP,4));
 
     SETCAR(t, Rf_install("format_utime")); t = CDR(t);
 
