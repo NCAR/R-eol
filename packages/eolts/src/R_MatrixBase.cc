@@ -84,7 +84,7 @@ vector<string> R_MatrixBase::getDimNames(size_t idim)
 {
     const size_t ndims = sizeof(_dims)/sizeof(_dims[0]);
     if (idim >= ndims) {
-        Rprintf("R_MatrixBase::getDimNames: idim=%u exceeds maximum index for number of dimensions, %zu\n",idim,ndims);
+        Rprintf("R_MatrixBase::getDimNames: idim=%lu exceeds maximum index for number of dimensions, %zu\n",idim,ndims);
         Rf_error("%s\n","invalid idim argument");
     }
 
@@ -101,7 +101,7 @@ vector<string> R_MatrixBase::getDimNames(size_t idim)
     }
 
     if ((size_t)Rf_xlength(_dnobj) != ndims) {
-        Rprintf("R_ArrayBase::getDimNames: length of dimnames list, %u, is not equal to number of dimensions, %zu\n",
+        Rprintf("R_ArrayBase::getDimNames: length of dimnames list, %lu, is not equal to number of dimensions, %zu\n",
                 (size_t)Rf_xlength(_dnobj),ndims);
         Rf_error("%s\n","internal error: bad length of dimnames list");
     }
@@ -110,7 +110,7 @@ vector<string> R_MatrixBase::getDimNames(size_t idim)
     if (!Rf_isString(dobj) || Rf_xlength(dobj) == 0) return names;
 
     if ((size_t) Rf_xlength(dobj) != _dims[idim]) {
-        Rprintf("R_MatrixBase::getDimNames: length of dimnames for dimension %d is %u, and not equal to dimension length %zu\n",
+        Rprintf("R_MatrixBase::getDimNames: length of dimnames for dimension %ld is %lu, and not equal to dimension length %zu\n",
                 idim,(size_t)Rf_xlength(dobj),_dims[idim]);
         Rf_error("%s\n","wrong length for dimnames");
     }
@@ -135,7 +135,7 @@ void R_MatrixBase::setDimNames(size_t idim, const vector<string>& names)
 {
     const size_t ndims = sizeof(_dims)/sizeof(_dims[0]);
     if (idim >= ndims) {
-        Rprintf("R_MatrixBase::getDimNames: idim=%u exceeds maximum index for number of dimensions, %zu\n",idim,ndims);
+        Rprintf("R_MatrixBase::getDimNames: idim=%lu exceeds maximum index for number of dimensions, %zu\n",idim,ndims);
         Rf_error("%s\n","invalid idim argument");
     }
 
@@ -146,7 +146,7 @@ void R_MatrixBase::setDimNames(size_t idim, const vector<string>& names)
     }
 
     if (names.size() > 0 && names.size() != _dims[idim]) {
-        Rprintf("R_MatrixBase::setDimNames: length of dimension %d is %zu, and not equal to number of names for that dimension, %zu\n",
+        Rprintf("R_MatrixBase::setDimNames: length of dimension %ld is %zu, and not equal to number of names for that dimension, %zu\n",
                 idim,_dims[idim],names.size());
         Rf_error("%s\n","wrong length for dimension names");
     }

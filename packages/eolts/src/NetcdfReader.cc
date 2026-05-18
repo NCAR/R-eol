@@ -253,7 +253,7 @@ namespace {
 #ifdef CHECK_TIMEZONE_GLOBAL
         // Rprintf("timezone=%d, tval2-tval=%d\n",timezone,tval2-tval);
         if (tval2 - tval != timezone)
-            Rprintf("timezone discrepancy: timezone=%d, tval2-tval=%d\n",
+            Rprintf("timezone discrepancy: timezone=%ld, tval2-tval=%ld\n",
                     timezone,tval2-tval);
 #endif
         tval -= (tval2 - tval);
