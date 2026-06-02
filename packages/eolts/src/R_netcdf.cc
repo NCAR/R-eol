@@ -18,6 +18,11 @@
 #include <set>
 #include <sstream>
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <sys/stat.h>
+
 using std::string;
 using std::vector;
 using std::set;
@@ -869,7 +874,63 @@ void R_netcdf::rpcopen(void)
             _rpcOtherTimeout.tv_sec, _rpcOtherTimeout.tv_usec);
 #endif
 
-    _clnt = clnt_create(_server.c_str(), NETCDFSERVERPROG, NETCDFSERVERVERS,"tcp");
+    const char* envport = getenv("NC_SERVER_PORT");
+    if (envport)
+    {
+        int nc_server_port = atoi(envport);
+
+        // Copied from nidas::util::Inet4Address::getAllByName()
+        struct addrinfo hints = addrinfo();
+        hints.ai_family = AF_INET;
+        hints.ai_socktype = SOCK_STREAM;
+        hints.ai_protocol = 0;
+        hints.ai_flags = 0;
+
+        struct addrinfo *addrinfo = 0;
+        int result;
+
+        if ((result = getaddrinfo(_server.c_str(), NULL, &hints, &addrinfo)) != 0)
+            throw string(gai_strerror(result));
+
+        struct sockaddr_in sock_addr;
+        socklen_t sock_addrlen = sizeof(sock_addr);
+        sock_addr.sin_family = 0;
+
+        for (struct addrinfo* aip = addrinfo; aip != NULL; aip = aip->ai_next) {
+            if (aip->ai_family == AF_INET) {
+                sock_addr = *((struct sockaddr_in*)aip->ai_addr);
+                break;
+            }
+        }
+        freeaddrinfo(addrinfo);
+
+        char numericIP[NI_MAXHOST];
+
+        // reverse dns lookup of host name for info only.
+        if ((result = getnameinfo((const struct sockaddr*) &sock_addr, sock_addrlen,
+                    numericIP, NI_MAXHOST, NULL, 0, NI_NUMERICHOST)) != 0) {
+            strcpy(numericIP, "unknown");
+            Rprintf("getnameinfo failed: %s\n", gai_strerror(result));
+        }
+
+        _clnt = 0;
+        if (sock_addr.sin_family != AF_INET)
+            throw string("getaddrinfo failure for server name ") + _server;
+
+        sock_addr.sin_port = htons(nc_server_port);
+
+        // If sockp is set to RPC_ANYSOCK(-1) before the call, the file descriptor of the socket
+        // is returned in sockp. Otherwise I guess it could be a socket, unconnected, I presume.
+        int sockp = RPC_ANYSOCK;
+        Rprintf("connecting to rpc server %s (%s) at NC_SERVER_PORT=%d\n",
+                _server.c_str(), numericIP, nc_server_port);
+        _clnt = clnttcp_create(&sock_addr, NETCDFSERVERPROG, NETCDFSERVERVERS,
+                               &sockp, 0, 0);
+        if (_clnt) Rprintf("clnttcp_create() success\n");
+    }
+    else 
+        _clnt = clnt_create(_server.c_str(), NETCDFSERVERPROG, NETCDFSERVERVERS,"tcp");
+
     if (_clnt == (CLIENT *) NULL)
         throw RPC_Exception(clnt_spcreateerror(_server.c_str()));
 
@@ -1268,7 +1329,7 @@ int R_netcdf::nonBatchWrite(datarec_float *rec)
             if (_ntry > _NTRY / 2) {
                 clnt_perror(_clnt,
                         "nc_server not responding to write datarec_float");
-                Rprintf("timeout=%d secs, ntry=%d\n",
+                Rprintf("timeout=%ld secs, ntry=%d\n",
                         _rpcWriteTimeout.tv_sec,_ntry);
                 Rprintf("sample time = %s\n",
                         R_utime::format(rec->time,"%Y %b %d %H:%M:%OS","UTC").c_str());
@@ -1302,7 +1363,7 @@ void R_netcdf::checkError()
         }
         const char* errstr = clnt_sperror(_clnt,(string("server: ")+ _server +
                     " checkError").c_str());
-        Rprintf("%s: timeout=%d secs, ntry=%d\n",errstr,
+        Rprintf("%s: timeout=%ld secs, ntry=%d\n",errstr,
                 _rpcWriteTimeout.tv_sec ,_ntry);
     }
     else {
@@ -1448,7 +1509,7 @@ int R_netcdf::NSVarGroupFloat::open()
         if (clnt_stat == RPC_SUCCESS) break;
         Rprintf(
                 "nc_server DEFINEDATAREC failed: %s\n",clnt_sperrno(clnt_stat));
-        Rprintf("timeout=%d secs, ntry=%d\n",
+        Rprintf("timeout=%ld secs, ntry=%d\n",
                 _conn->getRPCOtherTimeout().tv_sec ,ntry+1);
         if (clnt_stat != RPC_TIMEDOUT && clnt_stat != RPC_CANTRECV) break;
     }
