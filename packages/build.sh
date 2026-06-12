@@ -3,11 +3,12 @@
 # build and install EOL R packages on local system
 
 if [ $# -eq 0 ]; then
-    echo "Usage: ${0##*/} [-e] [-c] [-i] [-s] [-t]
+    echo "Usage: ${0##*/} [-e] [-c] [-i] [-s] [-t] [-l lib]
 -d: install dependencies
 -c: do R CMD check after builds
 -e: eolts (R CMD build, R CMD INSTALL)
 -i: isfs (R CMD build, R CMD INSTALL)
+-l lib: set R_LIBS_USER=lib
 -s: eolsonde (R CMD build, R CMD INSTALL)
 -t: run isfs:runTests() after isfs build, quicker, less thorough than -c"
     exit 1
@@ -79,6 +80,14 @@ while [ $# -gt 0 ]; do
         ;;
     -i)
         do_isfs=true
+        ;;
+    -l)
+        shift
+        if [ $# -eq 0 ]; then
+            echo "huh?"
+            exit 1
+        fi
+        export R_LIBS_USER=$1
         ;;
     -s)
         do_eolsonde=true
