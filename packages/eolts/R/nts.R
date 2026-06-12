@@ -1021,60 +1021,48 @@ setMethod("atan2",signature(y="nts",x="nts"),
             if (is.na(tol <- min(d1[1],d2[1]) * .1)) tol <- 1.0;
         }
 
-        p1 <- positions(y)
-        p2 <- positions(x)
+        py <- positions(y)
+        px <- positions(x)
 
         # make union of positions. Taken from default method for seriesMerge
-        if (!identical(p1,p2)) {
-            if(is(p1, "utime") != is(p2,"utime"))
+        if (!identical(py,px)) {
+            if(is(py, "utime") != is(px,"utime"))
                 stop(paste("Cannot mix series types. Positions(",
-                        class(p1),",",class(p2),") are not comparable"))
+                        class(py),",",class(px),") are not comparable"))
 
             # call C function to find out alignment
-            # returns a list of ( indexes for NA, indexes to drop, subscript or
+            # returns a list of ( indexes for NA, indexes to drop, and subscripts or
             # interpolation weights )
 
-            # points in p1 which exceed deltat tolerance of p2
-            nuke.p1 <- .Call("utime_align", p1, p2, c("NA", "NA"), tol, PACKAGE="eolts")
+            # The first element of the list is a logical vector telling
+            # whether or not the output should be set to NA for the corresponding
+            # alignment position.  The second is a logical vector telling whether
+            # or not the corresponding alignment position should be dropped from
+            # the output.  Unless the first element of how_obj is ``interp'',
+            # the third element of the return list is an integer vector of
+            # subscripts for the original data to form the new data.
 
-            # points in p2 which exceed deltat tolerance of p1
-            nuke.p2 <- .Call("utime_align", p2, p1, c("NA", "NA"), tol, PACKAGE="eolts")
+            align.y <- .Call("utime_align", py, px, c("NA", "NA"), tol, PACKAGE="eolts")
+            # points in y which are within deltat tolerance of x
+            y <- y[align.y[[3]][!align.y[[1]] & !align.y[[2]]],]
 
-            # cat("length(p1) before nuke=",length(p1),"\n")
-            # cat("length(p2) before nuke=",length(p2),"\n")
-            # browser()
+            align.x <- .Call("utime_align", px, py, c("NA", "NA"), tol, PACKAGE="eolts")
+            # points in x which are within deltat tolerance of y
+            x <- x[align.x[[3]][!align.x[[1]] & !align.x[[2]]],]
 
-            # points in p1 which are within deltat tolerance of p2
-            p1 <- p1[nuke.p1[[3]][!nuke.p1[[1]] & !nuke.p1[[2]]]]
+            ny <- nrow(y)
+            nx <- nrow(x)
 
-            # points in p2 which are within deltat tolerance of p1
-            p2 <- p2[nuke.p2[[3]][!nuke.p2[[1]] & !nuke.p2[[2]]]]
+            if (nx == 0) stop("no timetags in x are within ",tol,"of y")
+            if (ny == 0) stop("no timetags in y are within ",tol,"of x")
 
-            if (length(p1) == 0) stop("no timetags in e1 are within ",tol,"of e2")
-            if (length(p2) == 0) stop("no timetags in e2 are within ",tol,"of e1")
+            if (ny > nx) y <- y[1:nx,]
+            else if (nx > ny) x <- x[1:nx,]
 
-            # cat("length(p1) after nuke=",length(p1),", tol=",tol,"\n")
-            # cat("length(p2) after nuke=",length(p2),", tol=",tol,"\n")
-
-            # create the union of p1 and p2, discard points that are close
-            dt <- min(d1[1] * .5,d2[1] * .5, tol)
-            tol2 <- dt
-            p1 <- sort(c(p1, p2))
-            ok <- abs(diff(p1)) > tol2
-            if(length(ok) && !all(ok)) {
-                # make it the right length
-                ok <- c(ok, T)
-                p1 <- p1[ok]
-            }
-            # cat("length(p1) after unionPositions=",length(p1),", dt=",dt,"\n")
-            if (length(p1) == 0) return(NULL)
-
-            x <- align(x, p1, how="NA",matchtol=tol)
             x@deltat <- numeric(0)
             x@weights <- matrix(0, ncol=0,nrow=0)
             x@weightmap <- integer(0)
 
-            y <- align(y, p1, how="NA",matchtol=tol)
             y@deltat <- numeric(0)
             y@weights <- matrix(0, ncol=0,nrow=0)
             y@weightmap <- integer(0)
@@ -1153,48 +1141,33 @@ setMethod("Ops",signature(e1="nts",e2="nts"),
             # returns a list of ( indexes for NA, indexes to drop, subscript or
             # interpolation weights )
 
-            # points in p1 which exceed deltat tolerance of p2
-            nuke.p1 <- .Call("utime_align", p1, p2, c("NA", "NA"), tol, PACKAGE="eolts")
+            align.e1 <- .Call("utime_align", p1, p2, c("NA", "NA"), tol, PACKAGE="eolts")
+            align.e1 <- align.e1[[3]][!align.e1[[1]] & !align.e1[[2]]]
+            # points in e1 which are within deltat tolerance of e2
+            e1 <- e1[align.e1,]
 
-            # points in p2 which exceed deltat tolerance of p1
-            nuke.p2 <- .Call("utime_align", p2, p1, c("NA", "NA"), tol, PACKAGE="eolts")
+            align.e2 <- .Call("utime_align", p2, p1, c("NA", "NA"), tol, PACKAGE="eolts")
+            align.e2 <- align.e2[[3]][!align.e2[[1]] & !align.e2[[2]]]
+            # points in e2 which are within deltat tolerance of e1
+            e2 <- e2[align.e2,]
 
             # cat("length(p1) before nuke=",length(p1),"\n")
             # cat("length(p2) before nuke=",length(p2),"\n")
             # browser()
 
-            # points in p1 which are within deltat tolerance of p2
-            p1 <- p1[nuke.p1[[3]][!nuke.p1[[1]] & !nuke.p1[[2]]]]
+            ne1 <- nrow(e1)
+            ne2 <- nrow(e2)
 
-            # points in p2 which are within deltat tolerance of p1
-            p2 <- p2[nuke.p2[[3]][!nuke.p2[[1]] & !nuke.p2[[2]]]]
+            if (ne1 == 0) stop("no timetags in e1 are within ",tol,"of e2")
+            if (ne2 == 0) stop("no timetags in e2 are within ",tol,"of e1")
 
-            if (length(p1) == 0) stop("no timetags in e1 are within ",tol,"of e2")
-            if (length(p2) == 0) stop("no timetags in e2 are within ",tol,"of e1")
+            if (ne1 > ne2) e1 <- e1[1:ne2,]
+            else if (ne2 > ne1) e2 <- e2[1:ne1,]
 
-            # cat("length(p1) after nuke=",length(p1),", dt.eps=",dt.eps,"\n")
-            # cat("length(p2) after nuke=",length(p2),", dt.eps=",dt.eps,"\n")
-
-            # create the union of p1 and p2, discard points that are close
-            dt <- min(d1[1]*.5,d2[1]*.5,dt.eps)
-            tol2 <- dt
-            p1 <- sort(c(p1, p2))
-            ok <- abs(diff(p1)) > tol2
-            if(length(ok) && !all(ok)) {
-                # make it the right length
-                ok <- c(ok, T)
-                p1 <- p1[ok]
-            }
-            # cat("length(p1) after unionPositions=",length(p1),", dt=",dt,"\n")
-            if (length(p1) == 0) return(NULL)
-
-            # browser()
-            e1 <- align(e1, p1, how="NA",matchtol=tol)
             e1@deltat <- numeric(0)
             e1@weights <- matrix(0, ncol=0,nrow=0)
             e1@weightmap <- integer(0)
 
-            e2 <- align(e2, p1, how="NA",matchtol=tol)
             e2@deltat <- numeric(0)
             e2@weights <- matrix(0, ncol=0,nrow=0)
             e2@weightmap <- integer(0)
@@ -1882,6 +1855,30 @@ setGeneric("align",function(x,pos,how,error.how,matchtol) standardGeneric("align
 setMethod("align",signature="nts",
     function(x,pos,how,error.how,matchtol)
     {
+        # for how="interp", splusTimeSeries::align and this align use matchtol
+        # in different ways:
+        # splusTimeSeries: use the how method for all points that DON'T
+        # match within matchtol
+        # nts: how method is only used for points within matchtol, result is NA
+        # otherwise
+
+        # doc for .splusTimeDate::.timealign, used by splusTimeSeries::align()
+        # Return points in x that align within tol of pos
+        # The first element of the list is a logical vector telling
+        # whether or not the output should be set to NA for the corresponding
+        # alignment position.  The second is a logical vector telling whether
+        # or not the corresponding alignment position should be dropped from
+        # the output.
+        # The first element of how_obj tells what to do if there
+        # is no match: ``NA'' causes the NA element of the return list to be set
+        # to true; ``drop'' causes the drop element to be set to true;
+        # ``nearest'' puts the subscript of the nearest position into the
+        # subscript element; ``before'' uses the position before; ``after''
+        # uses the position after'', and ``interp'' sets up interpolation
+        # weights.  In the last three cases, if the appropriate subscript
+        # or weights cannot be calculated (i.e. off the end of the series),
+        # then the second element of how_obj tells what to do: ``NA'',
+        # ``drop'', or ``nearest''.
         if (missing(how)) how <- "NA"
         if (missing(error.how)) error.how <- "NA"
 
@@ -1911,17 +1908,28 @@ setMethod("align",signature="nts",
         class(x) <- "timeSeries"
         if (how == "interp") {
 
-            # output times that are within tol of input time series
-            xpos <- positions(splusTimeSeries::align(x,pos,how="drop",
-                    error.how="drop",matchtol=tol/86400))
+            # interpolate x to pos. Use how method for all points that
+            # arent an exact match.
+            # how: specifies how to treat unmatched positions:
+            #   "NA", "drop", "nearest", "before", "after", "interp"
+            # error.how: specifies available actions when an out of bounds error
+            # occurs. (Such an error can occur when ‘how’ is ‘"before"’,
+            # ‘"after"’, or ‘"interp"’). Must be one of the following: "NA", "drop","nearest"
+            # for how="interp", splusTimeSeries andn nts use matchtol
+            # in different ways:
+            # splusTimeSeries: use the how method for all points that DON'T
+            # match within matchtol
+            # nts: use how method, using points within matchtol, result is NA
+            # otherwise
 
-            # interpolate x to pos
-            x <- splusTimeSeries::align(x,pos,how=how,error.how=error.how,
-                matchtol=0)
+            # NA out points in x that are not within tol of pos
+            x <- splusTimeSeries::align(x, pos, how="NA", error.how="NA",
+                matchtol=tol / 86400)
 
             # result time series of interpolated values which are not
             # interpolated over more than tol.
-            x <- splusTimeSeries::align(x,xpos,how="drop",error.how="drop",matchtol=tol/86400)
+            x <- splusTimeSeries::align(x, pos, how=how, error.how="drop", matchtol=0)
+
             class(x) <- class.x
             x@weights <- matrix(0, ncol=0,nrow=0)
             x@weightmap <- integer(0)
