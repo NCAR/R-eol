@@ -396,6 +396,15 @@ SEXP NtsMath::averageMedian(R_nts& ntsin, double avgint,
         for (ir = 0; ir < nr; ir++) {
             tt = posin.getTime(ir);
 
+#ifdef DEBUG
+            std::ostringstream ost;
+            ost << "tt-t0=" << tt-t0 << ", tt-tint=" << tt-tint << 
+                ", ns=" << ns << ", is=" << is <<
+                ", navg=" << navg << ", nout=" << nout << ",nint=" << nint <<
+                ", sB.size()=" << sortBuffer.size();
+            Rprintf("%s\n", ost.str().c_str());
+#endif
+
             while (tt > tint) {       /* at end of interval */
                 ns++;
                 if (ns >= (nint-1)/2+1) {
@@ -405,7 +414,7 @@ SEXP NtsMath::averageMedian(R_nts& ntsin, double avgint,
                         std::ostringstream ost;
                         ost << "navg=" << navg << ",nout=" << nout <<
                             ", tdiff=" << ttmp-tint0 << ", outint=" << outint <<
-                            ",nint" << nint;
+                            ",nint=" << nint;
                         Rf_error("%s\n",ost.str().c_str());
                     }
 
@@ -420,16 +429,32 @@ SEXP NtsMath::averageMedian(R_nts& ntsin, double avgint,
                     dout++;
                     wout++;
                     navg++;
-                    is = (is + 1) % nint;
-                    // age out the old points from sortBuffer
-                    for (k = 0; k < npoints[is]; k++) {
-                        double d0 = dataBuffer.front();
-                        dataBuffer.pop_front();
-                        deque<double>::iterator di = find(sortBuffer.begin(),sortBuffer.end(),d0);
-                        sortBuffer.erase(di);
-                    }
-                    npoints[is] = 0;
                 }
+                is = (is + 1) % nint;
+
+#ifdef DEBUG
+                std::ostringstream ost;
+                ost << "tt-t0=" << tt-t0 << ", tint-t0=" << tint-t0 << 
+                    ", ns=" << ns << ", is=" << is <<
+                    ", npoints[" << is << "]=" << npoints[is] <<
+                    ", sB.size()=" << sortBuffer.size();
+                Rprintf("%s\n", ost.str().c_str());
+#endif
+
+                // age out the old points from sortBuffer
+                for (k = 0; k < npoints[is]; k++) {
+                    double d0 = dataBuffer.front();
+                    dataBuffer.pop_front();
+                    deque<double>::iterator di = find(sortBuffer.begin(),sortBuffer.end(),d0);
+                    if (di == sortBuffer.end()) {
+                        std::ostringstream ost;
+                        ost << "value not found in sortBuffer. dataBuffer.size()=" << dataBuffer.size() <<
+                            ", sortBuffer.size()=" <<  sortBuffer.size();
+                        Rf_error("%s\n",ost.str().c_str());
+                    }
+                    sortBuffer.erase(di);
+                }
+                npoints[is] = 0;
                 tint = tint0 + outint * ns;
             }
             d = din[sc + ir];
