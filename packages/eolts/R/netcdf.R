@@ -267,14 +267,16 @@ setMethod("readts",
             stns,timevar,basetime,as.character(time.zone),
             as.integer(ncverbose),PACKAGE="eolts")
 
-        if (!is.null(x) && prod(dim(x)) > 0) {
+        if (!is.null(x)) {
             # utime slot from read_netcdf_ts is a single utime, with
             # a vector of numeric values. Change it to a vector
             # of utimes, each with one numeric value.
-            positions(x) <- utime(positions(x))
-            deltat(x) <- deltat(x)
-            start(x) <- start
-            end(x) <- end
+            if ( prod(dim(x)) > 0) {
+                positions(x) <- utime(positions(x))
+                deltat(x) <- deltat(x)
+                start(x) <- start
+                end(x) <- end
+            }
             x@time.format <- time.format
             x@time.zone <- time.zone
         }
