@@ -3,11 +3,13 @@
 # build and install EOL R packages on local system
 
 if [ $# -eq 0 ]; then
-    echo "Usage: ${0##*/} [-e] [-c] [-i] [-s] [-t] [-l lib]
+    echo "Usage: ${0##*/} [-e] [-c] [-i] [-s] [-t] [-l lib] [-I]
 -d: install dependencies
 -c: do R CMD check after builds
 -e: eolts (R CMD build, R CMD INSTALL)
 -i: isfs (R CMD build, R CMD INSTALL)
+-i: isfs (R CMD build, R CMD INSTALL)
+-I: install to R_LIBS_USER=$ISFS/R/library for ISFS users
 -l lib: set R_LIBS_USER=lib
 -s: eolsonde (R CMD build, R CMD INSTALL)
 -t: run isfs:runTests() after isfs build, quicker, less thorough than -c"
@@ -80,6 +82,17 @@ while [ $# -gt 0 ]; do
         ;;
     -i)
         do_isfs=true
+        ;;
+    -I)
+        if [ -z "$ISFS" ]; then
+            echo "ISFS environment variable not set"
+            exit 1
+        fi
+        if ! [ -d "$ISFS/R/library" ]; then
+            echo "\$ISFS/R/library directory does not exist"
+            exit 1
+        fi
+        export R_LIBS_USER=$ISFS/R/library
         ;;
     -l)
         shift
