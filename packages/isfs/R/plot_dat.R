@@ -42,7 +42,7 @@ plot_dat <- function(x,type="l",
 
     nextp <- eolts::next_plot()
 
-    if (nextp$first) xaxs <- "i"
+    if (nextp$first || eolts::timeaxis_changed(t1)) xaxs <- "i"
     else xaxs <- "d"                # don't rescale
 
     # unique looses the station names
@@ -181,9 +181,10 @@ plot_dat <- function(x,type="l",
         if (! xaxis_done) {
             if (debug) 
                 cat("plot_dat, first plot_nts, varname=",varname,
+                    ", xlim=",paste(xlim,collapse=","), 
                     ", ylim1=",signif(ylim1,4),
-                    ", side=", side, ",
-                    ", nyscales=", nyscales, ",
+                    ", yaxis_num=", yaxis_num,
+                    ", nyscales=", nyscales,
                     ", xaxs=", xaxs,
                     ", yaxs=", yaxs,
                     ", mgp=", paste0(par("mgp"),collapse=","),
@@ -195,9 +196,10 @@ plot_dat <- function(x,type="l",
                 ylim=ylim1,ylab="",
                 xaxt=xaxt, xaxs=xaxs,
                 yaxt="n", yaxs=yaxs,
-                log=log,...)
+                log=log, debug=debug, ...)
 
             currp <- eolts::current_plot()
+            cat("currp: nrow=", currp$nrow, ", nrows=", currp$nrows, "\n")
 
             if (debug)
                 cat("varname=", varname,
@@ -226,8 +228,8 @@ plot_dat <- function(x,type="l",
         # plot traces
         if (debug) 
             cat("plot_dat, plot_nts of traces, varname=",varname," ylim1=",signif(ylim1,4),
-                ", side=", side, ",
-                ", nyscales=", nyscales, ",
+                ", yaxis_num=", yaxis_num,
+                ", nyscales=", nyscales,
                 ", xaxs=", xaxs,
                 ", yaxs=", yaxs,
                 ", mgp=", paste0(par("mgp"),collapse=","),

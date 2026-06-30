@@ -649,6 +649,14 @@ timeaxis_setup <- function(t1, t2, time.zone=getOption("time.zone"),
     res
 }
 
+timeaxis_changed <- function(t1, t2)
+{
+    if (! exists(".timeaxis_params",envir=.eoltsEnv))
+        return(TRUE)
+    tparams <- get(".timeaxis_params",envir=.eoltsEnv)
+    return(tparams$toffset != t1)
+}
+
 error.bar.nts <- function(x,lower,upper,incr=T,bar.ends=T,gap=T,add=F,
 	horizontal=F,ylim=NULL,...)
 {

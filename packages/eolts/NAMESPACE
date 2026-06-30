@@ -22,6 +22,7 @@ export(
     write.nts,
     timeaxis,
     timeaxis_setup,
+    timeaxis_changed,
     match.nts,
     match.delta,
     dpar,
