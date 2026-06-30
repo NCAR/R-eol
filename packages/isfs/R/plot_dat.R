@@ -199,7 +199,6 @@ plot_dat <- function(x,type="l",
                 log=log, debug=debug, ...)
 
             currp <- eolts::current_plot()
-            cat("currp: nrow=", currp$nrow, ", nrows=", currp$nrows, "\n")
 
             if (debug)
                 cat("varname=", varname,
